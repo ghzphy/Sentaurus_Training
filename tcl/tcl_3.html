@@ -1,0 +1,598 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tcl 3. Other Useful Tcl Commands</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tool Command Language<br />3. Other Useful Tcl Commands</h1>
+
+<p>
+<a href="#1">3.1 File Input and Output</a><br />
+<a href="#2">3.2 Formatting Output</a><br />
+<a href="#3">3.3 Procedures</a><br />
+<a href="#4">3.4 Masking Special Characters, Substitutions</a><br />
+<a href="#5">3.5 Files and Directories</a><br />
+<a href="#6">3.6 System Calls</a><br />
+<a href="#7">3.7 Handling Errors</a><br />
+<a href="#8">3.8 Manipulating Strings</a><br />
+<a href="#9">3.9 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To introduce more advanced Tcl commands for working 
+with TCAD Sentaurus tools.</li>
+</ul>
+
+<p class="note">All examples discussed in this section are available in the directory 
+<tt>Applications_Library/GettingStarted/tcl/tcl_basics</tt>.<br /><br />
+
+Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd">
+gtclsh_tcl.cmd</a>.</p>
+     
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 File Input and Output</h1>
+
+<ul>
+<li>Open a file with the <tt>open</tt> function:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.1.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set FIDw [open Writing.tmp &quot;w&quot;]
+</pre>
+<!-- grep end -->
+
+<p>Here, the file <tt>Writing.tmp</tt> is opened for writing.
+<tt>FIDw</tt> is a regular Tcl variable, which contains the file
+identifier.<br /></p></li>
+
+<li>Write to an opened file with the <tt>puts</tt> command:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.1.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+puts $FIDw &quot;This is the first line of this file&quot;
+puts $FIDw $ABCList
+</pre>
+<!-- grep end -->
+</li>
+
+<li> Close a file with the <tt>close</tt> command:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.1.c*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+close $FIDw
+</pre>
+<!-- grep end -->
+</li>
+<li> Open a file for reading using:<br />
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.1.d*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set FIDr [open Writing.tmp &quot;r&quot;]
+</pre>
+<!-- grep end -->
+</li>
+ 
+<li>Read a file line by line with the <tt>gets</tt> command:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.1.e*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+while { [gets $FIDr NewLine] &gt; 0 } {
+  puts $NewLine
+}
+close $FIDr
+#-&gt; This is the first line of this file
+#-&gt; a b c d e f   
+</pre>
+<!-- grep end -->
+
+<p>Here, the <tt>while</tt> loop detects the end of the file. 
+The <tt>gets</tt> command returns the number of bytes read. If <tt>gets</tt> 
+reaches the end of the file, it returns <tt>-1</tt>. The <tt>while</tt> 
+loop tests for this condition.<br /></p></li>
+
+<li>Read a file as a single block of data with the <tt>read</tt> command:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.1.f*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set FIDr [open Writing.tmp &quot;r&quot;]
+set DATA [read $FIDr]
+puts $DATA
+close $FIDr
+#-&gt; This is the first line of this file
+#-&gt; a b c d e f   
+</pre>
+<!-- grep end -->
+</li>
+
+</ul>
+
+<p class="note">Files that contain special Tcl characters often 
+cannot be read line by line. The <tt>read</tt> command does not 
+have these problems.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Formatting Output</h1>
+
+<p>Use the <tt>format</tt> functions to control the formatting of
+variables during printing:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.2.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set  pi [ expr 2.0*asin(1.0) ]
+puts &quot;Pi unformated: $pi&quot;
+#-&gt; Pi unformated: 3.141592653589793
+
+puts &quot;Pi with 2 digits: [format %.2f $pi]&quot;
+#-&gt; Pi with 2 digits: 3.14
+
+puts &quot;Pi in exponential format: [format %.4e $pi]&quot; 
+#-&gt; Pi in exponential format: 3.1416e+00
+
+set i 24
+puts &quot;Integer with leading zeros: &gt;[format %05d $i]&lt;&quot;
+#-&gt; Integer with leading zeros: &gt;00024&lt;
+
+puts &quot;Integer with leading blanks:&gt;[format %5d $i]&lt;&quot; 
+#-&gt; Integer with leading zeros: &gt;   24&lt;
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Procedures</h1>
+
+<p>Define a procedure that computes an Arrhenius law, 
+A&nbsp;=&nbsp;A<sub>0</sub>&nbsp;exp(&ndash;E/kT), where A<sub>0</sub> 
+is the pre-exponential factor and E is the activation energy. 
+The temperature is given by the global variable T.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.3.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+proc Arrhenius { A0 E } {
+  global T
+  set k 8.62e-5 ; # eV/K
+  set A [expr $A0*exp(-$E/($k*$T))]
+  return $A
+}
+</pre>
+<!-- grep end -->
+
+<p>Procedures can be defined anywhere in the Tcl script. However, the 
+procedure can be called only <em>after</em> it was defined.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.3.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set T 300
+set A [Arrhenius 1e5 1.0]
+puts &quot;The Arrhenius expression gives: [format %.4e $A]&quot;
+#-&gt; The Arrhenius expression gives: 1.6067e-12
+</pre>
+<!-- grep end -->
+ 
+<!--================================================-->
+<a name="4"></a>
+<h1>3.4 Masking Special Characters, Substitutions</h1>
+
+<p>The dollar sign <tt>$</tt>, brackets <tt>[]</tt>, and
+braces <tt>{}</tt> are special characters in Tcl. If these
+characters are used in a string, for example, they must be masked,
+that is, they must be preceded by a backslash (<tt>\</tt>).</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.4.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set T 400.0
+set CMD_Static &quot;[Arrhenius 1e5 1.0]&quot;
+puts [format &quot;\[Arrhenius 1e5 1.0\] gives %.4e&quot; $CMD_Static]
+#-&gt; [Arrhenius 1e5 1.0] gives 2.5378e-08
+
+set T 1100.0
+puts [format &quot;\[Arrhenius 1e5 1.0\] gives %.4e&quot; $CMD_Static]
+#-&gt; [Arrhenius 1e5 1.0] gives 2.5378e-08
+</pre>
+<!-- grep end -->
+
+<p>Here, the variable <tt>CMD_Static</tt> contains the value of the
+Arrhenius expression, evaluated <em>at the time</em> the variable is
+defined. A later change in the temperature has no effect.</p>
+
+<p>However, masking the function call with <tt>\</tt> evaluates 
+the function <tt>Arrhenius</tt> only when called with the <tt>expr</tt> 
+command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*3.4.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set T 400.0
+set CMD_Dynamic &quot;\[Arrhenius 1e5 1.0\]&quot;
+puts $CMD_Dynamic
+#-&gt; [Arrhenius 1e5 1.0]
+puts [format %.4e [expr $CMD_Dynamic]]
+#-&gt; 2.5378e-08
+
+set T 1100.0
+puts [format %.4e [expr $CMD_Dynamic]]
+#-&gt; 2.6291e+00
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="5"></a>
+<h1>3.5 Files and Directories</h1>
+
+<ul>
+<li>Obtain a list of all file names that match a certain pattern 
+with the <tt>glob</tt> function:
+
+<!-- grep startExpr="###*3.5.a*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set FIDw [open TMP_1.tmp &quot;w&quot;]
+puts $FIDw &quot;test&quot;
+close $FIDw
+
+set FIDw [open TMP_2.tmp &quot;w&quot;]
+puts $FIDw &quot;test&quot;
+close $FIDw
+       
+set FILES [glob &quot;TMP*&quot;]
+puts &quot;$FILES&quot;
+#-&gt; TMP_1.tmp TMP_2.tmp    
+</pre>
+<!-- grep end -->
+
+Here, two files <tt>TMP_1.tmp</tt> and <tt>TMP_2.tmp</tt> are created. 
+Then, a list of all files in the current working directory starting with 
+<tt>TMP</tt> is created.<br /><br /></li>
+
+<li>Separate the stem and extension of a file name with the <tt>file</tt> 
+function:<br />
+
+<!-- grep startExpr="###*3.5.b*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set FILE [lindex $FILES 0]      
+set STEM [file rootname $FILE]
+puts &quot;The rootname is: $STEM&quot;
+#-&gt; The rootname is: TMP_1
+set EXT  [file extension $FILE]
+puts &quot;The extension is: $EXT&quot;
+#-&gt;  The extension is: .tmp
+</pre>
+<!-- grep end -->
+</li>
+ 
+<li>Access the name of the current work directory with the <tt>pwd</tt> 
+command:<br />
+
+<!-- grep startExpr="###*3.5.c*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set CWD [pwd]
+puts $CWD
+</pre>
+<!-- grep end -->
+</li>
+ 
+<li>Separate the path and directory name with the <tt>file</tt> function:<br />
+
+<!-- grep startExpr="###*3.5.d*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set PATH [file dirname $CWD]
+puts &quot;Path is: $PATH&quot;
+     
+set DIR [file tail $CWD]
+puts &quot;Directory is: $DIR&quot;
+</pre>
+<!-- grep end -->
+</li>
+</ul>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>3.6 System Calls</h1>
+
+<ul>
+<li>Issue a system call with the <tt>exec</tt> command:
+
+<!-- grep startExpr="###*3.6.a*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+exec rm -f Writing.tmp
+</pre>
+<!-- grep end -->
+
+Here, the UNIX command <tt>rm -f Writing.tmp</tt> is 
+called from within Tcl.<br /><br /></li>
+      
+<li>Make a system call, which includes Tcl variables, with the 
+<tt>eval</tt> command:
+
+<!-- grep startExpr="###*3.6.b*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set FILE source.tcl
+eval exec rm -f $FILE
+</pre>
+<!-- grep end -->
+
+The <tt>eval</tt> command forces the expansion of all Tcl variables 
+and expressions.<br /><br /></li>
+
+<li>System call with returned data:
+
+<!-- grep startExpr="###*3.6.c*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set ls_output [exec ls]
+puts &quot;The output of the ls command is:&quot;
+puts $ls_output
+</pre>
+<!-- grep end -->
+</li>
+</ul>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>3.7 Handling Errors</h1>
+
+<p>Tcl terminates the execution of a script if an error occurs. Use the
+<tt>catch</tt> command to suppress the termination:</p>
+
+<!-- grep startExpr="###*3.7.a*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set Nom 0.0
+set Denom 10.0
+
+if { [catch { set result [expr $Denom/$Nom]} ErrCode]  != 0 } {
+  puts &quot;An Error occured. The Error code is &gt;$ErrCode&lt;&quot;
+} else {
+  puts &quot;$Denom/$Nom = $result&quot;
+}
+#-&gt; An Error occured. The Error code is &gt;divide by zero&lt;
+</pre>
+<!-- grep end -->
+
+<p>The operation of interest is <tt>set result [expr $Denom/$Nom]</tt>. 
+If this operation fails, <tt>catch</tt> suppresses the termination of the 
+script, assigns the error code to the variable <tt>ErrCode</tt>, 
+and returns a nonzero value.</p>
+
+<p>The <tt>if</tt> block checks for the nonzero return code and
+branches accordingly.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>3.8 Manipulating Strings</h1>
+
+<p>As an example, you will work on a string containing information
+about a simple structure description, consisting of a material name, a
+region name, and a geometric object. (Note that double quotation 
+marks, braces, and brackets must be masked by a backslash as they have
+specific meaning in Tcl.)</p>
+
+<!-- grep startExpr="###*3.8.a*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set STRING &quot;Silicon \&quot;substrate\&quot; \{ rectangle \[(0.0,-0.5) (1.0,0.5)\] \}&quot;
+</pre>
+<!-- grep end -->
+
+<ul>
+<li>Isolate the material and region names with the <tt>string</tt> function:<br />
+
+<!-- grep startExpr="###*3.8.b*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set itmp       [expr [string first &quot; &quot; $STRING]]
+set MATERIAL   [string range $STRING 0 [expr $itmp -1]]
+
+set istart     [expr [string first &quot;\&quot;&quot; $STRING]]
+set iend       [expr [string last  &quot;\&quot;&quot; $STRING]]
+set REGION     [string range $STRING [expr $istart+1] [expr $iend -1]]
+
+puts &quot;The material is: $MATERIAL&quot;
+#-&gt; The material is: Silicon
+puts &quot;The region name is: $REGION&quot;
+#-&gt; The region name is: substrate     
+</pre>
+<!-- grep end -->
+
+<p>The functions <tt>string first</tt> and <tt>string last</tt> return the index 
+of the first or last occurrence of a given pattern, here whitespace or a double 
+quotation mark, respectively. The function <tt>string range</tt> returns a substring, 
+which starts and ends at the indices given.</p>
+
+<p>The coordinates X0, Y0, X1, and Y1 can be extracted in a similar fashion:</p>
+
+<!-- grep startExpr="###*3.8.c*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set istart     [expr [string first &quot;(&quot; $STRING]]
+set iend       [expr [string first &quot;,&quot; $STRING]]
+set X0         [string range $STRING [expr $istart+1] [expr $iend -1]]
+
+set istart     [expr [string first &quot;,&quot; $STRING]]
+set iend       [expr [string first &quot;)&quot; $STRING]]
+set Y0         [string range $STRING [expr $istart+1] [expr $iend -1]]
+
+set istart     [expr [string last &quot;(&quot; $STRING]]
+set iend       [expr [string last &quot;,&quot; $STRING]]
+set X1         [string range $STRING [expr $istart+1] [expr $iend -1]]
+
+set istart     [expr [string last &quot;,&quot; $STRING]]
+set iend       [expr [string last &quot;)&quot; $STRING]]
+set Y1         [string range $STRING [expr $istart+1] [expr $iend -1]]
+</pre>
+<!-- grep end -->
+</li>
+      
+<li>Concatenate two strings with:<br />
+
+<!-- grep startExpr="###*3.8.d*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set NewString ${MATERIAL}_${REGION}
+puts $NewString
+#-&gt; Silicon_substrate      
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Append text to a string with the <tt>append</tt> function:<br />
+
+<!-- grep startExpr="###*3.8.e*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set Text &quot;$NewString extends from &quot;
+append Text &quot;X= $X0 to $X1 &quot;
+append Text &quot;and from &quot;
+append Text &quot;Y= $Y0 to $Y1.&quot;
+puts $Text
+#-&gt; Silicon_substrate extends from X= 0.0 to 1.0 and from Y= -0.5 to 0.5.
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Compare strings (lexicography) with <tt>string compare</tt>:<br />
+
+<!-- grep startExpr="###*3.8.f*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set NAME1 &quot;Eva&quot;
+set NAME2 &quot;Adam&quot;
+if { [string compare $NAME1 $NAME2] == 0 } {
+   puts &quot;Both names are the same&quot;
+} elseif { [string compare $NAME1 $NAME2] &lt; 0 } {
+    puts &quot;$NAME1 comes before $NAME2&quot;
+}  elseif { [string compare $NAME1 $NAME2] &gt; 0 } {
+    puts &quot;$NAME2 comes before $NAME1&quot;
+}
+#-&gt; Adam comes before Eva     
+</pre>
+<!-- grep end -->
+</li>
+ 
+<li>Extract subpatterns with <tt>string match</tt>:<br />
+
+<!-- grep startExpr="###*3.8.g*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set DEV &quot;HV NMOStransistor&quot;
+if { [string match &quot;*NMOS*&quot; $DEV] } { 
+    puts &quot;This device is an NMOS&quot;
+} else {
+    puts &quot;This device is NOT an NMOS&quot;
+}
+#-&gt; This device is an NMOS    
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Substitute a pattern in a string with <tt>regsub</tt>:<br />
+
+<!-- grep startExpr="###*3.8.h*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set OLDString &quot;HV NMOStransistor&quot;
+set OLDPattern &quot;NMOS&quot;
+set NEWPattern &quot;PFET&quot;
+
+set NEWString [regsub $OLDPattern $OLDString $NEWPattern] 
+
+puts &quot;NEW String: $NEWString&quot;
+#-&gt; NEW String: HV PFETtransistor
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Convert a string to a list:<br />
+Tcl allows you to reinterpret a string as a list as long as the 
+entries are separated by whitespace:<br />
+
+<!-- grep startExpr="###*3.8.i*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set String &quot;1 2 3 4&quot;
+set SUM 0
+foreach Number $String {
+ set SUM [expr $SUM+$Number]
+}
+puts $SUM
+#-&gt; 10     
+</pre>
+<!-- grep end -->
+
+<p>Use the <tt>split</tt> command if the entries are separated by a 
+different symbol, such as a comma-separated value (CSV):</p>
+
+<!-- grep startExpr="###*3.8.j*" startOffset=1 endExpr="###*" endOffset=-2 file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" -->
+<pre>
+set String &quot;1,2,3,4&quot;
+set List [split $String &quot;,&quot;]
+
+set SUM 0
+foreach Number $List {
+ set SUM [expr $SUM+$Number]
+}
+puts $SUM
+#-&gt; 10     
+
+</pre>
+<!-- grep end -->
+</li>
+</ul>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>3.9 Assignment</h1>
+
+<p>The CSV file <tt>vtrolloff.txt</tt> included in the <tt>tcl_basics</tt> 
+project contains a set of experimental results. Each line has the entries 
+gate length in nm (Lg), drain bias in V (Vd), threshold voltage in V (Vti), 
+as well as some other values.</p>
+
+<p>Click to view the CSV file 
+<a href="../../Applications_Library/GettingStarted/tcl/tcl_basics/vtrolloff.txt">
+vtrolloff.txt</a>.</p>
+
+<p>For each gate length, the threshold voltage is given for the linear regime 
+(VtLin, Vd&nbsp;=&nbsp;0.05&nbsp;V) and for the saturation regime 
+(VtSat, Vd = 1.25 V). The experiments are not sorted with respect to the 
+gate length.</p>
+
+<p>Write a Tcl script that reads the CSV file and computes, for each 
+gate length, the drain-induced barrier lowering (DIBL) voltage 
+(DIBL = VtLin &ndash; VtSat).</p>
+
+<p>Click to view a solution in the primary file 
+<a href="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd">
+gtclsh_tcl.cmd</a>. Search for <tt>###&nbsp;3.9</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

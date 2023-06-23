@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Mesh 8. Tools Section</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_07.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Mesh<br />8. Tools Section</h1>
+
+<p>
+ <a href="#1">8.1 Introducing the Tools Section</a><br />
+ <a href="#2">8.2 Using the Tools Section</a><br />
+ <a href="#3">8.3 Transformation</a><br />
+ <a href="#4">8.4 Extrude</a><br />
+ <a href="#5">8.5 Cut</a><br />
+ <a href="#6">8.6 Reflection</a><br />
+ <a href="#7">8.7 Mesh2bnd</a><br />
+ <a href="#8">8.8 Slice</a><br />
+ <a href="#9">8.9 Handling Interface Regions</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the Tools section of the command file of Sentaurus Mesh.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>8.1 Introducing the Tools Section</h1>
+
+<p>Sentaurus Mesh can perform certain geometric operations on a device 
+boundary or mesh, which can help you to analyze a mesh, to increase 
+flexibility in constructing device structures, and to improve device 
+simulator performance.</p>
+
+<p>The <tt>Tools</tt> section of the command file is where you specify 
+the instructions to execute geometric operations on either a boundary file
+ or a mesh file. The operations are executed sequentially in the order of 
+their placement in the <tt>Tools</tt> section. Therefore, the output of one 
+operation becomes the input for the next operation.</p>
+
+<p>Some of the available operations of the <tt>Tools</tt> section are:</p>
+
+<pre>
+Tools {
+  Set Transformation {...}
+  Apply Transformation
+  Slice {...}
+  Cut {...}
+  Reflection {...}
+  Sweepmesh {...}
+  Mesh2bnd
+  Mesh2Hybrid
+  addInterfaceRegions | removeInterfaceRegions
+  ...
+}
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>Set Transformation</tt> sets a transformation matrix to a mesh 
+or a boundary (translation, rotation, scaling). To apply a transformation, 
+it must be followed by the <tt>Apply Transformation</tt> statement.</li>
+
+<li><tt>Slice</tt> generates a 2D slice on a 3D mesh or a boundary. The 
+2D slice is defined by specifying a normal slice plane and its location.</li>
+
+<li><tt>Cut</tt> is used to cut a part of a 3D mesh. The side of the 
+cut mesh is defined as the one to which the normal points. It 
+is limited to 3D meshes only.</li>
+
+<li><tt>Reflection</tt> mirrors a mesh at a specified location and appends 
+it to the original mesh. It is limited to meshes only.</li>
+
+<li><tt>Extrude</tt> creates a 3D mesh from a 2D mesh by extruding the 
+mesh in the third dimension.</li>
+
+<li>The option <tt>Mesh2bnd</tt> activates the utility that extracts 
+a boundary from a mesh as well as sets the geometric accuracy and 
+short edge to remove unwanted small features of the geometry.</li> 
+
+<li>The option <tt>Mesh2Hybrid</tt> activates the utility that converts 
+a standard tetrahedra-element mesh to a mixed-element mesh, containing 
+hexahedra, prisms, pyramids, and tetrahedra. The idea of this conversion 
+is to minimize the number of mesh elements as much as possible to make 
+the subsequent device simulations run faster.</li>
+
+<li>The option <tt>addInterfaceRegions</tt> or <tt>removeInterfaceRegions</tt>
+adds or removes regions that represent interfaces.</li>
+</ul>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>8.2 Using the Tools Section</h1>
+
+<p>To run Sentaurus Mesh in Tools mode, you must create a command file with 
+an <tt>IOControls</tt> section and a <tt>Tools</tt> section that has one or 
+more options. The <tt>IOControls</tt> section must have the option 
+<tt>EnableTools</tt> or <tt>EnableSections</tt>, as well as the 
+<tt>inputFile</tt> and <tt>outputFile</tt> specifications.</p>
+
+<p>All the Sentaurus Mesh command files discussed in this section 
+are in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/Tools</tt>. To work with 
+the project, start Sentaurus Workbench and copy the project 
+<tt>Tools</tt> to a local directory within the Sentaurus Workbench 
+working directory.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>8.3 Transformation</h1>
+
+<p>It is common that the boundary or the meshed structure needs to be changed 
+by applying a transformation. This can be helpful to translate the structure 
+or to rotate the structure. The following subsections describe the 
+transformation operations.</p>
+
+<!--=========================-->
+<a name="3_translate"></a>
+<h2>8.3.1 Translation</h2>
+
+<p>The structure is translated along a vector in any direction when applying 
+<tt>translation</tt> in the <tt>Set Transformation</tt> section. This can be 
+performed, as in the example here, where a translation vector of (0.1 0 0) is 
+used and the transformation is applied by the <tt>Apply Transformation</tt> 
+statement.</p> 
+
+<p>The same file as <a href="smesh_04.html#Reflected">previously shown</a> 
+is used here.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Tools/translate_msh.cmd">
+translate_msh.cmd</a>.</p>
+
+<p><a href="images/sm_ts_translate.png">
+<img src="images/sm_ts_translate.png" width="570" alt="Translated structure" /></a></p>
+
+<p class="caption">Figure 1. (Left) Original and (right) translated 
+structure. (Click image for full-size view.)</p>
+
+<p>The <tt>IOControls</tt> section specifies the names of the input (before 
+transformation) and the output (after transformation) TDR files. In the 
+Sentaurus Workbench environment, you can use the constructs <tt>@tdr/i@</tt> 
+and <tt>@tdr/o@</tt> to select the output of the previous node for input and 
+the current node for the output, respectively.</p>
+
+<!--=========================-->
+<a name="3_rotate"></a>
+<h2>8.3.2 Rotation</h2>
+
+<p>You can rotate a structure around any axis when applying <tt>rotation</tt> 
+in the <tt>Set Transformation</tt> section. A sequence of rotations can be 
+applied. This can be performed, as in the example here, with a rotation of 
+180&deg; around the z-axis, followed by translation along the y-direction. 
+To activate the transformation, use the <tt>Apply Transformation</tt> statement.</p> 
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Tools/rotate_msh.cmd">
+rotate_msh.cmd</a>.</p>
+
+<p>In addition, a matrix transformation can be applied. Refer to the 
+<cite>Sentaurus&trade; Mesh User Guide</cite>.</p>
+
+<p><a href="images/sm_ts_rotate.png">
+<img src="images/sm_ts_rotate.png" width="400" alt="Rotated structure" /></a></p>
+
+<p class="caption">Figure 2. (Left) Original and (right) rotated 
+structure. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>8.4 Extrude</h1>
+
+<p>Sentaurus Mesh can create a 3D meshed structure from a 2D grid by 
+extruding the mesh along a normal direction. The number of mesh divisions 
+and the extrusion length can be specified. However, it is most likely that 
+the created mesh will be unsuitable for device simulation.</p>
+
+<p>The example here demonstrates how to perform an extrusion.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Tools/extrude_msh.cmd">
+extrude_msh.cmd</a>.</p>
+
+<p><img src="images/sm_ts_sweep.png" width="490" height="397" alt="Extruded structure" /></p>
+
+<p class="caption">Figure 3. (Left) Original structure and (right) extruded structure.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>8.5 Cut</h1>
+
+<p>Sentaurus Mesh can cut part of a 3D structure using the cut 
+operation. The removal can be performed along any arbitrary plane, 
+which is defined by its normal and a location. The part on the 
+right side of the plane is removed. </p>
+
+<p>The file <tt>nmos_full_msh.tdr</tt> is used and is first extruded as shown in 
+<a href="#4">Section 8.4 Extrude</a>. This is followed by the cut operation.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Tools/cut_msh.cmd">
+cut_msh.cmd</a>.</p>
+
+<p><a href="images/sm_ts_cut.png"><img src="images/sm_ts_cut.png" 
+width="450" alt="Cut structure" /></a></p>
+
+<p class="caption">Figure 4. (Left) Original and 
+(right) cut structure. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>8.6 Reflection</h1>
+
+<p>Sentaurus Mesh can reflect 2D or 3D meshed structures. This is 
+performed by the reflection operation. One or several mirroring operations 
+can be combined, which reflect the structure at any boundary edge. In 
+addition, the naming of the reflected isolated parts can be updated with 
+the <tt>map</tt> statement. This operation is equivalent to the mirroring 
+operation of Sentaurus Data Explorer described in 
+<a href="smesh_04.html#submesh">Section 4.4.2 Submeshes</a>.</p> 
+
+<p>The file <tt>nmos_half_msh.tdr</tt> is the same as previously shown in 
+<a href="smesh_04.html#submesh">Section 4.4.2 Submeshes</a>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Tools/reflect_msh.cmd">
+reflect_msh.cmd</a>.</p>
+
+<p><a href="images/sm_ts_reflect.png"><img src="images/sm_ts_reflect.png" width="450" 
+alt="Mirrored structure" /></a></p>
+
+<p class="caption">Figure 5. (Left) Original and 
+(right) mirrored structure. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>8.7 Mesh2bnd</h1>
+
+<p>Sentaurus Mesh can extract a boundary from a TDR file and smooth it out using 
+the <tt>Mesh2bnd</tt> operation. When choosing the output file name in the 
+<tt>IOControls</tt> section, you should use the Sentaurus Workbench construct 
+<tt>@tdrboundary/o@</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Tools/msh2bnd_msh.cmd">
+msh2bnd_msh.cmd</a>.</p>
+
+<p><a href="images/sm_ts_mesh2bnd.png"><img src="images/sm_ts_mesh2bnd.png" 
+width="450" alt="Extracted boundary" /></a></p>
+
+<p class="caption">Figure 6. (Left) Original mesh and 
+(right) extracted boundary. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>8.8 Slice</h1>
+
+<p>In <a href="smesh_04.html#5">Section 4.5 Three-Dimensional Doping Profile Construction</a>, 
+the slice operation was used to extract a 2D slice from a 3D structure. 
+This feature is helpful when comparing a 2D simulation to a 3D simulation. 
+However, it is imperative to check the mesh quality and whether it 
+fulfills the Delaunay criteria.</p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>8.9 Handling Interface Regions</h1>
+
+<p>By default, Sentaurus Mesh saves interfaces between materials as separate entities. 
+This allows you to save data on these interfaces, which is important for certain 
+simulation tasks (for example, an interface trap save or load with Sentaurus Device). 
+Saving interfaces can be switched off by specifying:</p>
+
+<pre>
+IOControls {
+   saveInterfaceRegions = false
+}
+</pre>
+
+<p>To add interface regions to existing TDR files, you must specify the 
+<tt>addInterfaceRegions</tt> option in the <tt>Tools</tt> section.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Tools/addinterface_msh.cmd">
+addinterface_msh.cmd</a>.</p>
+
+<p>To remove existing interface regions, use the <tt>removeInterfaceRegions</tt> option.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Tools/removeinterface_msh.cmd">
+removeinterface_msh.cmd</a>.</p>
+
+<p>Figure 7 shows the use of the <tt>addInterfaceRegions</tt> option on the same 
+device structure as in the previous example. The newly introduced material interface 
+objects (highlighted in green) can be visualized in Sentaurus Visual.</p>
+
+<p>Refer to the <cite>Sentaurus&trade; Mesh User Guide</cite> for details.</p>
+
+<p><img src="images/sm_ts_ai.png" width="440" height="216" 
+alt="Structure after addInterfaceRegions option is applied" /></p>
+
+<p class="caption">Figure 7. (Left) Original structure and (right) structure 
+after using the addInterfaceRegions option.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_07.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

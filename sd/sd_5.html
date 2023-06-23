@@ -1,0 +1,1326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true; M.$mathQ = false</script>   
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 5. Unified Interface for Optical Generation Calculation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />5. Unified Interface for Optical Generation Calculation</h1>
+
+<p>
+ <a href="#1">5.1 Integrating Optics Into Sentaurus Device</a><br />
+ <a href="#2">5.2 Calculating the Wavelength-Dependent Reflection Using TMM</a><br />
+ <a href="#3">5.3 Calculating the Illuminated I&ndash;V Curve of a Simple Solar Cell Using TMM</a><br />
+ <a href="#4">5.4 Calculating the Angular-Dependent Reflection Using Raytracing</a><br />
+ <a href="#5">5.5 Calculating the White Light Photocurrent of a 3D Photodiode Using Raytracing</a><br />
+ <a href="#6">5.6 Calculating Quantum Efficiency Versus Frequency Using Optical AC Analysis</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To learn how optics are integrated into Sentaurus Device.</li> 
+ <li>To understand how absorbed photons are converted to charged carriers.</li>
+ <li>To demonstrate wavelength ramps and how to use a spectrum for illumination.</li>
+ <li>To demonstrate how to perform optical calculations both standalone and coupled to electronics.</li>
+ <li>To demonstrate how to perform optical AC analysis.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Integrating Optics Into Sentaurus Device</h1>
+
+<p>Sentaurus Device allows you to calculate the optical charge generation using 
+different solvers, such as the transfer matrix method (TMM), raytracing, <tt>OptBeam</tt> 
+(Beer's law), and the beam propagation method (BPM), or to load external 
+generation profiles, for example, calculated by Sentaurus Device Electromagnetic 
+Wave Solver.</p>
+
+<p>Regardless of the chosen optical solver, the Sentaurus Device setup for optics 
+and the procedure for coupling optical generation to electronics are identical 
+(see <a href="#fig1">Figure&nbsp;1</a>).</p>
+
+<a name="fig1"></a>
+<p><a href="images/sd_opto_sim_flow.png"><img src="images/sd_opto_sim_flow.png" width="570" 
+alt="Flow of optical and electrical device simulation" /></a></p>
+
+<p class="caption">Figure 1. Simulation flow of optical device simulation.
+(Click image for full-size view.)</p>
+
+<p>For example, for a region in the simulation domain, you can specify the refractive
+index (n) and the extinction coefficient (k) using different complex refractive
+index models, such as constant, wavelength dependent, temperature dependent,
+carrier dependent, or user defined. Based on the n&amp;k values, the selected
+optical solver calculates the absorbed photon density, which at each vertex
+gives the number of absorbed photons per volume and seconds.</p>
+
+<p>After choosing a suitable quantum yield model, you define how the absorbed
+photon density is converted to the optical generation rate. The complexity of the 
+quantum yield model ranges from a simplistic model (<tt>unity</tt>) that assumes 
+that each absorbed photon generates one electron&ndash;hole pair, to complex models
+(<tt>effectiveAbsorption</tt>) that account for free carrier absorption. A
+physical model interface is available to specify even more complicated
+user-defined models.</p>
+
+<p>Then, the optical generation is added to the continuity equation. Therefore, all
+other equations can be solved self-consistently with that optical generation.
+Depending on the chosen complex refractive index model, n&amp;k values might be
+dependent on temperature or carrier density. In that case, the above-described
+steps are repeated until convergence is achieved. However, in most cases, for
+passive devices, the influence of temperature and carrier density on n&amp;k
+values is weak, such that the cycle is evaluated only once.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Calculating the Wavelength-Dependent Reflection Using TMM</h1>
+
+<p>This section explains the fundamental features of the unified interface for 
+optical generation computation. As an example, the wavelength-dependent
+reflection of a planar silicon substrate, coated with a single silicon nitride
+(SiN) layer, is calculated using the transfer matrix method (TMM). The calculation 
+is purely optical; no electrical equations are solved. Therefore, the optical 
+generation is not of interest here.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in
+the directory
+<tt>Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection</tt>.</p> 
+
+<p>All settings for optics are defined in an <tt>Optics(...)</tt> section inside
+the global <tt>Physics</tt> section. The settings inside the <tt>Optics</tt>
+section, in turn, can be categorized as common to all solvers such as 
+<tt>ComplexRefractiveIndex(...)</tt>, <tt>OpticalGeneration(...)</tt>, and
+<tt>Excitation(...)</tt> or as a solver-specific section such as 
+<tt>OpticalSolver(...)</tt>.</p>
+
+<p>In the following sections, you will work through all the specific settings 
+of the example.</p>
+
+<!--=========================-->
+<h2>5.2.1 ComplexRefractiveIndex Section</h2>
+
+<p>The appropriate model for the n&amp;k values must be specified in
+the Sentaurus Device command file.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>In this case, for SiN, you want to use a constant refractive index of n=2.74 with
+no absorption (k=0) and, for silicon, wavelength-dependent tabulated values for n 
+(real part of the refractive index) and k (imaginary part of the refractive index) 
+will be used, which are activated in the command file with the following line:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice_des.cmd" startExpr="*ComplexRefractiveIndex*wavelength*" lines=1 -->
+<pre>
+    ComplexRefractiveIndex (WavelengthDep(Real Imag))
+</pre>
+<!-- grep end -->
+
+<p>The values themselves are defined in the parameter file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice.par">sdevice.par</a>
+of Sentaurus Device in the corresponding <tt>ComplexRefractiveIndex</tt> sections.</p>
+
+<p>The keyword <tt>Formula</tt> switches the source from where the wavelength-dependent
+values are read:</p>
+ 
+<ul>
+<li><tt>Formula=0</tt> uses a second-order polynomial for the wavelength dependency 
+specified by the coefficients <tt>*_lambda</tt>.</li>
+<li><tt>Formula=1</tt> uses the <tt>NumericalTable(...)</tt> values.</li>
+<li><tt>Formula=2</tt> reads in the values from an external file (specified by 
+<tt>NumericalTable=...</tt>).</li>
+<li><tt>Formula=3</tt> reads in the values from the <tt>TableODB</tt> section. 
+This option is used for backward compatibility reasons.</li>
+</ul>
+
+<p>The constant refractive index for SiN uses <tt>Formula=0</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice.par" startExpr="*Nitride*" endExpr="}*" excludeLines="*\**" format="excludeEmpty" -->
+<pre>
+Material = &quot;Nitride&quot; {
+  ComplexRefractiveIndex {
+    n_0	= 2.74	# [1]
+    k_0	= 0.0	# [1]
+    Formula = 0
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>However, for silicon, tabulated values are used:</p>
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice.par" startExpr="*Silicon*" endExpr="*NumericalTable*" endOccurrence=3 endOffset=3 excludeLines="*\**" format="excludeEmpty" footer="      ...\n    )\n  }\n}" -->
+<pre>
+Material = &quot;Silicon&quot; { 
+  ComplexRefractiveIndex {
+    n_0	= 3.45	# [1]
+    k_0	= 0.0	# [1]
+    Cn_temp	= 2.0000e-04	# [K^-1]
+    Cn_carr	= 1	# [1]
+    Ck_carr	= 0.0000e+00 ,	0.0000e+00	# [cm^2]
+    Gamma_k_carr	= 1 ,	1	# [1]
+    Cn_gain	= 0.0000e+00	# [1]
+    Npar	= 1.0000e+18	# [cm^-3]
+    Formula = 1
+    NumericalTable ( 
+      # wavelength [um]  n [1] k [1];
+      0.1908	0.84	2.73;
+      0.1984	0.968	2.89;
+      ...
+    )
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>It is important to note that only these coefficients are used, for which a
+model has been activated in the command file. For example, although the temperature
+dependency coefficient <tt>Cn_temp</tt> is specified, it is not used here because 
+<tt>TemperatureDep</tt> is omitted in the <tt>ComplexRefractiveIndex</tt> section of the
+command file.</p>
+
+<!--=========================-->
+<h2>5.2.2 OpticalGeneration Section</h2>
+
+<p>The <tt>OpticalGeneration</tt> section defines how the optical generation is 
+calculated and from which source the profiles are used. The available options are:</p>
+
+<ul>
+<li><tt>SetConstant</tt> uses a constant optical generation over the entire region. 
+It also can be used in a region or material <tt>Physics</tt> section to set
+a constant optical generation for a particular region only.</li>
+<li><tt>ReadFromFile</tt> reads optical generation from an external file.</li>
+<li><tt>ComputeFromSpectrum</tt> uses an illumination spectrum where, typically, 
+the optical generation is calculated for a list of wavelengths with a particular
+intensity, and the profiles are summed to a white light generation.</li>
+<li><tt>ComputeFromMonochromaticSource</tt> uses a monochromatic light source.</li>
+</ul>
+
+<p>The last option is the appropriate source in this case, since you want to sweep through 
+a monochromatic light source to extract the reflection for each wavelength:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice_des.cmd" startExpr="*ComputeFromMono*" lines=1 -->
+<pre>
+    OpticalGeneration ( ComputeFromMonochromaticSource ) 
+</pre>
+<!-- grep end -->
+
+<!--=========================-->
+<h2>5.2.3 Excitation Section</h2>
+
+<p>In the <tt>Excitation</tt> section, everything concerning illumination including 
+light direction, polarization, wavelength, and illumination window is set:</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice_des.cmd" startExpr="*Excitation*" endExpr="*end excitation*" -->
+<pre>
+    Excitation (
+      Wavelength = @wstart@  *[um]
+      theta = 0 * angle of incidence from +y to +x axis
+                * 0 points in +y direction, 90 in +x direction. 
+      Intensity = 0.1 *[W/cm2]
+      Polarization = 0.5 * TE, TM or a number P 0..1 where P = I_TE/I_tot  
+      Window(
+        Origin=(0,-@dSiN@)
+        Line(x1=0 x2=1)
+      )
+    ) * end excitation
+</pre>
+<!-- grep end -->
+
+<p>The wavelength is set to the Sentaurus Workbench parameter <tt>@wstart@</tt> with 
+a value of 0.3&nbsp;&mu;m and is used as the start wavelength here. Ramping the
+wavelength can be performed in the <tt>Solve</tt> section later.</p>
+
+<p>The excitation direction is defined with respect to the global coordinate
+system (GCS) given by the grid. It is set with <tt>theta=0</tt> to point into
+the +y-direction (see <a href="#fig6">Figure&nbsp;6</a>, <em>left</em>). The second 
+angle for setting the excitation direction (<tt>phi</tt>) is not used in two dimensions. 
+The illumination intensity is arbitrary here as the reflection is a relative value.
+The polarization defines the part of the TE polarized light and is set to 0.5,
+which means that both TE and TM polarization are present in equal parts.</p>
+
+<p>An illumination window defines the area where light falls onto the device. It
+is defined with the <tt>Window(...)</tt> command. For convenience, the plane of the 
+illumination window is specified in a local coordinate system (LCS), which you can 
+shift and rotate with respect to the GCS (see <a href="#fig2">Figure&nbsp;2</a>). 
+Actually, the LCS is a plane (x',&nbsp;y') in three dimensions. In two dimensions, 
+the LCS is a line (x').</p>
+
+<a name="fig2"></a>
+<p><a href="images/sd_opto_lcs_2d3d.png"><img src="images/sd_opto_lcs_2d3d.png" 
+width="570" alt="LCS in respect to GCS in two and three dimensions" /></a></p>
+
+<p class="caption">Figure 2. Definition of the LCS with respect to the GCS in (left) 
+two dimensions and (right) three dimensions. (Click image for full-size view.)</p>
+
+<p>The offset of the LCS origin with respect to the GCS is controlled with
+the keyword <tt>Origin=(&lt;x&gt;,&nbsp;&lt;y&gt;)</tt>. By default,
+<tt>Origin=(0,&nbsp;0)</tt>, that is, the LCS is equal to the GCS.</p>
+
+<p>In this example, the SiN layer of the structure starts at y=<tt>-@dSiN@</tt>,
+where the Sentaurus Workbench parameter <tt>@dSiN@</tt> defines the SiN layer 
+thickness and has a value of 0.075. Since light will fall on top of the SiN layer, 
+the origin of the LCS must be shifted up by <tt>@dSiN@</tt>. This is achieved by 
+setting <tt>Origin=(0,-@dSiN@)</tt>.</p>
+
+<p>The <tt>Line</tt> command defines the start point and the endpoint of the
+illumination window in the LCS. Here, the entire width of the structure from
+x1=0 to x2=1 is illuminated (see <a href="#fig3">Figure&nbsp;3</a>).</p>
+
+<a name="fig3"></a>
+<p><a href="images/sd_opto_illu_win_tmm.png"><img src="images/sd_opto_illu_win_tmm.png" 
+width="570" alt="Structure with illumination window" /></a></p>
+
+<p class="caption">Figure 3. Defining the illumination window in a 2D structure. 
+(Click image for full-size view.)</p>
+
+<p class="note">The excitation direction is defined with respect to the GCS and is 
+independent of the illumination window orientation.</p> 
+
+<!--=========================-->
+<a name="24"></a>
+<h2>5.2.4 OpticalSolver Section</h2>
+
+<p>The solver and solver-specific settings are defined in the <tt>OpticalSolver</tt> 
+section. Only one solver is allowed.</p>
+
+<p>In this example, the TMM solver is used:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice_des.cmd" startExpr="*TMM*(*" endExpr="*end tmm*" -->
+<pre>
+      TMM (
+        LayerStackExtraction(
+          Medium(
+            Location = Bottom
+            Material = &quot;Silicon&quot;
+          )
+        ) * end LayerStack
+      ) * end TMM
+</pre>
+<!-- grep end -->
+
+<p>As the TMM solver is a 1D solver, you must instruct Sentaurus Device from where it must extract 
+the 1D layer stack. This is done using the <tt>LayerStackExtraction</tt> command, which by 
+default creates an extraction line in the center of the illumination window and perpendicular 
+to the illumination window, in the same direction as light falls through the illumination 
+window. In this example, the layer stack extraction starts at (0.5,<tt>-@dSiN@</tt>) and points
+downwards in the +y-direction.</p>
+
+<p><strong>HINT</strong> When setting up the simulation, always check the illumination window 
+settings in the log file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/n10_des.out" startExpr="*illuminationwindow(*" endExpr="*Direction of*" -->
+<pre>
+IlluminationWindow(&quot;unnamed_0&quot;):
+Origin: (0.0000e+00, -7.5000e-02, 0.0000e+00)
+XDirection: (1, 0.0000e+00, 0.0000e+00)
+LayerStackExtraction(&quot;unnamed_0&quot;):
+Position of starting point: (0.5, -7.5000e-02, 0.0000e+00)
+Direction of extraction line: (-0.0000e+00, 1, 0.0000e+00)
+</pre>
+<!-- grep end -->
+
+<p>as well as the extracted layer stack itself:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/n10_des.out" startExpr="*MultiLayer*" endExpr="* 3 *" -->
+<pre>
+Multilayer Structure:
+---------------------
+Layer | Thickness [um] |      n |         k | alpha [cm^-1] |  mean abs [1]
+    0                0   1.0000   0.000e+00       0.000e+00       0.000e+00
+    1            0.075   2.1542   0.000e+00       0.000e+00       0.000e+00
+    2                2   5.0042   4.161e+00       1.743e+06       4.137e-01
+    3                0   5.0042   4.161e+00       1.743e+06       0.000e+00
+</pre>
+<!-- grep end -->
+
+<p>Later in this example, you will want to neglect any reflection from the rear
+side, assuming a very thick (semi-infinite) silicon substrate. This can be
+achieved with the <tt>Medium</tt> command, by explicitly specifying the
+semi-infinite region at the bottom of the TMM stack as silicon.</p>
+
+<!--=========================-->
+<h2>5.2.5 Solve Section</h2>
+
+<p>In this example, you want to solve only optics without any other electrical
+equation. This is achieved using the keyword <tt>Optics</tt>.</p>
+
+<p>In addition, optics will be solved for several wavelengths. In this case, it 
+should be computed for the wavelength range <tt>@wstart@</tt> to <tt>@wend@</tt>, using 
+<tt>@wsteps@</tt> steps. As any parameter defined in the <tt>Optics</tt> section can be 
+ramped in the <tt>Quasistationary</tt> statement, the following lines will do this:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice_des.cmd" startExpr="*quasistat*" endExpr="}" endOffset=-1 excludeLines="*#*" -->
+<pre>
+  Quasistationary (  
+    DoZero
+    InitialStep = @&lt;1./wsteps&gt;@ MaxStep = @&lt;1./wsteps&gt;@ Minstep = @&lt;1./wsteps&gt;@
+    Goal { modelParameter=&quot;Wavelength&quot; value=@wend@ }
+  ) {
+    Optics
+  }
+</pre>
+<!-- grep end -->
+
+<p>The step size is fixed by setting <tt>InitialStep</tt>, <tt>MaxStep</tt>, and 
+<tt>MinStep</tt> to <tt>1/@wsteps@</tt>. The start wavelength <tt>@wstart@</tt> is 
+specified in the <tt>Excitation</tt> section, while the end wavelength <tt>@wend@</tt> 
+is specified in the <tt>Goal</tt> statement.</p>
+
+<!--=========================-->
+<h2>5.2.6 Plotting the Results</h2>
+
+<p>Different solvers can output different results. In the case of the TMM solver, the reflection, 
+the transmission, and the total absorption are directly available in the <tt>.plt</tt> file.</p>
+
+<p>To plot against wavelength, the wavelength must be added to the <tt>.plt</tt> 
+file. This is done in the Sentaurus Device command file by adding <tt>Wavelength</tt> to the 
+<tt>CurrentPlot</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/sdevice_des.cmd" startExpr="*Currentplot*" endExpr="}"-->
+<pre>
+CurrentPlot{
+  ModelParameter=&quot;Wavelength&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>With this, the reflection curve can be created easily with the following lines in Sentaurus Visual:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/svisual_vis.tcl" startExpr="*set n*" endExpr="*varR*" format="wrap" -->
+<pre>
+set n @previous@
+set proj &quot;@plot@&quot;
+set varWavelength &quot;Device=,File=CommandFile/Physics,DefaultRegionPhysics,&quot;
+set varWavelength &quot;${varWavelength}ModelParameter=Optics/Excitation/Wavelength&quot;
+set varR &quot;LayerStack(unnamed_0) R_Total&quot;
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/svisual_vis.tcl" startExpr="*load_file*" lines=1 -->
+<pre>
+set ds($n) [load_file_datasets $proj]
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/svisual_vis.tcl" startExpr="*create_curve*" lines=1 -->
+<pre>
+create_curve -name R($n) -dataset $ds($n) -axisX $varWavelength -axisY $varR
+</pre>
+<!-- grep end -->
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/tmm-spectral-reflection/svisual_vis.tcl">
+svisual_vis.tcl</a>.</p>
+
+<p>Finally, clicking the <strong>Run Selected Visualizer Nodes Together</strong>
+toolbar button generates the required reflection versus wavelength plot (compare 
+<a href="../swb/swb_02.html#VisTogether">Section&nbsp;2.7 Visualizing Selected
+Nodes Together</a>). The minimum of the reflection has shifted as the thickness
+of the SiN coating changes (see <a href="#fig4">Figure&nbsp;4</a>).</p>
+
+<a name="fig4"></a>
+<p><a href="images/sd_opto_tmm_refl.png"><img src="images/sd_opto_tmm_refl.png" width="570" 
+alt="Plot of reflection versus wavelength" /></a></p>
+
+<p class="caption">Figure 4. Reflection versus wavelength for two different SiN
+thicknesses using the TMM solver. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>5.3 Calculating the Illuminated I&ndash;V Curve of a Simple Solar Cell Using TMM</h1>
+
+<p>This section discusses combined optical and electrical equations, and addresses 
+spectral illumination. As an example, the I&ndash;V curve of a simple 2D solar cell 
+illuminated with the standard solar spectrum AM1.5g is calculated using the TMM solver. The 
+characteristic I&ndash;V solar cell parameters such as short circuit current, open 
+circuit voltage, and efficiency are extracted in a subsequent Sentaurus Visual script.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv</tt>.</p>
+
+<p>Similarly as in <a href="#2">Section 5.2 Calculating the Wavelength-Dependent Reflection 
+Using TMM</a>, a planar silicon substrate with a single antireflective coating is used. 
+However, in addition, doping is added to form a pn junction and an electrical front-finger 
+grid is applied, which brings some 2D effects into the simulation (see <a href="#fig5">Figure&nbsp;5</a>).</p>
+
+<a name="fig5"></a>
+<p><a href="images/sd_opto_solar_cell_struc.png"><img src="images/sd_opto_solar_cell_struc.png" 
+width="570" alt="Solar cell structure" /></a></p>
+
+<p class="caption">Figure 5. Simple 2D silicon solar cell structure. (Click
+image for full-size view.)</p>
+
+<p>If you compare the <tt>Excitation</tt> section of the Sentaurus Device command file 
+to the previous project <tt>tmm-spectral-reflection</tt>, you will notice that there 
+is no explicit <tt>Origin</tt> keyword to shift the illumination window to the top of 
+the structure:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/sdevice_des.cmd" startExpr="*Excitation*" endExpr="*Line*" footer="    ...))"-->
+<pre>
+    Excitation (
+      fromTop
+      Window ( 
+        * origin is not required, as fromTop automatically shifts the 
+        * illumination window to the top of the structure.
+        # Origin = (0,-0.075)  
+        Line(x1=!(puts -nonewline $wfront)! x2=!(puts -nonewline $wtot)!)
+    ...))
+</pre>
+<!-- grep end -->
+
+<p>This is due to the keyword <tt>fromTop</tt>, which automatically determines the top 
+of the structure and sets the origin of the illumination window accordingly. It also 
+takes into account the coordinate system orientation of the grid and its dimension, and 
+sets the orientation of the illumination window as well as the excitation angles 
+<tt>theta</tt> and <tt>phi</tt> accordingly. The keyword <tt>fromTop</tt> also assumes 
+that the light is incident, perpendicular from the top, and covers the entire device.</p>
+
+<p>You can customize the excitation further, by specifying additional settings. Here, 
+for example, the <tt>Line</tt> command reduces the illumination window to cover only 
+the silicon region without metallization. You can double-check the settings in the 
+log file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/n2_des.out" startExpr="*Optics Excitation*" endExpr="*Line*" -->
+<pre>
+Optics Excitation: fromTop option activated
+  DFISE coordinate system
+  Theta = 0.0000e+00 (auto set)
+  PolarizationAngle = 0.0000e+00 (auto set)
+Optics Excitation: fromTop option activated for Window unnamed_0
+  DFISE coordinate system
+  Origin = ( 0.0000e+00 -5.0001e+00 )  (auto set)
+  XDirection = ( 1 0.0000e+00 )  (auto set)
+  Line: X1 = (10)  (set by user),  X2 = (3.0000e+02)  (set by user)
+</pre>
+<!-- grep end -->
+
+<p>If you want to illuminate your structure from the bottom, you can use <tt>fromBottom</tt>.</p>
+
+<!--=================================-->
+<h2>5.3.1 Interpolating the 1D Absorbed Photon Density Profile to the Device Grid</h2>
+
+<p>The TMM solver calculates the absorbed photon density (APD) on a 1D grid, defined by the 
+<tt>LayerStackExtraction</tt> statement (see <a href="#24">Section&nbsp;5.2.4 OpticalSolver Section</a>). 
+However, the electrical simulation usually is a 2D or 3D domain. Therefore, some interpolation 
+from the 1D optical grid to the higher dimensional electrical grid is necessary. In the following, 
+you will focus on the TMM solver using a 2D electrical grid; however, the considerations are also valid 
+for 3D electrical grids.</p>
+
+<p>When the TMM solver is used for very thick layers. such as the substrate region or buffer layer, for a 
+wavelength where the device becomes transparent and where, in addition, some reflection occurs 
+underneath, standing wave patterns can form. That is, the APD oscillates with a period in the 
+submicron range (wavelength/(2n)). This oscillation typically cannot be resolved by the electrical 
+grid. Consequently, during the interpolation, when Sentaurus Device looks up the APD value on the fine 
+1D TMM grid, a slight change in the vertex position on the coarse mesh can move from a maximum to a 
+minimum on the fine grid, resulting in very large interpolation errors.</p>
+
+<p>To circumvent this issue, Sentaurus Device can control how the intensity &ndash; the APD is 
+proportional to the intensity &ndash; in the TMM solver is calculated, using the keyword <tt>IntensityPattern</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/sdevice_des.cmd" startExpr="*opticalsolver*" endExpr="*end*opticalsolver*" -->
+<pre>
+    OpticalSolver (
+      TMM (
+        LayerStackExtraction ()
+        IntensityPattern = Envelope
+      ) *end TMM
+    )	* end OpticalSolver
+</pre>
+<!-- grep end -->
+
+<p>By default <tt>IntensityPattern=StandingWave</tt>, the forward- and backward-propagating 
+optical fields are summed, and then the result is squared to obtain the intensity. However, it can 
+be shown that, for thick layers, it is accurate to first square the forward- and backward-propagating 
+fields and then sum them (<tt>IntensityPattern=Envelope</tt>).The latter approach results in a very 
+smooth intensity profile and, therefore, a smooth APD, which is more insensitive to coarse mesh 
+interpolation.</p>
+
+<p class="note">Use <tt>Envelope</tt> whenever you cannot resolve the standing wave pattern 
+and your layer thickness is at least 3 times the wavelength.</p>
+
+<p>A second interpolation issue can arise due to lateral discretization of the electrical grid. 
+This issue concerns not only the TMM solver but also any 1D optical solvers, such as <tt>OptBeam</tt> 
+and <tt>fromFile</tt> using 1D profiles.</p>
+
+<p>By default, Sentaurus Device simply checks whether or not each vertex lies inside the projected 
+illumination window. If a vertex is inside, it is assigned the full APD value; otherwise, 0. 
+Consequently, the accuracy of the photogenerated current crucially depends on the lateral 
+alignment of mesh vertices with respect to the illumination window.</p>
+
+<p>You can improve the accuracy of the integrated APD due to misalignment of the illumination 
+window and mesh vertices using the <tt>WeightedAPDIntegration</tt> option, which can be specified 
+in the <tt>Excitation(Window(...))</tt> section.</p>
+
+<p>Activating this feature, Sentaurus Device calculates a target-integrated APD value by 
+integrating the 1D APD profile on the very fine TMM grid and multiplying it by the illumination 
+window area. In a second step, fringe vertices of the 2D device grid, that is, vertices that have 
+neighbor vertices outside the projected illumination window, are scaled such that the integral 
+of the APD on the 2D device grid corresponds to the target value.</p>
+
+<p>For the given example, the default interpolation scheme results in a deviation of the 
+photogeneration current of 0.07 mA/cm<sup>2</sup>. For more complicated structures or for moving 
+windows, the deviation might be much larger. For this reason, it is recommended to use the 
+<tt>WeightedAPDIntegration</tt> option for any 1D optical solver.</p>
+
+<!--=================================-->
+<h2>5.3.2 Computing Optical Generation From Spectrum</h2>
+
+<p>In contrast to the previous examples, now you will illuminate the device with 
+a complete spectrum. The spectrum is defined in a separate file and is set in the 
+<tt>File</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/sdevice_des.cmd" startExpr="*Illumination*" Lines=1 header="File {" footer="}"-->
+<pre>
+File {
+  IlluminationSpectrum = &quot;@pwd@/am15g.txt&quot;
+}
+</pre>
+<!-- grep end -->
+
+
+<p>The spectrum file usually consists of a list of wavelength and intensity pairs:</p>
+ 
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/am15g.txt" startLine=1 Lines=8 footer="..." -->
+<pre>
+# AM 1.5 global solar spectrum according to ASTM IEC904-3
+# intensity = 0.1 W/cm2
+# integration has to be performed according to Sum(y_i)
+wavelength [um] intensity [W*cm^-2]
++3.0750000e-01 +1.2986361e-05 
++3.1250000e-01 +3.7582516e-05 
++3.1750000e-01 +7.2282062e-05 
++3.2250000e-01 +1.0708551e-04 
+...
+</pre>
+<!-- grep end -->
+
+<p class="note">In Sentaurus Device, a spectrum file has a much more general meaning than 
+<em>a list of wavelengths and intensities</em>. It basically defines an intensity depending on 
+one or several other parameters. Therefore, it can consist of an arbitrary number of columns 
+plus one intensity column. Examples would be a wavelength-dependent and angular-dependent spectrum, 
+or an angular intensity distribution in three dimensions depending on two angles.</p>
+
+<p>The units of the entries can be changed in the header line so that you can easily read in
+data in other units without having to rescale the data. For example, to read in wavelengths 
+in nanometers and intensity in mW/m<sup>2</sup>, use:</p>
+
+<pre>
+wavelength [nm] intensity [mW*m^-2]
+</pre>
+
+<p>To activate spectral illumination, you must specify <tt>ComputeFromSpectrum</tt> in the 
+<tt>OpticalGeneration(...)</tt> section. Sentaurus Device then computes the optical 
+generation profiles for all wavelengths using the corresponding intensities and sums them 
+to form a single profile, the <em>white light</em> optical generation profile.</p>
+
+<p>When summing the different optical generation profiles, it is important to use 
+an adequate quantum yield model. In this case, the <tt>StepFunction(EffectiveBandgap)</tt> 
+model has been chosen, which assumes that each absorbed photon with an energy greater than 
+the effective band gap creates an electron&ndash;hole pair. Otherwise, no carriers are generated.</p>
+
+<p>Consequently, as you are interested only in the wavelength range that produces charge 
+carriers, you can omit the computation of wavelengths greater than the effective band gap. 
+To select the spectral range of interest, use the following <tt>Select</tt> statement in the 
+<tt>ComputeFromSpectrum</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/sdevice_des.cmd" startExpr="*ComputeFromSpectrum*" endExpr="*end*ComputeFromSpectrum*" -->
+<pre>
+      ComputeFromSpectrum(
+        Select(
+          Parameter=(&quot;Wavelength&quot;)
+          Condition=&quot;$Wavelength &lt;= 1.2&quot;
+        )
+        keepSpectralData
+      ) * end ComputeFromSpectrum
+</pre>
+<!-- grep end -->
+
+<p>Here, <tt>Parameter</tt> defines the list of column names from the spectrum file 
+that are used in the <tt>Select</tt> statement. <tt>Condition</tt> is a string forming 
+a valid Tcl expression, where identifiers preceded by a dollar sign ($) refer to the 
+respective column in the spectrum file. Therefore, the above condition selects all entries 
+from the spectrum file with a wavelength smaller than or equal to 1.2&nbsp;&mu;m.</p>
+
+<p class="note">Identifiers without a preceding dollar sign refer to a Sentaurus
+Device parameter.</p>
+
+<p>Usually, during a <tt>ComputeFromSpectrum</tt> calculation, the spectral data (the solution 
+for each single spectrum entry) is lost. However, specifying the keyword <tt>keepSpectralData</tt> 
+saves all the spectral data, that is, the reflection, transmission, absorption, intensity,and 
+spatial APD for each wavelength into the file specified with <tt>SpectralPlot</tt> in the 
+<tt>File</tt> section.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/sdevice_des.cmd" startExpr="*SpectralPlot*" Lines=1 header="File {" footer="}"-->
+<pre>
+File {
+  SpectralPlot         = &quot;n@node@_spec&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>Click to view the complete command file <a
+href="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/sdevice_des.cmd">sdevice_des.cmd</a>.</p>
+
+<p>Open the file <tt>n*_spec.tdr</tt> and select the AbsorbedPhotonDensity-* entries, one 
+after another, to see how the absorption depth increases with increasing wavelength.</p>
+
+<p>In addition, open the file <tt>n*_spec.plt</tt> and create a reflection curve by plotting 
+<tt>LayerStack(Unnamed_0) R_Total</tt> against <tt>wavelength</tt> or the spectrum itself by 
+plotting <tt>intensity</tt> against <tt>wavelength</tt>.</p>
+
+<p class="note">For a <tt>ComputeFromSpectrum</tt> calculation, the reflection values in the 
+file specified by the <tt>Current</tt> keyword (not the file specified by the <tt>SpectralPlot</tt> 
+keyword) correspond to the spectral-weighted reflection.</p>
+
+<p>Investigate the Sentaurus Visual script to see how it uses the spectrum plot to visualize 
+the reflection curve.</p>
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/tmm-light-iv/svisual_vis.tcl">
+svisual_vis.tcl</a>.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>5.4 Calculating the Angular-Dependent Reflection Using Raytracing</h1>
+
+<p>In this section, the basics of using the raytracer are explained with a
+simple 2D example that calculates the reflectance of a planar semi-infinite
+silicon substrate for different angles of incidence. The calculation is purely optical; 
+no electrical equations are solved. Therefore, optical generation is of no interest here.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in
+the directory <tt>Applications_Library/GettingStarted/sdevice/opto/rt-angular-r</tt>.</p> 
+
+<!--=========================-->
+<h2>5.4.1 Boundary Conditions at Interfaces</h2>
+
+<p>In Sentaurus Device, an interface is defined as the face (3D) or the edge (2D) of 
+two adjacent regions. For each interface, where boundary conditions (BCs) other 
+than the default Fresnel BC are required, you must define the BC as to how the raytracer 
+will propagate any impinging ray. As a consequence, care must be taken when setting 
+up the device structure, such that all interfaces of special interest actually have 
+two adjacent regions.</p>
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/sde_dvs.cmd">
+sde_dvs.cmd</a>.</p>
+
+<p>In this example, the following BCs are used (see <a href="#fig6">Figure&nbsp;6</a>):</p>
+
+<ul>
+<li>Fresnel BCs at the top silicon surface (green)</li>
+<li>Reflective BCs at the sidewalls of the silicon (blue)</li>
+<li>Absorptive BCs at the bottom to mimic the semi-infinite extent of the
+silicon substrate (purple)</li>
+<li>Absorptive BCs for all the rest to avoid any dangling stray rays (red)</li>
+</ul>
+
+<a name="fig6"></a>
+<p><a href="images/sd_opto_rt_bc.png"><img src="images/sd_opto_rt_bc.png" width="500" 
+alt="Boundary conditions for the raytracer" /></a></p>
+
+<p class="caption">Figure 6. Boundary conditions for the raytracer. 
+(Click image for full-size view.)</p>
+
+<p>To control the BC for a particular interface, a region or material interface 
+<tt>Physics</tt> section is used:</p>
+
+<pre>
+Physics (RegionInterface=&quot;region1/region2&quot;) {RaytraceBC(...)}
+Physics (MaterialInterface=&quot;material1/material2&quot;) {RaytraceBC(...)}
+</pre>
+
+<p class="note">The order of the regions to name the interface is not important, 
+that is, <tt>region1/region2</tt> and <tt>region2/region1</tt> are equivalent.</p>
+
+<p>By default, an interface behaves according to Snell's law and Fresnel equations. 
+This case is called the Fresnel BC. However, other BCs are of interest as well. 
+Commonly used BCs are:</p>
+
+<ul>
+<li><tt>RaytraceBC(Fresnel)</tt>, <em>Fresnel BC</em>, rays are propagated according to 
+Snell's law and Fresnel equations;  default BC.</li>
+<li><tt>RaytraceBC(Reflectivity=1)</tt>, <em>reflective BC</em>, rays are reflected to 
+100% according to Snell's law.</li>
+<li><tt>RaytraceBC(Reflectivity=0 Transmittivity=0)</tt>, <em>absorptive BC</em>, rays 
+are stopped and absorbed to 100%.</li>
+<li><tt>RaytraceBC(TMM(...))</tt>, <em>TMM BC</em>, the direction of rays is calculated 
+according to Snell's law. However, reflection and transmission coefficients are computed 
+using the TMM solver. This BC is used for very thin coatings, where interference effects 
+cannot be neglected.</li>
+</ul>
+
+<p>This results in the following BC settings for the example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/sdevice_des.cmd" startExpr="*substrate/outside*" startOffset=-1 endExpr="*Gas/Gas*" endOffset=3 format="excludeEmptyLines" -->
+<pre>
+* absorptive BC at the side walls of Si
+Physics(RegionInterface=&quot;substrate/outside&quot;) {
+  RayTraceBC (Reflectivity=1)
+}
+* absorptive BC at the bottom of Si
+Physics(RegionInterface=&quot;substrate/bottom_air&quot;) {
+  RayTraceBC (Reflectivity=0 Transmittivity=0)
+}
+* absorptive BC for the rest
+Physics(MaterialInterface=&quot;Gas/Gas&quot;) {
+  RayTraceBC (Reflectivity=0 Transmittivity=0)
+} 
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<!--=========================-->
+<h2>5.4.2 Common Optical Solver Settings</h2>
+
+<p>The general setup is very similar to the example in 
+<a href="#2">Section 5.2 Calculating the Wavelength-Dependent Reflection Using TMM</a>. 
+However, some specific settings are explained here.</p>
+
+<p>In contrast to the previous example, you want to change the incident angle of 
+the light &theta; using the keyword <tt>Theta</tt> in the <tt>Excitation</tt> 
+section, which in two dimensions defines the angle between the incident light 
+direction and the +y-axis with counterclockwise orientation 
+(see <a href="#fig7">Figure&nbsp;7</a>).</p>
+
+<a name="fig7"></a>
+<p><a href="images/sd_opto_excitation_2d3d.png"><img src="images/sd_opto_excitation_2d3d.png" 
+width="570" alt="Angle definition for excitation in two and three dimensions" /></a></p>
+
+<p class="caption">Figure 7. Angle definition for excitation direction and
+polarization in (left) two dimensions and (right) three dimensions. 
+(Click image for full-size view.)</p>
+
+<p class="note">The excitation angle is defined with respect to the GCS 
+and not with respect to the illumination window.</p> 
+
+<p>The polarization of the excitation is characterized by the polarization angle
+&Psi; and can be set with the <tt>PolarizationAngle</tt> keyword:</p>
+
+<ul>
+<li>&Psi; = 0 corresponds to p-polarization or TM.</li>
+<li>&Psi; = 90 corresponds to s-polarization or TE.</li>
+</ul>
+
+<p>Optionally, instead of <tt>PolarizationAngle</tt>, the <tt>Polarization</tt> 
+keyword can be used, with <tt>Polarization</tt> = sin<sup>2</sup>(<tt>PolarizationAngle</tt>).</p>
+
+<p>For convenience, in two dimensions, pure TE and TM polarization can be 
+specified with <tt>Polarization=TE</tt> or <tt>Polarization=TM</tt>.</p>
+
+<p class="note">In three dimensions, an additional angle <tt>Phi</tt> is used to
+define the excitation direction, and the polarization can be specified using
+<tt>PolarizationAngle</tt> only.</p>
+
+<p>This example uses the DF&ndash;ISE coordinate system in two dimensions, where 
+the +y-axis points downwards. Therefore, <tt>Theta=0</tt> is perpendicular to the 
+device top surface, and <tt>Theta=90</tt> is parallel.</p>
+
+<p>Similar to the wavelength sweep in the previous example, you now want to 
+perform an angular sweep, which is achieved by:</p>
+
+<ul>
+<li>Setting the starting angle <tt>Theta</tt> in the <tt>Excitation</tt> section:
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/sdevice_des.cmd" startExpr="*excitation*(*" lines=2 footer="      ...\n    }" -->
+<pre>
+    Excitation (
+      Theta = 0
+      ...
+    }
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Performing an angular sweep in the <tt>Solve</tt> section:
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/sdevice_des.cmd" startExpr="*quasistat*" endExpr="}" endOffset=-1 excludeLines="*#*" -->
+<pre>
+  Quasistationary (
+    DoZero
+    InitialStep=@&lt;1./179&gt;@ MaxStep=@&lt;1./179&gt;@ Minstep=@&lt;1./179&gt;@
+    Goal {ModelParameter=&quot;Theta&quot; value= 89.5 }
+  ) { 
+    Optics 
+  }   
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Plotting the angle <tt>Theta</tt> into the <tt>.plt</tt> file:
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/sdevice_des.cmd" startExpr="*Currentplot*" endExpr="}"-->
+<pre>
+CurrentPlot{
+  ModelParameter=&quot;Theta&quot;
+}
+</pre>
+<!-- grep end -->
+</li>
+</ul>
+
+<!--=========================-->
+<h2>5.4.3 Raytracer-Specific Settings</h2>
+
+<p>Some important commands control the raytracer are specified in the 
+<tt>OpticalSolver(Raytracing(...))</tt> section.</p>
+
+<p>First, the starting rays must be distributed inside the illumination window. 
+Several algorithms do this such as <tt>AutoPopulate</tt>, <tt>Equidistant</tt>, 
+and <tt>MonteCarlo</tt> (refer to the <cite>Sentaurus&trade; Device User Guide</cite> 
+for details). However, the easiest to start with is <tt>AutoPopulate</tt>, where 
+only the number of rays must be specified:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/sdevice_des.cmd" startExpr="*raydistribution*" endExpr="*)*" -->
+<pre>
+        RayDistribution(
+          Mode=AutoPopulate
+          NumberOfRays = 1
+        )
+</pre>
+<!-- grep end -->
+<p>As the structure is planar and only reflection is of interest, one ray is sufficient.</p>
+
+<p>Second, break criteria must be defined to control when tracing of a ray will be terminated. 
+For this purpose, the raytracer provides two criteria:</p>
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/sdevice_des.cmd" startExpr="*MinIntensity*" lines=2 -->
+<pre>
+        MinIntensity = 1e-4
+        DepthLimit = 10000
+</pre>
+<!-- grep end -->
+
+<p><tt>MinIntensity</tt> stops the tracing of a ray if the ray intensity reaches 
+the specified relative limit. In the above example, rays stop if their intensity 
+becomes less than 1e-4 times their original intensity. <tt>DepthLimit</tt> stops 
+the ray if it passes through more than the given number of interfaces.</p>
+
+<p><tt>MinIntensity</tt> is a more physical criterion that ensures correct 
+results, while <tt>DepthLimit</tt> is more like an emergency break to avoid
+infinite loops for rays that are trapped in the structure and are never absorbed.</p> 
+
+<!--=========================-->
+<h2>5.4.4 Calculating the Reflection</h2>
+
+<p>To extract optical quantities such as reflection or transmission, the 
+raytracer can integrate photon fluxes across interfaces. To use this feature for
+a particular interface, the keyword <tt>PlotInterfaceFlux</tt> must be present in
+the <tt>RayTracing</tt> section. In addition, a BC must be defined for that interface. 
+After this, for each region interface and impinging direction, Sentaurus Device plots 
+the reflected, transmitted, and absorbed flux into the <tt>.plt</tt> file (see 
+Figure&nbsp;8).</p>
+
+<a name="fig8"></a>
+<p><a href="images/sd_opto_rt_flux.png"><img src="images/sd_opto_rt_flux.png" width="570" 
+alt="Calculating the reflection using the raytracer" /></a></p>
+
+<p class="caption">Figure 8. Calculating the reflection using the raytracer. 
+(Click the image for full-size view.)</p>
+
+<p>Therefore, at each interface, you can calculate the incident photon flux using the 
+formula:</p>
+<p>\[ R= {R_{12} + T_{21}} / {I_{12}} = {R_{12} + T_{21}} / {R_{12} + T_{12} + A_{12}} \]</p>
+
+<p>For this example, the reflection, which is the number of reflected photons
+<tt>Nr</tt> divided by the number of impinging photons <tt>Nin</tt>, will be
+calculated in Sentaurus Visual.</p>
+
+<p><tt>Nr</tt> can be extracted using two different methods:</p>
+
+<ol>
+<li>As the absorbed photon flux of the top_air/outside interface.</li>
+<li>As the reflected photon flux of the top_air/substrate interface plus the transmitted 
+photon flux of the substrate/top_air interface.</li>
+</ol>
+
+<p>For <tt>Nin</tt>, you can do one of the following:</p>
+
+<ul>
+<li>Use the input photon flux that is written automatically to the <tt>.plt</tt> file.</li>
+<li>Calculate the incident photon flux at the top_air/substrate interface as the sum 
+of the reflected, transmitted, and absorbed photon fluxes at that interface.</li>
+</ul>
+
+<p>The calculation using method 1 for <tt>Nin</tt> and <tt>Nr</tt> in Sentaurus Visual looks like:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/svisual_vis.tcl" startExpr="*calculate reflection*" endExpr="*R1($n)*" -->
+<pre>
+#- calculate reflection from input photons and absorbed photons 
+#- at top_air/outside interface
+create_curve -name Nin1 -dataset $ds($n) -axisX $varTheta \
+  -axisY &quot;RaytracePhoton Input&quot; ;# 1/s
+create_curve -name Nr1  -dataset $ds($n) -axisX $varTheta \
+  -axisY &quot;RaytraceInterfaceFlux A(top_air/outside)&quot; ;# 1/s
+create_curve -name R1($n)  -function &quot;&lt;Nr1&gt;/&lt;Nin1&gt;&quot;
+</pre>
+<!-- grep end -->
+
+<p>Using method 2 in Sentaurus Visual looks like:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/svisual_vis.tcl" startExpr="*calculate reflection from top_air*" endExpr="*R2($n)*" -->
+<pre>
+#- calculate reflection from top_air/substrate interface only
+create_curve -name R12 -dataset $ds($n) -axisX $varTheta \
+  -axisY &quot;RaytraceInterfaceFlux R(top_air/substrate)&quot; ;# 1/s
+create_curve -name T12 -dataset $ds($n) -axisX $varTheta \
+  -axisY &quot;RaytraceInterfaceFlux T(top_air/substrate)&quot; ;# 1/s
+create_curve -name A12 -dataset $ds($n) -axisX $varTheta \
+  -axisY &quot;RaytraceInterfaceFlux A(top_air/substrate)&quot; ;# 1/s
+create_curve -name T21 -dataset $ds($n) -axisX $varTheta \
+  -axisY &quot;RaytraceInterfaceFlux T(substrate/top_air)&quot; ;# 1/s
+  create_curve -name I12  -function &quot;&lt;R12&gt;+&lt;T12&gt;+&lt;A12&gt;&quot;
+create_curve -name R2($n)  -function &quot;(&lt;R12&gt;+&lt;T21&gt;)/&lt;I12&gt;&quot;
+</pre>
+<!-- grep end -->
+
+<p class="note">The first region name in the interface name (for example, 
+<tt>R(top_air/substrate)</tt>) denotes the region from where the ray originated 
+before reaching the interface.</p>
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/rt-angular-r/svisual_vis.tcl">
+svisual_vis.tcl</a>.</p>
+
+<p>Finally, clicking the <strong>Run Selected Visualizer Nodes Together</strong>
+toolbar button generates the required reflection versus incident angle plot
+(compare <a href="../swb/swb_02.html#VisTogether">Section&nbsp;2.7 Visualizing
+Selected Nodes Together</a>). The reflection calculated according to the first
+and second methods as previously described are identical as expected (see <a
+href="#fig9">Figure&nbsp;9</a>).</p>
+
+<a name="fig9"></a>
+<p><a href="images/sd_opto_rt_refl.png"><img src="images/sd_opto_rt_refl.png" width="570" 
+alt="Plot of reflection versus incident angle" /></a></p>
+
+<p class="caption">Figure 9. Reflection versus incident angle for TE and TM polarization 
+using the raytracer. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>5.5 Calculating the White Light Photocurrent of a 3D Photodiode Using Raytracing</h1>
+
+<p>This section discusses combined optical and electrical equations, and
+addresses spectral illumination. As an example, the illuminated short-circuit
+current of a 3D photodiode is calculated using the raytracer. To optimize light
+coupling, the light-exposed silicon will be covered by a single nitride layer,
+which serves as an antireflective coating.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d</tt>.</p> 
+
+<p>Similarly as in <a href="#4">Section 5.4 Calculating the Angular-Dependent Reflection 
+Using Raytracing</a>, a top_air region and a bottom_air region are added to the structure, 
+and the  entire device is surrounded by an air region. This is done to give access to the 
+boundary conditions of the top, bottom, and sidewalls (see <a href="#fig10">Figure&nbsp;10</a>) by specifying 
+interface <tt>Physics</tt> sections in the Sentaurus Device command file.</p>
+
+<a name="fig10"></a>
+<p><a href="images/sd_opto_pd_3d_bnd.png"><img src="images/sd_opto_pd_3d_bnd.png" width="570" 
+alt="Photodiode boundary" /></a></p>
+
+<p class="caption">Figure 10. Boundary and doping of the 3D photodiode. Note the black 
+wireframe that marks the surrounding region needed to define boundary conditions. 
+(Click the image for full-size view.)</p>
+
+<!--=================================-->
+<h2>5.5.1 TMM Boundary Condition</h2>
+
+<p>To improve light coupling, antireflective coatings are widely used. These layers 
+are typically in the range of wavelength, therefore, interference effects are crucial. 
+On the other hand, they are typically electrically inactive, so they do not contribute 
+to the optical generation and can be neglected in the electrical simulation.</p>
+
+<p>A common approach to model such thin coatings with the raytracer is to collapse the coating layers onto 
+the interface, and then to calculate the reflection and transmission coefficients using the TMM solver.</p>
+
+<p>In the example, at the top_air substrate interface, a 75&nbsp;nm thick nitride is 
+defined with the lines:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/sdevice_des.cmd" startExpr="*top_air/substrate*" endExpr="}*" excludeLines="*Recombination*" -->
+<pre>
+Physics (RegionInterface=&quot;top_air/substrate&quot;) {
+  RayTraceBC(
+    TMM(
+      ReferenceRegion = &quot;top_air&quot; 
+      LayerStructure {
+        75e-3 &quot;Nitride&quot;
+      }
+    )
+  )
+}
+</pre>
+<!-- grep end -->
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<!--=================================-->
+<h2>5.5.2 Illumination in Three Dimensions</h2>
+
+<p>As the device coordinate system is the unified coordinate system (UCS), the top 
+of the device is in the &ndash;x-direction. To illuminate the device from the top, the excitation 
+direction must be in the +x-direction. This can be achieved by setting <tt>Theta=90</tt> 
+and <tt>Phi=0</tt> in the <tt>Excitation</tt> section (see <a href="#fig7">Figure&nbsp;7</a>), 
+or by simply specifying <tt>fromTop</tt>, which does this automatically for you:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/sdevice_des.cmd" startExpr="*Excitation*" endExpr="*)*end*window*" footer="      )\n    )" excludeLines="*\**" -->
+<pre>
+    Excitation (
+      fromTop
+      PolarizationAngle = 45.
+      Window ( 
+        Origin = (-1.2, 2.5, 2.5)
+        Rectangle(dx=5 dy=5)
+      )
+    )
+</pre>
+<!-- grep end -->
+
+<p>Figure 11 illustrates the alignment of the illumination window with the device. 
+The illumination window must cover the entire device &ndash; without the
+"outside" region &ndash; slightly above the top of the metal contacts.</p>
+
+<a name="fig11"></a>
+<p><a href="images/sd_opto_pd_3d_illu_win.png"><img src="images/sd_opto_pd_3d_illu_win.png" 
+width="550" alt="Alignment of illumination window with the device" /></a></p>
+
+<p class="caption">Figure 11. Alignment of the illumination window with the device. 
+(Click image for full-size view.)</p>
+
+<p>To accomplish this, you must shift the origin of the LCS (compare to <a href="#2">
+Section&nbsp;5.2 Calculating the Wavelength-Dependent Reflection Using TMM</a>) 
+horizontally to the center of the device (<tt>2.5</tt>, <tt>2.5</tt>), where 
+the total width of the device is 5&nbsp;&mu;m and 1.2&nbsp;&mu;m above the silicon 
+surface.</p>
+
+<p>Next, the LCS (x',&nbsp;y') must be rotated such that x' points in the z-direction 
+and y' points in the y-direction of the GCS (see <a href="#fig11">Figure&nbsp;11</a>). 
+Manually, you would achieve this with the following keywords:</p>
+
+<pre>
+Window (...
+  xDirection=(0,0,1)
+  yDirection=(0,1,0)
+  ...
+) 
+</pre>
+
+<p>However, in this example, <tt>fromTop</tt> does it automatically for you.</p>
+
+<p>The width of the illumination rectangle in the x-direction and the y-direction is
+specified with the keywords <tt>dx</tt> and <tt>dy</tt>. If relative parameters
+such as <tt>dx</tt> are chosen to define the geometry extent, instead of
+absolute parameters such as <tt>corner1</tt> (or <tt>x1</tt> in two dimensions),
+the illumination window geometry is positioned such that the center of the
+geometry is at the origin of the LCS. As the origin of LCS is at (<tt>2.5,&nbsp;2.5</tt>)
+and the rectangle extends 5&nbsp;&mu;m in each direction, the entire area from
+(0,&nbsp;0) to (5,&nbsp;5) is covered by the illumination window.</p>
+
+<p>Distribution of the rays, in this case, is performed in <tt>Equidistant</tt> mode, 
+specifying the distance between the starting rays in the x-direction and y-direction:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/sdevice_des.cmd" startExpr="*RayDistribution*" endExpr="*)*" -->
+<pre>
+        RayDistribution(
+          Mode=Equidistant
+          Dx=0.5
+          Dy=0.5
+        )
+</pre>
+<!-- grep end -->
+
+<p>In the case of 3D simulations, the number of rays might increase rapidly and, with
+this, also the elements in the raytree increase exponentially. Therefore, the computer 
+memory limits the simulation. To work around memory limitation, you can specify the 
+option <tt>CompactMemoryOption</tt> in the <tt>Raytracing(...)</tt> section, which 
+reduces the memory need dramatically, due to sequential computation. However, plotting 
+of the raytree is not available with this option.</p>
+
+<p>Another way to optimize runtime and memory usage is to use a different tracing algorithm. 
+By default, a deterministic algorithm is used. This means that, whenever a ray hits an 
+interface, the ray is split into a reflected ray and a transmitted ray, and both of them are 
+followed until they leave the device or a break criterion is met.</p>
+
+<p>To change from an exponential behavior to a more efficient linear behavior, the raytracer 
+offers the <tt>MonteCarlo</tt> algorithm. In this case, whenever a ray hits an interface, 
+either the reflected ray or the transmitted ray is followed, depending on a random number, 
+weighted with the reflection and transmission coefficients. Therefore, if an interface has 30% 
+reflectance, three rays out of 10 rays are reflected, and seven are transmitted.</p>
+
+<!--=================================-->
+<h2>5.5.3 Extracting Results</h2>
+
+<p>The simulation is run by solving electrical equations only. Nevertheless,
+optics are solved because when Sentaurus Device is instructed to solve the
+transport equations for electron and holes, it detects that the optical
+generation term is not updated and will call the optical solver to update it.
+Therefore, no explicit call of the <tt>Optics</tt> section is necessary in this
+case.</p>
+
+<p>Depending on the device structure and optical injection level, convergence 
+might be problematic if the device is overwhelmed with optically generated carriers 
+from the beginning. It is advisable to first solve transport in the dark, and only 
+then switch on the light. This can be achieved by setting <tt>scaling=0</tt> in the 
+<tt>OpticalGeneration</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/sdevice_des.cmd" startExpr="*scaling*" startOffset=-1 lines=2 footer="    ...)" -->
+<pre>
+    OpticalGeneration (
+      Scaling=0
+    ...)
+</pre>
+<!-- grep end -->
+
+<p>In the <tt>Solve</tt> section, you first solve transport in the dark:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/sdevice_des.cmd" startExpr="Solve*" endExpr="*coupled*" -->
+<pre>
+Solve{
+  NewCurrentPrefix=&quot;tmp_&quot;
+  Poisson
+  Coupled (Iterations=100) { poisson electron hole  }
+</pre>
+<!-- grep end -->
+
+<p>Note that you have redirected the current file to <tt>tmp_n@node@_des.plt</tt> 
+as these temporary preiterations are not required in the final results.</p>
+
+<p>Then, you switch on the light by ramping the <tt>scaling</tt> parameter to the 
+required value. Ensure that extrapolation is switched off to improve convergence 
+by specifying <tt>-Extrapolate</tt> either globally in the <tt>Math</tt> section 
+or, at least, in the <tt>Quasistationary</tt> statement:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/sdevice_des.cmd" startExpr="*Quasi*" endExpr="*NewCurrent*" endOffset=-1 -->
+<pre>
+  Quasistationary ( 
+    InitialStep= 1e-1 MaxStep= 0.5
+    -Extrapolate * better convergence when switching on light
+    Goal { ModelParameter= &quot;Scaling&quot; Value= 100 }
+  ){
+    Coupled(Iterations=12) {Poisson Electron Hole}
+  }
+</pre>
+<!-- grep end -->
+
+<p>In the end, you switch back the current file to <tt>n@node@_des.plt</tt> 
+and recalculate the required illuminated short-circuit current:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/sdevice_des.cmd" startExpr="*NewCurrent*" startOccurrence=2 endExpr="*coupled*" -->
+<pre>
+  NewCurrentPrefix=&quot;&quot;
+  Coupled { poisson electron hole }
+</pre>
+<!-- grep end -->
+
+<p>As a result, the photogenerated current <tt>jph</tt> is extracted by integrating 
+the optical generation inside the semiconductor region, and the short-circuit current 
+<tt>jsc</tt> at the contact with a Sentaurus Visual node. The results are returned to 
+Sentaurus Workbench (see <a href="#fig12">Figure&nbsp;12</a>).</p>
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/rt-jsc-3d/svisual_vis.tcl">
+svisual_vis.tcl</a>.</p>
+
+<a name="fig12"></a>
+<p><img src="images/sd_opto_pd_3d_swb.png" width="440" height="129" 
+alt="Snapshot of Sentaurus Workbench project" /></p>
+
+<p class="caption">Figure 12. Snapshot of Sentaurus Workbench project.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>5.6 Calculating Quantum Efficiency Versus Frequency Using Optical AC Analysis</h1>
+
+<p>This section demonstrates how to set up optical AC analysis based on the small-signal 
+AC analysis method in <a href="../sd/sd_3.html#4">Section&nbsp;3.4 Small-Signal AC Analysis</a>. 
+As an example, the transfer matrix method (TMM) solver is used to illuminate a 2D photodiode 
+at different wavelengths in the visual spectrum. Quantum efficiency versus frequency 
+is computed and the 3 dB point is extracted from the curves for each wavelength.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory <tt>Applications_Library/GettingStarted/sdevice/opto/OpticalAC</tt>.</p> 
+
+<p>During optical AC analysis, a small perturbation is applied to the optical generation 
+rate. The resulting small-signal device current perturbations on each electrode are then 
+used to compute the real and imaginary parts of the quantum efficiency. Sentaurus Device 
+saves the real and imaginary parts of the quantum efficiency in the AC output file as 
+<tt>photo_a</tt> (real part) and <tt>photo_c</tt> (imaginary part) for each electrode.</p>
+
+<p>For a detailed description of the real and imaginary parts of the quantum efficiency
+equation, see the <cite>Sentaurus&trade; Device User Guide</cite>.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/opto/OpticalAC/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p><a href="images/sd_opto_ac.png"><img src="images/sd_opto_ac.png" width="560" 
+alt="Quantum efficiency versus frequency" /></a></p>
+
+<p class="caption">Figure 13. Quantum efficiency versus frequency (solid lines) and 
+10log[QE] versus frequency (dashed lines). (Click image for full-size view.)</p>
+
+<p>The 3 dB point is determined by plotting the 10log[QE] curve and then extracting 
+the value of frequency at &ndash;3&nbsp;dB (see Figure&nbsp;13). In this example, the 
+extracted 3 dB points for the 400 nm and 600 nm curves are 0.516 GHz and 0.087 GHz, 
+respectively. The results are returned to Sentaurus Workbench (see Figure&nbsp;14).</p>
+
+<p><a href="images/sd_opto_workflow_ac.png"><img src="images/sd_opto_workflow_ac.png" width="560" 
+alt="Snapshot of Sentaurus Workbench project" /></a></p>
+
+<p class="caption">Figure 14. Snapshot of Sentaurus Workbench project. 
+(Click image for full-size view.)</p>
+
+<p>To use optical AC analysis, first set up a mixed-mode simulation as described in 
+<a href="../sd/sd_3.html#2">Section&nbsp;3.2 Mixed-Mode Simulations</a>. To activate 
+optical AC analysis, add the keyword <tt>Optical</tt> in the <tt>ACCoupled</tt> statement.</p>
+
+<p class="note">If an element is excluded (<tt>Exclude</tt> statement) in optical AC 
+(this is usually the case for voltage sources in regular AC simulation), then this means 
+that this element is not present in the simulated circuit and, correspondingly, it 
+provides zero AC current for all branches connected to the element. Therefore, do not 
+exclude voltage sources in optical AC analysis.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

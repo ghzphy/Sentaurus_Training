@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; jEdit 3. Debugging Interface for Sentaurus Structure Editor</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">jEdit<br />3. Debugging Interface for Sentaurus Structure Editor</h1>
+
+<p>
+<a href="#1">3.1 Using the Debugging Interface</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To describe the debugging interface for Sentaurus Structure Editor.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Using the Debugging Interface</h1>
+
+<p>jEdit offers a debugging interface for Sentaurus Structure Editor. This allows you to
+send selected text from jEdit directly to Sentaurus Structure Editor, and to evaluate the
+text without having to continually switch between Sentaurus Structure Editor and jEdit
+to copy lines, as shown in Figure&nbsp;1.</p>
+
+<p><a href="images/je_sde_debug.png"><img src="images/je_sde_debug.png" 
+width="570" alt="Debugging interface for Sentaurus Structure Editor" /></a></p> 
+                                                                        
+<p class="caption">Figure 1. Debugging interface for Sentaurus Structure Editor.
+(Click image for full-size view.)</p>
+
+<p>You have different ways in which to invoke the Sentaurus Structure Editor debugging
+mode:</p>
+
+<ul>
+<li>In a shell, type:
+<pre>
+sde -editor &lt;filename&gt;
+</pre>
+</li>
+
+<li>Open Sentaurus Structure Editor, and choose <strong>Edit</strong> &gt; 
+<strong>Text Editor</strong>.<br />
+The jEdit interface linked to Sentaurus Structure Editor opens. Here, you can open
+the file of interest.</li>
+
+<li>In Sentaurus Workbench, open the Node Explorer for the node of interest, and
+select the <tt>pp*_dvs.cmd</tt> file. In the <strong>Viewer</strong> field, select
+<strong>sde</strong> and click <strong>Launch</strong>.<br /> 
+This opens Sentaurus Structure Editor and jEdit with the debug link established.</li>
+</ul>
+
+<p class="note">Before starting Sentaurus Structure Editor in debugging
+mode, ensure that all jEdit instances are closed. Otherwise,
+the link cannot be established.</p>
+
+<p>The customization package offers different debugging commands, available from
+the menu bar by choosing <strong>Plugins</strong> &gt; 
+<strong>Sentaurus Structure Editor</strong>:</p>
+
+<ul>
+<li><tt>send selected</tt> (or press the F6 key)<br />
+Sends the current jEdit selection to Sentaurus Structure Editor. This is useful
+to investigate the result of a selected expression (for example, a
+variable).</li>
+
+<li><tt>send block</tt> (or press the F7 key)<br />
+Selects the command block with matching parenthesis pairs at the current
+cursor position, selects it, and sends it to Sentaurus Structure Editor. This is
+useful for stepwise evaluation of a complex nested command, by placing the
+cursor inside the innermost parenthesis and pressing the F7 key
+successively.</li>
+
+<li><tt>send next</tt> (or press the F8 key)<br />
+Tries to find the next command block relative to the current cursor position or
+selection, selects it, and sends it to Sentaurus Structure Editor. This allows
+you to smoothly move through a command file by pressing the F8 key
+successively.</li>
+
+<li><tt>undo</tt> (or press the F9 key)<br />
+Sends the Scheme command <tt>(roll)</tt> to Sentaurus Structure Editor, which 
+corresponds to clicking the Undo button in Sentaurus Structure Editor.</li>
+</ul>
+
+<p class="note"> The debugging command <tt>send next</tt> ignores comments at
+the end of the line. Placing the cursor above the following line:<br />
+<tt> (set a 1) ;; (set b 2) </tt><br />
+and calling <tt>send next</tt> twice evaluates both expressions, setting 
+<tt>a=1</tt> (as expected) as well as <tt>b=2</tt>.</p>
+
+<p>To enable shortcuts for the debugging commands, follow the steps in the 
+Download and Installation Instructions section of the customization package 
+(see <a href="jedit_1.html#2">Section&nbsp;1.2 Downloading the Customization Package</a>):</p>
+
+<p>In addition to the command file of Sentaurus Structure Editor, a mode for the
+CSV file required for the <tt>sdeepi</tt> Scheme extensions of Sentaurus
+Structure Editor is available. The mode contains all the global variables and helps
+to recognize columns by introducing alternating colors (black and red) for layer
+values in different columns.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

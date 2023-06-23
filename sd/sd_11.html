@@ -1,0 +1,1245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 11. Special Focus: Device Electrical Breakdown Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_10.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_12.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />11. Special Focus: Device Electrical Breakdown Simulation</h1>
+
+<p>
+ <a href="#1">11.1 Overview</a><br />
+ <a href="#2">11.2 Comparison of Breakdown Methods</a><br />
+ <a href="#3">11.3 Approximate Breakdown Analysis</a><br />
+ <a href="#4">11.4 Ionization Integrals With Carriers Analysis</a><br />
+ <a href="#5">11.5 External Resistor Method</a><br />
+ <a href="#6">11.6 Voltage-to-Current Boundary Condition Switching Method</a><br />
+ <a href="#7">11.7 Continuation Method</a><br />
+ <a href="#8">11.8 Transient Method</a><br />
+ <a href="#9">11.9 Tracking Additional Data in the Current File</a><br />
+ <a href="#10">11.10 Driving Force for Avalanche Generation and High-Field Saturation Models</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to perform device electrical breakdown simulations in 
+ Sentaurus Device for a 2D NMOSFET device, operating in the off-state regime.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>11.1 Overview</h1>
+
+<p>In general, device breakdown simulations and off-state device breakdown simulations, 
+in particular, are often difficult perform. In the prebreakdown regime, a current is 
+small and almost constant or, at least, relatively flat. In this case, a voltage-controlled 
+bias sweep works best. In the postbreakdown regime, however, even a small voltage change can 
+lead to a huge current increase, so that sometimes even a snapback can occur due to the dominance 
+of the avalanche generation term in that regime.</p>
+
+<p>Different breakdown methods are available in Sentaurus Device, each having 
+certain advantages for a particular device operation regime.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>11.2 Comparison of Breakdown Methods</h1>
+
+<p>Table 1 lists the methods suitable for device electrical breakdown simulations 
+and briefly compares their advantages and disadvantages in terms of simulator 
+performance, accuracy, and applicability.</p>
+
+<a name="Table1"></a>
+<table width="570"> 
+<caption>Table 1. Comparison of different breakdown methods.</caption>
+
+<tr>
+<th>Method</th>
+<th>Advantages</th>
+<th>Limitations</th>
+</tr>
+
+<tr>
+<td>Approximate breakdown analysis</td>
+<td>Fast; it does not consume much memory since it requires only the Poisson analysis. 
+Qualitatively produces reasonable results.</td>
+<td>Can be applied only to off-state breakdown problematics, where currents are still 
+negligibly small. Quantitatively not very precise; usually underestimates a breakdown.</td>
+</tr>
+
+<tr>
+<td>Ionization integrals with carriers analysis</td>
+<td>Similar to approximate breakdown analysis in terms of ionization integrals computation. 
+This method solves the entire carrier transport task, having the avalanche term 
+deactivated in the right-hand side of the continuity equation, but computed 
+in a postprocessing step.</td>
+<td>Requires educated guess from user to decide when to stop a simulation.</td>
+</tr>
+
+<tr>
+<td>External resistor method</td>
+<td>Simulation is performed in one effort with the bias applied through an external 
+resistor connected to a device electrode in series.</td>
+<td>Requires user intervention or iterations to establish a load resistor.
+Simulation might not converge if the device goes into snapback.
+</td>
+</tr>
+
+<tr>
+<td>Voltage-to-current boundary condition (BC) switching method</td>
+<td>Flexible method for most complicated curve shapes, including curves with negative 
+differential resistance behavior.</td>
+<td>Sensitive to a chosen time step at the voltage-to-current BC switching point.</td>
+</tr>
+
+<tr>
+<td>Continuation method</td>
+<td>Automatically defines the external load resistance by monitoring the curve slope.</td>
+<td>Sensitive to grid quality and linear solver settings. Does not like noisy currents. 
+Can be more computationally expensive than other methods.</td>
+</tr>
+
+<tr>
+<td>Transient method</td>
+<td>Similar to the external resistor method, but uses the transient bias ramp 
+instead of quasistationary. Useful in cases where traps are considered or a simulated 
+structure includes floating semiconductor regions.</td>
+<td>Same as the external resistor method. Since a bias ramp time can potentially 
+affect the results, the transient method should be used with care.</td>
+</tr>
+</table>
+
+<p>The complete project that demonstrates these breakdown methods and focuses 
+on a MOSFET off-state breakdown simulation can be investigated from within 
+Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/BVmethods</tt>.</p>
+
+<p>The <tt>BVMethods</tt> project parameter value decides which method to use for 
+a breakdown simulation. After project preprocessing in Sentaurus Workbench, 
+the corresponding command inputs are generated.</p> 
+
+<p>To visualize characteristic curves, select the Sentaurus Visual nodes of
+interest, and click the <strong>Visualize Selected Nodes Together</strong>
+toolbar button (see <a href="../swb/swb_02.html#VisTogether">Section&nbsp;2.7
+Visualizing Selected Nodes Together</a>).</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd">
+BV_des.cmd</a>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>11.3 Approximate Breakdown Analysis</h1>
+
+<p>Approximate breakdown analysis (ABA) is an inexpensive alternative to the breakdown 
+simulations performed with the drift-diffusion or hydrodynamic transport models. 
+Its main advantages are:</p>
+
+<ul>
+<li>Is fast and less memory and CPU expensive, since it requires only the Poisson equation 
+to be solved.</li>
+<li>Predicts breakdown trends in the case of doping and geometry variations.</li>
+<li>Has no problem with floating semiconductor regions.</li>
+<li>Tolerates coarse grids.</li>
+<li>Can be used in combination with the drift-diffusion or hydrodynamic carrier transport models.</li>
+</ul>
+
+<p>On the other hand, its applicability is limited by the following factors:</p>
+
+<ul>
+<li>This method considers constant quasi-Fermi potentials. Therefore, 
+it can be applied only to (quasi-)equilibrium conditions assuming no 
+current flow. This limits ABA to off-state and low-current condition 
+device simulations only.</li>
+<li>This method usually underestimates a breakdown because phenomena such as 
+carrier recombination, tunneling, surface scattering, and high-field carrier 
+velocity saturation are not accounted for.</li>
+</ul>
+
+<!--====================-->
+<h2>11.3.1 Math Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="Math*" endExpr="*RelErr*" excludeLines="*#*" -->
+<pre>
+Math {
+  Extrapolate
+  Iterations=20
+  Notdamped =100
+  RelErrControl
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="*ComputeIon*" endExpr="*Break*" footer="}"-->
+<pre>
+  ComputeIonizationIntegrals ( )
+  BreakAtIonIntegral(1 1.1)
+}
+</pre>
+<!-- grep end -->
+
+<p>To activate ABA, you must specify <tt>ComputeIonizationIntegrals</tt> to switch on
+the computation of the ionization integrals along various ionization paths.</p>
+
+<p>By default, Sentaurus Device reports only the path with the largest value. With the 
+addition of the keyword <tt>WriteAll</tt>, information for all computed ionization paths, 
+according to the selected strategy, are written into the log file.</p>
+
+<p>The keyword <tt>BreakAtIonIntegral</tt> terminates the quasistationary simulation 
+when the specified number of integrals (1, in the example) is greater than the 
+specified value (1.1, in the example).</p>
+ 
+<p class="note">Having an integral value higher than unit indicates that 
+the avalanche condition is reached (at least one extra electron&ndash;hole 
+pair is generated).</p>
+
+<!--====================-->
+<h2>11.3.2 Physics Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" header="Physics {" startExpr="*Recom*" lines=3 -->
+<pre>
+Physics {
+  Recombination(
+    Avalanche(ElectricField)
+  )
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="*Fermi" lines=2 -->
+<pre>
+  Fermi
+}
+</pre>
+<!-- grep end -->
+
+<p>To enable carrier generation under ABA, the <tt>Avalanche</tt> 
+model must be switched on within the <tt>Recombination</tt> statement, with
+the <tt>ElectricField</tt> specification for the driving force.</p>
+
+<!--====================-->
+<h2>11.3.3 Plot Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" header="Plot {" startExpr="*eIonInt*" lines=1 footer="}" -->
+<pre>
+Plot {
+  eIonIntegral hIonIntegral MeanIonIntegral eAlphaAvalanche hAlphaAvalanche
+}
+</pre>
+<!-- grep end -->
+
+<p>To plot the electron- or hole-associated and mean ionization integrals, 
+the keywords <tt>eIonIntegral</tt>, <tt>hIonIntegral</tt>, and 
+<tt>MeanIonIntegral</tt> are specified in the <tt>Plot</tt> section. 
+To plot the integral quantities, they are saved automatically in the 
+<tt>.plt</tt> file under the names <tt>PhiElectron</tt> and <tt>PhiHole</tt>.</p>
+
+<!--====================-->
+<h2>11.3.4 Solve Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="Solve*" lines=11 -->
+<pre>
+Solve {
+  *- Build-up of initial solution:
+  Coupled(Iterations=100){ Poisson }
+  Coupled { Poisson Electron Hole }
+  
+  Quasistationary(
+    InitialStep=@&lt;1e-2/100&gt;@ Increment=1.41 
+    MinStep=@&lt;1e-5/100&gt;@ MaxStep=0.025
+    Goal{ Name=&quot;drain&quot; Voltage=_Vdd_ }
+  ) { Coupled { _EQUATIONSET_ } }
+}
+</pre>
+<!-- grep end -->
+
+<p>To calculate the ionization integrals in ABA, it is sufficient to 
+solve only the Poisson equation along the drain bias sweep.
+Therefore, the <tt>_EQUATIONSET_</tt> macro in the project tool input for this method
+is defined as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="#define _EQ*" lines=1 -->
+<pre>
+#define _EQUATIONSET_   Poisson 
+</pre>
+<!-- grep end -->
+
+<p>Figure&nbsp;1 shows the results of the ionization integrals computation as a 
+function of the applied bias. The blue curve is the electron ionization integral 
+(<tt>PhiElectron</tt> in the <tt>.plt</tt> file) and the red curve is the hole ionization integral 
+(<tt>PhiHole</tt> in the <tt>.plt</tt> file). The arrow indicates the breakdown bias condition, 
+where both ionization integrals exceed 1.
+</p>
+<p><a href="images/sd_aba_bv.png"><img src="images/sd_aba_bv.png" width="450" 
+alt="MOSFET off-state breakdown with ABA" /></a></p>
+
+<p class="caption">Figure 1. MOSFET off-state breakdown simulations performed 
+with ABA. Electron and hole ionization integrals are shown as a function 
+of the drain bias for V<sub>gs</sub> = 0. The breakdown is estimated as a point 
+where either of the ionization integrals exceeds the unit value as indicated by 
+the arrow. (Click image for full-size view.)</p>
+
+<!--====================-->
+<h2>11.3.5 Ionization Integral Path Search Options</h2>
+
+<p>Depending 
+on the details of the device design, it is generally not known which ionization path 
+will contribute the most to breakdown. Therefore, Sentaurus Device offers different 
+strategies to generate the initial set of elements from which the path search starts. 
+The strategy is selected by one of the options to the <tt>ComputeIonizationIntegrals</tt> 
+section:</p>
+
+<ul>
+<li><tt>ComputeAtMaxElectricField</tt>:<br /> 
+The path search starts from the element having the maximal electric field within 
+a semiconductor region. This method is the fastest since only one path is evaluated 
+at every bias point, but it is also the least accurate. In some circumstances, it 
+might also miss the path that contributes the most to breakdown.</li>
+
+<li><tt>ComputeAtMaxElectricField(delta=&lt;value&gt;)</tt>:<br />
+All elements within a semiconductor region, where the electric field exceeds the 
+maximal electric field minus <tt>delta</tt>, are taken into the initial element list. 
+This is the default option with <tt>delta=1e4</tt> V/cm.</li>
+
+<li><tt>MinElectricField=&lt;value&gt;</tt>: <br />
+All elements within a semiconductor region, where the electric field is higher than 
+<tt>MinElectricField</tt>, are taken into the initial element list. 
+<tt>MinElectricField</tt> is given in V/cm. A recommended value is approximately 
+250&nbsp;kV/cm.</li>
+
+<li><tt>ComputeAll</tt>:<br />
+All elements within a semiconductor region are taken into the initial element list. 
+This method can result in excessive computation time in structures with a large number 
+of elements.</li>
+</ul>
+
+<p>In addition to the electric field&ndash;based restrictions for the initial element search,
+geometric restrictions can be imposed by specifying a <tt>Window</tt> 
+in the <tt>ComputeIonizationIntegrals</tt> section. Only elements with center positions within the specified
+geometric shapes defined in <tt>Window</tt> are considered for the path search. You can specify the following
+geometric shapes:</p>
+
+<ul>
+<li><tt>Cuboid(corner1=&lt;vector&gt; corner2=&lt;vector&gt;)</tt>:
+   <tt>corner1</tt> and <tt>corner2</tt> are the diagonally opposite corners of the cuboid.</li>
+<li><tt>Sphere(center=&lt;vector&gt; radius=&lt;float&gt;)</tt>:
+   <tt>center</tt> is the vector to the center of the sphere, and <tt>radius</tt> is the radius 
+of the sphere.</li>
+<li><tt>Cylinder(center1=&lt;vector&gt; center2=&lt;vector&gt; radius=&lt;float&gt;)</tt>:
+   <tt>center1</tt> and <tt>center2</tt> are vectors to the circular bases of the cylinder, 
+and <tt>radius</tt> is the radius of the bases of the cylinder.</li>
+</ul>
+
+<p class="note">While the ionization path must start from an element within the <tt>Window</tt>, 
+the path itself can extend beyond the geometric element.</p>
+
+<p>The ionization path will stop when the electric field becomes too small and no longer 
+contributes to the ionization integral. This value (default 1 V/cm) can be adjusted with the 
+<tt>PathSearchStopField</tt> parameters in the <tt>ComputeIonizationIntegrals</tt> 
+section.</p>
+
+<!--====================-->
+<h2>11.3.6 Boundary Conditions for ABA Method</h2>
+
+<p>By default, the ABA method follows the same boundary conditions specified for the 
+device solution:</p>
+
+<ul>
+<li>The default boundary condition in Sentaurus Device is reflective BC. As such, the 
+ionization path will also be reflected when it reaches a domain boundary. This can be 
+switched off with the <tt>-PathReflection()</tt> keyword in the <tt>ComputeIonizationIntegrals</tt> 
+section. It is also possible to have the ionization path reflected at other interfaces
+by using one of the following options to <tt>PathReflection</tt>:<br />
+ <ul>
+ <li><tt>ReflectAtMaterial=&lt;material&gt;</tt>: The path is reflected at the interface to the defined materials. Elements inside the specified materials are excluded from the initial element list.</li>
+ <li><tt>ReflectAtRegion=&lt;region&gt;</tt>: The path is reflected at the interface to the defined regions. Elements inside the specified regions are excluded from the initial element list.</li>
+ </ul>
+</li>
+<li>If periodic boundary conditions are specified in Sentaurus Device, then the ABA method will 
+also use periodic BCs, and the path wraps around the domain boundary where the periodic BCs are 
+specified.</li>
+</ul>
+
+<p class="note">Periodic boundary conditions and path reflection cannot be used simultaneously. 
+Therefore, path reflection is switched off automatically if periodic boundary conditions are used.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>11.4 Ionization Integrals With Carriers Analysis</h1>
+
+<p>Ionization integrals with carriers (IIC) analysis follows the concept of ABA by 
+computing the ionization integrals along a bias sweep, but quantitatively it is more 
+precise than ABA because it solves the entire system of carrier transport equations 
+and computes the ionization integrals in a postprocessing mode based on a given 
+driving force specification for the avalanche model.</p>
+
+<p>At the same time, the corresponding avalanche generation rates are excluded 
+from the carrier continuity equations, even if the model is activated in the 
+<tt>Physics</tt> section, and the decision when to stop a simulation is defined 
+by either the given <tt>Goal</tt> value (see <a href="#IonSolve">Section 11.4.4 Solve Section</a>) 
+or the <tt>BreakAtIonIntegral</tt> criterion (see <a href="#IonMath">Section 11.4.3 Math Section</a>).</p>
+
+<p>Such an approach can be applied to a large number of electrical breakdown simulation 
+tasks, including 3D device  simulations.</p>
+
+<p>The same <tt>Electrode</tt> section description is used for IIC analysis as for ABA.</p> 
+ 
+<!--====================-->
+<h2>11.4.1 Physics Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" header="Physics {" startExpr="*Effect*" lines=11 -->
+<pre>
+Physics {
+  EffectiveIntrinsicDensity( OldSlotboom )     
+  Mobility(
+    DopingDep
+    HighFieldsaturation( GradQuasiFermi )
+    Enormal
+  )
+  Recombination(
+    SRH( DopingDep )
+    Band2Band(Model= NonLocalPath)
+    Avalanche( GradQuasiFermi )
+  )
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="*Fermi" lines=2 -->
+<pre>
+  Fermi
+}
+</pre>
+<!-- grep end -->
+
+<p>The typical physical model description is applied with IIC analysis. 
+Even if the avalanche model is switched on, it will be ignored by activating the 
+<tt>AvalPostProcessing</tt> keyword in the <tt>Math</tt> section 
+(see <a href="#IonMath">Section 11.4.3 Math Section</a>). However, for the avalanche 
+coefficient computation, the driving force, as specified as a parameter of the 
+<tt>Avalanche</tt> model, will be used (the default <tt>GradQuasiFermi</tt> is used in this example).</p>
+
+<!--====================-->
+<a name="CurPlot"></a>
+<h2>11.4.2 CurrentPlot Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="CurrentPlot {" lines=3-->
+<pre>
+CurrentPlot {
+  ImpactIonization (Integrate(Semiconductor))
+}
+</pre>
+<!-- grep end -->
+
+<p>This section provides instructions to integrate the computed avalanche generation 
+rate over the entire silicon domain and to save the computed quantity into the 
+<tt>.plt</tt> file for each bias ramp step. This can be used further to extract the 
+breakdown voltage (see <a href="#BVextra">Section 11.4.5 Breakdown Voltage Extraction</a>).</p>
+
+<!--====================-->
+<a name="IonMath"></a>
+<h2>11.4.3 Math Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" header="Math {" startExpr="*ComputeIon*" endExpr="*BreakAt*"-->
+<pre>
+Math {
+  ComputeIonizationIntegrals ( )
+  BreakAtIonIntegral(1 1.1)
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="*AvalPostProcessing*" lines=1 footer="}"-->
+<pre>
+  AvalPostProcessing
+}
+</pre>
+<!-- grep end -->
+
+<p>In addition to <tt>ComputeIonizationIntegrals</tt>, which activates
+the impact ionization computation in a postprocessing mode, the keyword 
+<tt>AvalPostProcessing</tt> instructs Sentaurus Device to exclude the avalanche 
+generation term from the self-consistently solved carrier transport equations.</p>
+
+<p>However, the carrier generation due to the carrier impact ionization is still 
+computed in a postprocessing step and, together with ionization integrals, can 
+be plotted in Sentaurus Visual for further analysis.</p>
+
+<!--====================-->
+<a name="IonSolve"></a>
+<h2>11.4.4 Solve Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="Solve*" startoccurrence=1 lines=11 -->
+<pre>
+Solve {
+  *- Build-up of initial solution:
+  Coupled(Iterations=100){ Poisson }
+  Coupled { Poisson Electron Hole }
+  
+  Quasistationary(
+    InitialStep=@&lt;1e-2/100&gt;@ Increment=1.41 
+    MinStep=@&lt;1e-5/100&gt;@ MaxStep=0.025
+    Goal{ Name=&quot;drain&quot; Voltage=_Vdd_ }
+  ) { Coupled { _EQUATIONSET_ } }
+}
+</pre>
+<!-- grep end -->
+
+<p>To compute the ionization integrals with IIC analysis, the entire set of carrier 
+transport equations must be solved. Therefore, the <tt>_EQUATIONSET_</tt> macro in 
+the project tool input for this method is defined as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="#define*_EQ*Poisson*Hole*" lines=1 -->
+<pre>
+#define _EQUATIONSET_   Poisson Electron Hole
+</pre>
+<!-- grep end -->
+
+<p>The target drain bias is given by the <tt>_Vdd_</tt> macro definition:</p>
+
+<pre>
+#define _Vdd_ 100.
+</pre>
+
+<p>whose value should be higher than the actual breakdown voltage. The decision 
+as to when to stop a simulation is based on the <tt>BreakAtIonIntegral</tt> 
+criterion specified in the <tt>Math</tt> section.</p>
+
+<!--====================-->
+<a name="BVextra"></a>
+<h2>11.4.5 Breakdown Voltage Extraction</h2>
+
+<p>The breakdown voltage is estimated by looking at the avalanche current component,
+which is computed from the integral value of the avalanche generation rate, plotted
+according to the statement provided in the <tt>CurrentPlot</tt> section
+(see <a href="#CurPlot">Section 11.4.2 CurrentPlot Section</a>). For each bias condition, 
+the avalanche generation current is computed. The point where its value exceeds 
+the value of the conduction current is recognized as a breakdown point (see Figure 2).</p>
+
+<p><a href="images/sd_iic_bv.png"><img src="images/sd_iic_bv.png" width="450" 
+alt="MOSFET off-state breakdown extraction with IIC analysis" /></a></p>
+
+<p class="caption">Figure 2. Currents computed with IIC analysis. The blue 
+curve shows the conduction current, directly computed by Sentaurus Device. The 
+red curve indicates the portion of the current due to the avalanche generation 
+only, computed in a postprocessing step. The breakdown is estimated as a point 
+where these two currents meet. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>11.5 External Resistor Method</h1>
+
+<p>A simple but effective way to switch from a prebreakdown voltage-controlled sweep to a 
+postbreakdown current-controlled sweep is to attach an appropriate resistor to an electrode. 
+The resistor value should be large enough such that, in the postbreakdown regime, most of the 
+applied voltage drops across the resistor. The combination of the resistor + voltage 
+source then acts effectively as a current source.</p>
+      
+<p>A simple way to establish the value of the resistor is to make a test run without an 
+external resistor. In general, the simulation fails to converge near the onset of breakdown 
+or shortly after. Divide the applied voltage by the obtained electrode current and use a 
+resistor value of the order of <tt>V/I</tt>.</p>
+
+<p>For most breakdown simulation tasks, the external resistor method provides
+the most reliable solution and can be recommended, despite its tendency to be 
+the slowest of all the methods discussed in this section.</p>
+
+<!--====================-->
+<h2>11.5.1 Electrode Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" header="Electrode {" startExpr="*drain*" lines=1" -->
+<pre>
+Electrode {
+  { Name=&quot;drain&quot;     Voltage=0.0 Resistor= 1e7  }
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="*source*" endExpr="}*" -->
+<pre>
+  { Name=&quot;source&quot;    Voltage=0.0 }
+  { Name=&quot;gate&quot;      Voltage=0.0 Barrier= -0.55 }
+  { Name=&quot;substrate&quot; Voltage=0.0 }
+}
+</pre>
+<!-- grep end -->
+
+<p>In the <tt>Electrode</tt> section, the series resistor is attached 
+to the <tt>drain</tt> electrode. The value of 10<sup>7</sup>&nbsp;&Omega; 
+is determined by the test run as previously mentioned.</p>
+
+<!--====================-->
+<h2>11.5.2 Math Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="Math*" endExpr="*RelErr*" excludeLines="*#*" -->
+<pre>
+Math {
+  Extrapolate
+  Iterations=20
+  Notdamped =100
+  RelErrControl
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="*Avalder*" endExpr="*BreakCr*" footer="}"-->
+<pre>
+  AvalDerivatives
+  ErrRef(Electron)=1.e10
+  ErrRef(Hole)=1.e10
+  BreakCriteria{ Current(Contact=&quot;drain&quot; AbsVal=_Idmax_) } 
+}
+</pre>
+<!-- grep end -->
+
+<p>The keyword <tt>AvalDerivatives</tt> improves robustness for breakdown simulations. It 
+includes derivatives with respect to the avalanche generation rates into the Jacobian matrix. 
+Do not use this option if the impact ionization model is not activated since, in that case, 
+the option does not help convergence, but requires a larger memory use and a longer runtime.</p>
+
+<p>The simulation stops when a specified drain current level is reached. In this example, 
+the <tt>BreakCriteria</tt> statement terminates the bias sweep when the drain current 
+exceeds a value of <tt>_Idmax_</tt> = 1.443x10<sup>-3</sup>&nbsp;A/&mu;m. <tt>_Idmax_</tt> 
+is defined as a local Sentaurus Workbench variable.</p>
+
+<!--====================-->
+<h2>11.5.3 Solve Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="Solve*" startoccurrence=2 endExpr="}*" -->
+<pre>
+Solve {
+  *- Build-up of initial solution:
+  Coupled(Iterations=100){ Poisson }
+  Coupled { Poisson Electron Hole }
+  
+  Quasistationary(
+    InitialStep=@&lt;1e-2/100000&gt;@ Increment=1.41 
+    MinStep=@&lt;1e-5/100000&gt;@ MaxStep=0.025
+    Goal{ Name=&quot;drain&quot; Voltage=_Vdd_ }
+  ) { Coupled { _EQUATIONSET_ } }
+}
+</pre>
+<!-- grep end -->
+
+<p>The drain is ramped in the <tt>Goal</tt> statement up to a specified value, which is much 
+higher than the expected breakdown voltage because, in the postbreakdown regime, most of the 
+voltage drops across the resistor.</p>
+
+<p class="note">When plotting the resulting I&ndash;V curve from the external resistor method, 
+use the <tt>InnerVoltage</tt> value as an argument to obtain the pure voltage drop on a simulated 
+device under investigation.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>11.6 Voltage-to-Current Boundary Condition Switching Method</h1>
+
+<p>As an alternative to the external resistor method to simulate a device 
+electrical breakdown, you can use the voltage-to-current method, which applies 
+the boundary condition (BC) switch from the voltage BC (Dirichlet) to the 
+current BC (Neumann).</p>
+
+<p>When specifying the switching point, you must ensure that beyond this point the
+current increases monotonically as shown in Figure&nbsp;3. Otherwise, the method
+fails. Note, however, that the voltage can decrease again (snapback).</p>
+
+<p><a href="images/sd_v2c_bv.png"><img src="images/sd_v2c_bv.png" width="450" 
+alt="Boundary condition switching" /></a></p>
+
+<p class="caption">Figure 3. For monotonic curve (red), the voltage-to-current BC 
+switching method can be applied to any bias point. For nonmonotonic curve (black), 
+showing negative differential resistance behavior, the voltage-to-current BC 
+switching method can be applied only to the indicated bias, where the current 
+starts to grow monotonically. (Click image for full-size view.)</p>
+
+<!--====================-->
+<h2>11.6.1 Electrode Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" header="Electrode {" startExpr="*drain*" startoccurrence=3 lines=1" -->
+<pre>
+Electrode {
+  { Name=&quot;drain&quot;     Voltage=0.0 }
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="*source*" endExpr="}*" -->
+<pre>
+  { Name=&quot;source&quot;    Voltage=0.0 }
+  { Name=&quot;gate&quot;      Voltage=0.0 Barrier= -0.55 }
+  { Name=&quot;substrate&quot; Voltage=0.0 }
+}
+</pre>
+<!-- grep end -->
+
+<p>The voltage-to-current BC switching method does not require a specific resistor 
+to be attached to an electrode of interest. If not specified, the default resistor 
+value of 1&nbsp;m&Omega; is used.</p>
+
+<!--====================-->
+<h2>11.6.2 Solve Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="Solve*" startoccurrence=3 endExpr="}*" -->
+<pre>
+Solve {
+  *- Build-up of initial solution:
+  Coupled(Iterations=100){ Poisson }
+  Coupled { Poisson Electron Hole }
+  
+  Quasistationary(
+    InitialStep=@&lt;1e-2/5.0&gt;@ Increment=1.41 
+    MinStep=@&lt;1e-5/5.0&gt;@ MaxStep=0.025
+    Goal{ Name=&quot;drain&quot; Voltage=6. }
+  ) { Coupled { _EQUATIONSET_ } }
+  
+  Set (&quot;drain&quot; mode current)
+  QuasiStationary ( 
+    InitialStep=1e-6 Maxstep=0.05 MinStep=1e-9 Increment=1.41 
+    Goal { name=drain current=_Idmax_ }
+  ) { Coupled { _EQUATIONSET_ } }
+}
+</pre>
+<!-- grep end -->
+
+<p>For the MOSFET off-state breakdown regime with the first <tt>Quasistationary</tt> 
+statement, the drain electrode is first biased up to 6&nbsp;V. Next, the 
+<tt>Set</tt> command instructs the simulator to switch from the finally achieved 
+voltage BC to the current BC at the drain electrode.</p>
+
+<p class="note">The <tt>Set(&quot;drain&quot; mode current)</tt> 
+command is used here for demonstration purposes only and can be omitted.</p>
+
+<p>In the next <tt>Quasistationary</tt> statement, the drain current is ramped 
+up to a value (<tt>_Idmax_</tt> = 1.443x10<sup>-3</sup>&nbsp;A/&mu;m) specified
+inside the <tt>Goal</tt> statement.</p>
+
+<p><a href="images/sd_v2c_bv2.png"><img src="images/sd_v2c_bv2.png" width="450" 
+alt="MOSFET off-state breakdown I-V curve" /></a></p>
+
+<p class="caption">Figure 4. MOSFET off-state breakdown I&ndash;V curve 
+as a result of the voltage-to-current BC switching method. Inset: Magnification 
+around the switching point (6&nbsp;V) shows the adaptive step refinement as 
+specified in the consequent Quasistationary statement. (Click image for 
+full-size view.)</p>
+
+<p class="note">Sometimes, it is not known in advance where to specify a switching 
+point. In this case, it is recommended to ramp up a device bias to as high a value 
+as possible and switch to the current BC only after the voltage BC no longer converges. 
+For example, when a device starts snapping back (that is, inner dV becomes negative).</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>11.7 Continuation Method</h1>
+
+<p>The continuation method enables automated tracing of arbitrarily shaped curves 
+such as breakdown or latch-up. Its implementation is based on a dynamic load-line technique 
+adapting the boundary conditions along the traced curve to ensure convergence.</p>
+
+<p>Because the curve derivative computation is involved in the continuation
+method, sometimes it can show less stable convergence behavior, compared to the
+external resistor method or the voltage-to-current BC switching method.</p>
+
+<p>Without user intervention, an external load resistor is connected to a 
+device electrode at which the curve is traced and, therefore, the device 
+is indirectly biased through the load resistance. By monitoring the slope 
+of a traced curve, an optimal BC is determined by adjusting the load line 
+so that it is orthogonal to the local tangent of the curve. The continuation method 
+automatically decides on a BC without prior knowledge of the curve characteristics.</p>
+
+<!--====================-->
+<h2>11.7.1 Solve Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="Solve*" startoccurrence=4 endExpr="}*" -->
+<pre>
+Solve {
+  *- Build-up of initial solution:
+  Coupled(Iterations=100){ Poisson }
+  Coupled { Poisson Electron Hole }
+  
+  Continuation(
+    Name=&quot;drain&quot;                     * Curve is traced at this electrode
+    InitialVStep=0.1                 * Initial voltage step
+    Increment=1.41 Decrement=2
+    MaxVstep=0.25                    * Limits voltage step along curve trace
+    NewArc
+    MinVoltage=-0.001 MaxVoltage=100 * Define the I-V window where
+    MinCurrent=0 MaxCurrent=_Idmax_  * IV curve is traced
+    Vadapt=2.0                       * Up to this voltage, a Quasistationary
+                                     * with voltage ramping is used instead
+                                     * of continuation
+    Iadapt=1e-8                      * Up to this current, a Quasistationary
+                                     * with voltage ramping is used instead
+                                     * of continuation
+  ) { Coupled { _EQUATIONSET_ } }
+}
+</pre>
+<!-- grep end -->
+
+<p>The continuation method traces the drain I&ndash;V curve automatically according 
+to the specified I&ndash;V curve window. <tt>MinVoltage</tt>, <tt>MaxVoltage</tt>, 
+<tt>MinCurrent</tt>, and <tt>MaxCurrent</tt> define the window where the curve 
+is traced. The value of <tt>MaxVstep</tt> limits the maximum voltage step along
+the bias sweep, thereby allowing the curve to look smoother.</p>
+
+<p>The optional keyword <tt>NewArc</tt> activates an alternative implementation for 
+tracing curves that might improve continuation robustness in many situations.</p>
+
+<p>The keywords <tt>Iadapt</tt> and <tt>Vadapt</tt> indicate a threshold current 
+value and a threshold voltage, which must be reached to initiate the continuation 
+method. Below this value, a regular voltage bias ramp is applied. Only one of 
+these options is required. Both limits must be exeeded if specified.</p>
+
+<p><a href="images/sd_iadapt.png"><img src="images/sd_iadapt.png" width="450" 
+alt="I-V curve obtained with continuation method" /></a></p>
+
+<p class="caption">Figure 5. I&ndash;V curve obtained with the continuation method. 
+The arrow indicates the position where the continuation method starts. (Click image 
+for full-size view.)</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>11.8 Transient Method</h1>
+
+<p>In some situations, for example, with a floating semiconductor region present inside 
+a simulated structure or when the dynamic trap occupation by electrons or holes is 
+considered, it is required that a device simulation is performed in transient.</p>
+
+<p>The following sections show how to perform a transient device breakdown simulation 
+for a 2D NMOSFET device.</p>
+
+<!--====================-->
+<h2>11.8.1 Electrode Section</h2>
+
+<p>In certain cases, having a device bias ramped in the time domain helps to achieve 
+faster and more reliable results for a device breakdown simulation. To do this, time-dependent 
+boundary conditions are used for a specific electrode (drain electrode in this case), with 
+a given list of voltage&ndash;time pairs. The initial boundary condition in this case is 
+still defined by a separate &quot;static&quot; voltage whose value is used to compute the 
+initial guess solution.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" header="Electrode {" startExpr="*drain*" startoccurrence=2 lines=1" -->
+<pre>
+Electrode {
+  { Name=&quot;drain&quot; Voltage=0.0 Voltage=(0. at 0., _Vdd_ at _tend_) Resistor= 1e7 }
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="*source*" endExpr="}*" -->
+<pre>
+  { Name=&quot;source&quot;    Voltage=0.0 }
+  { Name=&quot;gate&quot;      Voltage=0.0 Barrier= -0.55 }
+  { Name=&quot;substrate&quot; Voltage=0.0 }
+}
+</pre>
+<!-- grep end -->
+
+<p>Here, the first voltage&ndash;time pair defines the initial condition from where the 
+transient starts. The second pair, <tt>_Vdd_ at _tend_</tt>, defines the final time 
+and the goal bias to be reached. Between these, as many voltage&ndash;time pairs as needed can be
+specified, thereby allowing a complex piecewise bias transient ramp to be simulated.</p>
+
+<!--====================-->
+<h2>11.8.2 Math Section</h2>
+
+<p>Simulations in transient require discretization of the transient equations. Two transient 
+discretization schemes are supported in Sentaurus Device: simple backward Euler (BE) method 
+and composite trapezoidal rule/backward differentiation formula (TRBDF) method.</p>
+
+<p>The composite TRBDF method, a second-order approximation, is used by default in 
+Sentaurus Device. On the other hand, in most cases, the BE method, despite its lower 
+accuracy, is suggested as the method of choice to solve most standard simulation tasks 
+in transient, due to its better performance compared to the composite TRBDF method.</p>
+
+<p> To activate the BE method, use:</p>
+
+<pre>
+Math {
+...
+  Transient= BE
+}
+</pre>
+
+<p>The same break criterion, as used in the external resistor method, is used here 
+to terminate the simulation when the given current level is reached.</p>
+
+<p>For all of these methods, linear solution extrapolation is used, which helps to 
+speed up the convergence on a single Newton iteration. However, this is not 
+always the case for transient simulations. The decision to apply or not apply the solution 
+extrapolation can be made individually for each particular case, by switching on or off 
+the <tt>Extrapolate</tt> keyword in the <tt>Math</tt> section of the command file.</p>
+
+<!--====================-->
+<h2>11.8.3 Solve Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="Solve*" startoccurrence=5 endExpr="}*" -->
+<pre>
+Solve {
+  *- Build-up of initial solution:
+  Coupled(Iterations=100){ Poisson }
+  Coupled { Poisson Electron Hole }
+  
+  Transient (
+    InitialTime= 0. FinalTime= _tend_
+    InitialStep= @&lt;_tend_*0.1/_Vdd_&gt;@ Increment= 1.41
+    Minstep= @&lt;_tend_*1e-5/_Vdd_&gt;@  MaxStep= @&lt;_tend_/100.&gt;@ 
+  ) { Coupled { _EQUATIONSET_ } }
+}
+</pre>
+<!-- grep end -->
+
+<p>Remembering that a large external lumped resistor is attached to the drain 
+electrode, the <tt>_Vdd_</tt> bias is defined as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" {" startExpr="*_Vdd_*" startoccurrence=1 lines=1" -->
+<pre>
+#define _Vdd_ 100000.
+</pre>
+<!-- grep end -->
+
+<p>The <tt>_tend_</tt> value defines how fast the drain bias is ramped in time 
+and is defined in seconds:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" {" startExpr="*_tend_*" startoccurrence=1 lines=1" -->
+<pre>
+#define _tend_ 1.
+</pre>
+<!-- grep end -->
+
+<p>The <tt>Transient</tt> keyword indicates that the simulation should be performed in 
+transient. All time-related parameter values are given in seconds. Computations performed 
+for <tt>InitialStep</tt>, <tt>MinStep</tt>, and <tt>MaxStep</tt> values reflect the fact 
+that a large lumped resistor is attached to the drain electrode, and a large bias is 
+applied to the drain electrode accordingly.</p>
+
+<p class="note">When plotting the resulting I&ndash;V curve from the transient method, 
+use the drain <tt>InnerVoltage</tt> value as an argument to obtain the pure voltage 
+drop on a simulated device under investigation.</p>
+
+<p>The additional displacement current component 
+\(\bo J_{\bo D} = \bo ε_{\bo 0} · {\bo δ \bo E} / {\bo δ \bo t} \)
+is computed in transient, which contributes to the integral current value.
+Therefore, with the faster ramp times, you might expect different results
+obtained in transient, compared to a steady-state solution. In general, you
+should double-check whether a certain ramp time value satisfies the task
+requirement.</p>
+
+<p>However, in this particular example, the breakdown value is not affected by the 
+ramp speed, as shown in Figure&nbsp;6.</p>
+
+<p><a href="images/sd_trans.png"><img src="images/sd_trans.png" width="450" 
+alt="Resulting I(t) and V(t) curves obtained with different bias ramp times" /></a></p>
+
+<p class="caption">Figure 6. Resulting I(t) (solid lines) and V(t) (dots) curves 
+obtained with different bias ramp times (from left to right, 1&nbsp;s, 10&nbsp;s, 
+100&nbsp;s, and 1e5&nbsp;s). (Click image for full-size view.)</p>
+
+<p>Figure 7 shows the <tt>Applications_Library/GettingStarted/sdevice/BVmethods</tt> 
+project, with the extracted breakdown voltage values obtained with different 
+solution methods.</p>
+
+<p><img src="images/sd_all_bv.png" width="530" height="212" 
+alt="Sentaurus Workbench project showing extracted breakdown voltage values" /></p>
+
+<p class="caption">Figure 7. Sentaurus Workbench project showing the extracted 
+breakdown voltage values for each breakdown method.</p>
+
+<p>Table 2 compares the CPU times for the MOSFET off-state breakdown simulation performed 
+using the different breakdown methods.</p>
+
+<a name="Table2"></a>
+<table>
+<caption>Table 2. CPU times for different breakdown methods (average data is shown).</caption>
+
+<tr>
+<th>Method</th>
+<th>ABA</th>
+<th>IIC</th>
+<th>External resistor</th>
+<th>Voltage-to-current</th>
+<th>Continuation</th>
+<th>Transient</th>
+</tr>
+
+<tr>
+<td>CPU time [s]</td>
+<td>35</td>
+<td>77</td>
+<td>160</td>
+<td>209</td>
+<td>155</td>
+<td>167</td>
+</tr>
+</table>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>11.9 Tracking Additional Data in the Current File</h1>
+
+<p>As mentioned in <a href="#CurPlot">Section&nbsp;11.4.2 CurrentPlot Section</a>, 
+the top-level <tt>CurrentPlot</tt> statement provides a way to write additional 
+scalar data to the current file. Data depending on coordinates can be written.</p>
+
+<p>When writing coordinate-dependent data, the values are interpolated as required. 
+For example, the maxima of the electric field and the impact ionization, and their
+respective coordinates, can be written to the <tt>.plt</tt> file with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="CurrentPlot*" startoccurrence=2 endExpr="*}*" -->
+<pre>
+CurrentPlot {
+  ImpactIonization(Maximum(Semiconductor Coordinates))
+  ElectricField   (Maximum(Semiconductor Coordinates))
+}
+</pre>
+<!-- grep end -->
+
+<p>This capability is used in the electrical breakdown simulation in 
+<a href="#8">Section&nbsp;11.8 Transient Method</a>. Figure&nbsp;8 shows the 
+maximum of the electric field and the maximum of the impact ionization, 
+depending on time.</p>
+
+<p><a href="images/sd_max_E.png"><img src="images/sd_max_E.png" width="450" 
+alt="Maximum of electric field and impact ionization versus time" /></a></p>
+
+<p class="caption">Figure 8. Maximum of the electric field (left axis) and the 
+impact ionization (right axis) versus time. (Click image for full-size view.)</p>
+
+<p>Furthermore, it is possible to output averages, integrals, maximum, and
+minimum of quantities over specified domains. To do this, specify the keyword 
+<tt>Average</tt>, <tt>Integrate</tt>, <tt>Maximum</tt>, or <tt>Minimum</tt>,
+respectively, followed by the specification of the domain in parentheses.</p>
+
+<p>A domain can be a region, a material, region and material interfaces, a window 
+(given by coordinates), a doping well, or any of <tt>Semiconductor</tt>, 
+<tt>Insulator</tt>, or <tt>Everywhere</tt>. For example, avalanche 
+generation can be integrated over the silicon material with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/BVmethods/BV_des.cmd" startExpr="CurrentPlot*" endExpr="*}*" -->
+<pre>
+CurrentPlot {
+  ImpactIonization (Integrate(Semiconductor))
+}
+</pre>
+<!-- grep end -->
+
+<p>This capability is used in the electrical breakdown simulation example with
+the approximate breakdown analysis provided in 
+<a href="#4">Section&nbsp;11.4 Ionization Integrals With Carriers Analysis</a>. 
+Figure&nbsp;9 plots the impact ionization rate, integrated over the silicon 
+region, versus drain voltage.</p>
+
+<p><a href="images/sd_int_II.png"><img src="images/sd_int_II.png" width="450" 
+alt="Integrated impact ionization rate versus drain voltage" /></a></p>
+
+<p class="caption">Figure 9. Integrated impact ionization rate versus drain
+voltage. (Click image for full-size view.)</p>
+ 
+<!--================================================-->
+<a name="10"></a>
+<h1>11.10 Driving Force for Avalanche Generation and High-Field Saturation Models</h1>
+
+<p>Since the process of avalanche generation depends exponentially on the 
+driving force that causes it, Sentaurus Device provides many options for choosing 
+the appropriate driving force model for avalanche generation and also for 
+high-field saturation (HFS) models. The driving force for avalanche generation 
+affects breakdown behavior directly; whereas, the driving force choice for HFS models
+affects the behavior after breakdown, since the current density in power devices 
+is limited by velocity saturation.</p>
+
+<!--=========================-->
+<h2>11.10.1 Driving Force for Avalanche Generation</h2>
+
+<p>For avalanche generation, Sentaurus Device offers the following driving forces:</p>
+
+<ul>
+<li><tt>GradQuasiFermi</tt> is the default and uses the magnitude of the gradient of 
+<tt>eQuasiFermi</tt> or <tt>hQuasiFermi</tt> as the driving force.</li>
+<li><tt>EParallel</tt> uses the electric field in the direction of the electron or hole current 
+as the driving force.</li>
+<li><tt>ElectricField</tt> is used only for approximate breakdown analysis (see 
+<a href="#3">Section&nbsp;11.3 Approximate Breakdown Analysis</a>).</li>
+</ul>
+
+<p>The driving force for the avalanche model is chosen as following:</p>
+
+<pre>
+Physics {
+  Recombination(
+    Avalanche( &lt;drivingforce&gt; )
+  )
+}
+</pre>
+
+<p>When the carrier density is small, the direction of the current vector cannot be well 
+established numerically, leading to large fluctuations in the driving force field. This 
+can result in sudden changes in avalanche generation and, therefore, leads to convergence 
+problems.</p>
+
+<!--=========================-->
+<h2>11.10.2 Driving Force for Velocity High-Field Saturation Models</h2>
+
+<p>For velocity high-field saturation (HFS), Sentaurus Device offers the following 
+driving forces:</p>
+
+<ul>
+<li><tt>GradQuasiFermi</tt> is the default and uses the magnitude of the gradient of 
+<tt>eQuasiFermi</tt> or <tt>hQuasiFermi</tt> as the driving force.</li>
+<li><tt>EParallel</tt> uses the electric field in the direction of the electron or hole 
+current as the driving force.</li>
+<li><tt>ElectricField</tt> uses the magnitude of the electric field as the driving force.</li>
+<li><tt>EParallelToInterface</tt> uses the electric field component parallel to the 
+nearest interface as the driving force.</li>
+<li><tt>SqrtEfieldProdGQF</tt> uses the square root of the electric field multiplied by 
+the gradient of the quasi-Fermi level as the driving force.</li>
+</ul>
+
+<p>The driving force is chosen in the <tt>Physics</tt> section:</p>
+
+<pre>
+Physics {
+  Mobility(
+    HighFieldSaturation( &lt;drivingforce&gt; )
+  )
+}
+</pre>
+
+<p>As with avalanche generation, <tt>EParallel</tt> is the most physically accurate model, 
+but it suffers from the same stability problems. <tt>ElectricField</tt> overestimates the 
+driving force in the channel of a MOS device, since the perpendicular electric field is 
+also taken into account. For MOS channels, <tt>EParallelToInterface</tt> is a better model, 
+because the current flows primarily parallel to the metal&ndash;insulator interface. However, 
+at rounded trench corners where breakdown can occur, this model underestimates the driving 
+force, because there the current flow becomes primarily perpendicular to the interface. 
+As such, <tt>GradQuasiFermi</tt> offers the best balance between accuracy and robustness 
+in terms of the choice of driving force model.</p>
+
+<p>Note that the choice of the driving force for velocity HFS will have little or no 
+impact on the breakdown voltage (the point where breakdown starts), but it can 
+significantly affect snapdown behavior. Therefore, a careful driving force choice is 
+needed only when snapdown behavior is of interest.</p>
+
+<!--=========================-->
+<h2>11.10.3 Driving Force Interpolation for Velocity High-Field Saturation and Avalanche Models</h2>
+
+<p>Even though <tt>GradQuasiFermi</tt> offers the best choice for the driving force for 
+HFS models, due to its mathematical nature, it can show instabilities in areas of 
+low-carrier concentration. To overcome these instabilities, Sentaurus Device can be 
+instructed to interpolate from <tt>GradQuasiFermi</tt> to a different driving force model.</p>
+
+<p>The possibility to interpolate a given avalanche driving force to the electric field 
+at low carrier concentrations, similar to what is described in 
+<a href="../sd/sd_9.html#nonlin">Section&nbsp;9.3.2 Nonlinear Solver Controls</a>, is 
+available in Sentaurus Device. It can sometimes improve the simulator convergence behavior.</p>
+
+<p>For the <tt>GradQuasiFermi</tt> driving force, the following syntax should be used 
+to interpolate it to the <tt>ElectricField</tt> within regions of small carrier densities:</p>
+
+<pre>
+Math {
+  RefDens_eGradQuasiFermi_ElectricField_Aval = &lt;refdens&gt;
+  RefDens_hGradQuasiFermi_ElectricField_Aval = &lt;refdens&gt;
+}
+</pre>
+
+<p>where <tt>&lt;refdens&gt;</tt> is the electron or hole concentration below which this 
+interpolation becomes active.</p>
+
+<p>Alternatively, if the <tt>EParallel</tt> driving force is used as a driving force,
+then it can also be interpolated to the <tt>ElectricField</tt> using the following syntax:</p> 
+
+<pre>
+Math {
+  RefDens_eEParallel_ElectricField_Aval = &lt;refdens&gt;
+  RefDens_hEParallel_ElectricField_Aval = &lt;refdens&gt;
+}
+</pre>
+
+<p>Using these specifications, the driving force interpolation is applied to the 
+avalanche term only.</p>
+
+<p>The driving force interpolation for the velocity high-field saturation model can be
+applied separately. Different options are available. The first option is to interpolate 
+from <tt>GradQuasiFermi</tt> to <tt>ElectricField</tt>:</p>
+
+<pre>
+Math {
+  RefDens_eGradQuasiFermi_ElectricField_HFS = &lt;refdens&gt;
+  RefDens_hGradQuasiFermi_ElectricField_HFS = &lt;refdens&gt;
+}
+</pre>
+
+<p>where <tt>&lt;refdens&gt;</tt> is the electron or hole concentration below which this 
+interpolation becomes active.</p>
+
+<p>The second option is to interpolate from <tt>GradQuasiFermi</tt> to 
+<tt>EParallelToInterface</tt>:</p>
+
+<pre>
+Math {
+  RefDens_eGradQuasiFermi_EParallelToInterface_HFS = &lt;refdens&gt;
+  RefDens_hGradQuasiFermi_EParallelToInterface_HFS = &lt;refdens&gt;
+}
+</pre>
+
+<p>Lastly, there is an option to interpolate from <tt>EParallel</tt> to 
+<tt>ElectricField</tt>, just like for avalanche generation:</p>
+
+<pre>
+Math {
+  RefDens_eEParallel_ElectricField_HFS = &lt;refdens&gt;
+  RefDens_hEParallel_ElectricField_HFS = &lt;refdens&gt;
+}
+</pre>
+
+<p>Which of these interpolation options is appropriate for the given structure depends 
+on whether the breakdown behavior occurs primarily in the channel or at a trench corner. 
+In the first case, interpolation to <tt>EParallelToInterface</tt> is more accurate; 
+whereas in the latter case, interpolation to <tt>ElectricField</tt> is more accurate.</p>
+
+<p>If no prior information is available about the breakdown location, then  the following setup 
+is recommended for a typical power device:</p>
+
+<pre>
+Physics {
+  Recombination(
+    Avalanche( GradQuasiFermi )
+  )
+  Mobility(
+    HighFieldSaturation( GradQuasiFermi )
+  )
+}
+Math {
+  RefDens_eGradQuasiFermi_ElectricField_HFS = 1e12
+  RefDens_hGradQuasiFermi_ElectricField_HFS = 1e12
+}
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_10.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_12.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

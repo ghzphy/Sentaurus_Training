@@ -1,0 +1,423 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Workbench 8. Parameter and Variable References</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_07.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_09.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Workbench<br />8. Parameter and Variable References</h1>
+
+<p>
+ <a href="#1">8.1 Project Parameters</a><br />
+ <a href="#2">8.2 Project Variables</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To provide deeper insight into the parameters and variables of Sentaurus Workbench.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>8.1 Project Parameters</h1>
+
+<p>As mentioned in <a href="swb_04.html#Param">Section&nbsp;4.1 Adding Parameters</a>, 
+a parameter splits the flow at the insertion point to produce variations in the current tool 
+inputs. To refer to a parameter, the parameter name must be placed inside a pair of @ signs.</p>
+
+<p>To demonstrate the possible ways to access parameter values, the following 
+entries have been put into the Sentaurus Visual tool input file (tool3) from the
+project <tt>Applications_Library/GettingStarted/swb/node_preprocess</tt>, shown in Figure&nbsp;1:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool3_vis.tcl" startExpr="*@param1@*" endExpr="*2:all*" -->
+<pre>
+@param1@
+@param2@
+@param3:+2@
+@param2|-1:+2@
+@param1:all@
+@param1|-2:all@
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/swb/node_preprocess/tool3_vis.tcl">
+tool3_vis.tcl</a>.</p>
+
+<p>You can easily compare the preprocessed file with the command file, by selecting 
+the node of interest, clicking the <strong>Visualize Results</strong> button and 
+selecting <strong>Compare Command Files of Selected Nodes</strong>.</p>
+
+<p>The following examples show how the corresponding preprocessed entries for
+the first (upper) node in the column look after preprocessing:</p>
+
+<table>
+<tr>
+<th>Command entry</th>
+<th>Result after preprocessing</th>
+</tr>
+
+<tr>
+<td><tt>@param1@</tt></td>
+<td>1</td>
+</tr>
+</table>
+
+<p><a href="images/swb_au_pararef.png"><img src="images/swb_au_pararef.png" width="570" 
+alt="Reference by parameter name" /></a></p>
+
+<p class="caption">Figure 1. Reference by parameter name. (Click image for full-size view.)</p>
+
+<table>
+<tr>
+<th>Command entry</th>
+<th>Result after preprocessing</th>
+</tr>
+
+<tr>
+<td><tt>@param2@</tt></td>
+<td>ABC</td>
+</tr>
+</table>
+
+<p><a href="images/swb_au_pararef2.png"><img src="images/swb_au_pararef2.png" width="570" 
+alt="Reference by parameter name" /></a></p>
+
+<p class="caption">Figure 2. Reference by parameter name. (Click image for full-size view.)</p>
+
+<table>
+<tr>
+<th>Command entry</th>
+<th>Result after preprocessing</th>
+</tr>
+
+<tr>
+<td><tt>@param3:+2@</tt></td>
+<td>lin</td>
+</tr>
+</table>
+
+<p><a href="images/swb_au_paranode.png"><img src="images/swb_au_paranode.png" width="570" 
+alt="Combination of reference by parameter name and vertical node shift" /></a></p>
+
+<p class="caption">Figure 3. Combination of reference by parameter name 
+and vertical node shift. (Click image for full-size view.)</p>
+
+<table>
+<tr>
+<th>Command entry</th>
+<th>Result after preprocessing</th>
+</tr>
+
+<tr>
+<td><tt>@param2|-1:+2@</tt><br /> or <br /> <tt>@param2|:+2@</tt></td>
+<td>ABC</td>
+</tr>
+</table>
+
+<p><a href="images/swb_au_paranode2.png"><img src="images/swb_au_paranode2.png" width="570" 
+alt="Combination of reference by parameter name, and vertical and horizontal node shifts" /></a></p>
+
+<p class="caption">Figure 4. Combination of reference by parameter name, 
+and vertical and horizontal node shifts. (Click image for full-size view.)</p>
+
+<table>
+<tr>
+<th>Command entry</th>
+<th>Result after preprocessing</th>
+</tr>
+
+<tr>
+<td><tt>@param1:all@</tt></td>
+<td>1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 5</td>
+</tr>
+
+<tr>
+<td><tt>@param1|-2:all@</tt></td>
+<td>1 2 3 4 5</td>
+</tr>
+</table>
+
+<p>Note that the <tt>@param1:all@</tt> entry in the Sentaurus Visual tool 
+instance produces the multiple-value <tt>param1</tt> list according to the 
+number of subsequent splits in the Family Tree. To produce the original 
+list of values, the command should refer to the project tool location 
+where the parameter has been introduced (Sentaurus Process tool instance). 
+Alternatively, the list of values produced by <tt>@param1:all@</tt> 
+can be reduced to unique entries and sorted using the Tcl <tt>lsort</tt>
+command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool3_vis.tcl" startExpr="*!(*" endExpr="*)!*" -->
+<pre>
+!(
+puts [lsort -unique [list @param1:all@]]
+)!
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="2"></a>
+<h1>8.2 Project Variables</h1>
+
+<p>Variables are special objects, introduced in Sentaurus Workbench, which are
+used to exchange data values between project tools. These can be values that are
+known before project execution, for example, an user-defined implantation dose, as well
+as values that are extracted during runtime of a tool, for example, an oxidation
+thickness.</p>
+
+<p>Like a parameter, a variable holds a value and can be referenced in any form 
+of the <tt>@...@</tt> references. The main difference is that a variable does not 
+create a split in the simulation flow and, therefore, does not change the simulation 
+tree representation.</p>
+
+<p>Variables are displayed on the right-hand side of the <strong>Project</strong> 
+tab under Variable Values (see Figure&nbsp;5). If you do not see Variable Values, 
+then press the F4 key.</p>
+
+<p><a href="images/swb_variables.png"><img src="images/swb_variables.png" width="570" 
+alt="Variables in project GUI" /></a></p>
+
+<p class="caption">Figure 5. Variables shown on Project tab. 
+(Click image for full-size view.)</p>
+
+<!--====================-->
+<a name="2_1"></a>
+<h2>8.2.1 User-Defined Variables</h2>
+
+<p>To create a variable at a certain position in your simulation flow, you 
+initialize it by inserting <tt>#set</tt> into the command file. For example:</p>
+
+<pre>
+#set VAR 2
+</pre>
+
+<p>Sentaurus Workbench then creates the variable and initializes it during preprocessing.</p>
+
+<p>In this project, the variable <tt>@VAR1@</tt> is given the current node number 
+assigned in the first Sentaurus Process tool instance:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool1_fps.cmd" startExpr="#set*VAR1*" Lines=1  -->
+<pre>
+#set VAR1 @node@
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/swb/node_preprocess/tool1_fps.cmd">
+tool1_fps.cmd</a>.</p>
+
+<p>After project preprocessing, it appears as a single column in the result table 
+following the last tool in the project tool flow (see Figure&nbsp;5, VAR1 column under 
+Variable Values).</p>
+
+<p>You can also use a parameter or previously defined variables in the equation
+expression and assign a resulting value to the variable, which then appears in
+the result table. For example, in the Sentaurus Structure Editor command file
+<tt>tool2</tt>, the second statement is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool2_dvs.cmd" startExpr="*square*" Lines=1  -->
+<pre>
+#set square @&lt;param1*param1&gt;@
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/swb/node_preprocess/tool2_dvs.cmd">
+tool2_dvs.cmd</a>.</p>
+
+<p>The <tt>#set</tt> command here creates the variable <tt>@square@</tt> and assigns 
+the square of <tt>@param1@</tt> to it. The resulting variable value again appears in 
+the result table (see Figure&nbsp;5, square column under Variable Values).</p>
+
+<p>To prevent a variable from appearing in the result table, instead of <tt>#set</tt>, 
+you can use its hidden variant, the <tt>#seth</tt> command. For example, the variable 
+<tt>@result1@</tt> in <tt>tool1</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool1_fps.cmd" startExpr="#seth*" Lines=1  -->
+<pre>
+#seth result1 -1
+</pre>
+<!-- grep end -->
+
+<p>as well as <tt>@VAR2</tt> in <tt>tool2</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool2_dvs.cmd" startExpr="#seth*" Lines=1  -->
+<pre>
+#seth VAR2 @node@
+</pre>
+<!-- grep end -->
+
+<p>are both hidden and, therefore, do not appear in the result table. This helps to save 
+the view space if there are many variables in the project. You can still check the 
+existence and value of a hidden variable in the Node Explorer (see Figure&nbsp;6):</p>
+
+<ol>
+<li>Right-click  a node and choose <strong>Node Explorer</strong> (or select a node and 
+press the F7 key).</li>
+<li>Click the <strong>Node Data</strong> tab (you might need to select 
+<strong>Include Parent Nodes</strong>).</li>
+</ol>
+
+<p><a href="images/swb_nodeexplorer_var.png"><img src="images/swb_nodeexplorer_var.png" width="570" 
+alt="Hidden variables shown in Node Explorer" /></a></p>
+
+<p class="caption">Figure 6. Hidden variable values shown in Node Explorer. 
+(Click image for full-size view.)</p>
+
+<!--====================-->
+<a name="2_2"></a>
+<h2>8.2.2 Extracted Variables During Runtime</h2>
+
+<p>So far, the discussion has concerned data that was well defined before runtime. 
+However, often data is known only at runtime, for example, the final thickness of 
+a grown oxide layer. In this case, you can still use the variable concept as discussed
+in the previous section to exchange data between different tools. How this is
+achieved is demonstrated in this section.</p>
+
+<p>During simulation, each tool writes log information to its <tt>*.out</tt> file. 
+After a node has been executed successfully, Sentaurus Workbench parses the output 
+file of the node for strings that match the following template:</p>
+
+<pre>
+DOE: &lt;variable name&gt; &lt;value&gt;
+</pre>
+
+<p>and updates the result table accordingly. If a specified variable already
+exists, then the last printed value overwrites an existing one.</p>
+
+<p>Therefore, writing values following the DOE format to the <tt>*.out</tt> file 
+of a tool is the way to create variables and how extracted parameter values are 
+sent to the project to be exchanged between project nodes and used for further 
+analysis.</p>
+
+<p>The following examples show, for different Sentaurus tools, how you can write
+a variable to have it appear in the result table:</p>
+
+<ul>
+<li>For all Tcl-based tools (Sentaurus Process, Sentaurus Interconnect,
+Sentaurus Visual, and Sentaurus Device in Tcl mode), use:<br />
+<tt>set pi 3.141593<br />
+puts "DOE: PI $pi"</tt><br /><br /></li>
+
+<li>For all Python-based tools (Sentaurus Visual Python and Sentaurus Device in
+Python mode), use:<br />
+<tt>pi = 3.141593<br />
+print(f'DOE: PI {pi}')</tt><br /><br /></li>
+
+<li>For Sentaurus Structure Editor, use:<br />
+<tt>(define pi 3.141593)<br />
+(sde:ft_scalar &quot;PI&quot; pi)</tt><br /><br /></li>
+</ul>
+
+<p>As extracted variables exist only <strong>after</strong> the tool was run, 
+subsequent tools using the extracted variable in preprocessing statements might 
+fail during preprocessing. To avoid preprocessing errors of the clean project, 
+it is good practice to initialize every extraction variable with a <tt>#set</tt> or
+<tt>#seth</tt> command beforehand, depending on whether or not the extracted value
+should appear in the result table.</p>
+
+<p>Consider a few examples in the project <tt>node_preprocess</tt>.</p>
+
+<p>In <tt>tool1</tt>, you extract a hidden variable <tt>@result1@</tt> during
+runtime and assign the current node number multiplied by 10 to it:</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool1_fps.cmd" startExpr="#seth*" Lines=1  -->
+<pre>
+#seth result1 -1
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool1_fps.cmd" startExpr="set*mynode*" endExpr="*DOE*"  -->
+<pre>
+set mynode [expr 10*@node@]
+puts &quot;DOE: result1 $mynode&quot;
+</pre>
+<!-- grep end -->
+
+<p>You can check its value in the Node Explorer (see Figure&nbsp;6).</p>
+
+<p>In <tt>tool2</tt>, you extract a visible variable <tt>@result2@</tt> during
+runtime and assign the value of <tt>@result1@</tt> multiplied by 10 to it:</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool2_dvs.cmd" startExpr="#set*result*" Lines=1  -->
+<pre>
+#set result2 -1
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool2_dvs.cmd" startExpr="*define*xvar*" endExpr="*ft_scalar*"  -->
+<pre>
+(define xvar (* 10 @result1@))
+(sde:ft_scalar &quot;result2&quot; xvar)  
+</pre>
+<!-- grep end -->
+
+<p>You can check its value in the result table column result2 (see Figure&nbsp;5).</p>
+
+<p>In <tt>tool3</tt>, you extract a visible variable <tt>@result3@</tt> during
+runtime and assign the value of <tt>@result2@</tt> multiplied by 10 to it:</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool3_vis.py" startExpr="#set*result*" Lines=1  -->
+<pre>
+#set result3 -1
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool3_vis.py" startExpr="*xvar*=*" endExpr="*print*"  -->
+<pre>
+xvar = 10*@result2@
+print(f'DOE: result3 {xvar:.3e}')
+</pre>
+<!-- grep end -->
+
+<p>You can check its value in the result table column result3 (see Figure&nbsp;5).</p>
+
+<p>In addition note that, when you first preprocess the cleaned project, the result 
+variables <tt>@result2@</tt> and <tt>@result3@</tt> take their initialization value 
+of -1. Only when the corresponding tools are run do they take their final
+values of 10x and 100x, the node number of <tt>tool1</tt>, respectively.</p>
+
+<p class="note">A variable reference creates an execution dependency from the
+node where the reference is performed to the first ancestor where the variable
+has been set.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_07.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_09.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1013 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>    
+
+<title>TCAD Sentaurus Tutorial &ndash; TCAD to SPICE 4. RandomSpice</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_03.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_05.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">TCAD to SPICE<br />4. RandomSpice</h1>
+
+<p>
+ <a href="#1">4.1 Creating a RandomSpice Library</a><br />
+ <a href="#2">4.2 Simulating a Ring Oscillator</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to set up and use a RandomSpice library &ndash; although the demonstration 
+is a ring oscillator, the RandomSpice simulation can be changed to any CMOS circuit.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Creating a RandomSpice Library</h1>
+
+<p>RandomSpice is part of the TCAD to SPICE tool suite and is designed to provide enhanced SPICE 
+model variation capabilities, with a specific focus on process and global or local variation. 
+RandomSpice is designed to interface with Mystic output and allows users to generate a SPICE model 
+with an accurate response to arbitrary variations in process or TCAD setups. This is achieved through 
+a response surface model (RSM) methodology, where the RSM axes can be an arbitrary set of TCAD splits.</p>
+
+<p>To create a RandomSpice library, gpythonsh provides the <tt>builder</tt> object that is 
+designed to collect all relevant Mystic output data and to generate a RandomSpice library based on this.</p>
+
+<p>The model library can be built with the following key components:</p>
+
+<ul>
+<li><em>Base SPICE model</em> is usually referred to as a &quot;uniform&quot; or &quot;base&quot; model. 
+This is the only required part of the SPICE model.</li>
+<li><em>RSM model</em> is an overlay on the uniform model, which is designed to capture arbitrary 
+design-of-experiments (DoE) variations.</li>
+<li><em>Global generator</em> is an overlay on the RSM model to generate random DoE points for circuit simulation.</li>
+<li><em>Local variability model (ModelGen)</em> applies local variability based on Mystic extraction of 
+Garand VE local variability data.</li>
+</ul>
+
+<p>All of these components come in the form of SPICE model parameter sets extracted from Mystic, 
+except the global generator, which is currently an input from users during the library-building stage 
+that is addressed later in this section.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/tcadtospice/randomspice/ 14nmFinFETRespSurf_RS2</tt>.</p>
+
+<p>A pre-executed project is also included, which contains input data for the
+above project, and can be found in the directory
+<tt>Applications_Library/GettingStarted/tcadtospice/ randomspice/14nmFinFETRespSurf_NoLV</tt>.</p>
+
+<strong>Prerequisites</strong>
+
+<ul>
+<li>An executed Mystic project is required (this is provided as part of this tutorial).</li>
+<li>Some knowledge of the TCAD to SPICE database is useful, but not critical.</li>
+</ul>
+
+<!--================================-->
+<a name="builder-usage"></a>
+<h2>4.1.1 Builder Usage</h2>
+
+<p>You can add different components of the RandomSpice library model by using methods 
+of the <tt>builder</tt> object, which is injected into the gpythonsh scripting environment. 
+The methods are described in the following table.</p>
+
+<table>
+<tr>
+<th>Method</th>
+<th>Component</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>builder.add_device</tt></td>
+<td>Base SPICE model</td>
+<td>Adds a base SPICE model under a device label; executed once per device.</td>
+</tr>
+
+<tr>
+<td><tt>builder.add_doe_point</tt></td>
+<td>RSM model</td>
+<td>Adds a SPICE model parameter set with DoE point mapping; executed multiple times (based on target data splits).</td>
+</tr>
+
+<tr>
+<td><tt>builder.add_lv_distributions</tt></td>
+<td>Local variability model</td>
+<td>Adds a statistical SPICE model parameter set with DoE point mapping; executed multiple times 
+(based on target data splits).</td>
+</tr>
+
+<tr>
+<td><tt>builder.add_gv_distributions</tt></td>
+<td>Global generator</td>
+<td>Generates random DoE points for global (process) variation simulation.</td>
+</tr>
+</table>
+
+<p>All these methods are intended to interface directly with a TCAD to SPICE database containing 
+the results of Mystic SPICE model extractions. For a comprehensive API of the <tt>builder</tt>, 
+see the API documentation.</p>
+
+<!--================================-->
+<a name="builder-example"></a>
+<h2>4.1.2 Builder Example</h2>
+
+<p>In the following example (<tt>filepath</tt>), all aspects of the <tt>builder</tt> object 
+except local variability are covered. A prerun project (<tt>14nmFinFETRespSurf_NoLV</tt>) is 
+provided, which includes all required Mystic outputs.</p>
+
+<p>Figure 1 shows the process flow. The RandomSpice project (<tt>14nmFinFETRespSurf_RS2</tt>) 
+links to this Mystic project (<tt>14nmFinFETRespSurf_NoLV</tt>) and retrieves the required outputs 
+by connecting to the SWB Python database contained in that project.</p>
+
+<p>Using the Python list <tt>mysticProjectPaths</tt>, the 86 splits of the Mystic project 
+(<tt>14nmFinFETRespSurf_NoLV</tt>) can be condensed into an experiment in the RandomSpice project 
+(<tt>14nmFinFETRespSurf_RS2</tt>) to build a RandomSpice library. If necessary, data from multiple Mystic 
+extraction projects can also be combined into one RandomSpice library. For example, if there are 
+two Mystic projects for NMOS and PMOS separately, RandomSpice can combine all the information 
+from both projects as follows:</p>
+
+<pre>
+mysticProjectPaths = ["/path/to/nmos_device", "/path/to/pmos_device"]
+</pre>
+
+<p><a href="images/rs2_dbconnection.png"><img src="images/rs2_dbconnection.png" width="570" 
+alt="RandomSpice connected to projects of Mystic extraction through TCAD to SPICE database" /></a></p>
+
+<p class="caption">Figure 1. RandomSpice can be connected to projects of Mystic extraction 
+through the TCAD to SPICE database. (Click image for full-size view.)</p>
+
+<p>To accomplish this, the database in the Mystic project must be <em>enabled</em> (activated), 
+which is usually handled by Sentaurus Workbench for any project with TCAD to SPICE tools, where the 
+database is activated automatically any time a Sentaurus Workbench project is running. The 
+<tt>BuildLibrary</tt> script includes commands to remotely start the database in the Mystic projects:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/BuildLibrary_eng.py" startExpr="mysticProject*=*" endExpr="*startdb*" -->
+<pre>
+mysticProjectPaths = [&quot;@pwd@/../14nmFinFETRespSurf_NoLV&quot;]
+
+for prj in mysticProjectPaths:
+
+    startdb(prj)
+</pre>
+<!-- grep end -->
+
+<p>The <tt>startdb()</tt> command will attempt to activate the database in the Mystic project.
+However, the database can also be activated manually. To activate the database manually:</p>
+
+<ol>
+<li>Open the Mystic project in the graphical user interface of Sentaurus Workbench.</li>
+<li>Right-click any TCAD to SPICE tool icon and choose <strong>Start Project Database</strong>.<br /><br />
+<img src="images/rs2_startdb.png" width="447" height="471" 
+alt="Startind database through Sentaurus Workbench" /></li>
+<li>Connect the Mystic project and RandomSpice project as follows:<br />
+In the <tt>BuildLibrary</tt> script of the RandomSpice project, define the list of Mystic projects as follows:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/BuildLibrary_eng.py" startExpr="mysticProject*=*" lines=1 -->
+<pre>
+mysticProjectPaths = [&quot;@pwd@/../14nmFinFETRespSurf_NoLV&quot;]
+</pre>
+<!-- grep end -->
+</li>
+</ol>
+
+<p>In this example, only one Mystic project is used.</p>
+
+<p>The <tt>BuildLibrary</tt> script also defines some parameters that will be used in RandomSpice 
+simulations, shown in the following table.</p>
+
+<table>
+<tr>
+<th><strong>Parameter</strong></th>
+<th><strong>Type</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+
+<tr>
+<td><tt>midpoint_metadata</tt></td>
+<td>Python dictionary</td>
+<td>Stores a dictionary of <tt>device_polarity:device_label</tt> for use in SPICE simulations.</td>
+</tr>
+
+<tr>
+<td><tt>axes_df</tt></td>
+<td>Pandas DataFrame</td>
+<td>Table of DoE coordinates in the RSM added as the RSM points are added to the <tt>builder</tt>.</td>
+</tr>
+
+<tr>
+<td><tt>remap_names</tt></td>
+<td>Python dictionary</td>
+<td>User input dictionary of <tt>device_polarity:device_label</tt> used to define a label 
+for the devices that will appear in the RandomSpice netlist. The script assumes only one 
+NMOS and PMOS device will be in the RandomSpice library.</td>
+</tr>
+</table>
+
+<p>To link all Mystic projects to the RandomSpice project, the following loop is necessary:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/BuildLibrary_eng.py" startExpr="for prj*" endExpr="*builder.dbi*=*dbi*" -->
+<pre>
+for prj in mysticProjectPaths:
+
+    startdb(prj)
+    # Switch database connection
+    dburl = open(f&quot;{prj}/enigma/mongodb.conf&quot;).read()
+    dbi.connect(dburl)
+    builder.dbi = dbi
+</pre>
+<!-- grep end -->
+
+<p>You then search for <em>base SPICE models</em>, which is achieved by searching for projects 
+in the SWB Python database that have been tagged with the tool label of the <tt>Mystic_Uniform_Enigma</tt> 
+tool instance in the Mystic project (the code here is indented because it is part of the previous 
+<tt>for</tt> loop):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/BuildLibrary_eng.py" startExpr="*midpoint_projects*" endExpr="*point_model=False*" -->
+<pre>
+    midpoint_projects = dbi.get_project(midpoint=True,
+                                        swb__tool_label=&quot;Mystic_Uniform_Enigma&quot;)
+    midpoint_metadata.update({p.metadata[&quot;swb&quot;][&quot;Type&quot;]: p.metadata
+                              for p in midpoint_projects})
+
+    for proj in midpoint_projects:
+        remap_name = remap_names[proj.metadata[&quot;swb&quot;][&quot;Type&quot;]]
+        # Add base model card
+        builder.add_device(remap_name, dev_type=proj.metadata[&quot;swb&quot;][&quot;Type&quot;],
+                           dataset=list(proj.datasets)[-1], point_model=False)
+</pre>
+<!-- grep end -->
+
+<p>The <tt>dbi</tt> object of the database interface is used to identify all projects of interest. 
+These are returned as a list that you can iterate over using a <tt>for</tt> loop. Inside the loop, 
+you define the label for this device type (<tt>remap_name</tt>) and then use the 
+<tt>add_device</tt> method of the <tt>builder</tt> object to add a base SPICE model card to the 
+<tt>builder</tt> object.</p>
+
+<p>Here is the output when you print the <tt>builder.base_modelcards</tt> attribute showing 
+<tt>label:model</tt>:</p>
+
+<pre>
+{'nfet': * Subcircuit definition
+.subckt mos14n d g s b l=2.5e-08 nfin=1 rgc_en=1 rdc_en=1 rsc_en=1
+
+.PARAM r_gc  = 0 
+.PARAM rgc_fin  = 'r_gc/nfin*rgc_en' 
+.PARAM r_sc  = 0 
+.PARAM rsc_fin  = 'r_sc/nfin*rsc_en' 
+.PARAM r_dc  = 0 
+.PARAM rdc_fin  = 'r_dc/nfin*rdc_en' 
+rd d d_i rdc_fin 
+rs s s_i rsc_fin 
+rg g g_i rgc_fin 
+mos d_i g_i s_i b mosmod l=l nfin=nfin 
+.model mosmod NMOS
++DEVTYPE=1
++EASUB=4.0727
++NI0SUB=1.1055e+16
++BG0SUB=1.1242
++NC0SUB=2.9951e+25
++phig=4.2305
++RDSW=50
++RDSWMIN=50
+... 
+</pre>
+
+<p>After adding the base SPICE models, you start to add points in the RSM. This is achieved 
+by searching for projects in the SWB Python database that are tagged with the tool label of the 
+<tt>Mystic_Response_Surface</tt> tool instance in the Mystic project:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/BuildLibrary_eng.py" startExpr="*rs_projects*" endExpr="*midpoint=proj*" -->
+<pre>
+    rs_projects = dbi.get_project(swb__tool_label=&quot;Mystic_Response_Surface&quot;)
+
+    for proj in rs_projects:
+        axis_data = pd.DataFrame(proj.metadata['doe'], index=[0])
+        axes_df = pd.concat([axes_df, axis_data])
+
+        doe_pt = proj.metadata[&quot;doe&quot;]
+        doe_pt.update({&quot;nfin&quot;: 1})
+
+        dev_midpoint = remap_names[proj.metadata[&quot;swb&quot;][&quot;Type&quot;]]
+        # Add RSM model points
+        builder.add_doe_point(dev_midpoint, doe_pt,
+                              dataset=list(proj.datasets)[-1],
+                              midpoint=proj.metadata[&quot;midpoint&quot;])
+</pre>
+<!-- grep end -->
+
+<p>After retrieving the list of target database paths (Mystic projects) using the <tt>dbi</tt> 
+object, you iterate through them and add DoE points to the <tt>builder</tt> object by using the 
+<tt>add_doe_point</tt> method. You also add some geometric information, which is not tagged 
+during the extraction.</p>
+
+<p>In this example, you add <tt>nfin=1</tt> (<tt>nfin</tt> is the number of fins) as the 
+extractions were performed for single-fin devices. Each <tt>Mystic_Response_Surface</tt> 
+extraction node provides a coordinate&ndash;parameter set pair, which you can inspect by 
+printing the attribute <tt>builder.resp_dict</tt> as shown here:</p>
+
+<pre>
+{'nfet': {'doe_point l 2.5e-08 hfin 4e-08 wfin 8e-09 afin 88 tspacer 8e-09 nfin 1':
+mosmod.cdsc  mosmod.cdscd  mosmod.cgdo  mosmod.cgso  mosmod.deltawcv  mosmod.dvtp0  
+mosmod.hfin  mosmod.ksativ  mosmod.mexp  mosmod.phig  mosmod.tfin    mosmod.u0
+0 9.676118e-02  8.313607e-02 4.907366e-10 4.907366e-10     9.700885e-09  
+5.236851e-02 4.000000e-08   8.885492e-01 2.390127e+00 4.230611e+00 8.000000e-09 
+2.538083e-02
+... 
+</pre>
+
+<p>At this point, the <tt>builder</tt> has all the information necessary for a base model 
+with RSM across the five-axes DoE supplied. The <tt>builder</tt> object is executed in 
+<tt>debug</tt> mode using the <tt>builder.build</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/BuildLibrary_eng.py" startExpr="builder.build*" endExpr="*debug=True*" -->
+<pre>
+builder.build(&quot;@pwd@/@nodedir@&quot;, libname=&quot;n@node@_library&quot;, doe=True,
+              gv_dist=False, lv_dist=False, debug=True)
+</pre>
+<!-- grep end -->
+
+<p>during which, each aspect of the final model is printed to screen:</p>
+
+<pre>
+&lt;&lt;&lt;&lt;&lt; Launching Builder &gt;&gt;&gt;&gt;&gt;
+-> Adding device: nfet
+-> Device type: nmos
+--> Adding response surface model:
+---> Adding response surface model at DoE point: doe_point l 2.5e-08 hfin 
+4e-08 wfin 8e-09 afin 88 tspacer 8e-09 nfin 1
+---> Adding response surface model at DoE point: 
+doe_point l 2.3e-08 hfin 3.8e-08 wfin 1e-08 afin 89 tspacer 6e-09 nfin 1
+---> Adding response surface model at DoE point: 
+doe_point l 2.3e-08 hfin 3.8e-08 wfin 1e-08 afin 87 tspacer 1e-08 nfin 1
+---> Adding response surface model at DoE point: 
+doe_point l 2.7e-08 hfin 3.8e-08 wfin 6e-09 afin 89 tspacer 6e-09 nfin 1
+---> Adding response surface model at DoE point: 
+doe_point l 2.3e-08 hfin 3.8e-08 wfin 1e-08 afin 89 tspacer 1e-08 nfin 1
+---> Adding response surface model at DoE point: 
+doe_point l 2.7e-08 hfin 4.2e-08 wfin 6e-09 afin 87 tspacer 6e-09 nfin 1
+---> Adding response surface model at DoE point: 
+doe_point l 2.3e-08 hfin 4.2e-08 wfin 1e-08 afin 89 tspacer 1e-08 nfin 1
+</pre>
+
+<p>After this, the RandomSpice library is saved to disk at the node output location defined 
+in the <tt>builder.build</tt> command.</p>
+
+<p>During the final stages of the script, you switch back to the database for the RandomSpice 
+project and save some derived variables to the node database metadata for usage within the 
+RandomSpice scripts (<tt>Single_Ro_sim</tt> and <tt>RO_Sweep</tt>) included in this project:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/BuildLibrary_eng.py" startExpr="*@pwd@/enigma/mongodb.conf*" endExpr="*save()" -->
+<pre>
+dburl = open(&quot;@pwd@/enigma/mongodb.conf&quot;).read()
+dbi.connect(dburl)
+builder.dbi = dbi
+
+## This code is here to avoid database metadata
+## queries in the RandomSpice stages.
+node_prj.metadata.update({&quot;axes_df&quot;: axes_df})
+node_prj.metadata.update({&quot;midpoint_metadata&quot;: midpoint_metadata})
+node_prj.metadata.update({&quot;remap_names&quot;: remap_names})
+node_prj.save()
+</pre>
+<!-- grep end -->
+
+<p>where:</p>
+<ul>
+<li><tt>axes_df</tt> is a table of all DoE coordinates used to create the RSM model.</li>
+<li><tt>midpoint_metadata</tt> defines the DoE coordinates for the RSM (these scripts inherently 
+assume NMOS and PMOS DoEs are identical).</li>
+<li><tt>remap_names</tt> are the SPICE model names in the RandomSpice library. These must match 
+the model names used in the SPICE simulation netlists when RandomSpice simulations are set up.</li>
+</ul>
+
+<p>At this point, the library is ready to be used for circuit simulation with RandomSpice.</p>
+<p>Click to view the BuildLibrary Python file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/BuildLibrary_eng.py">
+BuildLibrary_eng.py</a>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Simulating a Ring Oscillator</h1>
+
+<p>This section covers the inputs required for a PrimeSim&trade; HSPICE&reg; simulation set 
+based on RandomSpice. The response surface model (RSM) methodology implemented in RandomSpice 
+will be used to evaluate ring oscillator (RO) behavior across a wide array of process conditions. 
+The example considers five axes of process variation, generated from standard TCAD Sentaurus 
+tools and characterized using Mystic, the extraction tool from the TCAD to SPICE tool suite.</p>
+
+<p>This section covers the following topics:</p>
+
+<ul>
+<li><a href="#rs-simulation-setup">Section 4.2.1 Setting Up the RandomSpice Simulation</a></li>
+<li><a href="#template-setup">Section 4.2.2 Setting Up the Template File</a></li>
+<li><a href="#rs2-single_ro">Section 4.2.3 Example: Single Ring Oscillator Simulation</a></li>
+<li><a href="#rs2-ro-doe-sweep">Section 4.2.4 Example: Ring Oscillator Design-of-Experiments Sweep</a></li>
+</ul>
+
+<strong>Prerequisites</strong>
+
+<ul>
+<li>Some knowledge of SPICE simulation with the PrimeSim HSPICE tool is recommended.</li>
+</ul>
+
+<!--=============================-->
+<a name="rs-simulation-setup"></a>
+<h2>4.2.1 Setting Up the RandomSpice Simulation</h2>
+
+<p>RandomSpice is a wrapper for the PrimeSim HSPICE  tool and as such its core inputs are:</p>
+
+<ul>
+<li>A SPICE netlist compatible with the PrimeSim HSPICE tool, with embedded RandomSpice input commands. The RandomSpice commands define variability model behavior as well as the paths to critical inputs such as the database configuration 
+and postprocessor (both optional).</li>
+<li>A postprocessor input file, which is used to extract key data from the PrimeSim HSPICE  screen output or listing file.</li>
+</ul> 
+
+<p>Within the Sentaurus Workbench environment, you can also utilize a Python 
+script to schedule jobs. As Figure 2 shows, all these inputs are available to edit through 
+the graphical user interface of Sentaurus Workbench.</p>
+
+<p><img src="images/rs2_inputs.png" width="434" height="479" 
+alt="RandomSpice tool inputs in graphical user interface of Sentaurus Workbench" /></p>
+
+<p class="caption">Figure 2. RandomSpice tool inputs in the graphical user interface 
+of Sentaurus Workbench.</p>
+
+<table>
+<tr>
+<th>Input</th>
+<th>Format</th>
+<th>Purpose</th>
+</tr>
+
+<tr>
+<td>Template</td>
+<td>Python file</td>
+<td>Controls the execution of RandomSpice jobs.</td>
+</tr>
+
+<tr>
+<td>RS2 input file</td>
+<td>RandomSpice input file</td>
+<td>Contains simulation netlist and defines key inputs for RandomSpice. 
+For details about RandomSpice command syntax, see the 
+<cite>RandomSpice User Guide</cite>.</td>
+</tr>
+
+<tr>
+<td>RS2 postprocessor</td>
+<td>Optional: Python script</td>
+<td>Activates Python-based parsing of PrimeSim HSPICE  output and allows users to save data 
+to the TCAD to SPICE database.</td>
+</tr>
+
+<tr>
+<td>RS2 netlist</td>
+<td>DEPRECATED</td>
+<td><em>The netlist input is now combined into the RS2 Input File. This item
+is kept for backward compatibility.</em></td>
+</tr>
+</table>
+
+<!--=============================-->
+<a name="template-setup"></a>
+<h2>4.2.2 Setting Up the Template File</h2>
+
+<p>The template file is a Python command file. The <tt>randomspice</tt> object in gpythonsh 
+allows you to execute RandomSpice jobs on your compute clusters. For details, see the 
+API documentation.</p>
+
+<p>The rest of this script is Python code used to:</p>
+
+<ul>
+<li>Set up different simulation conditions</li>
+<li>Ensure the SPICE netlist is compatible with the RandomSpice library</li>
+<li>Harvest and visualize simulation data</li>
+</ul>
+
+<!--=============================-->
+<a name="rs2-input-setup"></a>
+<h3>4.2.2.1 Parameter Substitution</h3>
+
+<p>One of the main uses of the Python template file is to ensure that the simulation netlists 
+are set up correctly. SPICE model names are applied based on the names defined in the 
+<tt>LibraryBuilder</tt> tool instance, and the SPICE model instance parameters that are 
+included in the RSM are applied to instances of the model in the netlist.</p>
+
+<p>The main goal of this is to ensure that the RandomSpice simulation projects are portable, 
+such that changes in the incoming front-end model and DoE variations in the RSM require 
+no manual update to the RandomSpice simulation projects.</p>
+
+<p>This is achieved by using the &quot;Mapping&quot; and &quot;Instance parameter adjustment&quot; 
+capabilities outlined in the <cite>RandomSpice User Guide</cite>. With these settings, arbitrary 
+SPICE model names can be &quot;mapped&quot; to RandomSpice keywords, and arbitrary instance 
+parameters can be added to the model instances &ndash; enabling RSM simulation with any axes.</p>
+
+<p>In the example, RandomSpice input files, the model labels are <tt>nmos</tt> and <tt>pmos</tt>,
+while the RandomSpice device names (as defined in the <tt>BuildLibrary</tt> script) are 
+<tt>nfet:nmos</tt> and <tt>pfet:pmos</tt>, as follows:</p>
+
+<pre>
+xmp out in vdd vnw <span class="red">pmos</span> NFIN=2
+</pre>
+
+<p>Using the RandomSpice command, you can associate the model keyword <tt>nmos</tt> to the 
+RandomSpice keyword <tt>nfet:nmos</tt>, and <tt>pmos</tt> to the RandomSpice keyword 
+<tt>pfet:pmos</tt>, as follows:</p>
+
+<pre>
+[models]
+...
+mapping = {'nmos': 'nfet:nmos', 'pmos': 'pfet:pmos'}
+...
+</pre>
+
+<p>Similarly, device instance parameters can be adjusted using the commands:</p>
+
+<pre>
+[models]
+...
+instance_params_nfet:nmos = {'par1': val1, 'par2': val2, ...}
+instance_params_pfet:pmos = {'par1': val1, 'par2': val2, ...}
+...
+</pre>
+
+<p>In this case, all instances of <tt>nfet:nmos</tt> will have the above instance parameters 
+attached to them.</p>
+
+<p>These and all other RandomSpice settings can be adjusted in the Template file, by accessing 
+the <tt>.rs2file</tt> attribute of the <tt>randomspice</tt> object as shown here:</p>
+
+<pre>
+randomspice.rs2file.SetOption('models', 'mapping', str({"nmos":"nfet:nmos", 
+                                                        "pmos":"pfet:pmos"}))
+</pre>
+
+<!--================================================-->
+<a name="rs2-single_ro"></a>
+<h2>4.2.3 Example: Single Ring Oscillator Simulation</h2>
+
+<p>The section demonstrates the simulation of a single ring oscillator (RO).</p>
+
+<!--============================-->
+<a name="netlist-file"></a>
+<h3>4.2.3.1 Netlist File</h3>
+
+<p>The netlist input is now combined into the RandomSpice input file. This item is kept for 
+backward compatibility but is now empty.</p>
+
+<!--============================-->
+<a name="rs2-input-file"></a>
+<h3>4.2.3.2 RandomSpice Input File</h3>
+
+<p>The RandomSpice input file includes a section of RandomSpice options, and a RO netlist in 
+standard syntax compatible with the PrimeSim HSPICE tool. For details about the RandomSpice 
+options, see the <cite>RandomSpice User Guide</cite>. For more information about PrimeSim HSPICE 
+simulation syntax, see the <cite>PrimeSim&trade; Continuum Reference Manual: Commands and 
+Control Options</cite>.</p>
+
+<p>The RandomSpice options section starts with <tt>.rs2</tt> and ends with <tt>.endrs2</tt>.
+In this example, you use Sentaurus Workbench variables to define output paths, 
+the path to the RandomSpice library (relative to the <tt>BuildLibrary</tt> tool 
+instance), and the database location for SPICE simulation output, as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_inp.rs2" startExpr=".rs2" endExpr=".endrs2" -->
+<pre>
+.rs2
+[Circuit]
+netlist     = None
+number      = 1
+seed        = 12345678
+startnum    = 1
+
+[Simulation]
+spice       = hspice
+spiceargs   = 
+
+[Variability]
+statistical = False
+process_resp_only = True
+
+[Output]
+dir         = @pwd@/@nodedir@/n@node@_/ro_results
+prefix      = ro
+savenets    = False
+processor   = @pwd@/@nodedir@/pp@node@_eng.py
+
+[Models]
+library     = @pwd@/@nodedir|BuildLibrary@/n@node|BuildLibrary@_library.rsl
+
+[Database]
+enabled     = True
+project     = @node@
+dataset     = @node@-ro
+.endrs2
+</pre>
+<!-- grep end -->
+
+<p>The rest of the input file defines the SPICE simulation, in this case, an 11-stage RO, with a 
+two-input NAND cell to act as an enable. In the simulation, the RO is initialized and deactivated, 
+during which time leakage measurements are taken, then oscillation is activated, and frequency and 
+power measurements are taken. The rest of this file is in standard PrimeSim HSPICE syntax.</p>
+
+<p>Click to view the input file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_inp.rs2">
+Single_RO_sim_inp.rs2</a>.</p>
+
+<!--============================-->
+<a name="rs2-postprocessor"></a>
+<h3>4.2.3.3 RandomSpice Postprocessor File</h3>
+
+<p>The postprocessor input file parses the PrimeSim HSPICE  <tt>.lis</tt> output file (which is 
+printed to screen in PrimeSim HSPICE  interactive mode) and provides a Python environment 
+that can be used for data harvesting and storage. This is an optional capability, which 
+can be deactivated through the RandomSpice input file.</p>
+
+<p>When deactivated, the raw PrimeSim HSPICE  <tt>.lis</tt> file is written to the defined output 
+directory. In this case, you can use your own standard PrimeSim HSPICE  output harvesting methodologies.</p>
+
+<p>The following code snippet shows key components of the provided postprocessor. The code 
+must take the form of a Python function named <tt>Process</tt>, which RandomSpice uses 
+internally. The <tt>data</tt> variable is a string representation of the PrimeSim HSPICE  <tt>.lis</tt> 
+output file. In this example, you split this based on newline symbols (<tt>\n</tt>) and 
+search for the specific <tt>.measure</tt> variables defined in the PrimeSim HSPICE  netlist. Here, you 
+are looking for <tt>cyc_freq</tt>, <tt>sw_pwr</tt>, and <tt>iddq</tt> measurements.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_pp.py" startExpr="def Process*" endExpr="*return*" -->
+<pre>
+def Process(data, **extras):
+    results = extras['results']
+    circuit = extras['cid']
+    vals= list()
+    output=False
+    d0=[]
+    d1=[]
+    for l in data.split(&quot;\n&quot;):
+        if len(l) &gt; 0:
+            if 'cyc_freq' in l.lower():
+                try:
+                    freq=float(l.replace('=',' ').split()[1])
+                except:
+                    print(&quot;Frequency value not in line: {0}&quot;.format(l))
+            elif 'sw_pwr' in l.lower():
+                try:
+                    pwr=float(l.replace('=',' ').split()[1])
+                except:
+                    print(&quot;Power value not in line: {0}&quot;.format(l))
+            elif 'iddq' in l.lower():
+                try:
+                    leakage=float(l.replace('=',' ').split()[1])
+                except:
+                    print(&quot;Leakage value not it line: {0}&quot;.format(l))
+
+
+    # Push data to the database
+    data1={&quot;freq&quot;:freq, &quot;pwr&quot;:pwr, &quot;leakage&quot;:leakage, &quot;circuit&quot;:circuit}
+    dbi = results._dbi
+    ds=dbi.get_dataset(id=results._set_id).name
+    dbi.create_data(ds, data1)
+
+    return data
+</pre>
+<!-- grep end -->
+
+<p>The identified variables are then put into a Python dictionary and saved to the database 
+by using the <tt>dbi.create_data</tt> method.</p>
+
+<p>Click to view the RandomSpice postprocessor file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_pp.py">
+Single_RO_sim_pp.py</a>.</p>
+
+<!--============================-->
+<a name="python-template-file"></a>
+<h3>4.2.3.4 Python Template File</h3>
+
+<p>The <tt>Single_RO_sim</tt> tool instance begins with some setups for the 
+<tt>randomspice</tt> object, related to execution and database interaction.</p>
+
+<p>In the following code snippet, the <tt>randomspice.wait</tt> attribute is set 
+to <tt>True</tt>, meaning that the script execution will pause to wait for RandomSpice 
+job completion. In other cases, this can be set to <tt>False</tt>, where you might want 
+to execute multiple RandomSpice instances in parallel (this case is covered later). The 
+other two Python variables such as <tt>base_inputfile_name</tt> and <tt>base_netlist_name</tt> 
+have the full paths of the Sentaurus Workbench preprocessed RandomSpice input file and 
+SPICE netlist, respectively. They will be used in this script.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_eng.pyrs" startExpr="*basics*" endExpr="randomspice.inputfile*" -->
+<pre>
+# Set up the basics for the RandomSpice application
+randomspice.wait = True
+randomspice.clear_data = True
+
+# For netlist manipulation
+base_inputfile_name = &quot;@pwd@/@nodedir@/pp@node@_eng.rs2&quot;
+randomspice.inputfile = base_inputfile_name
+</pre>
+<!-- grep end -->
+
+<p>Other parameters are used to define RandomSpice SPICE model names and instance 
+parameters based on the axes of the RSM that is being modeled. In the <tt>Single_RO_sim</tt> 
+tool instance of this example, only one simulation will be performed at the midpoint 
+of the RSM. The midpoint itself is defined in the Mystic extraction project 
+(<tt>14nmFinFETRespSurf_NoLV</tt>) and is identified in the <tt>BuildLibrary</tt> tool 
+instance in the RandomSpice input file.</p>
+
+<p>The following code extracts the midpoints and model names from the 
+<tt>BuildLibrary</tt> tool instance:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_eng.pyrs" startExpr="* set up metadata*" endExpr="p_device*" -->
+<pre>
+# Set up metadata for simulations
+build_library = dbi.get_project(swb__tool_label=&quot;BuildLibrary&quot;)
+midpoints = build_library.metadata[&quot;midpoint_metadata&quot;]
+remap_names = build_library.metadata[&quot;remap_names&quot;]
+
+n_device = remap_names['nMOS'] + &quot;:nmos&quot;
+p_device = remap_names['pMOS'] + &quot;:pmos&quot;
+</pre>
+<!-- grep end -->
+
+<p>This code is designed to not require any user updates even if the DoE axis names 
+or number of axes change. In the example, the RandomSpice device name and RSM midpoints
+are attached automatically to the RandomSpice model mapping commands using the code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_eng.pyrs" startExpr="*_{n_device}*" endExpr="*:*p_device}*" -->
+<pre>
+randomspice.rs2file.SetOption('models', f'instance_params_{n_device}',
+                              dict(midpoints['nMOS'][&quot;doe&quot;]))
+randomspice.rs2file.SetOption('models', f'instance_params_{p_device}',
+                              dict(midpoints['pMOS'][&quot;doe&quot;]))
+randomspice.rs2file.SetOption('models', 'mapping',
+                              str({&quot;nmos&quot;: n_device, &quot;pmos&quot;: p_device}))
+</pre>
+<!-- grep end -->
+
+<p>The RandomSpice simulation is finally launched with the updated model mapping and instance parameter 
+settings by using the <tt>simulate</tt> method:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_eng.pyrs" startExpr="*.simulate*" endExpr="*.simulate*" -->
+<pre>
+randomspice.simulate()
+</pre>
+<!-- grep end -->
+
+<p>The Python script will now pause its execution until the RandomSpice job has completed. 
+The simulation output can be found in the node directory as shown in Figure 3.</p>
+
+<p><a href="images/rs2_logfile.png"><img src="images/rs2_logfile.png" width="570" 
+alt="Location of RandomSpice log file" /></a></p>
+
+<p class="caption">Figure 3. Node Explorer showing RandomSpice execution log file. 
+(Click image for full-size view.)</p>
+
+<p>Finally, the simulation outputs are gathered from the SWB Python database by using the 
+<tt>dbi</tt> object (see <a href="t2s_02.html#dbiObject">Section&nbsp;2.3.1 The dbi Object</a>):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_eng.pyrs" startExpr="*gather*" endExpr="*to_csv*" -->
+<pre>
+# Gather data
+data = dbi.get_data(project=node_prj.name, strip=False)
+pdata = pd.DataFrame()
+for d in data:
+    pdata = pd.concat([pdata, pd.DataFrame(d.data, index=[0])])
+
+pdata.to_csv(&quot;@pwd@/n@node@_RO_data.csv&quot;)
+</pre>
+<!-- grep end -->
+
+<p>The final results show frequency, leakage, and power for this RO circuit.</p>
+
+<table>
+<tr>
+<th>Circuit</th>
+<th>Frequency [Hz]</th>
+<th>Leakage [A]</th>
+<th>Power [W]</th>
+</tr>
+
+<tr>
+<td>1</td>
+<td>6.45E+09</td>
+<td>-1.70E-07</td>
+<td>5.04E-05</td>
+</tr>
+</table>
+
+<p>Click to view the Single_RO_sim Python command file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/Single_RO_sim_eng.pyrs">
+Single_RO_sim_eng.pyrs</a>.</p>
+
+<!--================================================-->
+<a name="rs2-ro-doe-sweep"></a>
+<h2>4.2.4 Example: Ring Oscillator Design-of-Experiments Sweep</h2>
+
+<p>The <tt>RO_Sweep</tt> example builds on the <tt>Single_RO_sim</tt> example, where 
+the gpythonsh and RandomSpice environment is used to generate large amounts of data, exercising 
+the full space of the response surface model (RSM) SPICE model.</p>
+
+<p>In this example, you step through the full design-of-experiments (DoE) space and 
+evaluate the ring oscillator (RO) response for all possible conditions. This methodology 
+can be used to both search for an optimal response within the DoE space and to evaluate 
+sensitivity of a circuit metric to a TCAD process split. The TCAD DoE is outlined in the 
+following table.</p>
+
+<table>
+<tr>
+<th>Parameter</th>
+<th>Nominal</th>
+<th>Range</th>
+<th>Comments</th>
+</tr>
+
+<tr>
+<td><tt>L</tt></td>
+<td>25 nm</td>
+<td>&plusmn;2 nm</td>
+<td>Gate length variation</td>
+</tr>
+
+<tr>
+<td><tt>H</tt></td>
+<td>40 nm</td>
+<td>&plusmn;2 nm</td>
+<td>Gate height</td>
+</tr>
+
+<tr>
+<td><tt>W</tt></td>
+<td>8 nm</td>
+<td>&plusmn;2 nm</td>
+<td>Fin thickness</td>
+</tr>
+
+<tr>
+<td><tt>A_fin</tt></td>
+<td>88</td>
+<td>&plusmn;1</td>
+<td>Fin angle factor</td>
+</tr>
+
+<tr>
+<td><tt>T_spacer</tt></td>
+<td>8 nm</td>
+<td>&plusmn;2 nm</td>
+<td>Spacer thickness</td>
+</tr>
+</table>
+
+<p>All input files other than the Python template file are identical to the <tt>Single_RO_sim</tt> 
+tool instance.</p>
+
+<!--==============================-->
+<a name="enigma-template-file-1"></a>
+<h3>4.2.4.1 Python Template File</h3>
+
+<p>In this example, you have prepared a five-axis DoE, characterized using 43 NMOS and 
+PMOS TCAD splits. To fully simulate the space, you create a full factorial grid, meaning 
+you create a number of PrimeSim HSPICE simulations (\(N_{\text"sim"}\)) equal to:</p>
+
+<p>\[ N_{\text"sim"} = N_{\text"axes"}^{N_{\text"smp"}} \] </p>
+
+<p>where:</p>
+
+<ul>
+<li>\(N_{\text"axes"\) is the number of axes (five process variations in this example).</li>
+<li>\(N_{\text"smp"}\) is the number of points sampled along each axis.</li>
+</ul>
+
+<p>\(N_{\text"smp"}\) is defined in the Python template file for this stage:</p>
+
+<pre>
+# Simulation parameters
+sampling = 5
+</pre>
+
+<p>As a result, this <tt>RO_Sweep</tt> tool instance will launch a total of 3125 RandomSpice 
+simulations within an equally spaced, five-dimensional grid. This is achieved by creating 
+linearly spaced lists across each axis, then performing a product of all sample points using 
+the following Python commands:</p>
+
+<pre>
+# Set up the sampling points for each axis
+axes_list=axes_df.columns
+for k in axes_list:
+     axes_sweeps[k]=np.linspace(min(axes_df[k]),max(axes_df[k]), sampling)
+for i,ax in enumerate(product(*axes_sweeps.values())):
+    ...
+</pre>
+
+<p>The code inside the <tt>for</tt> loop statement is similar to the <tt>Single_RO_sim</tt> 
+script, except that it is executed once for each of the 3125 DoE point combinations. 
+As a result, there will now be 3125 execution directories as shown in Figure&nbsp;4.</p>
+
+<p><img src="images/rs2_sweep_execdir.png" width="206" height="453" 
+alt="RandomSpice execution directories" /></p>
+
+<p class="caption">Figure 4. The RO_Sweep tool instance produces 3125 simulations within 
+the execution folder n@node@_/randomspice.</p>
+
+<p>Finally, the results are gathered using a <tt>for</tt> loop statement that relates 
+each individual set of results with the DoE point at which they were generated:</p>
+
+<pre>
+for i,ax in enumerate(product(*axes_sweeps.values())):
+</pre>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/RO_Sweep_eng.pyrs" startExpr="pdata=*" endExpr="*pd.concat*" -->
+<pre>
+pdata=pd.DataFrame()
+for i,ax in enumerate(product(*axes_sweeps.values())):
+
+    print(i,ax)
+    data={axes_list[j]:ax[j] for j in range(len(axes_list))}
+    print(data)
+
+    data.update(dbi.get_data(project=node_prj.name, \
+                parent=f&quot;@node@-ro-{i+1}&quot;).data)
+    pdata=pd.concat([pdata, pd.DataFrame(data, index=[0])])
+</pre>
+<!-- grep end -->
+
+<p>The final output is a CSV file of the DoE points and RO measurements that 
+can be opened in a spreadsheet application (see Figure 5).</p>
+
+<p><img src="images/rs2_sweep_results.png" width="525" height="465" 
+alt="RandomSpice results - CSV file" /></p>
+
+<p class="caption">Figure 5. Tool instance outputs a CSV file showing DoE axes 
+and RO responses.</p>
+
+<p>Visualizations of the results are also produced using the plotting capabilities 
+of gpythonsh. A scatter matrix of the input and output space on one plot is produced 
+using the <tt>plotter</tt> object (the <tt>plotter</tt> API can be found in the 
+API documentation).</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/RO_Sweep_eng.pyrs" startExpr="*drop*" endExpr="*plot_scatter_matrix*" -->
+<pre>
+pdata.drop(&quot;circuit&quot;, axis=1, inplace=True)
+pdata=pdata[axes_list+[&quot;freq&quot;,&quot;pwr&quot;,&quot;leakage&quot;]]
+plotter._dist_data=[pdata]
+plotter.plot_scatter_matrix(filename=f&quot;{garand.workdir}/n@node@_RO_scatterplot&quot;)
+</pre>
+<!-- grep end -->
+
+<p>In this code, you initially omit the <tt>circuit</tt> column as this is only an integer 
+identifier. Then, the data column order is sorted to separate DoE axes and output RO 
+parameters. The scatter matrix allows for some basic sensitivity analysis between the axes 
+of the DoE. The scatter matrix in Figure&nbsp;6 shows that, in this example, the fin width 
+dominates the RO responses.</p>
+
+<p><a href="images/rs2_sweep_scatter.png"><img src="images/rs2_sweep_scatter.png" width="570" 
+alt="RO response scatter matrix" /></a></p>
+
+<p class="caption">Figure 6. Scatter matrix of RO responses. (Click image for full-size view.)</p>
+
+<p>Click to view the Python command file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/randomspice/14nmFinFETRespSurf_RS2/RO_Sweep_eng.pyrs">
+RO_Sweep_eng.pyrs</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_03.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_05.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

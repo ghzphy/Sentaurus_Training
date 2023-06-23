@@ -1,0 +1,1035 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Structure Editor 7. Process Emulation Mode</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_6.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Structure Editor<br />7. Process Emulation Mode</h1>
+
+<p>
+ <a href="#1">7.1 Overview</a><br />
+ <a href="#2">7.2 Defining the Emulation Domain</a><br />
+ <a href="#3">7.3 Defining the Doped Substrate</a><br />
+ <a href="#4">7.4 Defining the Mask</a><br />
+ <a href="#5">7.5 Patterning </a><br />
+ <a href="#6">7.6 Defining an Implantation Profile</a><br />
+ <a href="#7">7.7 Implantation</a><br />   
+ <a href="#8">7.8 Stripping Layers</a><br />
+ <a href="#9">7.9 Depositing a Doped Layer</a><br />
+ <a href="#10">7.10 Etching</a><br />
+ <a href="#11">7.11 Fill</a><br />
+ <a href="#12">7.12 Polish</a><br />
+ <a href="#13">7.13 Finishing the Bipolar Junction Transistor</a><br />
+ <a href="#14">7.14 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To create 3D device structures using the process emulation mode 
+     of Sentaurus Structure Editor.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>7.1 Overview</h1>
+
+<p class="note">The process emulation mode of Sentaurus Structure Editor 
+has been superseded by the 3D process simulation capabilities of Sentaurus 
+Process. Using the process emulation mode of Sentaurus Structure Editor is 
+discouraged. See the Sentaurus Process module, 
+<a href="../sp/sp_11.html">Section&nbsp;11. Special Focus: Three-Dimensional Examples</a>.</p>
+
+<p>In process emulation mode (Procem), Sentaurus Structure Editor translates processing
+steps, ranging from material deposition, patterning, and etching to trench fill and surface 
+polish, into geometric operations.</p>
+
+<p>Procem supports advanced options, such as isotropic or anisotropic etching and 
+deposition, and rounding and blending, to account for specific processing effects. 
+Nongeometric operations, however, are performed only at a simplified level. Only 
+analytic implantation is supported. Diffusion is not supported.</p>
+
+<p class="note">Sentaurus Structure Editor does not support Procem commands 
+from the user interface. Procem operations can be performed only using Scheme extension 
+commands in the command-line window.</p>
+
+<p>This section introduces the concept of process emulation and some basic emulation 
+operations available in Sentaurus Structure Editor. The example is to build a 3D bipolar 
+junction transistor (BJT) device structure as shown in Figure 1.</p>
+
+<p><img src="images/se_p_bjt.png" width="318" height="335" alt="3D BJT" /></p>
+
+<p class="caption">Figure 1. Three-dimensional BJT.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>7.2 Defining the Emulation Domain</h1>
+
+<p>The Scheme command to define the emulation domain is:</p> 
+
+<pre>
+(sdepe:define-pe-domain (list Y1 Z1 Y2 Z2))
+</pre>
+
+<p>where <tt>Y1</tt> <tt>Z1</tt> and <tt>Y2</tt> <tt>Z2</tt> are the coordinates 
+of two opposite corners of the rectangular emulation domain.</p>
+
+<p>You can also import information from a GDS layout file. The following Scheme 
+command converts a GDS file to a <tt>.mac</tt> file:</p>
+
+<pre>
+(sdeicwb:gds2mac &quot;gds.file&quot; gdsfile &quot;cell&quot; cellname 
+ &quot;layer.names&quot; lnames &quot;layer.numbers&quot; lnumbers &quot;sim3d&quot; sim3ddomain
+ &quot;scale&quot; scale &quot;domain.name&quot; dname &quot;mac.file&quot; macfile)
+</pre>
+
+<p>The coordinates of the emulation domain then can be extracted from the <tt>.mac</tt> file 
+and used in the <tt>sdepe:define-pe-domain</tt> command.</p>
+
+<!--=======================-->
+<h2>7.2.1 Example</h2>
+
+<p>The emulation domain for the BJT is defined with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Ymax*" lines=3-->
+<pre>
+(define Ymax 2.2) ; Width
+(define Zmax 1.2) ; Depth
+(sdepe:define-pe-domain (list 0.0 0.0 Ymax Zmax))
+</pre>
+<!-- grep end -->
+
+<p class="note"> Procem also supports polygonal emulation domains. 
+In this case, a list of all corner coordinates of the polygon must be given.</p>
+
+<p>If, for example, you have a GDS layout file <tt>BJT.gds</tt> using nanometer 
+as its unit, with the cell &quot;BJT&quot; containing the layer (1:0) 
+&quot;SUBC&quot;, the following command creates a <tt>.mac</tt> file 
+<tt>BJT_SIM3D.mac</tt> containing the simulation domain and the masks from 
+the GDS file:</p>
+
+<pre>
+(sdeicwb:gds2mac 
+  &quot;gds.file&quot; &quot;BJT.gds&quot; 
+  &quot;cell&quot; &quot;BJT&quot; 
+  &quot;layer.names&quot; &quot;(list 'SUBC)&quot; 
+  &quot;layer.numbers&quot; (list 1) 
+  &quot;sim3d&quot; (list 0.0 0.0 2.2e3 1.2e3)
+  &quot;scale&quot; 1.0e-3 
+  &quot;domain.name&quot; &quot;SIM3D&quot; 
+  &quot;mac.file&quot; &quot;BJT&quot;)
+</pre>
+
+<p>Then, such a <tt>.mac</tt> file can be loaded with the following command:</p>
+
+<pre>
+(sdeicwb:load-file &quot;BJT_SIM3D.mac&quot; 0.001)
+</pre>
+
+<p>The simulation domain in the <tt>.mac</tt> file is set with the command:</p>
+
+<pre>
+(sdeicwb:set-domain &quot;SIM3D&quot;)
+</pre>
+
+<p>Finally, the emulation domain can be defined after extracting the bounding box coordinates 
+of the simulation domain in the <tt>.mac</tt> file:</p> 
+
+<pre>
+(define mindx (sdeicwb:get-xmin))
+(define maxdx (sdeicwb:get-xmax))
+(define mindy (sdeicwb:get-ymin))
+(define maxdy (sdeicwb:get-ymax))
+
+(sdepe:define-pe-domain (list mindx   mindy  maxdx   maxdy))	
+</pre>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>7.3 Defining the Doped Substrate</h1>
+
+<p>The Scheme command to define the substrate is:</p> 
+
+<pre>
+(sdepe:add-substrate &quot;material&quot; material &quot;thickness&quot; thickness)
+</pre>
+
+<!--=======================-->
+<a name="731_example"></a>
+<h2>7.3.1 Example</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Nasub*" endExpr="*BoronActive*"-->
+<pre>
+(define Nasub 1e16)  ; Boron concentration
+(define Xsub 2.0)    ; Initial Substrate Height
+(sdepe:add-substrate &quot;material&quot; &quot;Silicon&quot; &quot;thickness&quot; Xsub &quot;region&quot; &quot;Substrate&quot;)
+(sdepe:doping-constant-placement &quot;DopSub&quot; 
+ &quot;BoronActiveConcentration&quot; Nasub &quot;Substrate&quot;)
+</pre>
+<!-- grep end -->
+
+<p>In this example, a constant boron concentration is defined in the substrate 
+in the following steps:</p>
+
+<ul>
+<li>The entity identifier, which is returned by the <tt>sdepe:add-substrate</tt> command, 
+is stored in the local variable <tt>SUB</tt>.</li>
+<li>The region name <tt>&quot;Substrate&quot;</tt> is assigned to the newly created region with 
+the command <tt>sde:add-material</tt>.</li>
+<li>The constant doping profile in the <tt>&quot;Substrate&quot;</tt> region is defined with 
+the command <tt>sdepe:doping-constant-placement</tt>.</li>
+</ul>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>7.4 Defining the Mask</h1>
+
+<p>The Scheme command to define a mask is:</p> 
+
+<pre>
+(sdepe:generate-mask &quot;mask-name&quot;
+  (list (list Y1_1 Z1_1 Y1_2 Z1_2 ...)
+        (list Y2_1 Z2_1 Y2_2 Z2_2 ...)
+        ...)
+)
+</pre>
+
+<p>The mask is defined as a list of polygons, where each polygon is defined as a 
+list of coordinates. If the polygon is a simple axis-aligned rectangle, it is 
+sufficient to give the coordinates of two opposite corners.</p>
+
+<p>Masks also can be imported from a GDS file, after converting the GDS to a <tt>.mac</tt> file, 
+loading the <tt>.mac</tt> file and setting a simulation domain, as shown in 
+<a href="#2">Section&nbsp;7.2 Defining the Emulation Domain</a>.</p>
+
+<!--=========================-->
+<h2>7.4.1 Example</h2>
+
+<p>The mask for the subcollector implantation is defined with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Yb1*" endExpr="*generate-mask*"-->
+<pre>
+(define Yb1 0.2)  ; Beginning of base window
+(define Yb2 1.2)  ; End of base window
+(define Yc1 1.5)  ; Beginning of collector contact window
+(define Yc2 2.0)  ; End of collector contact window
+(define Zc  0.8)  ; Depth of contact
+
+(sdepe:generate-mask &quot;SUBC&quot; (list (list Yb1 0.0 Yc2 Zc)) )
+</pre>
+<!-- grep end -->
+
+<p>Alternatively, to import the mask &quot;SUBC&quot; from the GDS file <tt>BJT.gds</tt>, 
+which has been previously converted to the <tt>.mac</tt> file <tt>BJT_SIM3D.mac</tt> with the 
+<tt>sdeicwb:gds2mac</tt> command and loaded with the <tt>sdeicwb:load-file</tt> command, you 
+must set the simulation domain with the <tt>sdeicwb:set-domain</tt> command (see 
+<a href="#2">Section&nbsp;7.2 Defining the Emulation Domain</a>) and generate the 
+masks with the commands:</p>
+
+<pre>
+(define layersname (sdeicwb:get-layer-names))
+(for-each (lambda(layer) 
+  (sdeicwb:generate-mask-by-layer-name layer layer) 
+  ) layersname	)
+</pre>
+
+<p>All layers defined in the <tt>.mac</tt> file with the command <tt>sdeicwb:gds2mac</tt> 
+(&quot;SUBC&quot; in this case) are converted into masks with the same name, which can be 
+further used for patterning.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>7.5 Patterning</h1>
+
+<p>The Scheme command for patterning is:</p>
+
+<pre>
+(sdepe:pattern &quot;mask&quot; mask-name &quot;polarity&quot; polarity
+               [&quot;type&quot; &quot;depo-type&quot;] &quot;material&quot; material
+               &quot;thickness&quot; thickness [&quot;steps&quot; nsteps])
+</pre>
+
+<p>The <tt>&quot;polarity&quot;</tt> of the mask can be either <tt>&quot;light&quot;</tt> 
+or <tt>&quot;dark&quot;</tt>, for light-field or dark-field masks, respectively. 
+The <tt>&quot;type&quot;</tt> can be either <tt>&quot;iso&quot;</tt> or 
+<tt>&quot;aniso&quot;</tt>.</p>
+
+<p>The optional <tt>&quot;steps&quot;</tt> parameter determines in how many steps 
+the layer is deposited. Complex geometries might need more than one step. See the 
+<cite>Sentaurus&trade; Structure Editor User Guide</cite> for more options.</p>
+
+<!--=========================-->
+<h2>7.5.1 Example</h2>
+
+<p>The resist patterning step for the subcollector implantation is performed with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Tre*" endExpr="*thickness*"-->
+<pre>
+(define Tre 0.5)
+(sdepe:pattern &quot;mask&quot; &quot;SUBC&quot; &quot;polarity&quot; &quot;dark&quot; &quot;type&quot; &quot;aniso&quot;
+               &quot;material&quot; &quot;Resist&quot;  &quot;thickness&quot; Tre )
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_pattern.png"><img src="images/se_p_pattern.png" width="300" 
+alt="Substrate with patterned resist layer" /></a></p>
+
+<p class="caption">Figure 2. Substrate with the patterned 
+resist layer. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>7.6 Defining an Implantation Profile</h1>
+
+<p>The Scheme command to define an implanted profile is:</p> 
+
+<pre>
+(sdedr:define-gaussian-profile 
+&quot;definition-name&quot; &quot;species&quot;
+&quot;PeakPos&quot; peak-position {&quot;PeakVal&quot; peak-concentration | &quot;Dose&quot; dose}
+{&quot;Length&quot; diffusion-length | &quot;StdDev&quot; standard-deviation |
+&quot;ValueAtDepth&quot; concentration-at-depth &quot;Depth&quot; depth }
+&quot;Gauss&quot; | &quot;Erf&quot; &quot;Factor&quot; factor)
+</pre>
+
+<p>The parameter <tt>peak-position</tt> determines how deep the profile is from the 
+surface. You can specify either the <tt>peak-concentration</tt> or the <tt>dose</tt> 
+of the implantation. You can specify the width of the profile by either using 
+<tt>diffusion-length</tt> or <tt>standard-deviation</tt>, or specifying the 
+concentration of the profile (<tt>concentration-at-depth</tt>) at <tt>depth</tt>. 
+The lateral distribution can be either a Gaussian or an error function.</p>
+
+<!--=========================-->
+<h2>7.6.1 Example</h2>
+
+<p>The subcollector implantation profile is defined with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define LatDiff*" endExpr="*Nasub*" -->
+<pre>
+(define LatDiff 0.02)
+(sdedr:define-gaussian-profile 
+	&quot;SubCol&quot; &quot;PhosphorusActiveConcentration&quot; 
+	&quot;PeakPos&quot; 0.0 &quot;PeakVal&quot; 5e+19 
+	&quot;ValueAtDepth&quot; Nasub &quot;Depth&quot; 0.5 
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="7"></a>
+<h1>7.7 Implantation</h1>
+
+<p>The Scheme command to perform an implantation is:</p>
+
+<pre>
+(sdepe:implant doping-name)
+</pre>
+
+<!--=========================-->
+<h2>7.7.1 Example</h2>
+
+<p>The subcollector implantation is performed with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:implant*" lines=1-->
+<pre>
+(sdepe:implant &quot;SubCol&quot;)
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_implant.png">
+<img src="images/se_p_implant.png" width="300" alt="Structure after subcollector implant step" /></a></p>
+
+<p class="caption">Figure 3. Structure after subcollector 
+implantation step. (Click image for full-size view.)</p>
+
+<p class="note">The <tt>sdepe:implant</tt> command works as follows: All surfaces 
+not covered with resist are taken as (individual) &quot;reference surfaces&quot; 
+(see the <cite>Sentaurus&trade; Mesh User Guide</cite>) for the placement of 
+the analytic doping profile. Furthermore, the doping profile definition is restricted 
+to regions to ensure the correct profiles after possible etching and refill operations. 
+Regions are identified by their region name.</p>
+
+<p>This has the following important implications:</p>
+
+<ul>
+<li>Unexpected results can occur if regions are renamed after an <tt>sdepe:implant</tt> step.</li>
+<li>Incorrect profiles can occur in nonplanar structures, as neighboring &quot;reference surfaces&quot; 
+can lead to overlapping profiles.</li>
+</ul>      
+
+<p>The <tt>sdepe:implant</tt> command supports additional options to mitigate the 
+second issue (see the <cite>Sentaurus&trade; Structure Editor User Guide</cite>).</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>7.8 Stripping Layers</h1>
+
+<p>The Scheme command to strip a layer is:</p>
+
+<pre>
+(sdepe:remove &quot;material&quot; &quot;<em>material</em>&quot;)
+</pre>
+
+<!--==================-->
+<h2>7.8.1 Example</h2>
+
+<p>To strip the resist after the implantation step, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:remove*material*" lines=1-->
+<pre>
+(sdepe:remove &quot;material&quot; &quot;Resist&quot;)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="9"></a>
+<h1>7.9 Depositing a Doped Layer</h1>
+
+<p>The Scheme command to deposit a material layer is:</p> 
+
+<pre>
+(sdepe:depo &quot;material&quot; material &quot;thickness&quot; thickness
+            [&quot;type&quot; depo-type] [&quot;steps&quot; nsteps])
+</pre>
+
+<p>The <tt>sdepe:depo</tt> command supports several options for rounding corners and 
+edges (see the <cite>Sentaurus&trade; Structure Editor User Guide</cite>). 
+The <tt>&quot;type&quot;</tt> can be either are <tt>&quot;iso&quot;</tt> or 
+<tt>&quot;aniso&quot;</tt>.</p>
+
+<p>The optional <tt>&quot;steps&quot;</tt> parameter determines in how many steps the 
+layer is deposited. Complex geometries might need more than one step.</p>
+
+<!--==================-->
+<h2>7.9.1 Example</h2>
+
+<p>The silicon epi layer is deposited and doped with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Tepi*" endExpr="*Ndepi*SiEpi*"-->
+<pre>
+(define Tepi 0.3)
+(define Ndepi 5e16)
+(define SiEpi (sdepe:depo &quot;material&quot; &quot;Silicon&quot;  &quot;thickness&quot; Tepi &quot;type&quot; &quot;iso&quot;))
+(sde:add-material SiEpi &quot;Silicon&quot; &quot;SiEpi&quot;)
+(sdepe:doping-constant-placement &quot;DopEpi&quot; &quot;ArsenicActiveConcentration&quot; 
+  Ndepi &quot;SiEpi&quot;)
+</pre>
+<!-- grep end -->
+
+<p>In this example, the doping concentration is defined by the same steps as in 
+<a href="#731_example">Section 7.3.1 Example</a>.</p>
+
+<!--================================================-->
+<a name="10"></a>
+<h1>7.10 Etching</h1>
+
+<p>The Scheme command for etching is:</p>
+
+<pre>
+(sdepe:etch-material &quot;material&quot; material &quot;depth&quot; depth
+                     [&quot;steps&quot; nsteps])
+</pre>
+
+<p>where <tt>&quot;material&quot;</tt> is the material to be etched to a depth given by the 
+<tt>&quot;depth&quot;</tt> parameter (in micrometer). Only exposed surfaces are etched.</p>
+
+<p>The optional <tt>&quot;steps&quot;</tt> parameter determines in how many steps 
+the etching is performed. Complex geometries might need more than one step. See the 
+<cite>Sentaurus&trade; Structure Editor User Guide</cite> for more options.</p>
+
+<!--==================-->
+<h2>7.10.1 Example</h2>
+
+<p>The isolation trenches for the BJT are created with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:generate-mask*ISO*" endExpr="*remove*Resist*" -->
+<pre>
+(sdepe:generate-mask &quot;ISO&quot; ; Protection mask
+(list (list Yb1 0.0 Yb2 Zc)
+      (list Yc1 0.0 Yc2 Zc) ))
+(sdepe:pattern &quot;mask&quot; &quot;ISO&quot; &quot;polarity&quot; &quot;light&quot; &quot;type&quot; &quot;aniso&quot;
+               &quot;material&quot; &quot;Resist&quot;  &quot;thickness&quot; Tre )
+(sdepe:etch-material &quot;material&quot; &quot;Silicon&quot; &quot;depth&quot; Tepi ) ; Trench etching
+(sdepe:remove &quot;material&quot; &quot;Resist&quot;)
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_etch.png"><img src="images/se_p_etch.png" width="300" 
+alt="Structure after trench isolation" /></a></p>
+
+<p class="caption">Figure 4. Structure after the trench 
+isolation etching. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="11"></a>
+<h1>7.11 Fill</h1>
+
+<p>The Scheme command to perform a fill operation is:</p> 
+
+<pre>
+(sdepe:fill-device &quot;material&quot; material [&quot;height&quot; height])
+</pre>
+
+<p>By default, the <tt>sdepe:fill-device</tt> command fills the structure with the 
+selected <tt>&quot;material&quot;</tt> up to the current top z-coordinate. A fill 
+level can be set explicitly with the optional <tt>&quot;height&quot;</tt> parameter. 
+If this parameter is present, the structure is filled up to z=<tt>height</tt>.</p>
+
+<!--====================-->
+<h2>7.11.1 Example</h2>
+
+<p>To fill the whole structure with oxide up to a level of 0.1&nbsp;&mu;m above the current 
+top coordinate, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Xtop*" endExpr="*fill-device*"-->
+<pre>
+(define Xtop (sde:min-x (get-body-list)))
+(sdepe:fill-device &quot;material&quot; &quot;Oxide&quot; &quot;height&quot; (- Xtop 0.1) )
+</pre>
+<!-- grep end -->
+
+<p>The utility function <tt>(sde:min-x entity-list)</tt> returns the topmost 
+x-coordinate of the selected entities.</p>
+
+<!--================================================-->
+<a name="12"></a>
+<h1>7.12 Polish</h1>
+
+<p>The Scheme command to perform a polish operation is:</p>
+
+<pre>
+(sdepe:polish-device { [&quot;thickness&quot; thickness] | [&quot;height&quot; height] })
+</pre>
+
+<p>This command emulates chemical-mechanical polishing (CMP) and polishes off 
+either a certain <tt>&quot;thickness&quot;</tt> from the top of the device (uppermost z-position) 
+or to the specified <tt>&quot;height&quot;</tt>.</p>
+
+<!--====================-->
+<h2>7.12.1 Example</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:polish*" lines=1-->
+<pre>
+(sdepe:polish-device &quot;thickness&quot; 0.1)
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_polish.png"><img src="images/se_p_polish.png" width="300" 
+alt="Structure after filling isolation trenches with oxide and polishing" /></a></p>
+
+<p class="caption">Figure 5. Structure after filling isolation trenches with 
+oxide and polishing. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="13"></a>
+<h1>7.13 Finishing the Bipolar Junction Transistor</h1>
+
+<p>The previous sections introduced all of the major process emulation steps. 
+This section discusses briefly the remaining steps to finalize the bipolar 
+junction transistor (BJT).</p>
+
+<!--====================-->
+<h2>7.13.1 Deposit Screening Oxide</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:depo*" lines=1 -->
+<pre>
+(sdepe:depo &quot;material&quot; &quot;Oxide&quot; &quot;thickness&quot; Tscreen)
+</pre>
+<!-- grep end -->
+
+<p>However, in process emulation mode, a screening oxide has no effect. Besides adjusting 
+the peak position, the screening oxide is included here to synchronize the process flow 
+with a real process flow.</p>
+
+<!--====================-->
+<h2>7.13.2 Collector Contact Implantation Mask</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:generate-mask*COL*" lines=3-->
+<pre>
+(sdepe:generate-mask &quot;COL&quot; (list (list Yc1 0.0 Yc2 Zc)))
+(sdepe:pattern &quot;mask&quot; &quot;COL&quot; &quot;polarity&quot; &quot;dark&quot; &quot;type&quot; &quot;aniso&quot;
+               &quot;material&quot; &quot;Resist&quot; &quot;thickness&quot; Tre)
+</pre>
+<!-- grep end -->
+
+<p>Mask definition as discussed in <a href="#4">Section 7.4 Defining the Mask</a> and 
+patterning as discussed in <a href="#5">Section&nbsp;7.5 Patterning</a>.</p>
+
+<!--====================-->
+<h2>7.13.3 Collector Contact Implantation</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdedr:define-gaussian*ColCont*" endExpr="*remove*material*" -->
+<pre>
+(sdedr:define-gaussian-profile &quot;ColCont&quot; &quot;ArsenicActiveConcentration&quot; 
+	&quot;PeakPos&quot; 0.0 &quot;PeakVal&quot; 5e+19 
+	&quot;ValueAtDepth&quot; 1e+17 &quot;Depth&quot; 0.5 
+	&quot;Gauss&quot; &quot;Length&quot; LatDiff
+)
+(sdepe:implant &quot;ColCont&quot;)
+(sdepe:remove &quot;material&quot; &quot;Resist&quot;)
+</pre>
+<!-- grep end -->
+
+<p>Implantation as discussed in <a href="#6">Section 7.6 Defining an Implantation Profile</a> 
+and <a href="#7">Section 7.7 Implantation</a>.</p> 
+
+<!--====================-->
+<h2>7.13.4 Base Implantation Mask</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:generate-mask*BAS*" endExpr="*thickness*"-->
+<pre>
+(sdepe:generate-mask &quot;BAS&quot; (list (list Yb1 0.0 Yb2 Zc)))
+(sdepe:pattern &quot;mask&quot; &quot;BAS&quot; &quot;polarity&quot; &quot;dark&quot; &quot;type&quot; &quot;aniso&quot;
+               &quot;material&quot; &quot;Resist&quot; &quot;thickness&quot; Tre)
+</pre>
+<!-- grep end -->
+
+<!--====================-->
+<h2>7.13.5 Base Implantation</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Tbase*" endExpr="*remove*material*" -->
+<pre>
+(define Tbase 0.2)
+(define Nabase 3e18)
+(sdedr:define-gaussian-profile 
+	&quot;Base&quot; &quot;BoronActiveConcentration&quot; 
+	&quot;PeakPos&quot; 0.0 &quot;PeakVal&quot; Nabase 
+	&quot;ValueAtDepth&quot; Ndepi &quot;Depth&quot; Tbase 
+	&quot;Gauss&quot; &quot;Length&quot; LatDiff
+)
+(sdepe:implant &quot;Base&quot;)
+(sdepe:remove &quot;material&quot; &quot;Resist&quot;)
+</pre>
+<!-- grep end -->
+
+<!--====================-->
+<h2>7.13.6 Emitter Implantation Mask</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Ye1*" endExpr="*thickness*" -->
+<pre>
+(define Ye1 0.9)
+(define Ye2 1.1)
+(define Ze  (* 0.7 Zc))
+(sdepe:generate-mask &quot;EMIT&quot; (list  (list Ye1 0.0 Ye2 Ze)))
+(sdepe:pattern &quot;mask&quot; &quot;EMIT&quot; &quot;polarity&quot; &quot;dark&quot; &quot;type&quot; &quot;aniso&quot;
+               &quot;material&quot; &quot;Resist&quot; &quot;thickness&quot; Tre)
+</pre>
+<!-- grep end -->
+
+<!--====================-->
+<h2>7.13.7 Emitter Implantation</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Temit*" endExpr="*remove*material*" -->
+<pre>
+(define Temit 0.1)
+(sdedr:define-gaussian-profile 
+	&quot;Emitter&quot; &quot;PhosphorusActiveConcentration&quot; 
+	&quot;PeakPos&quot; 0.0 &quot;PeakVal&quot; 1e+20 
+	&quot;ValueAtDepth&quot; 1.0e18 &quot;Depth&quot; Temit 
+	&quot;Gauss&quot; &quot;Length&quot; LatDiff
+)
+(sdepe:implant &quot;Emitter&quot;)
+(sdepe:remove &quot;material&quot; &quot;Resist&quot;)
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_finish.png"><img src="images/se_p_finish.png" width="300" 
+alt="Structure after three implantation steps" /></a></p>
+
+<p class="caption">Figure 6. Structure after three implantation steps. The reference 
+planes for the implantations are green. (Click image for full-size view.)</p>
+
+<!--====================-->
+<h2>7.13.8 Emitter and Collector Contact Holes Mask</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define reset*" endExpr="*thickness*" -->
+<pre>
+(define reset 0.05)
+(sdepe:generate-mask &quot;PCH&quot; 
+ (list (list (+ Ye1 reset) 0.0 (- Ye2 reset) (- Ze reset))
+       (list (+ Yc1 reset) 0.0 (- Yc2 reset) (- Zc reset)))) 
+(sdepe:pattern &quot;mask&quot; &quot;PCH&quot; &quot;polarity&quot; &quot;dark&quot; &quot;type&quot; &quot;aniso&quot;
+               &quot;material&quot; &quot;Resist&quot; &quot;thickness&quot; Tre)
+</pre>
+<!-- grep end -->
+
+<p>This mask is similar to emitter and collector implantation masks, but the openings are smaller.</p>
+
+<!--====================-->
+<h2>7.13.9 Etching Emitter and Collector Contact Holes</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:etch-material*Oxide*" endExpr="*remove*material*" -->
+<pre>
+(sdepe:etch-material &quot;material&quot; &quot;Oxide&quot; &quot;depth&quot; Tscreen)
+(sdepe:remove &quot;material&quot; &quot;Resist&quot;)
+</pre>
+<!-- grep end -->
+
+<p>Etching as discussed in <a href="#10">Section 7.10 Etching</a>.</p>
+
+<!--====================-->
+<h2>7.13.10 Deposit Polysilicon</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Tpoly*" endExpr="*sdepe:doping*" endOffset=1 -->
+<pre>
+(define Tpoly 0.1)
+(define POLYSI (sdepe:depo &quot;material&quot; &quot;PolySi&quot; &quot;thickness&quot; Tpoly))
+(sde:add-material POLYSI &quot;PolySi&quot; &quot;Poly&quot;)
+(sdepe:doping-constant-placement &quot;DopPoly&quot; &quot;ArsenicActiveConcentration&quot; 1e20 
+  &quot;Poly&quot;)
+</pre>
+<!-- grep end -->
+
+<p>Deposition of a doped polysilicon layer as discussed in 
+<a href="#9">Section 7.9 Depositing a Doped Layer</a>.</p>
+
+<!--====================-->
+<h2>7.13.11 Polysilicon Mask</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:generate-mask*POL*" endExpr="*thickness*"-->
+<pre>
+(sdepe:generate-mask &quot;POL&quot;  (list  (list Yc1 0.0 Yc2 Zc) (list Ye1 0.0 Ye2 Ze)))
+(sdepe:pattern &quot;mask&quot; &quot;POL&quot;  &quot;polarity&quot; &quot;light&quot; &quot;type&quot; &quot;aniso&quot;
+               &quot;material&quot; &quot;Resist&quot; &quot;thickness&quot; Tre)
+</pre>
+<!-- grep end -->
+
+<!--====================-->
+<h2>7.13.12 Etching Polysilicon</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:etch-material*PolySi*" lines=2-->
+<pre>
+(sdepe:etch-material &quot;material&quot; &quot;PolySi&quot; &quot;depth&quot; Tpoly)
+(sdepe:remove &quot;material&quot; &quot;Resist&quot;)
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_etchpoly.png"><img src="images/se_p_etchpoly.png" width="300" 
+alt="Structure after deposition and etching of polysilicon" /></a></p>
+
+<p class="caption">Figure 7. Structure after deposition and etching of 
+polysilicon. (Click image for full-size view.)</p>
+
+<!--====================-->
+<h2>7.13.13 Fill Structure With Oxide</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Xtop*0.05*" lines=2-->
+<pre>
+(define Xtop (- (sde:min-x (get-body-list)) 0.05))
+(sdepe:fill-device &quot;material&quot; &quot;Oxide&quot; &quot;height&quot; Xtop )
+</pre>
+<!-- grep end -->
+
+<p>Fill as discussed in <a href="#11">Section 7.11 Fill</a>.</p>
+
+<!--====================-->
+<h2>7.13.14 Metal Contact Holes Mask</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(define Ybc1*" endExpr="*thickness*" -->
+<pre>
+(define Ybc1 (+ Yb1 0.1))
+(define Ybc2 (+ Ybc1 0.4))
+(sdepe:generate-mask &quot;MET1&quot; 
+ (list (list Yc1  0.0 Yc2  Zc)
+       (list Ye1  0.0 Ye2  Ze)
+       (list Ybc1 0.0 Ybc2 Ze))) 
+(sdepe:pattern &quot;mask&quot; &quot;MET1&quot; &quot;polarity&quot; &quot;dark&quot; &quot;type&quot; &quot;aniso&quot;
+               &quot;material&quot; &quot;Resist&quot; &quot;thickness&quot; Tre)
+</pre>
+<!-- grep end -->
+
+<!--====================-->
+<h2>7.13.15 Etching Metal Contact Holes</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr=";*etching*metal*" startOffset=1 endExpr="*remove*material*Resist*"-->
+<pre>
+(sdepe:etch-material &quot;material&quot; &quot;Oxide&quot; &quot;depth&quot; (+ Tpoly 0.05))
+(sdepe:etch-material &quot;material&quot; &quot;Oxide&quot; &quot;depth&quot; Tscreen)
+(sdepe:remove &quot;material&quot; &quot;Resist&quot;)
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_metalcontact.png"><img src="images/se_p_metalcontact.png" width="300" 
+alt="Structure after etching metal contact holes" /></a></p>
+
+<p class="caption">Figure 8. Structure after etching 
+the metal contact holes. (Click image for full-size view.)</p>
+
+<!--====================-->
+<h2>7.13.16 Fill Contact Holes</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdepe:fill-device*Metal*" lines=1-->
+<pre>
+(sdepe:fill-device &quot;material&quot; &quot;Metal&quot;)
+</pre>
+<!-- grep end -->
+
+<!--====================-->
+<h2>7.13.17 Contact Definitions</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdegeo:set-contact*substrate*" endExpr="*collector*remove*"-->
+<pre>
+(sdegeo:set-contact (find-face-id (position 0.0 0.01 0.01)) &quot;substrate&quot;)  
+
+(define BCID (find-body-id 
+  (position  (+ Xtop 0.01) (* 0.5 (+ Ybc1 Ybc2)) (* 0.5 Ze))))                  
+(sdegeo:set-contact BCID &quot;base&quot; &quot;remove&quot;)  
+
+(define ECID (find-body-id 
+  (position (+ Xtop 0.01) (* 0.5 (+ Ye1 Ye2)) (* 0.5 Ze))))                  
+(sdegeo:set-contact ECID &quot;emitter&quot; &quot;remove&quot;)  
+
+(define CCID (find-body-id 
+  (position (+ Xtop 0.01) (* 0.5 (+ Yc1 Yc2)) (* 0.5 Zc))))                  
+(sdegeo:set-contact CCID &quot;collector&quot; &quot;remove&quot;)  
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_contacted.png"><img src="images/se_p_contacted.png" width="300" 
+alt="Final structure after assigning contacts" /></a></p>
+
+<p class="caption">Figure 9. Final structure after 
+assigning contacts. (Click image for full-size view.)</p>
+
+<!--====================-->
+<h2>7.13.18 Meshing (Global)</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr=";*Global*" startOffset=1 endExpr="*All_RD*All_RW*"-->
+<pre>
+(define Xbot (sde:max-x (get-body-list)))
+(define Xtop (sde:min-x (get-body-list)))
+(sdedr:define-refeval-window &quot;All_RW&quot; &quot;Cuboid&quot; 
+  (position  Xtop 0 0) (position Xbot Ymax Zmax) )
+(sdedr:define-refinement-size &quot;All_RD&quot; 
+  (/ (- Xbot Xtop) 08.0) (/ Ymax  8.0) (/ Zmax  8.0)
+  (/ (- Xbot Xtop) 16.0) (/ Ymax 16.0) (/ Zmax 16.0))
+(sdedr:define-refinement-function &quot;All_RD&quot; 
+  &quot;DopingConcentration&quot; &quot;MaxTransDiff&quot; 1)
+(sdedr:define-refinement-placement &quot;All_PL&quot; &quot;All_RD&quot; &quot;All_RW&quot; )
+</pre>
+<!-- grep end -->
+
+<p>As discussed in <a href="sde_6.html#15">Section 6.15 Defining a Meshing Strategy in a Window</a>.</p>
+
+<!--====================-->
+<h2>7.13.19 Meshing in Windows</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="; Top region*" endExpr="*Active_RD*Active_RW*"-->
+<pre>
+; Top region
+(sdedr:define-refeval-window &quot;Top_RW&quot; &quot;Cuboid&quot; 
+  (position -2.3 Yb1 0) (position -1.25 Yc2 Zc))
+(sdedr:define-refinement-size &quot;Top_RD&quot; 
+  (/ (- Xbot Xtop) 16.0) (/ Ymax 16.0) (/ Zmax 16.0)
+  (/ (- Xbot Xtop) 32.0) (/ Ymax 32.0) (/ Zmax 32.0))
+(sdedr:define-refinement-function &quot;Top_RD&quot; 
+  &quot;DopingConcentration&quot; &quot;MaxTransDiff&quot; 1)
+(sdedr:define-refinement-placement &quot;Top_PL&quot; &quot;Top_RD&quot; &quot;Top_RW&quot; )
+
+; Base region
+(sdedr:define-refeval-window &quot;Base_RW&quot; &quot;Cuboid&quot; 
+  (position (- (- Xsub) Tepi) Yb1 0.0) (position (- Xsub) Yb2 Zc ))
+(sdedr:define-refinement-size &quot;Base_RD&quot; 
+  (/ Tepi 8.0) (/ (+ Yb2 Yb1)  8.0) (/ Zc  8.0)
+  (/ Tepi 32.0) (/ (+ Yb2 Yb1) 32.0) (/ Zc 32.0))
+(sdedr:define-refinement-function &quot;Base_RD&quot; 
+  &quot;DopingConcentration&quot; &quot;MaxTransDiff&quot; 1)
+(sdedr:define-refinement-placement &quot;Base_PL&quot; &quot;Base_RD&quot; &quot;Base_RW&quot; )
+
+; Active region
+(sdedr:define-refeval-window &quot;Active_RW&quot; &quot;Cuboid&quot; 
+  (position -2.3 0.85 0.0) (position -2.15 1.15 0.6))
+(sdedr:define-refinement-size &quot;Active_RD&quot; 
+  0.02 0.02 0.08
+  0.01 0.01 0.04)
+(sdedr:define-refinement-function &quot;Active_RD&quot; 
+  &quot;DopingConcentration&quot; &quot;MaxTransDiff&quot; 1)
+(sdedr:define-refinement-placement &quot;Active_PL&quot; &quot;Active_RD&quot; &quot;Active_RW&quot; )
+</pre>
+<!-- grep end -->
+
+<!--====================-->
+<h2>7.13.20 Meshing in a Material (Polysilicon)</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sdedr:define-refinement-size*Poly_RD*" endExpr="*PolySi*"-->
+<pre>
+(sdedr:define-refinement-size &quot;Poly_RD&quot; 
+  (/ Tpoly 8.0) 99 99 
+  (/ Tpoly 9.0) 66 66
+)
+(sdedr:define-refinement-material &quot;Poly_PL&quot; &quot;Poly_RD&quot; &quot;PolySi&quot; ) 
+</pre>
+<!-- grep end -->
+
+<p>As discussed in <a href="sde_4.html#3">Section&nbsp;4.3 Defining Regional Refinements</a>.</p>
+
+<!--====================-->
+<h2>7.13.21 Meshing the Structure</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd" startExpr="(sde:build-mesh*" lines=1-->
+<pre>
+(sde:build-mesh &quot;n@node@&quot;)
+</pre>
+<!-- grep end -->
+
+<p><a href="images/se_p_save.png"><img src="images/se_p_save.png" width="300" 
+alt="Final structure with doping profiles and mesh" /></a></p>
+
+<p class="caption">Figure 10. Final structure with 
+doping profiles and mesh. (Click image for full-size view.)</p>
+
+<p>Click to view all the commands discussed in this section in the command file 
+<a href="../../Applications_Library/GettingStarted/sde/BJT/BJT_dvs.cmd">
+BJT_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/BJT</tt>.</p>
+
+<!--================================================-->
+<a name="14"></a>
+<h1>7.14 Assignment</h1>
+
+<p>Create a Procem emulation flow that generates a 3D FinFET structure as shown.</p>
+
+<table width="585">
+
+<tr>
+<th>Step 1. Define the emulation domain and substrate.</th>
+<th>Step 2. Deposit the buried oxide layer.</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/se_p_finfet1.png" width="260"  
+alt="Defining emulation domain and substrate" /></td>
+<td><img class="imgline" src="images/se_p_finfet2.png" width="260" 
+alt="Depositing buried oxide layer" /></td>
+</tr>
+
+<tr>
+<th>Step 3. Deposit the silicon layer and hard mask (use &quot;Insulator1&quot; as material).</th>
+<th>Step 4. Pattern the polysilicon layer and deposit the nitride.</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/se_p_finfet3.png" width="221" height="255" 
+alt="Depositing silicon layer and hard mask" /></td>
+<td><img class="imgline" src="images/se_p_finfet4.png" width="282" height="338" 
+alt="Patterning polysilicon layer and depositing nitride" /></td>
+</tr>
+<tr>
+<th>Step 5. Etch nitride and strip polysilicon.</th>
+<th>Step 6. Etch hard mask and silicon, and strip nitride mask.</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/se_p_finfet5.png" width="282" height="314" 
+alt="Etching nitride and stripping polysilicon" /></td>
+<td><img class="imgline" src="images/se_p_finfet6.png" width="282" height="282" 
+alt="Etching hard mask and silicon, and stripping nitride mask" /></td>
+</tr>
+
+<tr>
+<th>Step 7. Pattern nitride mask and deposit silicon.</th>
+<th>Step 8. Fill and polish.</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/se_p_finfet7.png" width="235" height="394" 
+alt="Patterning nitride mask and depositing silicon" /></td>
+<td><img class="imgline" src="images/se_p_finfet8.png" width="238" height="306" 
+alt="Filling and polishing" /></td>
+</tr>
+
+<tr>
+<th>Step 9. Strip nitride and deposit gate oxide.</th>
+<th>Step 10. Deposit nitride (with rounding). Use the
+rounding options <tt>&quot;vexity&quot;</tt>, <tt>&quot;convex&quot;</tt>, and 
+<tt>&quot;radius&quot; Tni</tt>, where <tt>Tni</tt> is the thickness of the deposited 
+nitride layer.</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/se_p_finfet9.png" width="246" height="313" 
+alt="Stripping nitride and depositing gate oxide" /></td>
+<td><img class="imgline" src="images/se_p_finfet10.png" width="248" height="331" 
+alt="Depositing nitride with rounding" /></td>
+</tr>
+
+<tr>
+<th>Step 11. Etch nitride spacer.</th>
+<th>Step 12. Deposit (patterned) polysilicon gate.</th>
+</tr>
+    
+<tr>
+<td><img class="imgline" src="images/se_p_finfet11.png" width="246" height="313" 
+alt="Etching nitride spacer" /></td>
+<td><img class="imgline" src="images/se_p_finfet12.png" width="246" height="423" 
+alt="Depositing (patterned) polysilicon gate" /></td>
+</tr>
+
+<tr>
+<th>Step 13. Reflect the structure.</th>
+<th>&nbsp;</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/se_p_finfet13.png" width="254" height="338" alt="Reflecting structure" /></td>
+<td>&nbsp;</td>
+</tr>
+</table>
+
+<p class="note">To reflect the structure, use:<br />
+
+<tt>(sdegeo:reflect (get-body-list) (position 0 0 0) (gvector 0 -1 0) #t)</tt><br /><br />
+
+where <tt>(get-body-list)</tt> selects all regions. The plane of reflection is 
+defined by giving a point on the plane (here, the origin <tt>(position 0 0 0)</tt>) 
+and the normal vector (here, the negative y-axis <tt>(gvector 0 -1 0)</tt>). The 
+Boolean flag <tt>#t</tt> means that the unreflected structure is kept.</p>
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sde/FinFET_procem/FinFET_procem_dvs.cmd">
+FinFET_procem_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/FinFET_procem</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_6.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,523 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 9. Plasma Simulation and Link to PMC</title>
+ 
+ <!-- for equation support -->
+ <link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+ <script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+ <script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+ <script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_8.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />9. Plasma Simulation and Link to PMC</h1>
+
+<p>
+ <a href="#1">9.1 Plasma Simulator and Modules</a><br />
+ <a href="#2">9.2 Plasma Model Setup</a><br />
+ <a href="#3">9.3 Plasma Simulation Results</a><br />
+ <a href="#4">9.4 Link to the PMC Model</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To simulate reactor plasma with a plasma model using plasma equipment parameters as input.</li>
+ <li>To bridge the gap between reactor parameters and PMC parameters.</li>
+ <li>To link the plasma model output to the PMC surface reaction model.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>9.1 Plasma Simulator and Modules</h1>
+
+<p>This section is dedicated to the setup and usage of the zero-dimensional reactor 
+plasma simulator of Sentaurus Topography 3D. The plasma simulator is intended to facilitate 
+the setup of PMC surface reaction models by providing crucial information about the 
+gas species fluxes reaching the surface. Zero-dimensional (<em>0D</em>) also means 
+that the geometric characteristics for the reactor are not considered in the solution 
+as might be the case with more sophisticated and complex simulators.</p>
+
+<p>The main focus of the plasma simulator is to obtain a solution relatively quickly, 
+with a good estimation of the gas fluxes reaching the exposed surface of the PMC domain.</p> 
+
+<p>The ion energy and angular distribution (IEAD) functions of the incident gas species 
+are calculated based on commonly used reactor parameters such as pressure, gas 
+temperature, the applied power and RF bias, and the flows of various gas species. 
+The IEAD functions can then be used directly in a PMC model with the 
+<tt>define_species_distribution</tt> command. With this approach, it becomes easier 
+for you to bridge the gap between the reactor (machine) parameters and the PMC gas species fluxes, which often are difficult to obtain experimentally or to guess.</p>
+
+<p>Figure 1 presents the flow for setting up the plasma simulation and linking with a PMC
+simulation schematically, and it is the basis for the discussion in this section.</p>
+
+<p><a href="images/tp_pmc_ion_assisted_etch_Ar_plasma_flow.png">
+<img src="images/tp_pmc_ion_assisted_etch_Ar_plasma_flow.png" width="570" 
+alt="Plasma simulation flow" /></a></p>
+
+<p class="caption">Figure 1. Schematic flow for setting up a plasma simulation and linking 
+it to a PMC simulation. (Click image for full-size view.)</p>
+
+<p>There are two main modules of the plasma model:</p>
+
+<ul>
+<li>The global plasma bulk model is a volume-averaged discharge model based on the 
+charge densities balance and electron temperature in the plasma bulk, which converges 
+to a steady state.</li>
+<li>The plasma sheath model is a collisionless sheath model near an RF-bias electrode, 
+based on the sheath transport model and the equivalent circuit model.</li>
+</ul>
+
+<p>In plasma physics, the plasma bulk region is a quasi-neutral region that follows charge 
+neutrality, and the plasma sheath region is a region close to the material surface (usually 
+a few micrometers) where a positive space charge region is formed due to the depletion of 
+electrons. A brief introduction to these two modules is given here.</p>
+
+<p>To assist you in the first steps of setting up and using the plasma simulator with 
+a PMC model, a Sentaurus Workbench project is provided in the Applications Library. 
+The project is similar to the one discussed in 
+<a href="./stopo_6.html#3">Section&nbsp;6.3 Example: PMC Ion-Assisted Etching</a>. 
+The main difference is that, instead of using an arbitrary ion angular distribution (IAD) function for argon ions, the IEAD function is now calculated by the plasma model (only for argon).</p>
+
+<p><img src="images/tp_pmc_ion_assisted_etch_Ar_plasma_swb.png" width="565" height="217" 
+alt="Plasma and PMC ion-assisted etch simulation Sentaurus Workbench Project" /></p>
+
+<p class="caption">Figure 2. Sentaurus Workbench project for a plasma simulation 
+linked to PMC ion-assisted etching.</p>
+
+<p>To download the preprocessed script files, right-click the following link and choose 
+<strong>Save Target As</strong>:</p>
+
+<ul>
+<li><a href="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pp_pmc_ion_assisted_etch_Ar_plasma_t3d.cmd">pp_pmc_ion_assisted_etch_Ar_plasma_t3d.cmd</a></li>
+</ul>
+
+<p>To execute the PMC simulation file in Sentaurus Topography 3D on the command line, 
+enter:</p>
+
+<pre>
+&gt; sptopo3d pp_pmc_ion_assisted_etch_Ar_plasma_t3d.cmd
+</pre>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>9.2 Plasma Model Setup</h1>
+
+<p>This section presents details about how to set up the plasma model.</p>
+
+<!--=======================-->
+<a name="2.1"></a>
+<h2>9.2.1 Plasma Reaction Model Definition</h2>
+
+<p>The first step of simulating plasma is to define a plasma model type for the 
+bulk and sheath models. For the bulk model, only the global model type is available. 
+For the sheath model, two model types are available: analytic and circuit. In this 
+example, the circuit sheath model type is chosen, which uses an equivalent circuit 
+to predict the sheath potential at the electrode. The commands for the type models 
+are as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - plasma models type definition" endExpr="##end - plasma models type definition" excludelines="##*" -->
+<pre>
+define_plasma_model name=$plasma_model \
+   bulk_model_type=global sheath_model_type=circuit
+</pre>
+<!-- grep end -->
+
+<p>After the plasma model definition, the species must be added to the plasma model 
+with their species names, masses, and charges specified:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - plasma species definition" endExpr="##end - plasma species definition" excludelines="##*" -->
+<pre>
+add_species plasma_model=$plasma_model name=Ar  mass=39.948&lt;amu&gt; charge=0
+add_species plasma_model=$plasma_model name=Ar* mass=39.948&lt;amu&gt; charge=0  
+add_species plasma_model=$plasma_model name=Ar+ mass=39.948&lt;amu&gt; charge=+1 
+</pre>
+<!-- grep end -->
+
+<p>To simulate the plasma reactions in the plasma, the plasma bulk reactions must also 
+be added to the plasma model with their formulas, rate coefficients, and transferred 
+energies defined. The expressions of the plasma bulk reactions follow the syntax rules 
+as presented here:</p>
+
+<pre>&lt;R1&gt; = n1&lt;P1&gt; + n2&lt;P2&gt; + ...</pre>
+
+<p>or:</p>
+
+<pre>&lt;R1&gt; + &lt;R2&gt; = n1&lt;P2&gt; + n2&lt;P2&gt; + ...</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>&lt;R1&gt;</tt> and <tt>&lt;R2&gt;</tt> are species names of the reactants. 
+The number of the reactants must be one or two.</li>
+<li><tt>&lt;P1&gt;</tt> and <tt>&lt;P2&gt;</tt> are species names of the products. 
+The number of the products is arbitrary.</li>
+<li><tt>n1</tt> and <tt>n2</tt> are the stoichiometric coefficients of the reaction products.</li>
+<li>The left-hand side and the right-hand side of the expression are separated by an equal sign (=).</li>
+<li>The species name <tt>e-</tt> is reserved for electrons. The rest of the species should 
+be defined by the <tt>add_species</tt> command.</li>
+</ul>
+
+<p>The definition of the plasma bulk reactions used in this example is for an argon gas 
+including dissociation, excitation, and neutralization reactions:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - plasma bulk reactions definition" endExpr="##end - plasma bulk reactions definition" excludelines="##*" -->
+<pre>
+add_bulk_reaction plasma_model=$plasma_model name=r1 \
+   expression=&quot;Ar + e- = Ar* + e-&quot; \
+   rate_coefficient_type=arrhenius \
+   a=6.033e-15 b=0.3287 c=12.08 energy_transfer=11.6&lt;eV&gt;
+
+add_bulk_reaction plasma_model=$plasma_model name=r2 \
+   expression=&quot;Ar + e- = Ar+ + e- + e-&quot; \
+   rate_coefficient_type=arrhenius \
+   a=2.160e-14 b=0.6329 c=16.0627 energy_transfer=15.76&lt;eV&gt;
+
+add_bulk_reaction plasma_model=$plasma_model name=r3 \
+   expression=&quot;Ar* + e- = Ar+ + e- + e-&quot; \
+   rate_coefficient_type=arrhenius \
+   a=1.698e-13 b=0.1072 c=4.4129 energy_transfer=4.43&lt;eV&gt;
+
+add_bulk_reaction plasma_model=$plasma_model name=r4 \
+   expression=&quot;Ar* + e- = Ar + e-&quot; \
+   rate_coefficient_type=arrhenius \
+   a=3.969e-15 b=0.2894 c=0.7412 energy_transfer=-11.6&lt;eV&gt;
+
+add_bulk_reaction plasma_model=$plasma_model name=r5 \
+   expression=&quot;Ar* + Ar* = Ar+ + Ar + e-&quot; \
+   rate_coefficient_type=arrhenius \
+   a=1.2e-15 b=0 c=0 energy_transfer=0&lt;eV&gt;
+</pre>
+<!-- grep end -->
+
+<p>As a reference, the reaction rate coefficients of the plasma bulk reactions listed 
+above are in the form of an Arrhenius law (<tt>rate_coefficient_type=arrhenius</tt>), 
+which is illustrated as follows:</p>
+
+<!--
+<p>\[k_{r}(T_{e}) = a \html"&nbsp;" [\text"m"^{3} \html"&nbsp;" \text"s"^{-1}] \html"&nbsp;" ·
+({T_{e} \html"&nbsp;" [\text"eV"]}/{T_{ref} \html"&nbsp;" [\text"eV"]})^{b} \html"&nbsp;" · e^{(- {c \html"&nbsp;" [\text"eV"]}/{T_{e} \html"&nbsp;" [\text"eV"]})} 
+\html"&nbsp;" \text"," \html"&nbsp;" T_{ref} = 1eV\]  </p>
+-->
+
+<p>\[k_{r}(T_{e}) = a \html"&nbsp;" ·
+({T_{e}}/{T_{ref}})^{b} \html"&nbsp;" · e^{(- {c}/{T_{e}})} 
+\html"&nbsp;" \text"," \html"&nbsp;" T_{ref} = 1eV\]</p>
+
+<p>Instead of using the Arrhenius law form, a general Arrhenius expression can also be 
+applied (with <tt>rate_coefficient_type=general_arrhenius</tt>):</p>
+
+<p>\[k_{r}(T_{e}) = e^{(a + b\html"&nbsp;" ln(T_{e}) + {c}/{T_{e}} + {d}/{T^2_{e}} + 
+{e}/{T^3_{e}})}\]</p>
+
+<!--=======================-->
+<a name="2.2"></a>
+<h2>9.2.2 Plasma Reactor Configuration</h2>
+
+<p>Next, you need to set up the reactor and apply the defined plasma model to the reactor. 
+Meanwhile, the reactor also includes other etch equipment&ndash;related parameters, 
+including the plasma source type, effective chamber dimension, RF power, chamber pressure, 
+and gas flow.</p>
+
+<p>The effective chamber dimension (effective bulk radius, \(R_{bulk}\), and 
+effective bulk height, \(L_{bulk}\)) can be calculated from their actual chamber 
+dimensions, \(R\) and \(L\), respectively, with the following equations:</p>
+
+<p>\[R_{bulk} = R · √h_{R} \]</p>
+<p>\[L_{bulk} = L· √h_{L} \]</p>
+
+<p class="note">The effective dimensions \(R_{bulk}\) and \(L_{bulk}\) are NOT 
+calculated automatically by the simulator. You might need to set them.</p>
+
+<p>The scaling factors \(h_{R}\) and \(h_{L}\) depend on the mean free path \(λ\) of the ions:</p>
+
+<p>\[h_{R} = 0.8 \html"&nbsp;" · (4 + {R}/{λ})^{-0.5}\]</p>
+
+<p>\[h_{L} = 0.86 \html"&nbsp;" · (3 + {L}/{2λ})^{-0.5}\]</p>
+
+<p>For more information about calculating the scaling factors (\(h_{R}\) and \(h_{L}\)), 
+see the <cite>Sentaurus&trade; Topography 3D User Guide</cite>.</p>
+
+<p>The reactor setup used in this example is suitable for solving both the bulk model 
+and the sheath model. The command <tt>define_reactor</tt> assembles the reactor parameter 
+values and combines them with the plasma model in the same way that the command 
+<tt>define_etch_machine</tt> assembles a PMC model and the species distributions and 
+properties. The setup used in this project is as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - plasma reactor setup" endExpr="##end - plasma reactor setup" excludelines="##*" -->
+<pre>
+define_reactor name=R plasma_model=$plasma_model \
+   type=icp \
+   radius=10&lt;cm&gt; \
+   height=3.0&lt;cm&gt; \
+   power=500&lt;W&gt; \
+   power_absorption_coefficient=0.2 \
+   gas_temperature=350&lt;K&gt; \
+   pressure=10&lt;mTorr&gt; \
+   rf_bias_power=@rf_bias_power@&lt;W&gt; \
+   rf_bias_frequency=13.56&lt;MHz&gt; \
+   inlet_gas_flow= {{Ar 200.0&lt;sccm&gt;}}
+</pre>
+<!-- grep end -->
+
+<p>The total absorbed power \(P_{abs}\) is assumed to be proportional to the time average 
+of the power \(P_{rf}\) applied to the reactor (specified by the <tt>power</tt> parameter):</p>
+
+<p>\[P_{abs} = α &lt;P_{rf}(t)&gt;\]</p>
+
+<p>where \(α\) is the power absorption coefficient (parameter 
+<tt>power_absorption_coefficient</tt>).</p>
+
+
+<!--=======================-->
+<a name="2.3"></a>
+<h2>9.2.3 Solvers for the Plasma Bulk and Sheath</h2>
+
+<p>In the previous steps, the plasma model was set up along with the corresponding 
+reactor. All the necessary items for the plasma simulation setup are now ready to 
+proceed with the plasma solution.</p>
+
+<p>Before solving the model, the bulk and sheath solvers could be configured manually 
+and separately. Solver definition is optional and the default configuration is applied 
+if you do not do so explicitly (see the <cite>Sentaurus&trade; Topography 3D User Guide</cite> 
+for the default values of the solver parameters).</p>
+
+<p>The solver setup used in this project is as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - bulk solver definition" endExpr="##end - bulk solver definition" excludelines="##*" -->
+<pre>
+define_bulk_solver name=bs \
+   bulk_model_type=global \
+   stationary_state_tolerance=2.0e-13
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - sheath solver definition" endExpr="##end - sheath solver definition" excludelines="##*" -->
+<pre>
+define_sheath_solver name=ss \
+   sheath_model_type=circuit \
+   ied_solver=monte_carlo \
+   power_tolerance=1e-3
+</pre>
+<!-- grep end -->
+
+<p>The tolerances and the ion energy distribution (IED) solver (<tt>ied_solver</tt>) 
+defined for the sheath solver are the default values. The <tt>stationary_state_tolerance</tt> 
+for the bulk solver is set intentionally to a very low value (1.0e-4 is the default) 
+to force the solver to run more iterations before convergence in order to demonstrate 
+the extraction of the bulk solution residuals in the next section.</p>
+
+<p>The parameter <tt>ied_solver</tt> is used to select the method to compute the IED 
+of the ions crossing the sheath layer. Two methods are available, <tt>analytic</tt> and 
+<tt>monte_carlo</tt>, and they are only available when the <tt>circuit</tt> sheath type 
+is selected in the <tt>define_plasma_model</tt> (<tt>sheath_model_type=circuit</tt>) 
+command.</p>
+
+<p>Some useful data can be extracted from the plasma simulation. Therefore, data 
+extractions can be defined and they are applied during the solution to monitor the 
+species densities and the overall convergence of the solution. Several quantities 
+can be extracted. In the following example, plasma bulk reactions (<tt>reactions</tt>), 
+species densities (<tt>state</tt>), electron temperature (<tt>state</tt>), and the 
+ion energy distribution (<tt>energy_distribution</tt>) from the sheath are extracted:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - bulk data extractions" endExpr="##end - bulk data extractions" excludelines="##*" -->
+<pre>
+define_extraction name=ex_bulk \
+   type=plasma \
+   bulk_model_type=global \
+   quantities={reactions state residuals} output_type=tdr\
+   file=n@node@_bulk_extractions.tdr
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - sheath data extractions" endExpr="##end - sheath data extractions" excludelines="##*" -->
+<pre>
+define_extraction name=ex_sheath \
+   type=plasma \
+   sheath_model_type=circuit \
+   quantities={energy_distribution} \
+   species_pattern= {*+} output_type=tdr \
+   file=n@node@_sheath_extractions.tdr 
+</pre>
+<!-- grep end -->
+
+<p>The glob syntax is the default for <tt>species_pattern</tt>. Here, the {*+} pattern 
+matches all the positive ion species. For a complete list of all the quantities that can be 
+extracted from the bulk and sheath solutions, see the 
+<cite>Sentaurus&trade; Topography 3D User Guide</cite>, Chapter 6, for the command 
+<tt>define_extraction</tt> for <tt>type=plasma</tt>. The extracted quantities are saved 
+to separate TDR files for the bulk and sheath solutions, and it is also possible to save 
+them in a CSV file by setting the parameter <tt>output_type=csv</tt> instead of the (default) <tt>output_type=tdr</tt>.</p>
+
+<p>After the configuration of the solvers is finished and the extractions are defined, 
+the last step is to start the solution with the <tt>solve_reactor</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - plasma solution" endExpr="##end - plasma solution" excludelines="##*" -->
+<pre>
+set plasma_results [solve_reactor name=ps reactor=R \
+   bulk_solver=bs sheath_solver=ss extractions={ex_bulk ex_sheath}]
+</pre>
+<!-- grep end -->
+
+<p>The <tt>solve_reactor</tt> returns a nested list with the species fluxes, densities, 
+and energies from the bulk and sheath solutions. The same information is also printed 
+in the log file of the simulation (see Figure&nbsp;3). The returned list can be converted 
+to a Tcl array and then each quantity becomes accessible by its name as it is done for 
+the Ar<sup>+</sup> flux in this project:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - plasma results" endExpr="##end - plasma results" excludelines="##*" -->
+<pre>
+puts $plasma_results
+array set plasma_results_array [join  $plasma_results]
+set Ar_plus_flux $plasma_results_array(Ar+_flux)
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_pmc_ion_assisted_etch_Ar_plasma_log.png">
+<img src="images/tp_pmc_ion_assisted_etch_Ar_plasma_log.png" 
+width="570" alt="Sentaurus Workbench Project Log" /></a></p>
+
+<p class="caption">Figure 3. Log output for the plasma simulation. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>9.3 Plasma Simulation Results</h1>
+
+<p>This section discusses the results of the plasma simulation.</p>
+
+<!--=======================-->
+<a name="2.3"></a>
+<h2>9.3.1 Visualization of Extracted Results From TDR File</h2>
+
+<p>The extracted results in the TDR files can be visualized in Sentaurus Visual. 
+For example, it is common to plot the ion energy distributions for further analysis. 
+The plot can be generated from the extracted plasma sheath results in the corresponding 
+TDR file (see Figure&nbsp;4).</p>
+
+<p><a href="images/tp_pmc_ion_assisted_etch_Ar_plasma_IED.png">
+<img src="images/tp_pmc_ion_assisted_etch_Ar_plasma_IED.png" 
+width="570" alt="Ar+ IED plot" /></a></p>
+
+<p class="caption">Figure 4. Energy distribution of Ar<sup>+</sup> as extracted from 
+the sheath solution. The bimodal distribution with two energy peaks at low and high 
+energies of ions and the distribution spread is wider for higher bias, as expected 
+theoretically and is observed experimentally. For relatively low RF bias frequencies, 
+the ions cross the sheath layer in a small fraction of an RF cycle and they can respond 
+to the instantaneous sheath voltage. Consequently, their final energies depend strongly 
+on the phase of the RF signal at which they enter the sheath. The result is their broad 
+and bimodal IEDs. The two peaks in the IEDs correspond to the minimum and maximum sheath 
+drops, that is, where the voltage is varying most slowly. (Click image for full-size view.)</p>
+
+<p>For more complicated plasma models with many reactions of various species, it is also 
+useful to monitor the convergence of the bulk solution by plotting the species residuals 
+as a function of time.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>9.4 Link to the PMC Model</h1>
+
+<p>The output of the plasma solution and mainly the IEAD functions can be used directly 
+in a PMC surface reaction model by calling the plasma solution in the 
+<tt>define_species_distribution</tt> command. This is demonstrated in the following 
+example where also the flux of XeF<sub>2</sub> is set to be a function of the 
+Ar<sup>+</sup> flux calculated from the plasma simulation:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - define distribution" endExpr="##end - define distribution" excludelines="##*" -->
+<pre>
+define_species_distribution name=my_distr species=Ar+ type=plasma solution=ps
+
+set XeF2_flux [expr $Ar_plus_flux*10.0]
+
+define_species_distribution name=my_distr species=XeF2 exponent=1.0 \
+   flux=$XeF2_flux energy_min=0.0 energy_max=0.3
+</pre>
+<!-- grep end -->
+
+<p>The  IEADFs of Ar<sup>+</sup> that are calculated by the plasma simulator contain 
+valuable information about the energy distribution of the ions. This information can 
+be leveraged by rendering some PMC model parameters energy dependent. In the example 
+that follows, the sputtering yields for the materials of the PMC model are energy 
+dependent by setting an energy threshold:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch_Ar_Plasma/pmc_ion_assisted_etch_Ar_plasma_t3d.cmd" startExpr="##start - define yield" endExpr="##end - define yield" excludelines="##*" -->
+<pre>
+define_yield name=my_yield  species=Ar+ material=Silicon \
+   yield_at_zero=1.2 yield_max=2.4 theta_max=60 threshold_energy=50
+  
+define_yield name=my_yield  species=Ar+ material=SiFx \
+   yield_at_zero=1.0 yield_max=1.05 theta_max=50 threshold_energy=20
+  
+define_yield name=my_yield  species=Ar+ material=Photoresist \
+   yield_at_zero=1.0 yield_max=1.5 theta_max=50 threshold_energy=10
+</pre>
+<!-- grep end -->
+
+<p>The threshold energy is used in the prefactor that scales the (angle-dependent) yield 
+function \(γ(θ)\) for each material. As a result, by varying the RF bias power in the 
+reactor definition (<tt>rf_bias_power</tt>), it is possible to give more or less energy 
+to the ions for sputtering the materials. In cases where the ion energy is below the energy 
+threshold \(E_{th}\) for a material, no sputtering occurs. The energy dependence can be 
+used elsewhere as well for rendering the reaction probabilities dependent on the species 
+energy in general (not only for ions). The yield scaling prefactor varies with the square 
+root of the ion incident energy when the parameter <tt>threshold_energy</tt> is used in 
+the yield definition:</p>
+
+<p>\[γ(E,θ) = (√E - √E_{th} ) \html"&nbsp;" · γ(θ)\]</p>
+
+<p>In the Sentaurus Workbench project treated here, the parameter <tt>&#64;rf_bias_power&#64;</tt> 
+is used to vary the RF bias power applied in the plasma reactor. The comparison of the 
+resulting etched structures between the lower (50 W) and higher (100 W) RF bias powers 
+shows clearly the effect on the sputtering rates with more energetic Ar<sup>+</sup> ions 
+yielding deeper etch depths at 100 W (see Figure&nbsp;5).</p>
+
+<p><a href="images/tp_pmc_ion_assisted_etch_Ar_plasma_structures.png">
+<img src="images/tp_pmc_ion_assisted_etch_Ar_plasma_structures.png" 
+width="570" alt="Etch depths at 50 W and 100 W of RF bias power" /></a></p>
+
+<p class="caption">Figure 5. Comparison of etch depth in structures for 50 W 
+and 100 W of RF bias power. Higher RF bias power generates ions with higher energies 
+that can sputter more efficiently according to the PMC model used here. The thin 
+layer of SiFx (magenta) is clearly visible in the TDR structures saved in the GC 
+format. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_8.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

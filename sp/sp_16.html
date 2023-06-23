@@ -1,0 +1,514 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 16. Special Focus: AlGaN Process Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_15.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />16. Special Focus: AlGaN Process Simulation</h1>
+
+<p>
+ <a href="#1">16.1 Overview</a><br />
+ <a href="#2">16.2 Substrate Definition</a><br />
+ <a href="#3">16.3 Deposition</a><br />
+ <a href="#4">16.4 Ion Implantation</a><br />
+ <a href="#5">16.5 Epitaxy, and Dopant Diffusion and Activation</a><br />
+ <a href="#6">16.6 Application Example: AlGaN p-Gate HFET</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to perform process simulations for AlGaN on SiC substrates.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>16.1 Overview</h1>
+
+<p>Sentaurus Process can simulate most steps in the processing of AlGaN HFETs. 
+Its capabilities include:</p>
+
+<ul>
+<li>Definition of growth orientation</li>
+<li>Deposition of layers</li>
+<li>Ion implantation</li>
+<li>Epitaxy of layers</li>
+</ul>
+
+<p>This section discusses special settings required to perform AlGaN process simulations.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>16.2 Substrate Definition</h1>
+
+<p>This section describes how to define the substrate.</p>
+
+<!--===========================-->
+<h2>16.2.1 Substrate Specification</h2>
+
+<p>AlGaN HFETs are grown on various substrates. Typical wafers are sapphire, silicon, SiC, 
+and AlGaN. The first few layers of deposited materials are usually full of dislocations and 
+other imperfections. These layers cannot be simulated in physical detail. Therefore, such 
+layers are deposited simply as relaxed materials. The crystal directions of the deposited 
+layers are assumed to follow the orientation set by the wafer and flat orientations in the 
+<tt>init</tt> command.</p>
+
+<!--===========================-->
+<h2>16.2.2 Wafer and Flat Orientations</h2>
+
+<p>The wafer orientation and the flat orientation settings are similar to those for silicon. 
+However, the hexagonal crystal system must be taken into account. In such crystals, 
+four Miller indices are used to define a direction: 
+<em>a</em><sub>1</sub>, <em>a</em><sub>2</sub>, <em>a</em><sub>3</sub>, and 
+<em>c</em>. However, <em>a</em><sub>1</sub>, <em>a</em><sub>2</sub>, and 
+<em>a</em><sub>3</sub> depend on each other with the relationship: 
+<em>a</em><sub>1</sub> + <em>a</em><sub>2</sub> + <em>a</em><sub>3</sub> = 0. 
+Therefore, it is sufficient to use only three of the four Miller indices to 
+determine any direction.</p>
+
+<p>Sentaurus Process uses <em>a</em><sub>1</sub>, <em>a</em><sub>2</sub>, 
+and <em>c</em> to define a direction, omitting the third Miller index. To specify the 
+wafer and flat orientations, use the <tt>init</tt> command:</p>
+
+<pre>
+init wafer.orient= {a1 a2 c} notch.direction= {a1 a2 c}
+</pre>
+
+<p>The default wafer orientation is [0001], which is specified as 
+<tt>wafer.orient= {0 0 1}</tt>. Almost all III&ndash;nitride HFETs are grown in this 
+so-called Ga-face orientation, where the topmost layer is a Ga layer. Due to the 
+polarization effect in such materials, it is important to specify the correct orientation, 
+especially for device simulations.</p>
+
+<p>In Sentaurus Process, possible flat orientations for such wafers are 
+[1<span style="text-decoration: overline">1</span>00] specified as 
+<tt>notch.direction= {1 -1 0}</tt> and [11<span style="text-decoration: overline">2</span>0] 
+specified as <tt>notch.direction= {1 1 0}</tt>. The various directions 
+in the hexagonal GaN lattice are shown in Figure 1.</p>
+
+<p><a href="images/sp_algan_orientations.png"><img src="images/sp_algan_orientations.png" 
+width="450" alt="Directions in the hexagonal GaN lattice" /></a></p>
+
+<p class="caption">Figure 1. Important directions in the hexagonal GaN lattice. 
+(Click image for full-size view.)</p>
+
+<p>For further details about the hexagonal crystal system, see 
+<a href="sp_15.html#2">Section&nbsp;15.2 Substrate Definition</a>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>16.3 Deposition</h1>
+
+<p>Deposition of Al<sub>x</sub>Ga<sub>1&ndash;-x</sub>N is performed similarly to 
+the deposition of SiGe. Therefore, the mole fraction is set by the <tt>xMoleFraction</tt> 
+field. In analogy to doping profiles, linearly graded mole-fraction profiles can be 
+defined by their initial and final values:</p>
+
+<pre>
+doping  name= xMole field=&quot;xMoleFraction&quot; depths= {0 $h_rel1} \
+  values= &quot;$xMoleRelax1 $xMoleRelax1&quot;
+deposit material= AlGaN region.name= relax1 thickness=$h_rel1 doping= {xMole}
+</pre>
+
+<p>In one dimension and two dimensions, Sentaurus Process automatically merges neighboring 
+layers of the same material. To avoid such region-merging, you can set <em>like</em> 
+materials, which are derived from a known material type. With the additional 
+<tt>alt.matername</tt> argument, the new material is converted back to that material when 
+saved for later device simulation. An example of such a new derived material is given here 
+(not all information can be inherited for <em>like</em> materials):</p>
+
+<pre>
+mater add name= AlGaNbarrier  new.like= AlGaN  alt.matername= AlGaN
+</pre>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>16.4 Ion Implantation</h1>
+
+<p>Sentaurus Process supports only Monte Carlo (MC) implantation into III&ndash;nitrides. 
+There are no analytic tables. No extensive calibration of MC implantation parameters has 
+been performed so far. Implanted dopants such as Si and Mg are rarely used for AlGaN HFETs.</p>
+
+<p>MC implantation can be performed with:</p>
+
+<pre>
+implant &lt;species&gt; dose=&lt;n&gt; energy=&lt;n&gt; tilt=&lt;n&gt; particles=&lt;n&gt; sentaurus.mc
+</pre>
+
+<p class="note">The number of particles specified is per 50&nbsp;nm of the wafer width, 
+<em>not</em> the total number of particles. In general, at least 2000 particles 
+must be implanted to obtain reasonable statistics. For complicated geometries, as many 
+as 10&thinsp;000 particles might be needed.</p>
+
+<p>Sentaurus MC implantation can be slow, so it is advisable to run it using parallel 
+processing with:</p>
+
+<pre>
+math numThreadsMC=&lt;i&gt;
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>16.5 Epitaxy, and Dopant Diffusion and Activation</h1>
+
+<p>Dopants diffuse in AlGaN by interstitial and vacancy mechanisms as in silicon. 
+However, little data exists for interstitial and vacancy components of dopant 
+diffusivities in AlGaN, which complicates the calibration of such models. As an 
+alternative phenomenological approach, you can use macroscopic diffusivity values 
+to utilize a diffusion model with constant diffusivities. Such a constant diffusion 
+model can be set for a certain dopant in a given material as:</p>
+
+<pre>
+pdbSet $material $Dopant DiffModel Constant
+</pre>
+
+<p>Sentaurus Process uses the <tt>Constant</tt> diffusion model for dopants (for example, 
+Si and Mg) in the AlGaN material system by default.</p>
+
+<p>All of the necessary model parameters for the diffusion models (for example, for silicon 
+in AlGaN) can be initialized by single commands such as:</p>
+
+<pre>
+SetIIIVDiffParams AlGaN Silicon
+</pre>
+
+<p>The provided model parameters act only as a template. They are not calibrated. 
+The diffusivities for the <tt>Constant</tt> diffusion model can be set explicitly with 
+<tt>pdbSet</tt> commands, for example:</p>
+
+<pre>
+pdbSet GaN Silicon   Dstar {[ Arrhenius 6.66e-2 3.44]}
+pdbSet GaN Magnesium Dstar {[ Arrhenius 5.00e-7 2.13]}
+</pre>
+
+<p>By default, Sentaurus Process uses the <tt>Solid</tt> model for dopant activation 
+in GaN, AlN, and AlGaN, which assumes that dopants activate and deactivate to solid 
+solubility values instantly. The model can be set explicitly together with the solubility 
+for a given material dopant pair by:</p>
+ 
+<pre>
+pdbSet $material $Dopant ActiveModel Solid
+pdbSet $material $Dopant Solubility 1e30
+</pre>
+
+<p>For mechanical stress calculation, you can use the lattice mismatch model. This model 
+requires a reference position for the calculation of strain and stress, named 
+<tt>TopRelaxedNodeCoord</tt>. At that reference position, the strain and stress are relaxed. 
+The strain and stress at other positions are computed according to the difference in the 
+lattice constant between the reference and that position. The <tt>TopRelaxedNodeCoord</tt> 
+is set inside the relaxed layer material by:</p>
+
+<pre>
+pdbSetDouble &lt;material&gt; Mechanics TopRelaxedNodeCoord &lt;position&gt;
+</pre>
+
+<p>Relaxed layers towards the substrate are usually simulated with the <tt>deposit</tt> 
+command. No dopant diffusion will occur during the deposition.</p>
+
+<p>Strained layers or layers for which dopant out-diffusion might be important 
+are grown epitaxially using the <tt>diffuse</tt> command, for example:</p>
+
+<pre>
+diffuse iiiv.epi= GaN time= 1.0 temp= $DiffTemp epi.thick= $h_barr \
+  epi.doping= &quot;[MoleFractionFields AlGaN $xMoleBarr] Magnesium= $pDensBarr \
+                Silicon= $nDensBarr&quot; \
+  epi.doping.final= &quot;[MoleFractionFields AlGaN $xMoleBarr]  \
+                      Magnesium= $pDensBarr Silicon= $nDensBarr&quot; \
+  epi.model= 0 epi.layers= 10 info= 0
+</pre>
+
+<p>For the given project, these are the strained barrier layer and the highly 
+doped p-type GaN gate material.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>16.6 Application Example: AlGaN p-Gate HFET</h1>
+
+<p>This section presents a process simulation of a p-gate HFET device as 
+part of the project <tt>Applications_Library/GettingStarted/sdevice/pGate_HFET</tt>.</p>
+
+<p>See <a href="../sd/sd_16.html">
+Section&nbsp;16. Special Focus: Simulating AlGaN Devices With Sentaurus Device</a> for a 
+description of the device simulation part of this example.</p>
+
+<p>Click to view the process command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>In the first part of the process flow, the diffusion and activation model settings 
+as well as the parameter settings are specified for the III&ndash;nitride materials 
+and dopants used:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="foreach Dopant*" endExpr="pdbSet AlN Silicon   Dstar*" -->
+<pre>
+foreach Dopant &quot;Silicon Magnesium&quot; {
+  foreach material &quot;GaN AlN AlGaN&quot; {
+      SetIIIVDiffParams $material $Dopant
+      pdbSet $material $Dopant DiffModel Constant
+      pdbSet $material $Dopant ActiveModel Solid
+      pdbSet $material $Dopant Solubility 1e30
+  }
+}
+
+pdbSetBoolean AlGaN_GaN Silicon   Continuous 1
+pdbSetBoolean AlGaN_GaN Magnesium Continuous 1
+
+
+pdbSet GaN Magnesium Dstar {[ Arrhenius 5.00e-7 2.13]}
+pdbSet AlN Magnesium Dstar {[ Arrhenius 5.00e-7 2.13]}
+pdbSet GaN Silicon   Dstar {[ Arrhenius 6.66e-2 3.44]}
+pdbSet AlN Silicon   Dstar {[ Arrhenius 6.66e-2 3.44]}
+</pre>
+<!-- grep end -->
+
+<p>The remaining model settings are for the mechanical simulation. The model for 
+materials with anisotropic elastic properties are activated by:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="foreach material*" endExpr="}" -->
+<pre>
+foreach material &quot;GaN AlGaN AlN&quot; {
+    pdbSetBoolean $material Mechanics Anisotropic 1
+}
+</pre>
+<!-- grep end -->
+
+<p>Mole fraction dependency for mechanical constants is switched on by:</p>
+
+<pre>
+pdbSet Mechanics Compound.Interpolation 1
+</pre>
+
+<p>After defining the settings for the base materials, <em>like</em> materials are defined. 
+As previously mentioned, this helps to prevent automatic merging of adjacent layers 
+of the same material:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="mater add name= AlGa*" endExpr="mater add name= AlNn*" -->
+<pre>
+mater add name= AlGaNbarrier     new.like= AlGaN  alt.matername= AlGaN
+mater add name= GaNchannel       new.like= GaN    alt.matername= GaN
+mater add name= AlGaNbuffer      new.like= AlGaN  alt.matername= AlGaN
+mater add name= AlGaNrelax2      new.like= AlGaN  alt.matername= AlGaN
+mater add name= AlGaNrelax1      new.like= AlGaN  alt.matername= AlGaN
+mater add name= AlNnucleation    new.like= AlN    alt.matername= AlN
+</pre>
+<!-- grep end -->
+
+<p>Then, the substrate definition is performed. The wafer is 4H-SiC, with a wafer 
+orientation of [0001], a flat orientation of 
+[11<span style="text-decoration: overline">2</span>0], and a 4&deg; miscut towards 
+the wafer flat:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="line x*" endExpr="*notch.direction*" -->
+<pre>
+line x loc = $x0         tag= rTop    spacing= 0.3
+line x loc = $h_SiC+$x0  tag= rBottom spacing= 0.3
+
+line y loc = $ys  tag= rLeft  spacing= 0.05
+line y loc = $Yd  tag= rRight spacing= 0.05
+
+region SiliconCarbide xlo= rTop xhi= rBottom ylo= rLeft yhi= rRight name= wafer
+
+init field= Nitrogen concentration=$ndopSiC  \
+     wafer.orient= {@[split @WaferDirection@ &quot;:&quot;]@} \
+     notch.direction=  {@[split @SliceDirection@ &quot;:&quot;]@} slice.angle= 0.0
+</pre>
+<!-- grep end -->
+
+<p>On the SiC wafer, a 5&nbsp;nm thick AlN nucleation layer is deposited, followed 
+by a 250&nbsp;nm Al<sub>0.5</sub>Ga<sub>0.5</sub>N layer and an 
+Al<sub>0.25</sub>Ga<sub>0.75</sub>N layer of the same thickness. On top of that layer 
+sequence, an Al<sub>0.05</sub>Ga<sub>0.95</sub>N buffer layer is deposited. The 
+<tt>interface</tt> queries are performed to determine the top coordinates of the 
+various layers:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="deposit material= AlNnucleation*" endExpr="fset xbuf*"  -->
+<pre>
+deposit material= AlNnucleation region.name= nucleation thickness=$h_nuc
+fset xnuc  [lindex [interface y= 0 AlN /Gas] 0]
+
+doping  name= xMole   field=&quot;xMoleFraction&quot; depths= {0 $h_rel1} \
+  values= &quot;$xMoleRelax1 $xMoleRelax1&quot;
+deposit material= AlGaNrelax1 region.name= relax1 thickness=$h_rel1 \
+  doping= { xMole }
+fset xrel1  [lindex [interface y= 0 AlGaNrelax1 /Gas] 0]
+
+doping  name= xMole   field=&quot;xMoleFraction&quot; depths= {0 $h_rel2} \
+  values= &quot;$xMoleRelax2 $xMoleRelax2&quot;
+deposit material= AlGaNrelax2 region.name= relax2 thickness=$h_rel2 \
+  doping= { xMole }
+fset xrel2  [lindex [interface y= 0 AlGaNrelax2 /Gas] 0]
+
+doping  name= xMole   field=&quot;xMoleFraction&quot; depths= {0 $h_buf} \
+  values= &quot;0.05 0.05&quot;
+deposit material= AlGaNbuffer region.name= buffer thickness=$h_buf \
+  doping= { xMole }
+fset xbuf  [lindex [interface y= 0 AlGaNbuffer /Gas] 0]
+</pre>
+<!-- grep end -->
+
+<p>After the deposition of these layers, the <tt>TopRelaxedNodeCoord</tt> for the lattice 
+mismatch model is specified to point into the relaxed channel layer to be deposited next:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="fset*topcoord*" endExpr="region name= channel*" -->
+<pre>
+fset topcoord [expr 1e-4*($xbuf-$h_cha/2.)]
+pdbSetDouble GaNchannel Mechanics TopRelaxedNodeCoord $topcoord
+
+doping  name= dopcha field= &quot;Magnesium&quot; depths= {0 $h_cha} \
+  values= &quot;$DensCha $DensCha&quot;
+deposit material= GaNchannel region.name= channel thickness=$h_cha \
+  doping= { dopcha }
+fset xcha  [lindex [interface y= 0 GaNchannel /Gas] 0]
+region name= channel substrate
+</pre>
+<!-- grep end -->
+
+<p>The channel layer will act as the substrate for the subsequent epitaxial steps. 
+As such, this region must be marked with the <tt>substrate</tt> flag.</p>
+
+<p>The strained barrier layer is now grown pseudomorphically on to the GaN channel 
+with a corresponding <tt>diffuse</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="fset DiffTemp*" endExpr="region name= alganbarrier*" -->
+<pre>
+fset DiffTemp 600
+diffuse iiiv.epi= GaN time= 1.0 temp= $DiffTemp epi.thick= $h_barr \
+  epi.doping= &quot;[MoleFractionFields AlGaN $xMoleBarr] \
+    Magnesium= $pDensBarr Silicon= $nDensBarr&quot; \
+  epi.doping.final= &quot;[MoleFractionFields AlGaN $xMoleBarr] \
+    Magnesium= $pDensBarr Silicon= $nDensBarr&quot; \
+  epi.model= 0 epi.layers= 10 info= 0
+fset xbarr  [lindex [interface y= 0 AlGaN /Gas] 0]
+region new.name=alganbarrier point= &quot;[expr ($xcha+$xbarr)/2] 0&quot; 
+region name= alganbarrier change.material  AlGaNbarrier !zero.data
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sp_algan_stress.png"><img src="images/sp_algan_stress.png" width="570"
+alt="In-plane stress zz component"/></a></p>
+
+<p class="caption">Figure 2. In-plane stress zz component after pseudomorphic growth 
+of Al<sub>0.25</sub>Ga<sub>0.75</sub>N barrier layer onto relaxed GaN. 
+(Click image for full-size view.)</p>
+
+<p>After deposition of the AlGaN barrier layer, its material is changed to the <em>like</em> 
+material <tt>alganbarrier</tt>. The option <tt>!zero.data</tt> instructs Sentaurus Process 
+to keep the solution variables in that region. Otherwise, they would be set to zero.</p>
+
+<p>Next, a highly magnesium-doped p-gate GaN layer is grown, which will form the p-gate of 
+the device:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="diffuse iiiv.epi*" endExpr="region new.name= pgate*" -->
+<pre>
+diffuse iiiv.epi= GaN time= 1.0 temp= $DiffTemp epi.thick= $h_barr \
+  epi.doping= &quot;[MoleFractionFields AlGaN $xMoleBarr] \
+    Magnesium= $pDensBarr Silicon= $nDensBarr&quot; \
+  epi.doping.final= &quot;[MoleFractionFields AlGaN $xMoleBarr] \
+    Magnesium= $pDensBarr Silicon= $nDensBarr&quot; \
+  epi.model= 0 epi.layers= 10 info= 0
+fset xbarr  [lindex [interface y= 0 AlGaN /Gas] 0]
+region new.name=alganbarrier point= &quot;[expr ($xcha+$xbarr)/2] 0&quot; 
+region name= alganbarrier change.material  AlGaNbarrier !zero.data
+
+
+# epi growth of p-gate layer 
+diffuse iiiv.epi= GaN time= 1.0 temp= $DiffTemp epi.thick= $h_ggan \
+        epi.doping= &quot;Magnesium= $pgateMg&quot; \
+        epi.model= 0 epi.layers= 30 info= 0
+fset xgate  [lindex [interface y= 0 GaN /Gas] 0]
+region new.name= pgate point= &quot;$xgate+0.001&quot;
+</pre>
+<!-- grep end -->
+
+<p>Some of the magnesium will out-diffuse from that layer into the barrier layer 
+during its epitaxial growth, as shown in Figure 3.</p>
+
+<p><a href="images/sp_algan_pgate.png"><img src="images/sp_algan_pgate.png" width="570"
+alt="Out-diffused magnesium profile" /></a></p>
+
+<p class="caption">Figure 3. Magnesium profile after p-gate GaN epitaxy. 
+(Click image for full-size view.)</p>
+
+<p>The remaining process steps are standard mask, etching, and deposition steps to adjust 
+the p-gate length and to form the metallic regions of the contacts, described in 
+<a href="sp_3.html#5">Section&nbsp;3.5 Defining Polysilicon Gate</a> and 
+<a href="sp_3.html#13">Section&nbsp;3.13 Contact Pads</a>.</p>
+
+<p>The trap profiles present in such structures are not the result of the simulation. 
+If such profiles should be included in the device simulation, user-defined 
+<tt>PMIUserField0, PMIUserField1, ... </tt> profiles can be added with <tt>select</tt> 
+commands, for example:</p>
+
+<pre>
+select AlNnucleation name= "PMIUserField0" z="1e19" store
+select AlGaNrelax1   name= "PMIUserField0" z="2e18" store
+select AlGaNrelax2   name= "PMIUserField0" z="1e18" store
+select AlGaNbuffer   name= "PMIUserField0" z="(x>$xbuf+0.5) ? (1e18) : \
+  (1e15+(1e18-1e15)*exp(-($xbuf+0.5-x)/0.1))" store
+select GaNchannel    name= "PMIUserField0" z="(x>$xbuf+0.5) ? (1e18) : \
+  (1e15+(1e18-1e15)*exp(-($xbuf+0.5-x)/0.1))" store
+</pre>
+
+<p>Figure 4 shows the resulting profile of this example. The <tt>PMIUserField</tt>s can 
+be used in Sentaurus Device together with <tt>SFactor=PMIUserField0</tt>, as discussed 
+in <a href="../sd/sd_13.html#4">Section&nbsp;13.4 Trap Spatial Distribution</a>.</p>
+
+<p><a href="images/sp_algan_pmiuserfield0.png"><img src="images/sp_algan_pmiuserfield0.png" 
+width="570" alt="User-defined PMIUserField0 profile" /></a></p>
+
+<p class="caption">Figure 4. User-defined PMIUserField0 profile. 
+(Click image for full-size view.)</p>
+
+<p>Finally, the device is meshed for device simulations and the contacts are defined. 
+Refer to the Sentaurus Process module, <a href="../sp/sp_10.html">
+Section&nbsp;10. Special Focus: Remeshing for Device Simulation</a> for details about 
+this step.</p>
+
+<p>Figure 5 shows the final device structure.</p>
+
+<p><a href="images/sp_algan_hfet.png"><img src="images/sp_algan_hfet.png" width="570"
+alt="p-gate AlGaN-HFET" /></a></p>
+
+<p class="caption">Figure 5. Final device structure to be simulated with Sentaurus Device. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_15.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,2219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" /> 
+ 
+ <!-- for equation support -->
+ <link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+ <script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+ <script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+ <script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+ 
+ <title>TCAD Sentaurus Tutorial &ndash; Python 2. Python Statements, Objects, and Loops</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_01.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_03.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Python Language<br />2. Python Statements, Objects, and Loops</h1>
+
+<p>
+<a href="#1">2.1 Introduction to Objects and Classes</a><br />
+<a href="#2">2.2 Built-in Data Types</a><br />
+<a href="#3">2.3 Arithmetic Operators and Expressions</a><br />
+<a href="#4">2.4 Variables and Assignment Statement</a><br />
+<a href="#5">2.5 Python Objects and Their Memory Representation</a><br />
+<a href="#6">2.6 Introduction to Looping</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce Python objects and classes, and the Python data types and operations 
+ on them.</li>
+ <li>To introduce NumPy arrays and operations on them.</li>
+ <li>To introduce basic Python statements that are most useful for working 
+ with TCAD Sentaurus tools.</li>
+ <li>To understand how Python objects are stored in memory.</li> 
+ <li>To introduce looping in Python.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Introduction to Objects and Classes</h1>
+
+<p class="note">The scripts discussed here are available in the directory 
+<tt>Applications_Library/GettingStarted/python/py_basics</tt>. The code examples 
+that must be entered at the interactive prompt are also available in this 
+Sentaurus Workbench project.<br /><br />
+
+Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/python/py_basics/python_pyt.py">
+python_pyt.py</a>.</p> 
+
+<p>Everything is an object in Python. All data in Python programs is represented 
+by objects. Numbers and strings are objects in Python. For example, the number 
+<tt>42</tt> is an <tt>int</tt> object, and the number <tt>3.141</tt> is a <tt>float</tt> 
+object. The string <tt>'Hello, World!'</tt> is a <tt>str</tt> object. All data 
+structures such as lists, tuples, and NumPy arrays are objects. Even Python functions, 
+modules, and files are objects.</p>
+
+<p>Everything in Python behaves as if it is an object created from some <em>class</em>. 
+All built-in types such as numbers, strings, and lists are created from a class. In 
+addition, you can create your own data types by defining a class. For example, in 
+<a href="py_03.html#3_2">Section 3.3.2 User-Defined Classes</a>, you will create 
+a class to represent two-dimensional (2D) vectors.</p>
+
+<p>Objects have a type and value. In Python, type and class are synonyms. In addition, 
+since all values are represented by objects, for simplicity, the word <em>value</em> 
+is often used instead of <em>object</em>. However, objects are more than values. They 
+have attributes, which can be of two types: data attributes (variables defined inside 
+a class) and methods (functions defined inside a class). Objects and classes are discussed 
+in <a href="py_03.html#3">Section 3.3 Objects and Classes</a>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Built-in Data Types</h1>
+
+<p>Values in Python are of different types. A <em>data type</em> or simply <em>type</em> 
+is a set of values and a set of operations that can be performed on those values. This 
+section discusses Python data types. Arithmetic operations are discussed in 
+<a href="#3">Section 2.3 Arithmetic Operators and Expressions</a>.</p>
+
+<p>Python has several <a href="https://docs.python.org/3/library/stdtypes.html">
+built-in data types</a> that are always available. The built-in data types can be 
+divided into <em>primitive</em> and <em>compound</em> data types.</p>
+
+<p>Primitive data types are numeric types (such as integers, floating-point numbers, 
+and complex numbers), Booleans, <tt>NoneType</tt>, and strings.</p>
+
+<p>Compound data types (also called <em>data structures</em>) are used to group values. 
+Some of these are lists, tuples, and dictionaries.</p>
+
+<p>In addition to built-in data types, compound data types such as <em>N</em>-dimensional 
+arrays and pandas DataFrame are available in the Python packages 
+<a href="https://numpy.org/">NumPy</a> and <a href="https://pandas.pydata.org/">pandas</a>, respectively. These are useful for scientific computing.</p>
+
+<!--===============================-->
+<a name="2_1"></a>
+<h2>2.2.1 Numeric Types: <tt>int</tt>, <tt>float</tt>, and <tt>complex</tt></h2>
+
+<p>As discussed in <a href="https://docs.python.org/3/library/stdtypes.html#numeric-types-int-float-complex">
+The Python Standard Library</a>, integers are created using numeric literals 
+(a sequence of digits with or without a leading plus (+) or minus (-) sign):</p>
+
+<pre>
+&gt;&gt;&gt; 3000  # create integer
+3000
+</pre> 
+
+<p>As with everything else in Python, numbers are represented by objects. You can 
+find the class or type of a number using the  built-in 
+<a href="https://docs.python.org/3/library/functions.html#type"><tt>type</tt></a> function:</p>
+
+<pre>
+&gt;&gt;&gt; type(3000)
+&lt;class 'int'&gt;
+</pre> 
+
+<p>The type or class of the value <tt>3000</tt> is <tt>int</tt>.</p>
+
+<p>To create a floating-point number, include a decimal point:</p>
+
+<pre>
+&gt;&gt;&gt; 3000.0  # create float using decimal point
+3000.0
+&gt;&gt;&gt; type(3000.0)  # type of 3000.0 is float
+&lt;class 'float'&gt;
+</pre> 
+
+<p>You can also create floating-point numbers using scientific notation, which 
+consists of a number (mantissa) followed by <tt>e</tt>, followed by an integer 
+(exponent):</p>
+
+<pre>
+&gt;&gt;&gt; 3.0e3  # Create float using scientific notation
+3000.0
+</pre>
+
+<p>As defined by <a href="https://introcs.cs.princeton.edu/python/12types/">
+Sedgewick et al.</a>: A <em>literal</em> is a Python-code representation of a 
+data-type value. For example, both the literals <tt>3000.0</tt> and <tt>3e3</tt> represent the 
+float value 3000.0:</p>
+
+<pre>
+&gt;&gt;&gt; 3000.0
+3000.0
+&gt;&gt;&gt; 3.0e3
+3000.0
+</pre> 
+
+<p>Python has built-in support for complex numbers. To create a purely imaginary 
+number (a complex number with a zero real part), append <tt>j</tt> or <tt>J</tt> 
+to a numeric literal. Unlike mathematical notation where <tt>i</tt> is used to 
+denote the imaginary unit, Python uses <tt>j</tt> or <tt>J</tt>. The literals 
+<tt>1j</tt> and <tt>1J</tt> represent the imaginary unit \( i = √{-1} \):</p>
+
+<pre>
+&gt;&gt;&gt; 1j  
+1j
+</pre> 
+
+<p>So, you can create the purely imaginary number \( 3 × 10^2 i \) as follows:</p>
+
+<pre>
+&gt;&gt;&gt; 3e2j
+300j
+</pre> 
+
+<p>You can create a complex number by adding a purely imaginary number to a real number:</p>
+
+<pre>
+&gt;&gt;&gt; 300 + 3e2j
+(300+300j)
+&gt;&gt;&gt; type(3e2j)
+&lt;class 'complex'&gt;
+&gt;&gt;&gt; type(300 + 3e2j)
+&lt;class 'complex'&gt;
+</pre> 
+
+<p>The type of both purely imaginary numbers and complex numbers is <tt>complex</tt>.</p>
+
+<p>Both the literals <tt>1j</tt> and <tt>0 + 1j</tt> create a purely imaginary number:</p>
+
+<pre>
+&gt;&gt;&gt; 0 + 1j
+1j
+</pre> 
+
+<p>To create complex numbers using expressions, you need to multiply by the imaginary 
+unit <tt>1j</tt> or <tt>1J</tt> (see <a href="py_03.html#1_3">
+Section 3.1.3 Mathematical Constants</a> for an example).</p>
+
+<!--===============================-->
+<a name="2_2"></a>
+<h2>2.2.2 Boolean Type</h2>
+
+<p>The Boolean type stores logical information. There are only two values of Boolean type: 
+<tt>True</tt> and <tt>False</tt>.</p>
+
+<pre>
+&gt;&gt;&gt; False
+False
+&gt;&gt;&gt; True
+True
+&gt;&gt;&gt; type(True)  # type of True is bool
+&lt;class 'bool'&gt;
+</pre> 
+
+<!--===============================-->
+<a name="2_3"><tt></tt></a>
+<h2>2.2.3 NoneType</h2>
+
+<p>Python has a special value 
+<a href="https://docs.python.org/3/library/constants.html?highlight=none#None"><tt>None</tt></a>, 
+which is used to represent the absence of a value:</p>
+
+<pre>
+&gt;&gt;&gt; None
+</pre> 
+
+<p>In interactive mode, Python does not show any output after it evaluates <tt>None</tt>.</p>
+
+<p>The type of the special value <tt>None</tt> is <tt>NoneType</tt>.</p>
+
+<pre>
+&gt;&gt;&gt; type(None)
+&lt;class 'NoneType'&gt;
+</pre> 
+
+<p>You can explicitly print a <tt>None</tt> value:</p>
+
+<pre>
+&gt;&gt;&gt; print(None)
+None
+</pre> 
+
+<p>For details about how to use <tt>None</tt>, see <a href="py_03.html#2">
+Section 3.2 Functions</a>.</p>
+
+<!--===============================-->
+<a name="2_4"></a>
+<h2>2.2.4 Built-in Constants</h2>
+
+<p>The special values <tt>True</tt>, <tt>False</tt>, and <tt>None</tt> are not strings. 
+They are constants that are predefined in Python.</p>
+
+<p>For a complete list of built-in constants, see 
+<a href="https://docs.python.org/3/library/constants.html">
+The Python Standard Library: Built-in Constants</a>.</p>
+
+<!--===============================-->
+<a name="2_5"></a>
+<h2>2.2.5 Introduction to Sequence Types</h2>
+
+<p>Strings, lists, tuples, and 1D NumPy arrays are sequence-type data structures. 
+A <em>sequence</em> is an ordered collection of values. A string is a sequence of 
+characters.</p>
+
+<p>Both lists and tuples can contain values of any type. They can contain primitive 
+data types and compound data types. A list is a mutable data type; whereas, a tuple 
+is an immutable data types. When a tuple is created, its contents cannot be changed, 
+but you can change the contents of  a list (see 
+<a href="#5_5_1">Section&nbsp;2.5.5.1 Mutability of Objects</a>).</p>
+
+<!--==========================-->
+<a name="2_5_1"></a>
+<h3>2.2.5.1 Strings</h3>
+
+<p>As discussed in 
+<a href="https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str">
+The Python Standard Library: Text Sequence Type &mdash; str</a>, a Python string 
+can be created in different ways. You can create a string by enclosing characters 
+in either single quotation marks (') or double quotation marks ("):</p>
+
+<pre>
+&gt;&gt;&gt; 'Hello, World'
+'Hello, World'
+&gt;&gt;&gt; &quot;Hello, World&quot;
+'Hello, World'
+</pre> 
+
+<p>Strings are of type <tt>str</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; type('Hello, World')
+&lt;class 'str'&gt;
+</pre> 
+
+<p>As discussed in <a href="https://docs.python.org/3/tutorial/introduction.html#strings">
+The Python Tutorial: Strings</a>, <tt>\n</tt> is the newline character and the backslash 
+(<tt>\</tt>) can be used to escape quotation marks in a string. You can use 
+double quotation marks inside a string created using single quotation marks or single 
+quotation marks inside a string created using double quotation marks. As a result, there is 
+usually no need to use the backslash to escape quotation marks:</p>
+
+<pre>
+&gt;&gt;&gt; "That\'s not what I said!"  
+"That's not what I said!"
+&gt;&gt;&gt; "That's not what I said!"  
+"That's not what I said!"
+</pre> 
+
+<p>Strings can also be created using either three single quotation marks (<tt>'''</tt>) 
+or three double quotation marks (<tt>&quot;&quot;&quot;</tt>). Such 
+<a href="https://docs.python.org/3/glossary.html#term-triple-quoted-string"><em>triple-quoted strings</em></a> can span multiple lines &ndash; all associated whitespace such as newlines 
+are included in the string literal. For example:</p>
+
+<pre>
+&gt;&gt;&gt; '''This is  
+... a multiline string
+... '''
+'This is\na multiline string\n'
+</pre>
+
+<p>The output produced by evaluating a string contains the enclosing quotation marks. 
+The output produced by the <tt>print</tt> function is more readable since it 
+does not contain the enclosing quotation marks. In addition, the newline character 
+creates a newline in the output:</p>
+
+<pre>
+&gt;&gt;&gt; print('''This is  
+... a multiline string
+... '''
+... )
+This is 
+a multiline string
+</pre>
+
+<p>As shown in <a href="py_01.html#3_1">Section 1.3.1 Commenting Python Code</a>,
+triple-quoted strings can be used to create block comments:</p>
+
+<pre>
+# Script: comment.py
+# This script illustrates various comment types
+# This is a single-line comment
+"""
+This is a multiline comment
+x = 10
+y = 20
+w = x + y
+print(w)
+"""
+x = 1  # This is an inline comment
+y = 2  
+z = x + y  
+print(z)
+</pre>
+
+<pre>
+&gt; gpythonsh comment.py
+3
+</pre>
+
+<p>Executing this script prints <tt>3</tt> instead of <tt>30</tt>, which shows that 
+Python does not execute parts of the code that are enclosed within triple-quoted strings.</p>
+
+<p>As discussed in <a href="py_03.html#2">Section 3.2 Functions</a>, triple-quoted 
+strings are also used to create docstrings. Formatted string literals are another 
+type of Python string, which are discussed in <a href="py_02.html#4_3_1">
+Section&nbsp;2.4.3.1 Formatted Strings (f-Strings) and Format Specification</a>.</p>
+
+<!--==========================-->
+<a name="2_5_2"></a>
+<h3>2.2.5.2 Lists and Tuples</h3>
+
+<p>You can <a href="https://docs.python.org/3/library/stdtypes.html#list">create a list</a> 
+by enclosing comma-separated values in brackets:</p>
+
+<pre>
+&gt;&gt;&gt; [1, 2.4, True, None, 'Python']  # list object
+[1, 2.4, True, None, 'Python']
+</pre>
+
+<p>You can <a href="https://docs.python.org/3/library/stdtypes.html#tuple">create a tuple</a> 
+using comma-separated values, with or without parentheses:</p>
+
+<pre>
+&gt;&gt;&gt; (1, 2.4, True, None, 'Python')  # creating tuple with parentheses
+(1, 2.4, True, None, 'Python')
+&gt;&gt;&gt; 1, 2.4, True, None, 'Python'  # creating tuple without parentheses
+(1, 2.4, True, None, 'Python')
+</pre>  
+
+<p>A tuple is also created when you evaluate comma-separated expressions:</p>
+
+<pre>
+&gt;&gt;&gt; 1 + 2, 1 * 2
+(3, 2)
+</pre>
+
+<p>Expressions are discussed in <a href="#3">
+Section 2.3 Arithmetic Operators and Expressions</a>.</p>
+
+<p>In general, lists and tuples can contain <em>heterogeneous</em> (different types of) 
+values as can be seen from these examples. A list or tuple that contains values of the 
+same type (for example, integers or floats) is known as a <em>homogeneous</em> list or 
+tuple. For example:</p>
+
+<pre>
+&gt;&gt;&gt; [1, 2, 3]  # all values are integers
+[1, 2, 3]
+</pre>
+
+<pre>
+&gt;&gt;&gt; (1.0, 2.0, 3.0)  # all values are floats
+(1.0, 2.0, 3.0)
+</pre>
+
+<!--==========================-->
+<a name="2_5_3"></a>
+<h3>2.2.5.3 One-Dimensional NumPy Arrays</h3>
+
+<p>You can create one-dimensional (1D) NumPy arrays by passing a homogeneous list 
+or tuple to the <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html">
+<tt>array</tt></a> function in the NumPy package. Packages and functions are discussed in 
+the following sections:</p>
+
+<ul>
+<li><a href="py_03.html#1">Section 3.1 Python Modules and Packages</a></li>
+<li><a href="py_03.html#2">Section 3.2 Functions</a></li>
+</ul>
+
+<p>The NumPy package is not part of Python and must be imported using the 
+<tt>import</tt> statement:</p>
+
+<pre>
+&gt;&gt;&gt; import numpy as np  # import NumPy package
+</pre>
+
+<p>Here, <tt>as np</tt> means Python will import the NumPy package and rename it 
+to <tt>np</tt> for brevity. To use functions from the NumPy package such as the 
+<tt>array</tt> function, you must now write <tt>np.array</tt> instead of 
+<tt>numpy.array</tt>. For example:</p>
+
+<pre>
+&gt;&gt;&gt; # Create 1D NumPy array using a list of integers
+&gt;&gt;&gt; np.array([1, 2, 3])  
+array([1, 2, 3])
+
+&gt;&gt;&gt; # Create 1D NumPy array using a tuple of floats
+&gt;&gt;&gt; np.array((1.0, 2.0, 3.0)) 
+array([1., 2., 3.])
+</pre>
+
+<p>Expressions such as <tt>np.array</tt> contain a period (<tt>.</tt>). Therefore, 
+this syntax for accessing functions is known as <em>dot notation</em>. 
+Dot notation for modules is discussed in <a href="py_03.html#1_2_1">
+Section 3.1.2.1 Modules as Objects</a>.</p>
+
+<p>NumPy arrays are objects of type <tt>ndarray</tt> (<em>N</em>-dimensional array):</p>
+
+<pre>
+&gt;&gt;&gt; type(np.array([1, 2, 3, 4]))
+&lt;class 'numpy.ndarray'&gt;
+</pre>
+
+<p>The output <tt>numpy.ndarray</tt> shows the name of the class in dot notation. 
+It indicates that the <tt>ndarray</tt> class is defined in the <tt>numpy</tt> package.</p>
+
+<p>Python also supports arrays with the help of the 
+<a href="https://docs.python.org/3/library/array.html"><tt>array</tt> module</a>. However, 
+NumPy arrays are commonly used for scientific computing since they have the 
+following advantages over the arrays and lists of Python:</p>
+
+<ul>
+<li>NumPy arrays are multidimensional.</li>
+<li>They are memory-efficient data structures.</li>
+<li>Computations using NumPy arrays are fast compared to computations using lists.</li> 
+<li>They support vectorized operations (see <a href="py_03.html#1_4_2">
+Section 3.1.4.2 Scalar-Oriented Versus Vectorized Code</a>) through:<br />
+  <ul>
+  <li>Elementwise arithmetic operations (see <a href="#3_3">
+      Section 2.3.3 NumPy Array Operations</a>)</li>
+  <li>Vectorized mathematical functions called <em>ufuncs</em> (see 
+      <a href="py_03.html#2_1_4">Section 3.2.1.4 NumPy Universal Functions</a>)</li>
+  </ul>
+</li>
+<li>They can be used to represent mathematical vectors (see <a href="#3_3">Section 2.3.3 
+NumPy Array Operations</a>) and matrices. Both NumPy and SciPy contain linear algebra 
+functions for manipulating vectors and matrices.</li>
+</ul>
+
+<p>Because of these advantages, NumPy arrays are used to store and process data 
+by packages in the Python Scientific Computing Stack (see <a href="py_03.html#1_1_3">
+Section 3.1.1.3 Python Scientific Computing Stack</a>) such as SciPy.</p>
+ 
+<p class="note">In this Tutorial, the term <em>array</em> always means a NumPy array.</p> 
+
+<!--==========================-->
+<a name="2_5_4"></a>
+<h3>2.2.5.4 Indexing Sequences</h3>
+
+<p>The values in a sequence are called <em>items</em> or <em>elements</em>. The 
+number of elements in a sequence is called the <em>length</em> of the sequence, 
+which you can find using the built-in 
+<a href="https://docs.python.org/3/library/functions.html#len"><tt>len</tt></a> function:</p>
+
+<pre>
+&gt;&gt;&gt; len([1, 2.4, True, None, 'Python'])
+5
+</pre>
+
+<p>The number of elements in an array is known as the <em>size</em> of the array. 
+You can find the size of a 1D array by using the <tt>len</tt> function:</p>
+
+<pre>
+&gt;&gt;&gt; len(np.array([1, 2, 3, 4]))
+4  
+</pre>
+
+<p>Each element in a sequence is identified by an integer called its <em>index</em>. 
+In Python, the index of a sequence is from 0 to <em>length</em> &ndash; 1.</p>
+
+<p>You can access individual elements of a sequence using the index. This operation 
+is known as <em>indexing</em>. To access a sequence element, you specify the name 
+of the sequence and the element index inside brackets: <tt>sequence[index]</tt></p>
+
+<p>For example:</p>
+
+<pre>
+&gt;&gt;&gt; [10, 20, 30, 40][0]  # first element or element in position 0
+10
+&gt;&gt;&gt; [10, 20, 30, 40][1]  # second element or element in position 1
+20
+</pre>
+
+<p>In Python, indices can be negative integers. Positive indices identify the 
+position of the elements relative to the start of the sequence. Negative indices 
+do so relative to the end of the sequence; instead of counting from the left, 
+you start counting from the right. The index of the last element is <tt>-1</tt>, the 
+index of the second-last element is <tt>-2</tt>, and so on:</p>
+
+<pre>
+&gt;&gt;&gt; [10, 20, 30, 40][-1]  # last element  
+40
+&gt;&gt;&gt; [10, 20, 30, 40][-2]  # second-last element
+30
+</pre>
+
+<p>Trying to access an element that does not exist or using an index that is not 
+an integer results in an error:</p>
+
+<pre>
+&gt;&gt;&gt; [10, 20, 30, 40][5]  # fifth element or element in position 4  
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+IndexError: list index out of range
+
+&gt;&gt;&gt; [10, 20, 30, 40][4.1]
+&lt;stdin&gt;:1: SyntaxWarning: list indices must be integers or slices, not float; 
+perhaps you missed a comma?
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+TypeError: list indices must be integers or slices, not float
+</pre>
+
+<p>Indexing a 1D NumPy array is similar to indexing lists:</p>
+
+<pre>
+&gt;&gt;&gt; np.array([1, 2, 3, 4])[0]  # first element  
+1
+&gt;&gt;&gt; np.array([1, 2, 3, 4])[-1]  # last element
+4
+</pre>
+
+<p class="note"><a href="py_04.html#3">Section 4.3 More on Sequence Types</a> 
+discusses how to create some special sequences as well as additional operations 
+on sequence types such as indexing. It also discusses list and string methods.</p>
+
+<!--===============================-->
+<a name="2_6"></a>
+<h2>2.2.6 Introduction to Dictionaries</h2>
+
+<p>Python dictionaries are a collection of key&ndash;value pairs. The keys must 
+be unique and can be any immutable type such as strings and numbers (see 
+<a href="#5_5_1">Section 2.5.5.1 Mutability of Objects</a>). The keys can also be 
+tuples if the tuple contains only strings, numbers, or tuples. The values can be 
+of any type.</p>
+
+<p>You can create a Python dictionary by enclosing a set of key&ndash;value pairs 
+inside a pair of braces. Each key is associated with a value, and they are separated 
+by a colon (:). For example, the following dictionary has two key&ndash;value pairs:</p>
+
+<pre>
+&gt;&gt;&gt; {'x': 1, (1, 1): [10, 20]} 
+{'x': 1, (1, 1): [10, 20]} 
+</pre>
+
+<p>The string <tt>'x'</tt> 
+and the tuple <tt>(1, 1)</tt> are the keys associated with the values <tt>1</tt> and 
+<tt>[10, 20]</tt>, respectively.</p>
+
+<p>The type of a dictionary is <tt>dict</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; type({'x': 1, (1, 1): [10, 20]})
+&lt;class 'dict'&gt;
+</pre>
+
+<p>Since each key is associated with a value, dictionaries are indexed by keys 
+unlike sequences that are indexed by numbers (see <a href="#2_5_4">
+Section 2.2.5.4 Indexing Sequences</a>). Similar to sequences, you can use the 
+key inside brackets to access the associated value. For example:</p>
+
+<pre>
+&gt;&gt;&gt; # Use key 'x' to access value 1
+&gt;&gt;&gt; {'x': 1, (1, 1): [10, 20]}['x']
+1
+</pre>
+
+<p>Unlike lists that are sequence types, Python dictionaries are mapping types (see 
+<a href="https://docs.python.org/3/library/stdtypes.html#typesmapping">
+The Python Standard Library: Mapping Types &mdash; dict</a>). Python dictionaries 
+are similar to Tcl arrays.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 Arithmetic Operators and Expressions</h1>
+
+<p>In Python, operations on data are performed using <em>operators</em>, 
+<em>functions</em>, and <em>methods</em>. <em>Expressions</em> are formed 
+using a combination of literals, variable names, operators, function calls, 
+and method calls.</p>
+
+<p>You can use the interactive Python shell as a calculator. You can enter 
+expressions or statements at the prompt and execute the code by pressing the 
+Enter key. Python evaluates the expression and prints its value:</p>
+
+<pre>
+&gt;&gt;&gt; 3 + 5  # Addition
+8
+&gt;&gt;&gt; 0.5 ** 2 # Exponentiation
+0.25
+</pre>
+
+<!--===============================-->
+<a name="3_1"></a>
+<h2>2.3.1 Scalar Operations</h2>
+
+<p>Single numbers are also called <em>scalars</em>. Operations between single numbers 
+are <em>scalar operations</em>, and they result in another single number (scalar). The 
+syntax for using binary operators is:</p>
+
+<pre>
+<em>operand operator operand</em>
+</pre>
+
+<p>Table 1 lists the usual arithmetic operators. For a complete list, see 
+<a href="https://docs.python.org/3/library/stdtypes.html#numeric-types-int-float-complex">
+The Python Standard Library: Numeric Types &mdash; <tt>int</tt>, <tt>float</tt>, <tt>complex</tt></a>.</p>
+
+<a name="table1"></a>
+<table>
+<caption>Table 1. Arithmetic operations and operators.</caption>
+
+<thead>
+<tr>
+<th>Arithmetic operation</th>
+<th>Operator</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Addition</td>
+<td><tt>+</tt></td>
+</tr>
+
+<tr>
+<td>Subtraction and negation</td>
+<td><tt>-</tt></td>
+</tr>
+
+<tr>
+<td>Multiplication</td>
+<td><tt>*</tt></td>
+</tr>
+
+<tr>
+<td>Floating-point division</td>
+<td><tt>/</tt></td>
+</tr>
+
+<tr>
+<td>Integer division</td>
+<td><tt>//</tt></td>
+</tr>
+
+<tr>
+<td>Remainder</td>
+<td><tt>%</tt></td>
+</tr>
+
+<tr>
+<td>Exponentiation</td>
+<td><tt>**</tt></td>
+</tr>
+</tbody>
+</table>
+
+<p>Unlike Tcl, the <tt>/</tt> operator performs floating-point division and results 
+in a floating-point number:</p>
+
+<pre>
+&gt;&gt;&gt; 3 / 2  # Floating-point division
+1.5
+</pre>
+
+<p>You must use the <tt>//</tt> operator to perform integer division:</p>
+
+<pre>
+&gt;&gt;&gt; 3 // 2  # Integer division
+1
+</pre>
+
+<p>Operator precedence is summarized in 
+<a href="https://docs.python.org/3/reference/expressions.html#operator-precedence">
+The Python Language Reference: Operator precedence</a>. Python follows the mathematical 
+convention PEMDAS (parentheses, exponentiation, multiplication and division, addition 
+and subtraction) to evaluate expressions containing multiple arithmetic operators (see 
+<a href="https://greenteapress.com/thinkpython2/html/thinkpython2003.html#sec20">
+Think Python: Order of operations</a>):</p>
+
+<pre>
+&gt;&gt;&gt; 4 + 3 * 2  # Multiplication is performed before addition
+10
+</pre>
+
+<p>Since multiplication has a higher precedence than addition, Python first evaluates 
+the expression <tt>3 * 2</tt> and then adds the result to <tt>4</tt>.</p>
+
+<p>Parentheses <tt>()</tt> are used for grouping and explicitly specifying the order of 
+evaluation:</p>
+
+<pre>
+&gt;&gt;&gt; (4 + 3) * 2  # Addition is performed before multiplication
+14
+</pre>
+
+<p>Since parentheses have the highest precedence, Python first evaluates 
+<tt>4 + 3</tt> and then multiplies the result by <tt>2</tt>.  Although redundant, 
+you can also use parentheses around single numbers, that is, <tt>(2)</tt> instead 
+of <tt>2</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; (4 + 3) * (2)  
+14
+</pre>
+
+<p>Python evaluates expressions that contain both <tt>int</tt> and <tt>float</tt> 
+values by converting the <tt>int</tt> to <tt>float</tt>. The result is a 
+<tt>float</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; 2 + 3.0  
+5.0
+</pre>
+
+<p>Similarly, an expression containing <tt>int</tt>, <tt>float</tt>, and <tt>complex</tt> 
+values result in a <tt>complex</tt> value:</p>
+
+<pre>
+&gt;&gt;&gt; (2 + 3.0) * (1 + 2j)
+(5+10j)
+</pre>
+
+<!--===============================-->
+<a name="3_2"></a>
+<h2>2.3.2 Using Arithmetic Operators With Sequence Types (Lists, Tuples, and Strings)</h2>
+
+<p>Only the <tt>+</tt> and <tt>*</tt> operators are defined for the sequence 
+types: lists, tuples, and strings. For these sequence types:</p>
+
+<ul>
+<li>Using <tt>+</tt> on two sequences of the same type performs <em>concatenation</em>. 
+It joins the two sequences.</li>
+<li>Using <tt>*</tt> on an integer (<tt>n</tt>) and sequence (<tt>seq</tt>) performs 
+<em>repetition</em>, that is, <tt>seq * n</tt> or <tt>n * seq</tt> adds <tt>seq</tt> to itself <tt>n</tt> times.</li>
+</ul>
+
+<p>For example:</p>
+
+<pre>
+&gt;&gt;&gt; [1, 2] + [3, 4]  # concatenates two lists
+[1, 2, 3, 4]
+&gt;&gt;&gt; 3 * [1, 2]  # repeats the sequence of elements 1, 2 three times
+[1, 2, 1, 2, 1, 2]
+</pre>
+
+<p>These examples show that using <tt>+</tt> or <tt>*</tt> on lists 
+results in a new list.</p> 
+
+<p>String concatenation is also performed using <tt>+</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; # string concatenation
+&gt;&gt;&gt; 'The value of pi is ' + '3.141592653589793'  
+'The value of pi is 3.141592653589793'
+</pre>
+
+<p>You can also perform string concatenation by separating two string literals with a space:</p>
+
+<pre>
+&gt;&gt;&gt; 'The value of pi is ' '3.141592653589793'  
+'The value of pi is 3.141592653589793'
+</pre>
+
+<p>You can combine this feature with splitting of a long expression over multiple 
+lines using parentheses (see <a href="py_01.html#3_3_4">Section 1.3.3.4 Line Continuation</a>) 
+to split long strings:</p>
+
+<pre>
+&gt;&gt;&gt; (
+...     '0.424 0.0374 0.313 0.263 0.414 0.408' 
+...     ' -0.344 -0.294 -0.232 -0.182 x -0.374'
+... )
+'0.424 0.0374 0.313 0.263 0.414 0.408 -0.344 -0.294 -0.232 -0.182 x -0.374'
+</pre>
+
+<p>You cannot use <tt>*</tt> on two lists, tuples, or strings:</p>
+
+<pre>
+&gt;&gt;&gt; [1, 2] * [3, 4]   
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+TypeError: can't multiply sequence by non-int of type 'list'
+</pre>
+
+<p>You can use <tt>*</tt> to create a list of a given length, with all its 
+elements initialized to the same value. For example:</p>
+
+<pre>
+&gt;&gt;&gt;  [0] * 5  # Create a list of length 5 filled with zeros
+[0, 0, 0, 0, 0]
+</pre>
+
+<!--===============================-->
+<a name="3_3"><tt></tt></a>
+<h2>2.3.3 NumPy Array Operations</h2>
+
+<p>Compared to lists, the effect of applying <tt>+</tt> and <tt>*</tt> operators 
+on 1D NumPy arrays is different:</p>
+
+<pre>
+&gt;&gt;&gt; # Multiply a 1D array by a scalar 
+&gt;&gt;&gt; 3 * np.array([1, 2])  #  performs elementwise scalar multiplication
+array([3, 6])
+</pre>
+
+<p>Applying the <tt>*</tt> operator on a scalar and a 1D array performs 
+<em>elementwise scalar multiplication</em>. Each element of the array is multiplied 
+by the scalar.</p>
+
+<pre>
+&gt;&gt;&gt; # Add two 1D NumPy arrays 
+&gt;&gt;&gt; np.array([1, 2]) + np.array([3, 4]) # performs array addition
+array([4, 6])
+</pre>
+
+<p>Applying the <tt>+</tt> operator on two arrays of the same size (or an array and 
+a list or tuple of the same length) performs <em>elementwise addition</em>. Each 
+element of the second array is added to the corresponding element of the first array. 
+In general, the arithmetic operators 
+(<tt>+</tt>, <tt>-</tt>, <tt>*</tt>, <tt>/</tt>, and <tt>**</tt>) on an array and 
+a scalar, or on two arrays of same size, are applied elementwise. The equivalent scalar 
+arithmetic operation is performed between corresponding elements of each array. The 
+result is stored in a new array.</p>
+
+<p>For example, you can use <tt>*</tt> to multiply two arrays elementwise:</p>
+
+<pre>
+&gt;&gt;&gt; # Multiply two 1D arrays
+&gt;&gt;&gt; np.array([1, -2]) * np.array([2, 1]) # performs array multiplication
+array([ 2, -2])
+</pre>
+
+<p>You can also use the <tt>*</tt> operator to multiply an array and a list 
+elementwise:</p>
+
+<pre>
+&gt;&gt;&gt; # Multiply a 1D array and a list
+&gt;&gt;&gt; np.array([1, -2]) * [2, 1]
+array([ 2, -2])
+</pre>
+
+<p>You can use <tt>/</tt> to compute the reciprocal of an array elementwise:</p>
+
+<pre>
+&gt;&gt;&gt; 1 / np.array([2, 4, 8])
+array([0.5  , 0.25 , 0.125])
+</pre>
+
+<p>You can raise all elements of an array to the same power using <tt>**</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; np.array([2, 4, 6]) ** 2  # Squares each element of array
+array([ 4, 16, 36])
+</pre>
+
+<p>You can even raise all elements to different powers specified in a second array 
+of the same size as the first one:</p>
+
+<pre>
+&gt;&gt;&gt; np.array([2, 2, 2]) ** np.array([1, 2, 3]) # elementwise exponentiation
+array([2, 4, 8])
+</pre>
+
+<p>Since 1D NumPy arrays support elementwise addition and scalar multiplication, 
+they can be used to represent mathematical vectors. Arithmetic operations on 1D 
+arrays are also known as <em>vectorized operations</em>. Using arrays, you can 
+perform mathematical operations on an entire collection of data using syntax similar 
+to the equivalent operations between scalars.</p>
+
+<p>You can see an application of the vectorized operation in <a href="py_03.html#1_4_2">
+Section 3.1.4.2 Scalar-Oriented Versus Vectorized Code</a>.</p>
+
+<p>Unlike lists, multiplying a 1D NumPy array by a scalar does not repeat the array. 
+NumPy has several functions such as 
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html">numpy.zeros</a>, 
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ones.html">numpy.ones</a>, and 
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.full.html">numpy.full</a> 
+for creating 1D arrays of a particular length, filled with zeros, ones, or some specific value, 
+respectively:</p>
+
+<pre>
+&gt;&gt;&gt; np.zeros(3)
+array([0., 0., 0.])
+&gt;&gt;&gt; np.full(5, 3.141)
+array([3.141, 3.141, 3.141, 3.141, 3.141])
+</pre>
+
+<p>You must pass the length of the array as an argument to these functions. The 
+<tt>numpy.full</tt> function requires an additional argument, the fill value. The 
+function <tt>numpy.zeros</tt> is useful for preallocating arrays (see 
+<a href="py_04.html#3_3_2">Section 4.3.3.2 Array Preallocation</a>).</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>2.4 Variables and Assignment Statement</h1>
+
+<p>As explained in <a href="#5_3">Section 2.5.3 Python Variable Model</a>, a Python 
+variable is a reference to an object.</p>
+
+<p>In Python, variables do not need to be declared before being used. You can assign 
+a value to a variable using an <em>assignment statement</em>:</p>
+
+<pre>variable = value | expression</pre>
+
+<p>Here, the equal sign (<tt>=</tt>) is the <em>assignment operator</em>. For example:</p>
+
+<pre>
+&gt;&gt;&gt; # Assign value 1.6e-19 to variable electron_charge
+&gt;&gt;&gt; electron_charge = 1.6e-19 
+</pre>  
+
+<p>Python executes an assignment statement as follows:</p>
+
+<ul>
+<li>It evaluates the expression on the right side of the assignment operator.</li>
+<li>It <em>assigns</em> the value on the right side to the variable on the left side.</li>
+</ul>
+
+<p>As previously discussed, expressions have values and, in interactive mode, 
+executing expressions prints their value automatically. Since, in general, Python 
+statements do not have values, Python does not print anything after executing 
+assignment statements.</p>
+
+<p>The name of the variable is used to access the value of a variable:</p>
+
+<pre>
+&gt;&gt;&gt; electron_charge
+1.6e-19 
+</pre> 
+
+<p>In both interactive and script modes, you can use the <tt>print</tt> function 
+to display the value of the variable in a script:</p>
+
+<pre>
+&gt;&gt;&gt; print(electron_charge)
+1.6e-19 
+</pre> 
+
+<p>Trying to use a variable that is not defined results in an error:</p>
+
+<pre>
+&gt;&gt;&gt; electron_mass
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+NameError: name 'electron_mass' is not defined
+</pre> 
+
+<p>Assigning a value to a variable for the first time creates the variable. This is 
+called <em>defining</em> or <em>initializing</em> the variable.</p>
+
+<!--===============================-->
+<a name="4_1"></a>
+<h2>2.4.1 Reassignment, Increment, and Augmented Assignment</h2>
+
+<p>You can update the value of a variable after it is initialized by using another 
+assignment statement. This is called <em>reassigning</em> a variable or 
+<em>reassignment</em>.</p>
+
+<p>For example, it is common to increment a variable by 1:</p>
+
+<pre>
+&gt;&gt;&gt; count = 1          # Initialize count
+&gt;&gt;&gt; # Increment count by 1
+&gt;&gt;&gt; count = count + 1  # Reassign count
+&gt;&gt;&gt; count
+2
+</pre>
+
+<p>You can also update the value of a variable using <em>augmented assignment operators</em> 
+such as <tt>+=</tt>, <tt>-=</tt>, and <tt>*=</tt>. Assignment statements that use an 
+augmented operator are known as <em>augmented assignment statements</em>.</p>
+
+<p>The augmented assignment statement is a convenient shorthand for updating a variable. 
+For example, <tt>count = count + 1</tt> can be slightly shortened to <tt>count += 1</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; count = 1          # Initialize count  
+&gt;&gt;&gt; count += 1         # Equivalent to count = count + 1
+&gt;&gt;&gt; count
+2
+</pre>
+
+<p>When updating a variable, you can also change its type:</p>
+
+<pre>
+&gt;&gt;&gt; x = 1        # Initialize x. x is an integer
+&gt;&gt;&gt; x
+1
+&gt;&gt;&gt; x = 'Hello'  # Reassign x.  Now x is a string
+&gt;&gt;&gt; x
+Hello
+</pre>
+
+<!--===============================-->
+<a name="4_2"></a>
+<h2>2.4.2 Variable Names</h2>
+
+<p>Python variable names consist of alphabetic characters, numbers, and underscores (_). 
+They cannot begin with numbers. You cannot use Python 
+<a href="https://docs.python.org/3/reference/lexical_analysis.html#keywords">keywords</a> 
+as variable names. Variable names are case sensitive.</p>
+
+<p>You can return a list of keywords using the Python 
+<a href="https://docs.python.org/3/library/keyword.html"><tt>keyword</tt> module</a>:</p>
+
+<pre>
+&gt;&gt;&gt; import keyword
+&gt;&gt;&gt; # Get list of Python keywords using kwlist attribute
+&gt;&gt;&gt; keywords = keyword.kwlist  
+&gt;&gt;&gt; keywords
+['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break',
+'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 
+'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 
+'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
+</pre>
+
+<p>Trying to use a keyword as a variable name results in a syntax error:</p>
+
+<pre>
+&gt;&gt;&gt; lambda = 650e-9  # Wavelength of red light in m
+  File &quot;&lt;stdin&gt;&quot;, line 1
+    lambda = 650e-9
+           ^
+SyntaxError: invalid syntax
+</pre>
+
+<p>As a workaround, if you want to use one of the keywords as a variable name 
+in your own script, then you can append the variable name with an underscore:</p>
+
+<pre>
+&gt;&gt;&gt; lambda_ = 650e-9  # Wavelength of red light in m
+&gt;&gt;&gt; lambda_
+6.5e-07
+</pre>
+
+<p>By convention, Python variable names (and function names) begin with a lowercase 
+letter. Names containing several words are written in snake case, that is, individual 
+words are separated by underscores. For example: <tt>electron_charge</tt></p>
+
+<p>In interactive mode, the value of the last evaluated expression is assigned to 
+the variable <tt>_</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; count = 3
+&gt;&gt;&gt; count  # Evaluate count
+3
+&gt;&gt;&gt; _  # value of count assigned to _
+3
+</pre>
+
+<p>By convention, names starting with <tt>_</tt> are hidden variables or functions 
+that are not meant to be accessed directly. You also can use an underscore 
+(<tt>_</tt>).</p>
+
+<!--===============================-->
+<a name="4_3"><tt></tt></a>
+<h2>2.4.3 Printing Variables</h2>
+
+<p>You can use the built-in <a href="https://docs.python.org/3/library/functions.html#print">
+print</a> function to display any number of objects: <tt>print(obj1, obj2, obj3)</tt></p>
+
+<p>For example, you can use <tt>print</tt> to display a message (a string) as well 
+as the value of a variable (a number):</p>
+
+<pre>
+&gt;&gt;&gt; electron_charge = 1.6e-19 
+&gt;&gt;&gt; print('The elementary charge is', electron_charge, 'C')
+The elementary charge is 1.6e-19 C
+</pre>
+
+<p>Python automatically adds one space as the separator between arguments.</p>
+
+<p>Python also automatically adds a newline character (<tt>\n</tt>) at the end 
+of each <tt>print</tt> function call:</p>
+
+<pre>
+&gt;&gt;&gt; print('The elementary charge is')
+The elementary charge is
+&gt;&gt;&gt; print(electron_charge, 'C')  
+1.6e-19 C
+</pre>
+
+<!--==========================-->
+<a name="4_3_1"></a>
+<h3>2.4.3.1 Formatted Strings (f-Strings) and Format Specification</h3>
+
+<p>You can combine printing of strings along with variables by using a 
+<a href="https://docs.python.org/3/tutorial/inputoutput.html#tut-f-strings">
+<em>formatted string literal</em></a> (f-string for short) as an argument 
+to the <tt>print</tt> function:</p>
+
+<pre>
+&gt;&gt;&gt; print(f'The elementary charge is {electron_charge} C')
+The elementary charge is 1.6e-19 C
+</pre>
+
+<p>Similar to other strings in Python, the type of an f-string is <tt>str</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; type(f'The elementary charge is ')
+&lt;class 'str'&gt;
+</pre>
+
+<p>f-strings are strings that begin with the letter <tt>f</tt> or <tt>F</tt> before the opening quotation mark or 
+triple quotation marks. Inside this string, you can include the value of Python 
+expressions by writing the expression between braces using the syntax: 
+<tt>{&lt;expression&gt;}</tt></p>
+
+<p>To control the format of the number to be printed, you can specify a format specifier
+after the expression inside the braces. These are described in 
+<a href="https://docs.python.org/3/library/string.html#format-specification-mini-language">
+The Python Standard Library: Format Specification Mini-Language</a>.
+The commonly used format specifiers are:</p>
+
+<ul> 
+ <li><tt>f</tt> or <tt>F</tt> for fixed-point notation</li>
+ <li><tt>e</tt> or <tt>E</tt> for scientific notation</li>
+ <li><tt>g</tt> or <tt>G</tt> for general format</li>  
+</ul>  
+
+<p>Here is a simplified syntax for the fixed-point notation format specifier:<br />
+<tt>&lt;value&gt;:&lt;width&gt;.&lt;precision&gt;f</tt>, where:</p>
+
+<ul>
+<li><tt>width</tt> is the minimum field width. It specifies the minimum number of 
+characters to print including the decimal point.</li>
+<li><tt>precision</tt> is the number of digits to be displayed after the decimal point.</li>
+</ul>
+
+<p>Both <tt>width</tt> and <tt>precision</tt> are integers and are optional. For example:</p>
+
+<pre>
+&gt;&gt;&gt; temp_celsius = 54.435
+&gt;&gt;&gt; # Print temp_celsius in fixed-point notation with 2 digits after decimal point
+&gt;&gt;&gt; print(f'|{temp_celsius:.2f}| C')  # Fractional part is rounded 
+|54.44| C
+&gt;&gt;&gt; # Print value at least 7 characters wide. Default precision=6 is used.
+&gt;&gt;&gt; print(f'|{temp_celsius:7f}| C')
+|54.435000| C
+&gt;&gt;&gt; # Print value at least 7 characters wide and 2 digits after decimal point
+&gt;&gt;&gt; print(f'|{temp_celsius:7.2f}| C')  # pads with spaces on the left
+|  54.44| C
+</pre>
+
+<p>In the last example, the number is printed right-justified. By default, it is padded with spaces on the left. This feature can be used to print values in tabular format (for example, see <a href="py_04.html#1_2">Section 4.1.2 Range Object</a>).</p>
+
+<p>In scientific notation, only one digit is printed to the left of the decimal point. 
+The fractional part is specified using <tt>precision</tt> and, similar to the 
+fixed-point notation, it specifies the number of digits to be displayed after the 
+decimal point. Here is the simplified syntax for the scientific notation format 
+specifier:<br />
+<tt>&lt;value&gt;:.&lt;precision&gt;e</tt></p>
+ 
+<pre>
+&gt;&gt;&gt; # Print with default precision using scientific notation
+&gt;&gt;&gt; print(f'{temp_celsius:e} C')
+5.443500e+01 C
+&gt;&gt;&gt; # Print value with 2 digits after the decimal place 
+&gt;&gt;&gt; print(f'{temp_celsius:.2e} C')
+5.44e+01 C
+</pre>
+
+<p>The precision or format string (starting with <tt>%</tt>) for printing numbers after IPython evaluates an expression can be set in IPython using the <tt>%precision</tt> magic command. When it is set, IPython prints all the subsequent numbers using this format specification. 
+<a href="py_01.html#2_1_1">Section 1.2.1.1 Using IPython</a> shows the output of requesting help for the <tt>%precision</tt> magic command using <tt>%precision?</tt>. Here are some examples of using this magic command:</p>
+
+<pre>
+In [1]: temp_celsius = 54.435
+
+In [2]: temp_celsius
+Out[2]: 54.435
+
+In [3]: # Specify precision=2
+
+In [4]: %precision 2  
+Out[4]: '%.2f'
+
+In [5]: temp_celsius
+Out[5]: 54.44 
+
+In [6]: # Specify format string
+
+In [7]: %precision %7.2f  
+Out[7]: '%7.2f'
+
+In [8]: temp_celsius
+Out[8]:   54.44
+
+In [9]: # Restore default format string  
+
+In [10]: %precision                       
+Out[10]: '%r'
+
+In [11]: temp_celsius
+Out[11]: 54.435
+
+In [12]: # Specify scientific notation format
+
+In [13]: %precision %e  
+Out[13]: '%e'
+
+In [14]: # Print with default precision
+
+In [15]: temp_celsius  
+Out[15]: 5.443500e+01
+
+In [16]: # Specify precision=2
+
+In [17]: %precision %.2e  
+Out[17]: '%.2e'
+
+In [18]: temp_celsius
+Out[18]: 5.44e+01
+</pre>   
+
+<p>A common debugging technique is to print a variable or an expression along 
+with its value using f-strings:</p>
+
+<pre>
+# Script: fstring_debug.py
+# Printing variable/expression and value using for debugging 
+x = 1
+print(f'x={x}')
+y = 2
+print(f'y= {y}')
+print(f'x + y = {x + y}')
+
+&gt; gpythonsh fstring_debug.py
+x=1
+y= 2
+x + y = 3
+</pre>
+
+<p>You can avoid entering the variable or expression twice in the <tt>print</tt> 
+statements by adding the equal sign after the variable or expression in an 
+f-string using the syntax: <tt>{&lt;expression&gt;=}</tt></p>
+
+<p>This prints the variable or expression as well as the value after the equal 
+sign. For example:</p>
+
+<pre>
+# Script: fstring_equals.py
+# Printing variable/expression and value using = in f-strings
+x = 1
+print(f'{x=}')
+y = 1
+print(f'{y= }')
+print(f'{x + y = }')
+
+&gt; gpythonsh fstring_equals.py
+x=1
+y= 1
+x + y = 2 
+</pre>  
+
+<p>As discussed in <a href="#2_5_1">Section 2.2.5.1 Strings</a>, you can use double 
+quotation marks inside a string created using single quotation marks. This feature
+can be used to create the string argument for the <tt>print</tt> function:</p>
+
+<pre>
+&gt;&gt;&gt; rsh = {"d": [2.023, 7.4849], "xj": [-9.5898, -7.5669]}
+&gt;&gt;&gt; # Print the value for a particular key in a dictionary
+&gt;&gt;&gt; print(f'Thickness of each layer: {rsh["d"]= }')
+Thickness of each layer: rsh["d"]= [2.023, 7.4849]
+</pre>
+
+<p>Here, the f-string is created using single quotation marks. The key 
+&quot;d&quot; is a string and is created using double quotation marks.</p>
+
+<p>You can also control the format of the number printed after the equal sign:</p>
+
+<pre>
+&gt;&gt;&gt; vt = 0.65894  
+&gt;&gt;&gt; print(f'{vt= :.3f}')
+vt= 0.659
+</pre>
+
+<!--==========================-->
+<a name="4_3_2"></a>
+<h3>2.4.3.2 TCAD Application of f-Strings</h3>
+
+<p>You can use f-strings to print variables to the Sentaurus Workbench table (see 
+<a href="../swb/swb_08.html#2">Section 8.2 Project Variables</a>). To inform 
+Sentaurus Workbench that a value must be extracted during TCAD simulation and assigned 
+to some Sentaurus Workbench variable, provide the following string in the Sentaurus 
+Visual command file: <tt>'DOE: &lt;varname&gt; &lt;value&gt;'</tt></p>
+
+<p>For example:</p>
+
+<pre>
+# Script: doe_vis.py
+# Print the value of Vt to Sentaurus Workbench table
+vt = 0.65894
+print(f'DOE: Vt {vt:.4f}')
+
+&gt; svisual -b doe_vis.py 
+DOE: Vt 0.6589   
+</pre>
+
+<p>You can also use f-strings to create Sentaurus Workbench node number&ndash;dependent 
+dataset names, variable names, curve names, and label names in Sentaurus Visual Python (see 
+<a href="../swb/swb_02.html#VisTogether">Section 2.7 Visualizing Selected Nodes Together</a>). 
+For example:</p>
+
+<pre>
+# Script: name_vis.py
+# Create Sentaurus Workbench node number-dependent dataset name
+n = 3  # Sentaurus Workbench node number
+dataset = f'PLT_Lin({n})'
+print(dataset)
+</pre>
+
+<pre>
+&gt; svisual -b name_vis.py 
+PLT_Lin(3)
+</pre>
+
+<!--===============================-->
+<a name="4_4"><tt></tt></a>
+<h2>2.4.4 Deleting Variables</h2>
+
+<p>You can delete variables using the <tt>del</tt> statement:</p>
+
+<pre>
+&gt;&gt;&gt; count = 3
+&gt;&gt;&gt; print(f'count: {count}') 
+count: 3
+&gt;&gt;&gt; del count  # delete variable count
+</pre>
+
+<p>Referencing the deleted object results in an error:</p>
+
+<pre>
+&gt;&gt;&gt; print(count)
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+NameError: name 'count' is not defined
+</pre>
+
+<!--===============================-->
+<a name="4_5"><tt></tt></a>
+<h2>2.4.5 Defining Variables as Constants</h2>
+
+<p>The name variable indicates that its value can be changed after it is initialized:</p>
+
+<pre>
+&gt;&gt;&gt; count = 1  # count is 1  
+&gt;&gt;&gt; count = 2  # Now, count is 2
+</pre>
+
+<p>Python does not allow you to define constants. By convention, you can indicate 
+that you intend to use a variable as a constant by naming the variable using 
+uppercase letters with underscores separating words (see 
+<a href="https://pep8.org/#constants">PEP 8 &ndash; the Style Guide for Python Code</a>). 
+For example:</p>
+
+<pre>
+&gt;&gt;&gt; ELEMENTARY_CHARGE = 1.6021773349e-19  # C
+</pre>
+
+<!--===============================-->
+<a name="4_6"><tt></tt></a>
+<h2>2.4.6 Tuple Assignment</h2>
+
+<p>You can assign values to multiple variables using tuples in a single assignment 
+statement:</p>
+
+<pre>
+&gt;&gt;&gt; x, y = 1 + 2, 2 * 3  
+&gt;&gt;&gt; x
+3
+&gt;&gt;&gt; y
+6
+</pre>
+
+<p>Python first evaluates all the expressions on the right and then assigns the 
+values on the right to the respective variables on the left. Here, Python assigns 
+<tt>3</tt> to <tt>x</tt> and <tt>6</tt> to <tt>y</tt>.</p>
+
+<p>Such an assignment that involves tuples on both sides of the assignment operator 
+is called  <em>tuple assignment</em>. The number of variables on the left side of 
+the equal sign must be the same as the number of values on the right side. 
+Otherwise, Python generates an error:</p>
+
+<pre>
+&gt;&gt;&gt; x, y, z = 1, 2  # fewer values on right
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+ValueError: not enough values to unpack (expected 3, got 2)
+
+&gt;&gt;&gt; x, y = 1, 2, 3  # fewer values on left
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+ValueError: too many values to unpack (expected 2)
+</pre>
+
+<p>If the left side has only one variable, then the comma-separated values on the 
+right are treated as a tuple, and the tuple is assigned to the variable:</p>
+
+<pre>
+&gt;&gt;&gt; x = 1, 2
+&gt;&gt;&gt; type(x)
+&lt;class 'tuple'&gt;
+</pre>
+
+<!--===============================-->
+<a name="4_7"><tt></tt></a>
+<h2>2.4.7 Sequence Packing and Unpacking</h2>
+
+<p>Combining values in a sequence is known as <em>sequence packing</em>. 
+For example, you can combine the values <tt>1</tt> and <tt>2</tt> using a list:</p>
+
+<pre>
+&gt;&gt;&gt; [1, 2]  
+[1, 2]
+</pre>
+
+<p>The reverse of sequence packing is <em>sequence unpacking</em>, which involves 
+extracting individual elements from a sequence and assigning them to variables in 
+a single assignment statement. The number of variables on the left must be the 
+same as the length of the sequence. For example:</p>
+
+<pre>
+&gt;&gt;&gt; x, y = [1, 2]   
+&gt;&gt;&gt; x
+1
+&gt;&gt;&gt; y
+2
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>2.5 Python Objects and Their Memory Representation</h1>
+
+<p>When a program is executed, the program code and data are stored in the random 
+access memory (RAM) of the computer. You can think of computer memory as an ordered 
+sequence of storage locations called <em>memory cells</em>. Each cell is identified 
+by a unique <em>address</em>. A computer uses the address of a cell to store and 
+access data.</p>
+
+<p>Computer memory can be divided into several regions. When a Python program runs, 
+Python allocates memory for the program code and data as follows:</p>
+
+<ul>
+<li>One region of memory is reserved for the program code.</li>
+<li>Whenever you create a new object, Python allocates space from a region of memory 
+called the <em>heap</em>.</li>
+<li>Each time you call a function, Python allocates a new block of memory called a 
+<em>stack frame</em> to hold its local variables. These stack frames are part of a 
+region of memory called the <em>stack</em>.</li>
+</ul>
+
+<!--===============================-->
+<a name="5_1"></a>
+<h2>2.5.1 Python Tutor Visualization</h2>
+
+<p><a href="https://pythontutor.com/">Python Tutor</a> is a free visualization tool, 
+which is useful for learning Python.</p>
+
+<p>You can copy and paste code in the left pane of Python Tutor and run the code, 
+one statement at a time. For example, consider the following code:</p>
+
+<pre>
+# Script: objects_vars.py
+count = 3
+speed_of_light = 3e8
+greeting = 'Hello, World!'
+</pre>
+
+<p>Figure 1 shows the Python Tutor visualization of this code after running all the statements.</p>
+
+<p><a href="images/objects_vars.png"><img src="images/objects_vars.png" 
+width="570" alt="Objects and variables"/></a></p>
+
+<p class="caption">Figure 1. Python objects and variables. 
+(Click image for full-size view.)</p>
+
+<p>The right pane of Python Tutor shows the state of memory after running the 
+last line of code (line 3). Python Tutor <cite>shows a visual representation of 
+run-time state (stack frame contents such as variables, objects on heap, and pointer 
+references).</cite> </p>
+
+<p>The right pane is divided into the following sections:</p>
+
+<ul>
+<li>The heap is labeled Objects. Figure 1 shows three objects (or values) on the heap.</li>
+<li>The stack frames are shown under the label Frames. Figure 1 shows one stack frame called
+Global frame.</li>
+</ul>
+
+<p>The link or association between variables and objects is shown either with an arrow or by using 
+a text label such as <tt>idn</tt> (where <tt>n</tt> is a number) for the memory address 
+of the object on the heap. Figure 1 shows associations using arrows, and this concept 
+is explained in <a href="#5_3">Section 2.5.3 Python Variable Model</a>.</p>
+
+<p>Keeping track of the objects or values associated with variables after each 
+statement has been executed is called <em>tracing a program</em>. Tracing a 
+program is useful for understanding how the program works and is a useful tool 
+for finding errors in programs. You can use Python Tutor to trace a program since 
+it shows a visual representation of Python objects after execution of each step.</p>
+
+<p>In subsequent sections, the state of memory during or after program execution is 
+visualized using snapshots of Python Tutor.</p>
+
+<p>Since you can run the program one step at a time, forward as well as backward, 
+you can use Python Tutor to understand the <em>flow of execution</em> (the order in 
+which statements are executed) of the code.</p>
+
+<!--===============================-->
+<a name="5_2"></a>
+<h2>2.5.2 C Variable Model</h2>
+
+<p>To understand variables in Python, it is useful to compare Python variables with 
+C variables. In C, you must specify the data type of the variable followed by the name. 
+For example, you create an integer variable whose value is <tt>2</tt> using the following assignment statement:</p>
+
+<pre>
+int x = 2;
+</pre>  
+
+<p>As a result of executing this assignment statement, C does the following:</p>
+
+<ul>
+ <li>Reserves enough space on the stack to store an integer</li>
+ <li>Stores the integer value <tt>2</tt> at that memory address</li>
+ <li>Links the variable name <tt>x</tt> with that memory address</li>
+</ul>
+
+<p>In C, values are stored in variables. A variable is a named storage location, 
+which stores a value of a particular type.</p>
+
+<p>Figure 2 shows the C Tutor visualization of this assignment statement.</p> 
+
+<p><a href="images/vars_c.png"><img src="images/vars_c.png" width="570" 
+alt="C variable model"/></a></p>
+
+<p class="caption">Figure 2. C variable model. (Click image for full-size view.)</p>
+
+<!--===============================-->
+<a name="5_3"></a>
+<h2>2.5.3 Python Variable Model</h2>
+
+<p>As discussed in <a href="#4">Section 2.4 Variables and Assignment Statement</a>, 
+Python variables are created using assignment statements. For example:</p>
+
+<pre>
+&gt;&gt;&gt; x = 2
+</pre> 
+
+<p>As a result of executing this assignment statement, Python does the following:</p>
+
+<ul>
+<li>Creates an <tt>int</tt> object on the heap to represent the integer value <tt>2</tt>  
+(stores the integer value <tt>2</tt> in the object)</li>
+<li>Creates the variable <tt>x</tt> on the stack</li>
+<li>Links the variable <tt>x</tt> to the <tt>int</tt> object</li>
+</ul>
+
+<p>Figure 3 shows the Python Tutor visualization of this assignment statement.</p>
+
+<a name="fig3"></a>
+<p><a href="images/vars_python.png"><img src="images/vars_python.png" width="570" 
+alt="Python variable model"/></a></p>
+
+<p class="caption">Figure 3. Python variable model. (Click image for full-size view.)</p>
+
+<p>Python links the variable on the stack to the object on the heap by storing 
+the address of the object (indicated in Figure 3 by the label <tt>id1</tt>) 
+in the variable. The address of the object in memory is known as the object 
+<em>reference</em> (see <a href="https://introcs.cs.princeton.edu/python/12types/">
+Introduction to Programming in Python</a>). Therefore, <em>a Python variable is a 
+reference to an object</em>.</p>
+
+<p>Evaluating the variable name results in the value of the object and not the 
+memory location of the object. For example:</p>
+
+<pre>
+&gt;&gt;&gt; x = 2
+&gt;&gt;&gt; id(x)  # get memory address of object
+140736114986784
+&gt;&gt;&gt; x
+2
+</pre>
+
+<p>Therefore, you can use the name of a Python variable to refer to (or access) 
+objects and can say that <em>a Python variable is simply a name that refers to a value</em>.</p>
+
+<p>A Python variable is simply a name because, in contrast to a C variable, it does 
+not store the actual object or value. It stores the memory address of the object. 
+When a name is linked to an object, you can refer to the object by that name, but 
+the data itself is stored within the object.</p>
+
+<!--==========================-->
+<a name="5_3_1"></a>
+<h3>2.5.3.1 Visualizing Variables Using Arrows</h3>
+
+<p>In Figure 3, Python Tutor visualizes the link between the variable and the 
+object by placing the address of the object (indicated by the label <tt>id1</tt>) 
+inside the variable as well as next to the object.</p>
+
+<p>Since the address of an object is not useful for programming, you can also 
+use Python Tutor to visualize this link by drawing an arrow from the 
+variable on the stack to the object on the heap.</p>
+
+<p><a href="images/vars_python_pointer.png"><img src="images/vars_python_pointer.png" 
+width="570" alt="Python variable model using arrow"/></a></p>
+
+<p class="caption">Figure 4. Python variable model using arrow. 
+(Click image for full-size view.)</p>
+
+<p>In subsequent sections, you will use Python Tutor to visualize the link between variables 
+and objects using arrows. The arrow shows that the variable refers to the object.</p>
+
+<!--===============================-->
+<a name="5_4"></a>
+<h2>2.5.4 Assignment and Binding</h2>
+
+<p><a href="#4">Section 2.4 Variables and Assignment Statement</a> describes
+the syntax for the assignment statement: <tt>variable = value | expression</tt></p>
+
+<p>Since any object can be assigned to a variable, the syntax can be generalized to 
+<tt>variable = object</tt>.</p>
+
+<p>The updated syntax indicates that you can assign <em>any</em> type of object 
+to a variable including primitive data types, compound data types, functions, modules,
+and files. You can create objects of different types and visualize them in Python Tutor.
+For example:</p>
+
+<pre>
+&gt;&gt;&gt; my_list = [1, 2.4, True, None, 'Python']
+&gt;&gt;&gt; my_tuple = (1, 2.4, True, None, 'Python')
+&gt;&gt;&gt; my_dict = {'x': 1, (1, 1): [10, 20]} 
+</pre>
+
+<p><a href="images/vars_any_object.png"><img src="images/vars_any_object.png" 
+width="570" alt="Assigning different object types to variables"/></a></p>
+
+<p class="caption">Figure 5. Assigning different object types to variables. 
+(Click image for full-size view.)</p>
+
+<p>As a result of executing each of these assignment statements, Python creates 
+an object on the heap, creates a variable on the stack, and links the variable 
+to the object.</p>
+
+<p>Since Python links or binds a name to an object, assignment is also called 
+<em>binding</em> (see 
+<a href="https://docs.python.org/3/reference/executionmodel.html?#naming-and-binding">
+The Python Language Reference: Naming and binding</a>).</p>
+
+<p>The assignment statement <tt>x = 2</tt> has several equivalent meanings:</p>
+
+<ul>
+<li>Assign variable <tt>x</tt> to <tt>int</tt> object <tt>2</tt>, or assign <tt>int</tt> 
+object <tt>2</tt> to variable <tt>x</tt>.</li>
+<li>Bind variable <tt>x</tt> to <tt>int</tt> object <tt>2</tt>.</li>
+<li><tt>x</tt> is a reference to <tt>2</tt> or <tt>x</tt> refers to <tt>2</tt>.</li>
+</ul>
+
+<!--===============================-->
+<a name="5_5"></a>
+<h2>2.5.5 Properties of Objects</h2>
+
+<p>From the discussion in <a href="#5_3">Section 2.5.3 Python Variable Model</a>, 
+you can see that:</p>
+
+<ul>
+<li>An object is a representation of a value in the memory of a computer.</li>
+<li>Every object has an identity, a type, and a value (see 
+<a href="https://docs.python.org/3/reference/datamodel.html#objects-values-and-types">
+The Python Language Reference: Objects, values and types</a>).</li>
+</ul>
+
+<p>As discussed in <a href="#2_1">Section 2.2.1 Numeric Types: <tt>int</tt>, 
+<tt>float</tt>, and <tt>complex</tt></a>, Python objects can be created using literals. 
+For example, if you evaluate the literal <tt>2</tt> at the Python prompt, then Python 
+creates an object to represent the integer value <tt>2</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; 2  # Create int object  
+2
+</pre>
+
+<p>The <em>identity</em> of an object is its address in the memory of the computer. 
+Python automatically assigns each object a unique identity. The identify of an 
+object never changes after it has been created. You can find the identify of an object 
+by using the built-in <a href="https://docs.python.org/3/library/functions.html#id"><tt>id</tt></a> function:</p>
+
+<pre>
+&gt;&gt;&gt; id(2)
+140736114986784
+</pre>
+
+<p>The <tt>id</tt> function returns an integer representing the identify of an object.</p>
+
+<p>The value of an object is the data-type value that it represents (see 
+<a href="https://introcs.cs.princeton.edu/python/12types/">
+Introduction to Programming in Python</a>). You can find the value of an object 
+by evaluating it. Evaluating <tt>2</tt> creates an <tt>int</tt> object whose value is 
+<tt>2</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; 2  # Create int object and print its value 
+2
+</pre>
+
+<p>Evaluating <tt>'Hello'</tt> creates a <tt>str</tt> object whose value is a sequence 
+of characters:</p>
+
+<pre>
+&gt;&gt;&gt; 'Hello'
+'Hello'
+</pre>
+
+<p>Evaluating <tt>np.array([10, 20.5, 30])</tt> creates an <tt>ndarray</tt> object 
+whose value is an array of numbers:</p>
+
+<pre>
+&gt;&gt;&gt; np.array([10, 20.5, 30])
+array([10. , 20.5, 30. ])
+</pre>
+
+<p>As discussed in <a href="#2">Section 2.2 Built-in Data Types</a>, a data type 
+or type is a set of values and a set of operations that can be performed on those 
+values. The type of an object indicates the class to which it belongs, which you 
+can find using the <tt>type</tt> function:</p>
+
+<pre>
+&gt;&gt;&gt; type(2)
+&lt;class 'int'&gt;
+</pre>
+
+<p>Python variables do not have types. Objects have types. Even though the assignment 
+statement <tt>x = 2</tt> binds the variable <tt>x</tt> to an <tt>int</tt> object that 
+represents the value <tt>2</tt>, for simplicity, it is often said that <tt>x</tt> is a variable 
+of type <tt>int</tt> with value <tt>2</tt>.</p>
+
+<p>Since Python variables do not have types, you can reassign a variable to objects 
+of different types. Reassigning a variable simply changes the object reference stored 
+in the variable. After reassignment, the variable refers to a new object and stops 
+referring to the older object:</p>
+
+<pre>
+&gt;&gt;&gt; x = 2         # x is assigned to int object
+&gt;&gt;&gt; x
+2
+&gt;&gt;&gt; id(x)
+140717063999264
+
+&gt;&gt;&gt; x = 'Hello'   # x is reassigned to str object
+&gt;&gt;&gt; x
+'Hello'
+&gt;&gt;&gt; id(x)
+1767062621680
+
+&gt;&gt;&gt; x = [1, 2, 3]  # x is reassigned to list object
+&gt;&gt;&gt; x
+[1, 2, 3]
+&gt;&gt;&gt; id(x)  
+1767050980544
+</pre>
+
+<p>As discussed in 
+<a href="https://docs.python.org/3/reference/datamodel.html#objects-values-and-types">
+The Python Language Reference &ndash; Objects, values and types</a>, after an object is 
+created, its identity and type never change. The value of some objects can change and 
+this is discussed in <a href="#5_5_1">Section 2.5.5.1 Mutability of Objects</a>.</p>
+
+<p>The identity of an object does not change during the execution of the program. 
+However, every time you run the program, Python might assign a different identity 
+to the object.</p>
+
+<!--==========================-->
+<a name="5_5_1"></a>
+<h3>2.5.5.1 Mutability of Objects</h3>
+
+<p><em>Mutable objects</em> are objects whose value can change after they are created. 
+For example, lists, NumPy arrays, and dictionaries are mutable. After a list is created, 
+you can change any list element using its index:</p>
+
+<pre>
+&gt;&gt;&gt; numbers = [10, 20, 30, 40]  # Create list object
+&gt;&gt;&gt; # Access first element of numbers list and assign to it 100 
+&gt;&gt;&gt; numbers[0] = 100 
+&gt;&gt;&gt; numbers
+[100, 20, 30, 40]
+</pre>
+
+<p>The first element of the <tt>numbers</tt> list is updated. Therefore, the value 
+of the list object has changed. Changing the value of an object is known as 
+<em>mutation</em>.</p>
+
+<p>Similar to lists, NumPy arrays are mutable:</p>
+
+<pre>
+&gt;&gt;&gt; numbers = [10, 20, 30, 40] 
+&gt;&gt;&gt; numbers = np.array([10, 20, 30, 40]) # Create ndarray object
+&gt;&gt;&gt; numbers[0] = 100 
+&gt;&gt;&gt; numbers
+array([100,  20,  30,  40])
+</pre> 
+
+<p><em>Immutable objects</em> are objects whose value cannot be changed after 
+they are created. For example, strings are immutable. You cannot change the 
+characters of an existing string. Trying to do so results in an error:</p>
+
+<pre>
+&gt;&gt;&gt; greeting = 'Hello, World!' 
+&gt;&gt;&gt; # Change first character of greeting
+&gt;&gt;&gt; greeting[0] = 'h'  # Immutable objects cannot be changed 
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+TypeError: 'str' object does not support item assignment
+</pre>
+
+<p>In this error message, the &quot;object&quot; is the string and the 
+&quot;item&quot; is the character you tried to assign.</p>
+
+<p>Since lists are mutable and strings are immutable, 
+most methods for transforming these objects result in the following:</p>
+
+<ul>
+<li>Modify the list argument (see <a href="py_04.html#3_4">Section 4.3.4 List Methods</a>)</li>  
+<li>Return a new string instead of modifying the string argument (see <a href="py_04.html#3_5">Section 4.3.5 String Methods</a>)</li>
+</ul>
+
+<!--==========================-->
+<a name="5_5_2"></a>
+<h3>2.5.5.2 Equality of Objects</h3>
+
+<p>Two Python variables can refer to the same object. For example, consider creating 
+two variables and assigning the same string to them:</p>
+
+<pre>
+&gt;&gt;&gt; str1 = 'TCAD' 
+&gt;&gt;&gt; str2 = 'TCAD'
+</pre>
+
+<p>Here, Python creates two variables but a single string object. Both variables 
+refer to the same string object as can be verified by using the <tt>id</tt> function 
+and using Python Tutor.</p>
+
+<pre>
+&gt;&gt;&gt; id(str1), id(str2)
+(1766676883248, 1766676883248)
+</pre>
+
+<a name="fig6"></a>
+<p><a href="images/equality_str.png"><img src="images/equality_str.png" 
+width="570" alt="Objects and variables" /></a></p>
+
+<p class="caption">Figure 6. String equality. (Click image for full-size view.)</p>
+
+<p>The operators <tt>is</tt>, <tt>is not</tt>, <tt>==</tt>, and <tt>!=</tt> are comparison operators (see <a href="py_04.html#2_1">Section 4.2.1 Comparison Operators</a>). They return Boolean values.</p> 
+
+<p>The <tt>is</tt> operator tests for <em>identity equality</em> (<em>reference equality</em>).  Two objects are <em>identical</em> if they have the same identity or the same 
+memory address. So, it tests whether two variables refer to the same object. For example:</p>
+
+<pre>
+&gt;&gt;&gt; str1 is str2 
+True
+</pre>
+
+<p>If the identities of two objects differ, then it returns <tt>False</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; str1, str2, str3 = 'TCAD', 'TCAD', 'Python'
+&gt;&gt;&gt; str1 is str3
+False
+</pre>
+
+<p>The <tt>is not</tt> operator is used to test whether two variables refer 
+to different objects:</p>
+
+<pre>
+&gt;&gt;&gt; str1, str2, str3 = 'TCAD', 'TCAD', 'Python'
+&gt;&gt;&gt; str1 is not str2, str1 is not str3
+(False, True)
+</pre>
+
+<p>The <tt>==</tt> operator tests for <em>value equality</em> (whether two objects 
+represent the same value), and the <tt>!=</tt> operator tests for value inequality. 
+Two objects are  said to be <em>equivalent</em> if they represent the same value. 
+Obviously, this holds true for the two string objects <tt>str1</tt> and <tt>str2</tt> 
+but not for <tt>str1</tt> and <tt>str3</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; str1 == str2, str1 == str3
+(True, False)
+</pre>
+
+<p>Python created a single (immutable) <tt>str</tt> object as a result of the following 
+assignment statements:</p>
+
+<pre>
+str1 = 'TCAD'
+str2 = 'TCAD'
+</pre>
+
+<p>However, when you assign a list, tuple, or NumPy array containing the same values 
+to two variables, Python creates a new list, tuple, or NumPy array, respectively. 
+For example:</p>
+
+<pre>
+&gt;&gt;&gt; x = [10, 20, 30]
+&gt;&gt;&gt; y = [10, 20, 30]
+&gt;&gt;&gt; x == y, x is y
+(True, False)
+</pre>
+
+<p>Here, <tt>x is y</tt> is <tt>False</tt> even though all corresponding elements 
+in the two lists are the same. The two list objects are equivalent since they 
+contain the same values. However, they are not identical since they are at different 
+memory addresses.</p>
+
+<p>Figure 7 shows the Python Tutor visualization of the two lists.</p>
+
+<p><a href="images/equality_list.png"><img src="images/equality_list.png" 
+width="570" alt="List equality" /></a></p>
+
+<p class="caption">Figure 7. List equality. (Click image for full-size view.)</p>
+
+<p>In the case of NumPy arrays, you can check for identity equality and value equality by using the <tt>is</tt> operator and the 
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.array_equal.html">
+numpy.array_equal</a> function, respectively:</p>
+
+<pre>
+&gt;&gt;&gt; x = np.array([10, 20, 30])
+&gt;&gt;&gt; y = np.array([10, 20, 30])
+&gt;&gt;&gt; x is y, np.array_equal(x, y)
+(False, True)
+</pre>
+
+<!--==========================-->
+<a name="5_5_3"></a>
+<h3>2.5.5.3 Aliasing, Assignment, and Mutable Objects</h3>
+
+<p>If a single object is associated with two different variables, then you can 
+refer to the object using either one of the variable names. This is known as 
+<em>aliasing</em> and the names are known as <em>aliases</em>. For example, in 
+<a href="#5_5_2">Section 2.5.5.2 Equality of Objects</a> (and <a href="#fig6">Figure 6</a>), 
+you saw that both <tt>str1</tt> and <tt>str2</tt> refer to the same string object 
+<tt>'TCAD'</tt>. Here, <tt>str1</tt> and <tt>str2</tt> are aliases.</p>
+
+<p>Assigning one variable to another does not copy the contents from one variable 
+to another. It copies the object reference (memory address of the object). After 
+assignment, the two variables refer to the same object. So, assignment creates aliases.</p>
+
+<p>For example, create a list object and assign it to a variable <tt>x</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; x = [10, 20, 30] 
+</pre>
+
+<p>Next, assign the variable <tt>x</tt> to a new variable <tt>y</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; y = x  # Assigns id of x to y 
+</pre>
+
+<p>Instead of creating a new list object, copying the contents of list <tt>x</tt> 
+to the new list object, and assigning the new list object to <tt>y</tt>, assigning 
+<tt>y</tt> to <tt>x</tt> copies the memory address of <tt>x</tt> into <tt>y</tt>. 
+Both variables refer to the same list object. As a result, <tt>x</tt> and <tt>y</tt> 
+are aliases to the same list object as can be verified using the <tt>is</tt> operator 
+and Python Tutor:</p>
+
+<pre>
+&gt;&gt;&gt; x is y  # verify that x and y are aliases
+True
+</pre>
+
+<p><a href="images/alias_lists.png"><img src="images/alias_lists.png" 
+width="570" alt="Aliased lists" /></a></p>
+
+<p class="caption">Figure 8. Aliased lists. (Click image for full-size view.)</p>
+
+<p>Since lists are mutable, you can modify the same list object using 
+either one of the aliases:</p>
+
+<pre>
+&gt;&gt;&gt; y[0] = 1  # Change y
+&gt;&gt;&gt; y
+[1, 20, 30]
+&gt;&gt;&gt; x  # x is also changed
+[1, 20, 30]
+</pre>
+
+<p>This is true not only for lists, but also for any type of object. Instead of 
+copying the content of an object into a new object, assignment creates an alias 
+to the same object. If aliased objects are mutable, then you can modify 
+the same object using either one of the aliases. For example, even NumPy arrays 
+are mutable and the behavior of aliased NumPy arrays is similar to that of aliased 
+lists:</p>
+
+<pre>
+&gt;&gt;&gt; x = np.array([10, 20, 30])  
+&gt;&gt;&gt; y = x     # Both x and y refer to same object
+&gt;&gt;&gt; x is y
+True
+&gt;&gt;&gt; y[0] = 1  # Changing y changes x
+&gt;&gt;&gt; x
+array([ 1, 20, 30])
+</pre>
+
+<p>This behavior of aliased mutable objects might lead to errors and should be avoided. 
+It is less error prone to have only a single reference to a mutable object.</p>
+
+<!--==========================-->
+<a name="5_5_4"></a>
+<h3>2.5.5.4 Copying Objects</h3>
+
+<p>You can prevent aliasing by copying the contents of an object into a new object. 
+In the case of sequences such as lists, tuples, and strings, you can create copies 
+using the <em>slicing</em> operation (see 
+<a href="py_04.html#3_2">Section&nbsp;4.3.2 Slicing</a>). A <em>slice</em> of a sequence 
+is a portion of the sequence. You can create a slice containing the entire sequence using
+the syntax: <tt>sequence[:]</tt></p>
+
+<p>You can create a copy of the sequence by assigning this slice. The contents 
+of both sequences are the same. For example:</p>
+
+<pre>
+&gt;&gt;&gt; x = [10, 20, 30] 
+&gt;&gt;&gt; # Create a slice of entire sequence and assign to z
+&gt;&gt;&gt; z = x[:] 
+&gt;&gt;&gt; z
+[10, 20, 30]
+</pre>
+
+<p>You can verify that the two lists are equivalent but not identical:</p>
+
+<pre>
+&gt;&gt;&gt; x == z, x is z
+(True, False)
+</pre>
+
+<p><a href="images/copy_list.png"><img src="images/copy_list.png" 
+width="570" alt="Copying lists" /></a></p>
+
+<p class="caption">Figure 9. Copying lists. (Click image for full-size view.)</p>
+
+<p>Slicing does not create a copy of a NumPy array but creates a <em>view</em> of the array
+(see <a href="py_04.html#3_2">Section 4.3.2 Slicing</a>):</p>
+
+<pre>
+&gt;&gt;&gt; x = np.array([10, 20, 30])  
+&gt;&gt;&gt; z = x[:]  # Assign a slice of x to  z 
+&gt;&gt;&gt; z[0] = 0  # Change z 
+&gt;&gt;&gt; x         # x is also changed
+array([ 0, 20, 30])
+</pre>
+
+<p>You can make copies of NumPy arrays by using the 
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.copy.html">
+<tt>numpy.ndarray.copy()</tt></a> method. The <tt>copy()</tt> method is defined 
+in the <tt>ndarray</tt> class, which is defined in the NumPy package. It acts on 
+a NumPy array (for more details, see <a href="py_03.html#3_1_4">
+Section 3.3.1.4 Referencing Methods</a>):</p>
+
+<pre>
+&gt;&gt;&gt; x = np.array([10, 20, 30])  
+&gt;&gt;&gt; # Make a copy of array x and assign to y
+&gt;&gt;&gt; y = x.copy()
+&gt;&gt;&gt; # Test for identity equality and equivalence 
+&gt;&gt;&gt; y is x, np.array_equal(x, y) 
+(False, True)
+</pre>
+
+<p>Similarly, you can use the 
+<a href="https://docs.python.org/3/library/stdtypes.html#dict.copy">
+<tt>dict.copy()</tt></a> method to copy dictionaries.</p>
+
+<p>The Python <a href="https://docs.python.org/3/library/copy.html"><tt>copy</tt></a> 
+module contains functions for copying not only sequences but also any type of object. 
+You can also use the <tt>copy</tt> module to copy user-defined types. For example, see 
+<a href="py_03.html#3_2_3">Section 3.3.2.3 Mutability, Aliasing, and Copying</a>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>2.6 Introduction to Looping</h1>
+
+<p>Executing a sequence of statements repeatedly is called <em>looping</em> 
+or <em>iteration</em>. You can perform iteration in Python using the 
+<tt>for</tt> statement and the <tt>while</tt> statement.</p>
+
+<p>The Python <tt>for</tt> statement works like the Tcl <tt>foreach</tt> command 
+(but not like the Tcl <tt>for</tt> command). It iterates over all the elements 
+of a sequence, in the order in which they appear in the sequence. Therefore, 
+you can execute the same sequence of statements once for each item in a sequence.</p>
+
+<p>The syntax of the <tt>for</tt> loop is:</p>
+
+<pre>
+for &lt;variable&gt; in &lt;sequence&gt;
+    body
+</pre>
+
+<p>The first statement is the <em>header</em> and the subsequent statements form 
+the <em>body</em> of the <tt>for</tt> statement. All statements in the body of 
+the <tt>for</tt> loop are indented.</p>
+
+<p>The following program sums over a list of numbers:</p>
+
+<pre>
+# Script: loop_for.py
+numbers = [11, 22, 33, 43]
+counter, total = 1, 0
+for num in numbers:
+    print(f'Iteration number: {counter}')
+    total += num
+    print(f'Partial sum: {total}')
+    counter += 1
+    
+print(total)     
+
+&gt; gpythonsh loop_for.py
+Iteration number: 1
+Partial sum: 11
+Iteration number: 2
+Partial sum: 33
+Iteration number: 3
+Partial sum: 66
+Iteration number: 4
+Partial sum: 109
+109
+</pre>
+
+<p>The <tt>for</tt> statement steps through the given sequence, here the 
+<tt>numbers</tt> list, and executes all the statements in the body of the loop. 
+The current element of the list is assigned to a variable (here <tt>num</tt>). 
+During the first iteration, the first element (<tt>11</tt>) of the list is 
+assigned to the variable <tt>num</tt>. During each subsequent iteration, the 
+next element of the list is assigned to the variable (<tt>num</tt>). The 
+iterations continue until the last element of the sequence is assigned.</p>
+
+<p>Here, the variable <tt>counter</tt> is used to keep track of the iteration number.</p>
+
+<p class="note">Additional looping-related concepts are discussed in 
+<a href="py_04.html#1">Section 4.1 More on Looping</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_01.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_03.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; TCAD to SPICE 1. Setting Up the Tool Flow: Bridging and Mapping</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_02.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">TCAD to SPICE<br />1. Setting Up the Tool Flow: Bridging and Mapping</h1>
+
+<p>
+ <a href="#1">1.1 Overview</a><br />
+ <a href="#2">1.2 Bridging</a><br />
+ <a href="#3">1.3 Bridging Example</a><br />
+ <a href="#4">1.4 Mapping</a><br />
+ <a href="#5">1.5 Mapping Example</a><br />
+ <a href="#6">1.6 Conclusions</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the concepts of bridging and mapping to link multiple Sentaurus Workbench projects.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Overview</h1>
+
+<p>The TCAD to SPICE tool flow is a key part of the Synopsys design-technology cooptimization (DTCO) 
+solution,  where physical effects modeled in TCAD tools are transferred to the circuit level through 
+SPICE model extraction.</p>
+
+<p>TCAD to SPICE flows always depend on input data being provided by a chosen simulation tool. 
+As a result, TCAD to SPICE flows need to be portable, such that the incoming data can be easily 
+adjusted or replaced with a different process.</p>
+
+<p>The following tutorial describes key features of Sentaurus Workbench bridging between projects 
+(creating a one-way parent-to-child  link) and parameter mapping in TCAD to SPICE flows, as shown 
+in Figure&nbsp;1.</p>
+
+<p><a href="images/bridge_concept.png"><img src="images/bridge_concept.png" width="570" 
+alt="Bridging and mapping concepts" /></a></p>
+
+<p class="caption">Figure 1. Basic concepts of bridging and mapping between Sentaurus Workbench 
+projects. (Click image for full-size view.)</p>
+
+<p class="note">There is an inherent limitation to the portability of a specific TCAD to SPICE flow 
+as these are constrained by device architecture. This limitation is imposed by the fact that different 
+device architectures are represented by different SPICE models (such as BSIM4 for bulk devices and 
+BSIM-CMG for FinFETs), which specify geometries and features in different ways, and might have different 
+requirements for data. For example, bulk devices require the modeling of back-bias dependence, but 
+FinFETs do not.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/tcadtospice/setup/DB_tutorial</tt>.</p>
+
+<p>A pre-executed project is also included, which contains input data for the
+above project, and can be found in the directory
+<tt>Applications_Library/GettingStarted/tcadtospice/setup/ 14nmFinFETSentaurus_PltOnly</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>1.2 Bridging</h1>
+
+<p>Bridging creates a one-way link between a source Sentaurus Workbench project 
+(<em>parent project</em>) and a target project (<em>child project</em>). This link allows for:</p>
+
+<ul>
+ <li>Re-creating a full or partial subset of splits from the parent project in the child project</li>
+ <li>Permitting the child project to access any variable or parameter in the parent project</li>
+ <li>Permitting the child project to refer to any node in the parent project</li>
+</ul>
+
+<p>To set up a child project, open a clean Sentaurus Workbench project and select the Bridge tool as 
+highlighted in Figure&nbsp;2.</p>
+
+<p><img src="images/bridge_selecttool.png" width="395" height="100"
+alt="Bridge tool in Select DB Tool dialog box" /></p>
+
+<p class="caption">Figure 2. Bridge tool in the Select DB Tool dialog box.</p>
+
+<p>The command file of the Bridge tool has some simple parameters that must be defined:</p>
+
+<ul>
+ <li><tt>Parent</tt> sets the path to the Sentaurus Workbench parent project.</li>
+ <li><tt>ptools</tt> defines a list of parent project tools that must be addressable in the child project.</li>
+ <li><tt>pvars</tt> defines a list of parent project variables that must be available in the child project.</li>
+</ul>
+
+<p>The following example describes the required inputs of the command file of the Bridge tool:</p>
+
+<pre>
+#noexec
+set Parent PATH_TO_PARENT_SWB_DECK
+set ptools "TOOL1 TOOL2 TOOL3"
+set pvars  "VAR1 VAR2 VAR3"
+</pre>
+
+<p>By default, the child project addresses splits in the scenario <tt>&quot;all&quot;</tt> of the parent 
+project. You can change it by defining the name of the scenario to be addressed:</p>
+
+<pre>
+set PStoSync "MyScen2"
+</pre>
+
+<p>The Bridge tool is not executed like typical Sentaurus Workbench tools. It is run once 
+through the graphical user interface of Sentaurus Workbench, resulting in a duplication of the parent 
+project structure in the child project. This process is shown in Figure&nbsp;3.</p>
+
+<p><a href="images/bridge_execute.png"><img src="images/bridge_execute.png" width="570" 
+alt="Executing the Bridge tool" /></a></p>
+
+<p class="caption">Figure 3. Executing the Bridge tool: (upper left) Bridge tool instance in a clean project, 
+(upper right) choosing the Clean and Synchronize With Parent Project command from the context menu, and 
+(bottom) after synchronization, splits match the parent project and variables are bridged across from all 
+tools defined in the &quot;ptools&quot; list. (Click image for full-size view.)</p>
+
+<p> When starting with a new parent&ndash;child project combination, right-click the Bridge tool icon and 
+choose the <strong>Clean and Synchronize With Parent Project</strong> command. With this command, any 
+existing nodes in the child project are erased and replaced with splits that match the setup of the parent 
+project. This is the only time you need to interact with the Bridge tool &ndash; individual split nodes 
+do not need to be executed (in fact, this is usually deactivated by adding the <tt>#noexec</tt> command 
+in the command file of the Bridge tool).</p>
+
+<p>The <strong>Synchronize With Parent Project</strong> command also performs a synchronization. However, 
+it does not remove old child project simulation results. This command is more rarely used.</p>
+
+<p class="note">Any tools in the child project AFTER the Bridge tool, with existing Sentaurus Workbench 
+parameters, are reset to default parameter values.</p>
+
+<p>The Bridge tool enables the use of some bridge-specific Sentaurus Workbench variables that allow you 
+to access information from the parent project. These variables are the same as standard Sentaurus Workbench 
+preprocessor variables prefixed with <tt>p</tt>.</p>
+
+<table>
+  <tr>
+    <th>Variable (Bridging)</th>
+    <th>Variable (Typical)</th> 
+    <th>Meaning in parent project</th>
+  </tr>
+
+  <tr>
+    <td><tt>@ppwd@</tt></td>
+    <td><tt>@pwd@</tt></td>
+    <td>Path</td>
+  </tr>
+
+  <tr>
+    <td><tt>@pnode|TOOL@</tt></td>
+    <td><tt>@node|TOOL@</tt></td>
+    <td>Matching node on tool</td>
+  </tr>
+
+  <tr>
+    <td><tt>@pprojorg@</tt></td>
+    <td><tt>@projorg@</tt></td>
+    <td>Mode (traditional or hierarchical)</td>
+  </tr>
+
+  <tr>
+    <td><tt>@ppwdout@</tt></td>
+    <td><tt>@pwdout@</tt></td>
+    <td>Output directory in hierarchical mode</td>
+  </tr>
+
+  <tr>
+    <td><tt>@pnodedir@</tt></td>
+    <td><tt>@nodedir@</tt></td>
+    <td>Node directory in hierarchical mode</td>
+  </tr>
+
+  <tr>
+    <td><tt>@plogsdir@</tt></td>
+    <td><tt>@logsdir@</tt></td>
+    <td>Log directory in hierarchical mode</td>
+  </tr>
+</table>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Bridging Example</h1>
+
+<p>In this example, the parent project is called <tt>14nmFinFETSentaurus_PltOnly</tt> and the 
+child project is called <tt>DB_tutorial</tt>. This is defined in the command file of the Bridge tool 
+of the <tt>DB_tutorial</tt> project:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/setup/DB_tutorial/bridge_tcl.cmd" startExpr="#noexec" lines=4 -->
+<pre>
+#noexec
+set Parent &quot;../14nmFinFETSentaurus_PltOnly&quot;
+set ptools &quot;sprocess IdVg IdVd CV&quot;
+
+</pre>
+<!-- grep end -->
+
+<p>The parameters from the <tt>sprocess</tt>, <tt>IdVg</tt>, <tt>IdVd</tt>, and <tt>CV</tt> tool instances 
+in the parent project are transferred to the child project. Figure&nbsp;4 shows the child project input 
+file, with the parameters from different tool instances of the parent project highlighted.</p>
+
+<p><a href="images/bridge_childproj.png"><img src="images/bridge_childproj.png" width="570" 
+alt="Example child project" /></a></p>
+
+<p class="caption">Figure 4. Example child project with the parameters related to each tool in the 
+parent project highlighted. (Click image for full-size view.)</p>
+
+<p>Examples of the usage of preprocessor variables specific to the Bridge tool can be found in the 
+tool instance <tt>UploadData</tt>, which is shown in the <tt>DB_tutorial</tt> project. This example 
+utilizes the output of Sentaurus Device simulations from the parent project in traditional project 
+organization and uploads the output to the TCAD to SPICE database for use in later SPICE model fitting.</p>
+
+<p>In the following code example, the paths to the <tt>IdVg</tt> and <tt>IdVd</tt> tool instance outputs 
+are constructed using the <tt>@ppwd@</tt> and <tt>@pnode|TOOL@</tt> Sentaurus Workbench variables:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/setup/DB_tutorial/UploadData_eng.py" startExpr="*upload_data_iv*" lines=5 -->
+<pre>
+upload_data_iv = [&quot;@ppwd@/IdVg_0_n@pnode|IdVg@_des.plt&quot;,
+                  &quot;@ppwd@/IdVg_1_n@pnode|IdVg@_des.plt&quot;,
+                  &quot;@ppwd@/IdVd_0_n@pnode|IdVd@_des.plt&quot;,
+                  &quot;@ppwd@/IdVd_1_n@pnode|IdVd@_des.plt&quot;,
+                  &quot;@ppwd@/IdVd_2_n@pnode|IdVd@_des.plt&quot;]
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command file for the Bridge tool instance 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/setup/DB_tutorial/bridge_tcl.cmd">
+bridge_tcl.cmd</a>.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>1.4 Mapping</h1>
+
+<p>While the bridging capability allows you to link Sentaurus Workbench projects, there is no 
+inherent capability to link precreated projects and to ensure that parameter definitions are 
+consistent between them.</p>
+
+<p>In the specific example of TCAD to SPICE flows, the core of parent and child projects is created 
+in isolation, and it is important to be able to reuse child projects with different parent projects. 
+In Figure&nbsp;5, three different parent projects are considered, which could represent different 
+technology generations or flavors, with some parameterization where the parameter or variable labels 
+differ. Instead of restructuring the child project for each change in the parent project, you use the 
+parameter <em>mapping</em> capabilities of the Bridge tool to link the parent project parameters to 
+appropriate child project parameters.</p>
+
+<p><a href="images/bridge_map.png"><img src="images/bridge_map.png" width="570" 
+alt="Mapping multiple projects to one child project" /></a></p>
+
+<p class="caption">Figure 5. Mapping with multiple different input projects but one child project. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>1.5 Mapping Example</h1>
+
+<p>In the <tt>Mapping</tt> tool instance of the <tt>DB_tutorial</tt> project, you see a practical 
+example of this mapping capability. Here, the translation between parameters is achieved through 
+the creation of Sentaurus Workbench variables required by the child project. This example uses 
+a simple Python mapping function, which is implemented in the SWB Python environment. The 
+syntax is shown here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/setup/DB_tutorial/Mapping_eng.py" startExpr="*par_mapping(cval=*lgate*" lines=1 -->
+<pre>
+par_mapping(cval=&quot;lgate&quot;, pval={&quot;L&quot;:&quot;@L@&quot;}, fac=1e-6) # convert to meters
+</pre>
+<!-- grep end -->
+
+<p>where:</p>
+
+<ul>
+<li><tt>cval</tt> is the child project label.</li>
+<li><tt>pval</tt> is the parent project label and value.</li>
+<li><tt>fac</tt> is a scaling factor, which can be applied during mapping. In this case, you map from 
+<tt>um</tt> to <tt>m</tt> as this is the required unit in SPICE simulation.</li>
+</ul>
+
+<p>The <em>mapped</em> variables appear at the end of the Sentaurus Workbench project, as typical 
+Sentaurus Workbench variables. This process is illustrated in Figure&nbsp;6.</p>
+
+<p><a href="images/bridge_mappedpara.png"><img src="images/bridge_mappedpara.png" width="570" 
+alt="Mapping parameters" /></a></p>
+
+<p class="caption">Figure 6. A &quot;bridged&quot; parameter before and after mapping. 
+(Click image for full-size view.)</p>
+
+<p>The <tt>Mapping</tt> tool instance can be treated as a list of required input parameters or 
+information for the correct operation of the child project. In the <tt>DB_tutorial</tt> project, 
+you have the requirement that the following mapping parameters exist in the parent project.</p>
+
+<table>
+ <tr>
+ <th>Mapped variable</th>
+ <th>Parent parameter</th>
+ <th>Description</th>
+ </tr>
+
+<tr>
+<td><tt>Type</tt></td>
+<td><tt>Type</tt></td>
+<td>Device type, either <tt>&quot;nMOS&quot;</tt> or <tt>&quot;pMOS&quot;</tt>. In this case, the mapping has no effect because the parameter name matches.</td>
+</tr>
+
+<tr>
+<td><tt>workfn</tt></td>
+<td><tt>WF</tt></td>
+<td>Workfunction. Used as the initial value of the <tt>PHIG</tt> parameter of the SPICE model.</td>
+</tr>
+
+<tr>
+<td><tt>drain_con</tt></td>
+<td></td>
+<td>Name of the drain terminal in the I&ndash;V simulation, used throughout the flow.</td>
+</tr>
+
+<tr>
+<td><tt>gate_con</tt></td>
+<td></td>
+<td>Name of the gate terminal in the I&ndash;V simulation, used throughout the flow.</td>
+</tr>
+
+<tr>
+<td><tt>source_con</tt></td>
+<td></td>
+<td>Name of the source terminal in the I&ndash;V simulation, used throughout the flow.</td>
+</tr>
+
+<tr>
+<td><tt>bulk_con</tt></td>
+<td></td>
+<td>Name of the substrate terminal in the I&ndash;V simulation, used throughout the flow.</td>
+</tr>
+
+<tr>
+<td><tt>acdrain_con</tt></td>
+<td></td>
+<td>Name of the drain terminal in the C&ndash;V simulation, used throughout the flow.</td>
+</tr>
+
+<tr>
+<td><tt>acgate_con</tt></td>
+<td></td>
+<td>Name of the gate terminal in the C&ndash;V simulation, used throughout the flow.</td>
+</tr>
+
+<tr>
+<td><tt>acsource_con</tt></td>
+<td></td>
+<td>Name of the source terminal in the C&ndash;V simulation, used throughout the flow.</td>
+</tr>
+
+<tr>
+<td><tt>acbulk_con</tt></td>
+<td></td>
+<td>Name of the substrate terminal in the C&ndash;V simulation, used throughout the flow.</td>
+</tr>
+
+<tr>
+<td><tt>Vdd_nom</tt></td>
+<td><tt>Vdd</tt></td>
+<td>Nominal supply voltage, V<sub>dd</sub> for high-drain I<sub>d</sub>&ndash;V<sub>g</sub>.</td>
+</tr>
+
+<tr>
+<td><tt>Vdd_lin</tt></td>
+<td><tt>Vdd_Lin</tt></td>
+<td>V<sub>dd</sub> for low-drain I<sub>d</sub>&ndash;V<sub>g</sub>.</td>
+</tr>
+<tr>
+<td><tt>temp</tt></td>
+<td></td>
+<td>Temperature (in kelvin) of TCAD simulation. Used for temperature of SPICE simulation.</td>
+</tr>
+
+<tr>
+<td><tt>lgate</tt></td>
+<td><tt>L</tt></td>
+<td>Gate length; required SPICE model instance parameter.</td>
+</tr>
+
+<tr>
+<td><tt>hfin</tt></td>
+<td><tt>H</tt></td>
+<td>Fin height; key SPICE model parameter.</td>
+</tr>
+
+<tr>
+<td><tt>tfin</tt></td>
+<td><tt>W</tt></td>
+<td>Fin thickness; key SPICE model parameter.</td>
+</tr>
+
+<tr>
+<td><tt>afin</tt></td>
+<td><tt>a_fin</tt></td>
+<td>(Optional) Specific split parameter for this parent project.</td>
+</tr>
+
+<tr>
+<td><tt>tspace</tt></td>
+<td><tt>t_spacer</tt></td>
+<td>(Optional) Specific split parameter for this parent project.</td>
+</tr>
+
+<tr>
+<td><tt>rsc</tt></td>
+<td><tt>rcx</tt></td>
+<td>Contact resistance parameter for source. Used to define the resistance components of the SPICE model subcircuit.</td>
+</tr>
+
+<tr>
+<td><tt>rdc</tt></td>
+<td><tt>rcx</tt></td>
+<td>Contact resistance parameter for drain. Used to define the resistance components of the SPICE model subcircuit.</td>
+</tr>
+</table>
+
+<p>Click to view the mapping Python file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/setup/DB_tutorial/Mapping_eng.py">
+Mapping_eng.py</a>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>1.6 Conclusions</h1>
+
+<p>This tutorial has described key features of Sentaurus Workbench <em>bridging</em> between projects 
+(creating a one-way parent-to-child link) and parameter <em>mapping</em> in TCAD to SPICE flows.</p>
+
+<p>Bridging creates a one-way link between a source Sentaurus Workbench project (<em>parent project</em>) 
+and a target project (<em>child project</em>), which allows the following:</p>
+
+<ul>
+<li>Re-creating the same set of splits from the parent project in the child project</li>
+<li>Permitting the child project to access any variable or parameter in the parent project</li>
+<li>Permitting the child project to refer to any node in the parent project</li>
+</ul>
+
+<p>Mapping assigns a set of variables used in the parent project (that might differ from project to project) 
+to a predefined and fixed set of variable names in the child project. This facilitates the reuse of child 
+projects with different versions of the parent project by focusing all the required modifications to variable 
+names in a single tool instance (<tt>Mapping</tt>) instead of across multiple tool instances.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_02.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

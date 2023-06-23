@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Mesh 6. Mesh Quality Checking</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_05.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_07.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Mesh<br />6. Mesh Quality Checking</h1>
+
+<p>
+ <a href="#1">6.1 QualityReport Section</a><br />
+ <a href="#2">6.2 Mesh Quality Report</a><br />
+ <a href="#3">6.3 Mesh Quality Criteria Limits</a><br />
+ <a href="#4">6.4 Recommended Settings for Mesh Quality</a><br />
+ <a href="#5">6.5 Additional Checks for Mesh Quality</a><br />
+ <a href="#6">6.6 Checking Mesh Quality Within a Simulation Flow</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To describe how to check the quality criteria of meshes produced by Sentaurus Mesh.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>6.1 QualityReport Section</h1>
+
+<p>For device simulations, especially for breakdown calculations, having high-quality mesh 
+elements is important to avoid problems such as premature breakdown or convergence. To 
+determine the mesh quality, Sentaurus Mesh analyzes the generated mesh and produces a report 
+that shows the mesh quality criteria. In addition, by specifying limits of acceptable mesh 
+quality, you can instruct Sentaurus Mesh to stop with a failure if some mesh quality criteria 
+are not fulfilled such that subsequent device simulations do not start.</p>
+
+<p>You use the <tt>QualityReport</tt> section of the command file to check mesh quality:</p>
+
+<pre>
+QualityReport {
+    Global
+    Material = {stringList}
+    Region = {stringList}
+    {
+        limitMaxConnectivity = integer
+	limitMaxNonDelaunay = float
+	limitMinAngle = float
+	limitMinEdgeLength = float
+	limitMinVolume = float
+    }
+}
+</pre>
+
+<p>Sentaurus Mesh behaves differently depending on whether any limits are specified in the 
+<tt>QualityReport</tt> section:</p>
+
+<ul>
+<li>If the <tt>QualityReport</tt> section is present but no limits are specified, 
+Sentaurus Mesh produces only a mesh quality report and exits as usual.</li>
+<li>If any limits are specified, Sentaurus Mesh checks whether the resulting mesh satisfies 
+the limits and exits with an error code if it does not. In such a case, fields related to 
+mesh quality are also saved to a TDR file to be able to find where the mesh quality criteria 
+are not fulfilled. </li>
+</ul>
+
+<p>The <tt>QualityReport</tt> section is effective only for 3D meshes and is not used for 
+2D meshes.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>6.2 Mesh Quality Report</h1>
+
+<p>The first three entries of the <tt>QualityReport</tt> section determine where the mesh 
+quality should be analyzed:</p>
+
+<ul>
+<li><tt>Global</tt>: If specified, mesh quality is evaluated on the entire mesh.</li>
+<li><tt>Material</tt>: If specified, mesh quality is evaluated on the list of materials only.</li>
+<li><tt>Region</tt>: If specified, mesh quality is evaluated on the list of regions only.</li>
+</ul>
+
+<p>Even when no limits are used, Sentaurus Mesh prints a quality report to the log file when 
+the <tt>QualityReport</tt> section is specified:</p>
+
+<pre>
+================================= QualityReport ===============================
+===============================================================================
+Material = { Silicon }
+  limitMaxNonDelaunay = 100
+  limitMinAngle = 0
+  limitMinVolume = 0
+  limitMinEdgeLength = 0
+  limitMaxConnectivity = 0
+================================= Material Silicon   ==========================
+Number of non-Delaunay elements: 56 (0.00067% of total)
+Smallest angle (BoxMethod definition): 1.1 degrees at (1.1938;0.628408;1.41414)
+Smallest volume: 3.7e-12 um3 at (0.00055969;0.0168267;0.139651)
+Shortest edge: 0.00015 um at (0.0609662;0.0786425;0.00953776)
+Max Connectivity: 56 at (1.2899;0.256564;1.31473)
+===============================================================================
+</pre>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>6.3 Mesh Quality Criteria Limits</h1>
+
+<p>Optionally, you can specify limits for mesh quality criteria, such that Sentaurus Mesh 
+exits if these are not met. The following default limits (in parentheses) are set so that 
+they are met for all meshes:</p>
+
+<ul>
+<li><tt>limitMaxConnectivity</tt> (0) specifies the maximum number of elements that can share 
+any vertex. If this limit is exceeded, Sentaurus Mesh saves the <tt>ElementsPerVertex</tt> 
+field variable in the output mesh file. The default value of 0 means this parameter has no effect.</li>
+
+<li><tt>limitMaxNonDelaunay</tt> (100.0) specifies the maximum percentage of all elements 
+that can be non-Delaunay elements. If this limit is exceeded, Sentaurus Mesh saves the 
+<tt>DelaunayInsphere3D</tt> field variable in the output mesh file.</li>
+
+<li><tt>limitMinAngle</tt> (0.0) specifies the minimum angle (in degrees), defined using the 
+box method, of any element. If this limit is exceeded, Sentaurus Mesh saves the <tt>AngleElements</tt> 
+field variable in the output mesh file. See the <cite>Utilities User Guide</cite>, 
+&quot;AngleElements&quot; section, for a description of this field.</li>
+
+<li><tt>limitMinEdgeLength</tt> (0.0) specifies the minimum edge length (in &mu;m) of any element. 
+If this limit is exceeded, Sentaurus Mesh saves the <tt>ShortestEdge</tt> field variable in 
+the output mesh file.</li>
+
+<li><tt>limitMinVolume</tt> (0.0) specifies the minimum volume (in &mu;m<sup>3</sup>) 
+of any element. If this limit is exceeded, Sentaurus Mesh saves the <tt>ElementVolume</tt> field 
+variable in the output mesh file.</li>
+</ul>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>6.4 Recommended Settings for Mesh Quality</h1>
+
+<p>To achieve meshes suitable for device simulations, in general, and breakdown simulations, in 
+particular, it is recommended to use the following limits in the <tt>QualityReport</tt> section:</p>
+
+<ul>
+<li><tt>limitMaxConnectivity=200</tt> limits how many elements can meet at a vertex. It must 
+be used in connection with <tt>Delaunizer {maxConnectivity=150}</tt>. In general, the limit 
+specified must be slightly larger than the value of <tt>maxConnectivity</tt>.</li>
+
+<li><tt>limitMaxNonDelaunay=0.1</tt> ensures that the mesh contains very few (less than 0.1%) 
+non-Delaunay elements. It must be used in connection with <tt>Delaunizer {sliverRemovalAlgorithm=2 
+storeDelaunayWeight=true type=boxmethod}</tt>, which are all default Sentaurus Mesh settings.</li>
+
+<li><tt>limitMinAngle=0.01</tt> ensures that no extremely flat elements are present in the mesh. 
+It is not needed when <tt>AvalFlatElementExclusion</tt> is used in Sentaurus Device.</li>
+
+<li><tt>limitMinEdgeLength=1e-7</tt> rejects meshes with extremely short edges, which typically 
+cause convergence problems.</li>
+
+<li><tt>limitMinVolume=1e-21</tt> rejects meshes with extremely small elements, which cause 
+Sentaurus Device to fail while reading the structure.</li>
+</ul>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>6.5 Additional Checks for Mesh Quality</h1>
+
+<p>It is also important to check the DeltaVolume report in the Sentaurus Device 
+or box-method utility log file, which indicates how big is the difference between 
+the real physical volume and the volume estimated by the box discretization 
+method for each device region:</p>
+
+<pre>
+Region      Volume [um3]        BoxMethodVolume [um3]   DeltaVolume
+--------------------------------------------------------------------
+Poly        4.990000000000e-03  4.990000000000e-03      0.000000 %
+OxideP      9.500000000000e-06  9.500000000000e-06      0.000000 %
+Oxide       1.000000000000e-06  1.000000000000e-06      0.000000 %
+OxideC      9.500000000000e-06  9.500000000000e-06      0.000000 %
+Channel     4.990000000000e-03  4.990000000000e-03      0.000000 %
+Total       1.000000000000e-02  1.000000000000e-02      0.000000 %
+</pre>
+
+<p>For the active semiconductor region, the delta volume must be very close to
+zero, that is, less than 1e-4%. Otherwise, the mesh is non-Delaunay and should
+not be used for device simulations.</p>
+
+<p>In addition, the maximum aspect ratio of the mesh element (the ratio of
+element edge sizes in different directions), in three dimensions, usually must
+be in the range of 10&ndash;20 for elements in the active area of the device. If
+the element aspect ratio is too high, Sentaurus Device sometimes has convergence
+difficulties.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>6.6 Checking Mesh Quality Within a Simulation Flow</h1>
+
+<p>In many cases, you want to check the mesh quality within a simulation flow. 
+You might have, for example, a remeshing step for device simulation at the end 
+of the process simulation. For a DoE, the mesh quality can differ considerably 
+for different experiments. In certain situations, also the node count can be 
+higher than expected. To prevent that the device simulation starts in these 
+unwanted situations, a mesh check can be performed by introducing a Python tool 
+instance that calls the box method utility and analyzes and prints the results. 
+This Python tool instance is introduced before the device simulation instance.</p>
+
+<p>The mesh check returns an error if one of the specified mesh quality criteria 
+is not met. The next Sentaurus Device instance, in which a dependence on the 
+successful execution of the mesh quality check is defined (by using 
+<tt>#setdep @mq@</tt>), will start if all mesh quality criteria are met.</p>
+
+<p>An example of such a mesh quality check is given in the project 
+<tt>Applications_Library/GettingStarted/snmesh/MeshQuality</tt>. First, Sentaurus 
+Process reads a given structure, adds contacts, and creates a new mesh. Mesh quality 
+criteria are defined in the Python command file <tt>mq_pyt.py</tt>.</p>  
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/MeshQuality/mq_pyt.py">
+mq_pyt.py</a>.</p>
+
+<p>You need to provide limits for the mesh quality criteria in the Python command 
+file. The criteria in the example are chosen for breakdown voltage simulations for 
+power devices:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/MeshQuality/mq_pyt.py" startExpr="limit_nvert*" endExpr="limit_maxlevel*" -->
+<pre>
+limit_nvert=5e5
+limit_deltavol=1e-4
+limit_nondel=1
+limit_minedge=1e-6
+limit_minangle=1e-2
+limit_minvolume=1e-18
+limit_maxconnect=200
+limit_maxlevel=0
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/MeshQuality/mq_pyt.py" startExpr="SiRegions*" lines=1 -->
+<pre>
+SiRegions = ['Silicon_1']
+</pre>
+<!-- grep end -->
+
+<p>Here is a summary of the criteria (see also <a href="#4">
+Section&nbsp;6.4 Recommended Settings for Mesh Quality</a>):</p>
+
+<ul>
+<li><tt>limit_nvert</tt> is the node count limit. If the mesh has more nodes, the check fails.</li>
+<li><tt>limit_deltavol</tt> is the upper limit for delta volume (see <a href="#5">
+Section&nbsp;6.5 Additional Checks for Mesh Quality</a>).</li>
+<li><tt>limit_nondel</tt> is the upper limit for the non-Delaunay element count. 
+An ideal Delaunay mesh would have zero non-Delaunay elements, but a small number of 
+non-Delaunay elements does not affect the results.</li>
+<li><tt>limit_minedge</tt> is the lower limit for small edges (in &mu;m). Sentaurus 
+Device cannot handle elements with an edge length smaller than 1e-7&mu;m.</li>
+<li><tt>limit_minangle</tt> is the lower limit for the element flatness angle. 
+Flat elements cause convergence problems.</li>
+<li><tt>limit_minvolume</tt> is the lower limit for element volume (in &mu;m<sup>3</sup>). 
+Sentaurus Device cannot handle elements smaller than 1e-21&mu;m<sup>3</sup> in volume.</li>
+<li><tt>limit_maxconnect</tt> is the upper limit for how many nodes each node can be 
+connected to. Values larger than 1000 will cause convergence failures.</li>
+<li><tt>limit_maxlevel</tt> is the number of offsetting layers required. This is only 
+relevant when an offsetting mesh is used.</li>
+<li><tt>SiRegions</tt> specifies the region names of the semiconductor regions that 
+need to pass the check. Multiple regions can be specified, separated by commas.</li>
+</ul>
+
+<p>If any of the criteria is set to zero, the check is omitted. The script assumes 
+that, if the mesh was created by Sentaurus Process, the info level for meshing was 
+set to 1 or higher. For info level 0, the node connectivity is not printed to the 
+Sentaurus Process log file.</p> 
+
+<p>The values for all mesh quality criteria will be listed in the Sentaurus Workbench 
+table. If one or more meshing criteria are not met, the Python tool instance will keep 
+the <tt>n@node@_mqc.tdr</tt> file, which can be loaded into Sentaurus Visual. The 
+file contains the mesh criteria as fields, so that you can find out where the mesh has 
+problems.</p>
+  
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_05.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_07.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 8. Extract and Visualize Geometric and PMC Data</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_7.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_9.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />8. Extract and Visualize Geometric and PMC Data</h1>
+
+<p>
+ <a href="#1">8.1 Overview</a><br />
+ <a href="#2">8.2 Create Extraction Boxes for Runtime PMC Data</a><br />
+ <a href="#3">8.3 Runtime Extraction of Surface-Mapped PMC Information</a><br />
+ <a href="#4">8.4 Postprocess Shape Analysis Extractions</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To extract geometric and surface reaction data from a PMC simulation.</li>
+ <li>To visualize the extracted quantities.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>8.1 Overview</h1>
+
+<p>This section is dedicated to the extraction of crucial information (also called 
+<em>metrology</em> in the text) from Sentaurus Topography 3D PMC simulations. This 
+information can be extracted during the PMC simulation runtime or as postprocessing 
+steps after the simulation is finished.</p>
+
+<p>You can use Sentaurus Visual for visualization and further processing of the 
+extracted data. A Sentaurus Workbench project (see Figure&nbsp;1) is available with 
+a complete example of an ion-assisted etch simulation (the same as in 
+<a href="./stopo_6.html#3">Section&nbsp;6.3 Example: PMC Ion-Assisted Etching</a>) and 
+the associated metrology steps along with the Sentaurus Visual tool instances to facilitate 
+visualization.</p>
+
+<p><a href="images/tp_pmc_metrology_swb.png"><img src="images/tp_pmc_metrology_swb.png" 
+width="570" alt="Sentaurus Workbench PMC metrology layout" /></a></p>
+
+<p class="caption">Figure 1. PMC metrology Sentaurus Workbench project in vertical layout. 
+(Click image for full-size view.)</p>
+
+<p>The first Sentaurus Topography 3D tool instance performs an ion-assisted etch 
+(as in <a href="./stopo_6.html#3">Section&nbsp;6.3 Example: PMC Ion-Assisted Etching</a>) 
+and executes the runtime extractions to obtain critical PMC data. The second Sentaurus 
+Topography 3D tool instance reads the <tt>.pmc</tt> restart file saved in the first 
+tool instance and performs the shape analysis extraction to obtain the geometric 
+characteristics of the etched feature.</p>
+
+<p>Three Sentaurus Visual tool instances are included in the project to demonstrate 
+how to load and visualize the CSV and TDR files generated in the first two Sentaurus 
+Topography 3D  tool instances. Comments are added to help you distinguish the functionality 
+of each tool.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the 
+directory <tt>Applications_Library/GettingStarted/sptopo3d/PMC_Metrology</tt>.</p>
+
+<p>If you are not familiar with Sentaurus Workbench projects, then the preprocessed 
+script files <tt>pp_pmc_ion_assisted_etch_t3d.cmd</tt> and 
+<tt>pp_post_process_extraction_t3d.cmd</tt> can be found in this directory.</p>
+
+<p>To download the preprocessed script files, right-click the following links and choose 
+<strong>Save Target As</strong>:</p>
+
+<ul>
+<li><a href="../../Applications_Library/GettingStarted/sptopo3d/PMC_Metrology/pp_pmc_ion_assisted_etch_t3d.cmd">pp_pmc_ion_assisted_etch_t3d.cmd</a></li>
+<li><a href="../../Applications_Library/GettingStarted/sptopo3d/PMC_Metrology/pp_post_process_extraction_t3d.cmd">pp_post_process_extraction_t3d.cmd</a></li>
+</ul>
+
+<p>To execute the PMC simulation file in Sentaurus Topography 3D on the command line, 
+enter:</p>
+
+<pre>
+&gt; sptopo3d pp_pmc_ion_assisted_etch_t3d.cmd
+</pre>
+
+<p>To run the PMC metrology file in Sentaurus Topography 3D on the command line, 
+enter:</p>
+
+<pre>
+&gt; sptopo3d pp_post_process_extraction.cmd
+</pre>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>8.2 Create Extraction Boxes for Runtime PMC Data</h1>
+
+<p>You can extract information about the simulated structures during runtime by 
+using the command <tt>define_extraction</tt>. This information covers the geometric 
+characteristics of the simulated structure such as dimensions, material thicknesses 
+(see also the example in <a href="./stopo_6.html#3">
+Section&nbsp;6.3 Example: PMC Ion-Assisted Etching</a>), areas, volumes, feature 
+profiles as well as the events occurring on the surface, for example, the impact 
+of gas species, the reactions, or the reemission of particles.</p>
+
+<p>In PMC simulations, you can select specific parts of the simulation domain 
+using bounding boxes in order to extract the PMC data for the reactions occurring 
+in the part of the PMC simulation domain contained within the boxes. It is also 
+possible to perform an extraction on an axis-aligned 2D plane (normal to the x-, 
+y-, or z-axis) by specifying the keywords <tt>axis</tt> and <tt>position</tt> in 
+the command <tt>define_extraction</tt>. For example:</p>
+
+<pre>
+define_extraction type=pmc_data name=pmc_stats \
+  quantities= {reaction_executions sputtered_volume sputter_yield} \
+  axis=x position=0.1 reactions= {R1 R2 R3} \
+  csv_file= pmc_data_box_2D_cut.csv
+</pre>
+
+<p>The extraction can be executed at user-defined time intervals during the PMC 
+simulation defined with the keyword <tt>extraction_interval</tt> in the command 
+<tt>etch</tt>. Multiple extraction boxes can be defined and grouped under the same 
+name using the command <tt>define_extrusion</tt> and the keyword <tt>name</tt>.</p> 
+
+<p>Various quantities regarding the gas species, the surface reactions, and their 
+products can be included in the extracted data:</p>
+
+<ul>
+<li><tt>deposited_volume</tt>: Volume of deposited species</li>
+<li><tt>reaction_executions</tt>: Number of reaction executions</li>
+<li><tt>species_volume</tt>: Total species volume in the PMC simulation domain</li>
+<li><tt>sputter_yield</tt>: Effective sputter yield for various gas species and 
+surface materials (for the reactions to which this applies, that is, sputtering reactions)</li>
+<li><tt>sputtered_volume</tt>: Total volume of sputtered species</li>
+<li><tt>volumetric_source_particles</tt>: Density of emission points of volumetric source species 
+in the extraction box</li>
+</ul>
+
+<p>For models with many surface reactions, only a small set of reactions might 
+be of interest, and they can be defined using a list with the keyword 
+<tt>reactions</tt> or by specifying reaction name patterns with glob syntax by using 
+the keyword <tt>expression_pattern</tt>. For example:</p>
+
+<pre>expression_pattern=&quot;*SiFx*&quot;</pre>
+
+<p>The results of the PMC data extraction can be saved in a comma-separated file 
+(with the <tt>.csv</tt> file extension) and visualized in Sentaurus Visual or in a 
+spreadsheet application. In the Sentaurus Workbench project <tt>PMC_Metrology</tt>, 
+two extraction boxes are defined (see Figure&nbsp;2) with a <tt>for</tt> loop. 
+The first extraction box covers the lower half of the structure and the second 
+extraction box covers the upper half of the structure. In addition, an extraction 
+definition on a 2D plane is added in the same group named <tt>pmc_stats</tt>.</p>
+
+<p><a href="images/tp_pmc_data_extraction_boxes.png"><img src="images/tp_pmc_data_extraction_boxes.png" 
+width="240" alt="Extraction boxes in structure" /></a></p>
+
+<p class="caption">Figure 2. Extraction boxes location in the structure: Box 1 
+covers the lower half  of the hole and Box 2 covers the upper half of the hole. 
+(Click image for full-size view.)</p>
+
+<p>The commands for the defined extractions are given here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Metrology/pmc_ion_assisted_etch_t3d.cmd" startExpr="##start - Data Analysis Boxes" endExpr="##end - Data Analysis Boxes" excludelines="##*" -->
+<pre>
+set number_of_boxes 2
+for {set i 1} {$i &lt;= $number_of_boxes} {incr i} {
+    set step [expr $bbox_z_length/$number_of_boxes]
+
+    ## Define extraction for PMC reactions' statistics for box No. $i 
+    define_extraction type=pmc_data name=pmc_stats \
+       quantities= $quantities  \
+       reactions= {sput_Si refl_Si sput_SiFx refl_SiFx adsorb_F_Si etch_F_Si} \
+       csv_file=n@node@_pmc_stats_box_${i}.csv \
+       point_min= &quot;$bbox_xmin $bbox_ymin [expr $bbox_zmin+($i-1)*$step]&quot; \
+       point_max= &quot;$bbox_xmax $bbox_ymax [expr $bbox_zmin+($i)*$step]&quot;
+}
+
+define_extraction type=pmc_data name=pmc_stats \
+   quantities= $quantities axis=x position=[lindex $bbox_xmin 0] \
+   reactions= {sput_Si refl_Si sput_SiFx refl_SiFx adsorb_F_Si etch_F_Si} \
+   csv_file=n@node@_pmc_stats_box_2D_cut.csv 
+</pre>
+<!-- grep end -->
+
+<p>The results of the extractions are saved in the files named 
+<tt>n@node@_pmc_stats_box_1.csv</tt> (for Box&nbsp;1), <tt>csv_file=n@node@_pmc_stats_box_2.csv</tt> 
+(for Box&nbsp;2), and <tt>n@node@_pmc_stats_box_2D_cut.csv</tt> (for 2D cutplane). 
+At every defined time interval with the keyword <tt>extraction_interval</tt> in the <tt>etch</tt> 
+command, the extracted data is appended to those files as in the following example:</p>
+ 
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Metrology/pmc_ion_assisted_etch_t3d.cmd" startExpr="##start - run pmc" endExpr="##end - run pmc" excludelines="##*" -->
+<pre>
+etch machine=rie_machine spacing=0.002 time=1000.0&lt;s&gt; method=pmc \
+   extraction=pmc_stats extraction_interval= 250.0&lt;s&gt;\
+   plot_type={surface} plot_interval=250.0&lt;s&gt; file=n@node@_surface.tdr
+</pre>
+<!-- grep end -->
+
+<p>The extracted data can be visualized with Sentaurus Visual as demonstrated in the 
+<tt>svisual1</tt> tool instance as shown in Figure&nbsp;3.</p>
+
+<p><a href="images/tp_box_extractions.png"><img src="images/tp_box_extractions.png" 
+width="570" alt="SiFx surface coverage plot with time" /></a></p>
+
+<p class="caption">Figure 3. Screen capture of Sentaurus Visual showing the 
+available data stored in the .csv files extracted at runtime of the ion-assisted 
+etch PMC simulation. (Click image for full-size view.)</p>
+
+<p>In Figure 3, the reaction executions for the sputtering reaction of SiFx are plotted 
+as a function of time. In the upper part of the structure, only the photoresist mask is 
+present, so there is no silicon or SiFx species and the executions are zero (green line). 
+In the lower part (red line &ndash; Box 1) of the structure, sputtering is increased when 
+Ar<sup>+</sup> ions are introduced (see Figure 5 in <a href="./stopo_6.html#3_timedep_distr">
+Section&nbsp;6.3.1 PMC Time-Dependent Species Distributions</a>). The number of executions 
+flattens out when the flux of XeF<sub>2</sub> is switched off and only the remaining 
+SiFx is sputtered from the surface by Ar<sup>+</sup> ions without any new SiFx being 
+created.</p>
+
+<p>More data about the reaction executions from the ion-assisted etching model can be 
+visualized as a function of time as shown in Figure&nbsp;3.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>8.3 Runtime Extraction of Surface-Mapped PMC Information</h1>
+
+<p>In addition to the extraction of volume-averaged PMC data with boxes or 2D planes, 
+you can extract PMC information mapped on to the exposed surface at user-defined intervals 
+or specific time points during the simulation. You can do so by using the keywords 
+<tt>plot_interval</tt> (or <tt>plot_times</tt> for a list of specific times) and 
+<tt>plot_type</tt>.</p>
+
+<p>The following supported plot types for PMC simulations are saved in a TDR file defined by 
+the <tt>file</tt> parameter:</p>
+
+<ul>
+<li><tt>gc</tt>: GC type of TDR file.</li>
+<li><tt>surface</tt>: TDR file of the exposed surface at each time interval on which 
+PMC information is mapped (reactions, fluxes, reemissions, reflections, and so on). 
+The extracted surfaces are appended in the same TDR file (defined by the parameter 
+<tt>file</tt> in the <tt>etch</tt> command) at each time interval.</li>
+<li><tt>vbe</tt>: Boundary representation saved in the TDR file directly extracted 
+from the PMC domain.</li>
+<li><tt>volume_fractions</tt>: Grid-based species volume fractions saved in the TDR file.</li>
+</ul>
+
+<p>An example of a surface plot saved during ion-assisted etching is given in the 
+Sentaurus Workbench project <tt>PMC_Metrology</tt>, and it is visualized with the 
+Sentaurus Visual tool instance named <tt>svisual2</tt> (see Figure&nbsp;4). The 
+definition of <tt>plot_intervals</tt> is performed directly in the <tt>etch</tt> 
+command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Metrology/pmc_ion_assisted_etch_t3d.cmd" startExpr="##start - run pmc" endExpr="##end - run pmc" excludelines="##*" -->
+<pre>
+etch machine=rie_machine spacing=0.002 time=1000.0&lt;s&gt; method=pmc \
+   extraction=pmc_stats extraction_interval= 250.0&lt;s&gt;\
+   plot_type={surface} plot_interval=250.0&lt;s&gt; file=n@node@_surface.tdr
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_surface_plot_interval.png"><img src="images/tp_surface_plot_interval.png" 
+width="570" alt="Surface plot of the flux ratio of Ar+/XeF2 species" /></a></p>
+
+<p class="caption">Figure 4. Surface mapping of flux ratio Ar<sup>+</sup>/XeF<sub>2</sub>. 
+In the beginning of the process, the Ar<sup>+</sup> flux is zero. Later both fluxes, 
+Ar<sup>+</sup> and XeF<sub>2</sub>, are switched on and the ratio increases on the 
+horizontal surfaces but is much less on the sidewalls due to the high directionality 
+of the Ar<sup>+</sup> ions. At the end of the etching cycle, the flux of XeF<sub>2</sub> 
+is switched off and the flux ratio Ar<sup>+</sup>/XeF<sub>2</sub> takes its maximum value 
+on all surfaces. Many other fields are available for visualization as shown on the left 
+side of the Sentaurus Visual window. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>8.4 Postprocess Shape Analysis Extractions</h1>
+
+<p>The Sentaurus Topography 3D tool instance labeled <tt>post_process_extraction</tt> 
+loads the PMC restart file from the previous Sentaurus Topography 3D  tool instance 
+and performs a shape analysis of the etched feature in the structure.</p>
+
+<p>To load the PMC restart file, specify the <tt>define_structure</tt> command with 
+the parameter <tt>pmc_file</tt> as follows:</p>
+
+<pre>
+define_structure pmc_file=n@node|pmc_ion_assisted_etch@_result.pmc
+</pre>
+
+<p>The PMC file can only be used to restart the PMC simulation from the point at 
+which it stopped in the previous step after the ion-assisted etching (it cannot 
+be visualized with Sentaurus Visual). After the state of the PMC simulation is 
+reestablished after loading the PMC file, it is possible to continue with another PMC 
+simulation step or to use the <tt>extract</tt> command to extract metrology information. 
+Here, the <tt>extract</tt> command is used as a postprocessing step to perform a shape 
+analysis of the structure, which is a cylindrical hole etched in silicon. The command 
+syntax is the following:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Metrology/post_process_extraction_t3d.cmd" startExpr="##start - Shape Analysis" endExpr="##end - Shape Analysis" excludelines="##*" -->
+<pre>
+extract name=shape_analysis  type=shape_analysis \
+   reference_shape=cylinder_hole max_radius=0.03 \
+   point1=&quot;$bbox_middle_x $bbox_middle_y $bbox_zmin&quot; \
+   point2=&quot;$bbox_middle_x $bbox_middle_y $bbox_zmax&quot; \
+   csv_file=n@node@_shape_analysis.csv output_type={doe csv} smoothing_order=0
+</pre>
+<!-- grep end -->
+
+<p>Two reference shapes can be used depending on the feature geometry: either 
+<tt>cylinder_hole</tt> for structures with cylindrical symmetry or <tt>trench</tt> 
+for structures that have a groove-like shape as a trench. The cylindrical bounding 
+box is specified by two points (<tt>point1</tt> and <tt>point2</tt>) that define 
+the bottom and top of the vertical cylinder axis, and by the radius 
+(<tt>max_radius</tt>) of the cylinder (see Figure&nbsp;5).</p>
+
+<p><a href="images/tp_shape_analysis_cylidrical_hole.png">
+<img src="images/tp_shape_analysis_cylidrical_hole.png" width="400" 
+alt="Cylindrical hole shape analysis" /></a></p>
+
+<p class="caption">Figure 5. Definition of extraction window for shape analysis when 
+<tt>reference_shape=cylinder_hole</tt>. (Click image for full-size view.)</p>
+
+<p>The extracted metrics from the shape analysis can be saved in a CSV file (defined 
+with the parameter <tt>csv_file</tt>), in a TDR file (defined with the parameter 
+<tt>tdr_file</tt>), and also as Sentaurus Workbench variables by setting 
+<tt>output_type={ csv tdr doe }</tt>. The <tt>doe</tt> option generates the variables 
+that are shown automatically at the end of the extraction in the Sentaurus Workbench 
+project (see Figure&nbsp;6).</p>
+
+<p>See the <cite>Sentaurus&trade; Topography 3D User Guide</cite>, Shape Analysis, 
+for detailed explanations of these variables in the tables in that section.</p> 
+
+<p><a href="images/tp_shape_analysis_doe.png"><img src="images/tp_shape_analysis_doe.png" 
+width="570" alt="DOE shape analysis variables" /></a></p>
+
+<p class="caption">Figure 6. Shape analysis extracted metrics exported as Sentaurus 
+Workbench variables. (Click image for full-size view.)</p>
+
+<p>The CSV or TDR files containing the shape analysis information can be loaded 
+in Sentaurus Visual to plot the extracted metrics as a function of depth Z as shown 
+in Figure 7 and Figure 8. The same type of plot is generated by running the node of 
+the Sentaurus Visual labeled <tt>svisual3</tt> in the project <tt>PMC_Metrology</tt>.</p>
+
+<p><a href="images/tp_shape_analysis.png"><img src="images/tp_shape_analysis.png" 
+width="570" alt="Shape analysis of surface coverage of SiFx" /></a></p>
+
+<p class="caption">Figure 7. Plot generated by svisual3 Sentaurus Visual tool 
+instance showing the average surface coverage of species SiFx as a function of 
+depth in the cylindrical hole. The values are zero on the sidewalls of the photoresist 
+mask for Z &gt; 0 and for Z &lt; -0.07 &mu;m in bulk silicon. SiFx coverage on the 
+sidewalls drops with depth as fluorine species have a higher probability (high 
+reactivity) of reacting with silicon at the upper part of the hole and is also very low 
+at the bottom where SiFx is heavily sputtered by Ar<sup>+</sup> ions. A similar plot 
+can be created by using the average radius of the hole, which will correspond to the 
+hole profile (Figure&nbsp;8). (Click image for full-size view.)</p>
+
+<p><a href="images/tp_shape_analysis_avg_radius_plot.png"><img src="images/tp_shape_analysis_avg_radius_plot.png" 
+width="570" alt="Average radius versus depth Z" /></a></p>
+
+<p class="caption">Figure 8. Plot of cylindrical hole average radius as a function 
+of depth Z as extracted by shape analysis. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_7.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_9.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

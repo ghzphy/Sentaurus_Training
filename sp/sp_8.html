@@ -1,0 +1,501 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>    
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 8. Special Focus: Trench Etching</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_7.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_9.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />8. Special Focus: Trench Etching</h1>
+
+<p>
+ <a href="#1">8.1 Overview</a><br />
+ <a href="#2">8.2 Initialization</a><br />
+ <a href="#3">8.3 Growing Pad Oxide</a><br />
+ <a href="#4">8.4 Depositing Nitride Layer</a><br />
+ <a href="#5">8.5 STI Lithography</a><br /> 
+ <a href="#6">8.6 Shallow Trench Etch</a><br />
+ <a href="#7">8.7 Growing Oxide Liner</a><br />
+ <a href="#8">8.8 Depositing and CMP of TEOS</a><br />
+ <a href="#9">8.9 Nitride Strip/Reflect</a><br />
+ <a href="#10">8.10 Polygonal, Trapezoidal, and Fourier Etching</a><br />
+ <a href="#11">8.11 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the most important etching options and techniques
+based on the processing for a shallow trench isolation.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>8.1 Overview</h1>
+
+<p class="note">The files discussed in this section are part of the 
+Sentaurus Workbench project <tt>Fourier</tt>. The complete 
+project can be investigated from within Sentaurus Workbench in the 
+directory <tt>Applications_Library/GettingStarted/sprocess/Fourier</tt>.</p>
+
+<p>This section discusses a process flow for creating a shallow trench isolation (STI). 
+Various etching options are highlighted.</p>
+
+<p>Often, the symmetry of the structure allows for the simulation of only a fraction 
+of the actual structure (typically, one half). This approach is used here &ndash; the 
+creation of half of a shallow trench is simulated. In this case, directional etching 
+is an efficient way to create a trench with a predefined slope of the sides. This 
+option is introduced in the main part of this section.</p>
+
+<p>If it is necessary to simulate the full trench, polygonal or trapezoidal etching can 
+be used. The assignment guides you through these processes.</p>
+
+<p>To present the etching of an STI in the correct context, other processing steps are presented:</p>
+
+<ul>
+  <li>Growing pad oxide</li>
+  <li>Depositing nitride layer</li>
+  <li>STI lithography</li>
+  <li>Shallow trench etch</li>
+  <li>Growing oxide liner</li>
+  <li>Depositing and CMP of TEOS</li>
+  <li>Nitride strip/reflect</li>
+</ul>      
+
+<!--================================================-->
+<a name="2"></a>
+<h1>8.2 Initialization</h1>
+
+<p>The initial grid and simulation domain are defined:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="line*" Lines=9 -->
+<pre>
+line x location= 0.0     spacing= 5.0&lt;nm&gt; tag= bottom
+line x location= 0.5&lt;um&gt; spacing= 50.0&lt;nm&gt;
+line x location= 5.0&lt;um&gt; spacing= 0.5&lt;um&gt; tag= top
+
+line y location= 0.0     spacing= 0.1&lt;um&gt; tag= left
+line y location= 0.5&lt;um&gt; spacing= 0.1&lt;um&gt; tag= right
+
+region Silicon xlo= bottom xhi= top ylo= left yhi= right
+init   concentration= 1.4e+15&lt;cm-3&gt; field= Boron
+</pre>
+<!-- grep end -->
+
+<p>For details, see <a href="sp_3.html#2">Section 3.2 Defining the Initial 2D Grid and Simulation Domain</a>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>8.3 Growing Pad Oxide</h1>
+
+<p>To avoid stresses between the hard nitride mask and the silicon substrate, a padding 
+layer of silicon oxide is created. The pad oxide layer is grown with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="gas_flow*" endExpr="*puts*Thickness*of*PadOx*" -->
+<pre>
+gas_flow clear
+gas_flow name= O2_0.1_N2_10 pressure= 1.0&lt;atm&gt; flowO2= 0.1&lt;l/min&gt; \
+                                             flowN2= 10.0&lt;l/min&gt; 
+gas_flow name= O2           pressure= 1.0&lt;atm&gt; flowO2= 1.0&lt;l/min&gt;
+
+temp_ramp name= PadOxide clear
+temp_ramp name= PadOxide time= (1050.0-700.0)/75&lt;s&gt; \
+    temperature= 700.0&lt;C&gt; ramprate= 75&lt;K/s&gt;  gas.flow= O2_0.1_N2_10
+temp_ramp name= PadOxide time= 1.5&lt;min&gt; \
+    temperature= 1050.0&lt;C&gt;                   gas.flow= O2
+temp_ramp name= PadOxide time= (1050.0-700.0)/20&lt;s&gt; \
+    temperature= 1050.0&lt;C&gt; ramprate= -20&lt;K/s&gt; gas.flow= O2_0.1_N2_10
+
+diffuse temp.ramp= PadOxide
+
+set PadOxThick [MeasureOx Silicon 2 0.0 ]
+puts &quot;Thickness of PadOx is: $PadOxThick um&quot;
+</pre>
+<!-- grep end -->
+
+<p>First, gas-flow records are defined for later use. The <tt>gas_flow clear</tt> command 
+deletes any possible previous definitions of a global gas flow. Two named gas flows are defined. 
+The flow <tt>O2_0.1_N2_10</tt> is mainly inert and is used during the temperature ramps, and the 
+flow <tt>O2</tt> consists of pure oxygen.</p>
+
+<p>A temperature ramp profile called <tt>PadOxide</tt> is defined by first erasing any possible 
+previous definitions with the <tt>clear</tt> option. Then, a ramp-up from 700&deg;C to 1050&deg;C 
+at a rate of 75 K/s is defined. This ramp-up occurs in the previously defined, mostly inert, gas 
+environment. Then, the wafer is held at 1050&deg;C for 1.5 minutes in a pure oxygen environment. 
+The ramp-down to 700&deg;C occurs at a rate of 20 K/s.</p>
+
+<p>The <tt>diffuse</tt> command performs the simulations using the <tt>PadOxide</tt> 
+temperature profile and the respective gas-flow definitions.</p>
+
+<p>The last statement measures the oxide thickness using the helper function <tt>MeasureOx</tt>. 
+The arguments of this helper function are:</p>
+
+<ul>
+<li>The material on which the oxide layer resides</li>
+<li>The dimension of the simulation</li>
+<li>The location of the 1D position at which the oxide layer thickness is to be measured</li>
+</ul>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>8.4 Depositing Nitride Layer</h1>
+
+<p>Due to the thermal liner oxidation, which is performed later, a hard mask must be used 
+for the trench formation. To form this hard mask, a nitride layer is deposited with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="set Nit*" Lines=3 -->
+<pre>
+set NitrideThick 0.1
+deposit Nitride isotropic thickness= $NitrideThick
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="5"></a>
+<h1>8.5 STI Lithography</h1>
+
+<p>The hard mask is patterned in a photolithography step. A mask is set up and a photoresist 
+layer for the shallow trench etch is deposited and patterned with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="set Trench*" Lines=4 -->
+<pre>
+set TrenchLeftCoord   0.44 
+set TrenchRightCoord  0.56
+mask  name= STI segments= {-1.0 $TrenchLeftCoord $TrenchRightCoord 2.0} negative
+photo mask= STI thickness= 0.5
+</pre>
+<!-- grep end -->
+
+<p>Etching and deposition steps are performed using the MGOALS module. The mask 
+<tt>STI</tt> is defined as a segment list (coordinates in &mu;m). The substrate 
+was defined previously to extend from y = 0 to 0.5&nbsp;&mu;m. The <tt>STI</tt> 
+mask extends beyond that and the opening is actually set up for a full STI trench; 
+although, only half the trench is simulated.</p>
+
+<p>A masking photoresist layer of 0.5 &mu;m is deposited using the <tt>photo</tt> 
+command. This command is designed for resist: Deposition occurs in the unmasked 
+area and the region will have a flat top.</p>
+
+<p><img src="images/sp_sti_litho.png" width="317" height="302" alt="STI lithography step" /></p>
+
+<p class="caption">Figure 1. STI lithography step.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>8.6 Shallow Trench Etch</h1>
+
+<p>The shallow trench is etched with a predefined slope on the sidewalls. Sentaurus Process 
+supports directional etching by specifying an etch vector. The example here shows how a Tcl 
+procedure can map the directional etching to angular etching:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="proc etch*" Lines=10 -->
+<pre>
+proc etchAngle { Angle Material Depth } {
+
+  set alpha [expr ${Angle}*atan(1.0)/45.0] ; # Deg-&gt;rad conversion
+  set x1    [expr sin($alpha)] ; # x-comp. of etch directional vector
+  set x2    [expr cos($alpha)] ; # y-comp. of etch directional vector
+  set x3    0                  ; # z-comp. of etch directional vector
+  set etchRate [expr 1.0/sin($alpha)]
+  etch material= $Material time= $Depth type= directional \
+       direction= { $x1 $x2  $x3 } rate= $etchRate
+}
+</pre>
+<!-- grep end -->
+
+<p>The newly defined etching procedure <tt>etchAngle</tt> takes as arguments the 
+slope angle, the material to be etched, and the depth of the etched trench:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="set NitrideA*" Lines=11 -->
+<pre>
+set NitrideAngle 87.0 
+etchAngle  $NitrideAngle  Nitride  $NitrideThick*1.5
+
+struct tdr= n@node@_STI_3
+
+etch Oxide anisotropic thickness= $PadOxThick*1.5
+strip Photoresist
+
+struct tdr=n@node@_STI_4
+
+set TrenchAngle 85.0 
+</pre>
+<!-- grep end -->
+
+<p>The newly defined etching procedure etches the nitride layer with a slope of 87&deg;. 
+Again, a 50% overetch is applied. The oxide layer is etched anisotropically. Then, the photoresist 
+is removed. The nitride is used as a hard mask for the actual trench etch with a slope of 85&deg; 
+up to a depth of 0.2&nbsp;&mu;m.</p>
+
+<p>The last etch step emulates the oxide layer undercut, which typically occurs during the 
+other etching steps.</p>
+
+<p><img src="images/sp_sti_etch.png" width="315" height="293" alt="Etching shallow trench" /></p>
+
+<p class="caption">Figure 2. Etching shallow trench with a predefined slope on the 
+sidewalls.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>8.7 Growing Oxide Liner</h1>
+
+<p>Now, the trench must be filled with oxide. To ensure a high-quality surface with a minimal 
+number of trap states, an oxide liner is grown thermally. Grow an oxide liner in the trench with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="*Liner_Oxide*" startOffset=-2 Lines=5 -->
+<pre>
+gas_flow clear
+gas_flow name= H2O  pressure= 1.0&lt;atm&gt; flowH2O= 1.0&lt;l/min&gt;
+temp_ramp name= Liner_Oxide clear
+temp_ramp name= Liner_Oxide time= 0.25&lt;min&gt; temperature= 1050.0&lt;C&gt; gas.flow= H2O
+diffuse temp.ramp= Liner_Oxide
+</pre>
+<!-- grep end -->
+
+<p><img src="images/sp_sti_liner.png" width="315" height="288" alt="Growing oxide liner" /></p>
+
+<p class="caption">Figure 3. Growing oxide liner to ensure high-quality surface with minimal 
+number of trap states.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>8.8 Depositing and CMP of TEOS</h1>
+
+<p>The trench is filled with oxide and the structure is planarized with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="*TEOS*" startOffset=1 Lines=5 -->
+<pre>
+deposit Oxide isotropic thickness= 0.1
+struct tdr= n@node@_STI_7
+
+etch Oxide   cmp  coord= -0.05
+etch Nitride cmp  coord= -0.05
+</pre>
+<!-- grep end -->
+
+<p>Chemical-mechanical polishing (CMP) is emulated with the <tt>type=cmp</tt> 
+argument of the <tt>etch</tt> command.</p>
+
+<p class="note">The command <tt>etch type=cmp</tt> does not planarize the entire 
+structure, as an actual CMP would. It planarizes the selected material. To obtain 
+a planar structure, the <tt>etch type=cmp</tt> step must be applied to all materials, 
+using <tt>material= {all}</tt>.</p>
+
+<p><img src="images/sp_sti_teos.png" width="314" height="287" 
+alt="Filling trench with oxide and planarizing structure with CMP" /></p>
+
+<p class="caption">Figure 4. Filling trench with oxide and planarizing structure 
+with CMP.</p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>8.9 Nitride Strip/Reflect</h1>
+
+<p>To finalize the full STI structure, remove the hard nitride mask 
+and reflect the structure with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd" startExpr="*Nitride strip*" startOffset=1 Lines=5 -->
+<pre>
+
+strip      Nitride
+transform   reflect right
+
+struct tdr= n@node@_STI_9
+</pre>
+<!-- grep end -->
+
+<p><img src="images/sp_sti_n_anima.gif" width="341" height="337" 
+alt="Animation of STI process flow" /></p>
+
+<p class="caption">Figure 5. Animation of the STI process flow.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>The command file contains all the simulation steps discussed 
+in this section.</p>
+
+<!--================================================-->
+<a name="10"></a>
+<h1>8.10 Polygonal, Trapezoidal, and Fourier Etching</h1>
+
+<p>In the previous example, a symmetric structure was assumed 
+and only half an STI was simulated. This assumption made it possible 
+to use the directional etching capabilities of Sentaurus Process.</p>
+
+<p>Sometimes, however, structures are not symmetric. In this case, 
+polygonal, trapezoidal, or Fourier etching can be used to define the trench.</p>
+
+<!--======================-->
+<h2>8.10.1 Polygonal and Trapezoidal Etching</h2>
+
+<p>To perform polygonal etching, use:</p>
+
+<pre>
+etch material= {Silicon} type= polygon polygon= {<em>x1</em> <em>y1</em>
+                                                 <em>x2</em> <em>y2</em>
+                                                 ...
+                                                 <em>xn</em> <em>yn</em>}
+</pre>
+
+<p>The couples (<em>x1</em>,<em>y1</em>) to (<em>xn</em>,<em>yn</em>) are the coordinates 
+of the polygon. The etching step removes all material inside of the polygon.</p>
+
+<p>To perform trapezoidal etching, use:</p>
+
+<pre>
+etch material= {Silicon} type=trapezoidal thickness=0.2 angle=85
+</pre>
+
+<p>where <tt>thickness</tt> sets the depth of the trench, and <tt>angle</tt> sets the slope 
+of the walls.</p>
+
+<!--======================-->
+<h2>8.10.2 Fourier Etching</h2>
+
+<p>
+In Fourier etching, the etching rate is a function of the angle 
+between the incident etching beam and the normal vector of the 
+surface being etched. The etching rate is computed according to:</p>
+
+<p>\[etch \html"&nbsp;" rate = ∑↙{i=0}↖{m} factor_{i} \html"&nbsp;" 
+∑↙{j=0}↖{n} A_{j} cos^{j}(θ_{i})  \] </p>
+
+<p>where \(A_{j}\) are the coefficients, \(θ_{i}\) is the angle between the
+incident beam \(i\) and the normal to the surface being etched, and
+\(factor_{i}\) is the <tt>factor</tt> given in the <tt>beam</tt> command for
+beam \(i\).</p>
+
+<p>The <tt>beam</tt> command defines the direction of etching beams, using either 
+the <tt>incidence</tt> argument or the <tt>direction</tt> argument, and their 
+relative strength using the <tt>factor</tt> argument.</p>
+
+<p>No etching is applied to those parts of the slope for which the etching rates 
+are negative. This property can be used to generate a trench with a specific 
+angle for the wall. A negative value for <em>A</em><sub>0</sub>, equivalent to 
+an isotropic etching rate, and a positive value for <em>A</em><sub>1</sub>, 
+equivalent to an anisotropic etching rate, would generate a trench with 
+a slope given by \(arccos(-{A_{0}}/{A_{1}})\).</p>
+
+<p>Use the following commands to generate a trench with a slope of 85&deg; 
+and a depth of 0.2&nbsp;&mu;m:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess1_fps.cmd" startExpr="*set A1*" endExpr="*etch*" -->
+<pre>
+set A1 1.0
+set A0 -$A1*cos($TrenchAngle*atan(1.0)/45.0)
+set time $TrenchDepth/($A0+$A1)
+beam name= B1 direction= {1 0 0} factor= 1
+etch Silicon type=@eTYPE@ sources= B1 time= $time coeffs= &quot;$A0 $A1&quot;
+</pre>
+<!-- grep end -->
+
+<p>where the term <tt>atan(1.0)/45.0</tt> converts degree into radian.</p>
+
+<!--======================-->
+<h2>8.10.3 Three-Dimensional Fourier Etching</h2>
+
+<p class="note">The files discussed in this section are part of the 
+Sentaurus Workbench project <tt>Fourier3D</tt>. The complete 
+project can be investigated from within Sentaurus Workbench in the 
+directory <tt>Applications_Library/GettingStarted/sprocess/Fourier3D</tt>.</p>
+
+<p>This example demonstrates 3D Fourier etching and how multiple rates for 
+multiple materials are specified using <tt>mat.coeffs</tt>. Etching coefficients 
+chosen for this example are illustrative and might not be physically meaningful:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Fourier3D/sprocess_fps.cmd" startExpr="beam*" endExpr="*PolySilicon*" -->
+<pre>
+beam name= src1 direction= {1 0 0} factor= 1
+mgoals dx= 0.01 dy= 0.01 dz= 0.01
+etch sources= {src1} type= fourier !remesh time= 0.1 \
+  mat.coeffs= {Silicon= {-1 2} Nitride= {-0.7 1.2} Oxide= { 0.01 } \
+  PolySilicon= {-0.05 0.2}}
+</pre>
+<!-- grep end -->
+
+<p>The <tt>mgoals dx=0.01 dy= 0.01 dz= 0.01</tt> command explicitly sets the 
+level-set grid spacing in each direction. These arguments override the automatic 
+setting of <tt>dx</tt>, <tt>dy</tt>, and <tt>dz</tt>, which uses resolution. 
+The example takes approximately 23 minutes to run.</p>
+
+<p><a href="images/sp_fourier_3d.png"><img src="images/sp_fourier_3d.png" width="550" 
+alt="Three-dimensional multimaterial Fourier etching" /></a></p>
+
+<p class="caption"> Figure 6. Three-dimensional multimaterial Fourier etching:
+(left) before etching and (right) after etching. (Click image for full-size view.)</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Fourier3D/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<!--================================================-->
+<a name="11"></a>
+<h1>8.11 Assignment</h1>
+
+<p>Use the process flow above as a starting point and make the 
+following changes:</p>
+
+<ul>
+<li>Double the maximum y-coordinate in the <tt>line</tt> command.</li>
+<li>Change the nitride mask-etching step from directional to anisotropic.</li>
+<li>Change the silicon trench-etching step from directional to polygonal, 
+trapezoidal, or Fourier.</li>
+<li>Remove the reflection step.</li>
+</ul>
+
+<p><img src="images/sp_sti_full_anima.gif" width="366" height="337" 
+alt="Animation of full STI process flow" /></p>
+
+<p class="caption">Figure 7. Animation of the full STI process flow.</p>
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Fourier/sprocess1_fps.cmd">
+sprocess1_fps.cmd</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_7.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_9.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

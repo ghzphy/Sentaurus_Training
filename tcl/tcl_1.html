@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tcl 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tool Command Language<br />1. Getting Started</h1>
+
+<p>
+<a href="#1">1.1 Overview</a><br />
+<a href="#2">1.2 Basic Tcl Conventions</a><br />
+<a href="#3">1.3 Starting Tcl Shells and Executing Tcl Scripts From Command Prompt</a><br />
+<a href="#4">1.4 Further Reading</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce how Tcl is used in TCAD Sentaurus.</li>
+ <li>To demonstrate how to work with a Tcl shell.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Overview</h1> 
+
+<p>Tcl is an interpreted (scripting) language with programming features available 
+across platforms using different operating systems.</p> 
+
+<p>It is a string-based language that has only a few fundamental 
+constructs and relatively little syntax, which makes it easy to learn.</p>
+
+<p>Several Sentaurus tools use Tcl including Sentaurus Workbench and Sentaurus Process. 
+Therefore, it is advantageous to know some Tcl basics.</p>
+
+<p class="note">Tcl is a powerful scripting language. However, only a small subset 
+of Tcl commands is needed to accomplish most tasks with regard to Synopsys tools.</p> 
+
+<p>This module introduces this subset of Tcl commands. For more details, refer to Tcl 
+references such as B. B. Welch, <cite>Practical Programming in Tcl &amp; Tk</cite>, 
+New Jersey: Prentice Hall PTR, 3rd ed., 2000.</p>
+
+<!--==========================-->
+<h2>1.1.1 Working With Tcl</h2>
+
+<p>Use this module as a quick reference guide or as a clipboard 
+for creating your own Tcl scripts.</p>
+
+<p>In this section, you will learn Tcl basics by looking at a Sentaurus Workbench 
+project, which can be found in the directory 
+<tt>Applications_Library/GettingStarted/tcl/tcl_basics</tt>.</p>
+
+<p>All examples discussed here are part of the demonstration Tcl script 
+<tt>gtclsh_tcl.cmd</tt>, which is used as the input for the corresponding 
+TCLSH project tool.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd">
+gtclsh_tcl.cmd</a>.</p>
+
+<p>Copy the above project to your local project directory <tt>$STDB</tt> 
+and run it. Then, open the input and output files in separate windows 
+to see how the Tcl interpreter interprets the input commands. 
+<a href="tcl_2.html">Section&nbsp;2. Basics</a> discusses the commands in detail.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>1.2 Basic Tcl Conventions</h1>
+
+<p>The basic Tcl conventions are:</p>
+
+<ul>
+  <li>The Tcl shell command prompt is a percent sign (<tt>%</tt>).</li>
+  <li>After a hash character (<tt>#</tt>), the rest of the line is ignored.</li>
+  <li>Two Tcl commands can be placed on a single line if separated by 
+    a semicolon (<tt>;</tt>).</li>
+  <li>The following characters have special meaning in Tcl:<br />
+    <ul>
+      <li>The dollar sign <tt>$</tt>, to access the value of a variable</li>
+      <li>Braces <tt>{}</tt>, for block definition</li> 
+      <li>Brackets <tt>[]</tt>, for function calls</li>
+    </ul></li>
+  <li>Sometimes, whitespace is needed. For example, this command will fail:<br />
+    <tt>if{[expr $i+1]==2}{puts &quot;Yes&quot;}</tt><br />
+    Adding whitespace fixes the problem:<br />
+    <tt>if {[expr $i+1]==2} {puts &quot;Yes&quot;}</tt></li>
+  <li>Long Tcl commands can be separated into several lines by ending 
+    each line with a backslash (<tt>\</tt>).</li>
+  <li>A Tcl script, for example <tt>source.tcl</tt>, can be loaded into 
+    another Tcl script with:<br />
+    <tt>source source.tcl</tt></li>
+  <li> Close the Tcl shell with:<br />
+    <tt>&#37; exit</tt></li>
+</ul>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Starting Tcl Shells and Executing Tcl Scripts From Command Prompt</h1>
+
+<p>Start an interactive Tcl shell with:</p>
+
+<pre>
+&gt; gtclsh
+</pre>
+
+<p>Synopsys distributes a Tcl command interpreter called <tt>gtclsh</tt>, 
+instead of <tt>tclsh</tt>, which is compatible with Tcl version 8.6.</p>
+
+<p>To determine the version of the Tcl shell, type:</p>
+
+<pre>
+&gt; gtclsh 
+% info tclversion
+8.6
+</pre>
+
+<p>Execute the Tcl script <tt>tcl_basics.tcl</tt> with:</p>
+
+<pre>
+&gt; gtclsh tcl_basics.tcl
+</pre>
+
+<p> Alternatively, a Tcl script can be loaded from the Tcl 
+prompt with the <tt>source</tt> command:</p>
+
+<pre>
+&gt; gtclsh
+&#37; source tcl_basics.tcl
+</pre>
+
+<p>Close the Tcl shell with:</p>
+
+<pre>
+&#37; exit
+</pre>
+
+<p class="note">Sentaurus Process uses a Tcl shell in interactive mode. 
+Therefore, Tcl code can be entered directly on the command line in 
+exactly the same manner as for the Tcl shell.</p>
+ 
+
+<!--================================================-->
+<a name="4"></a>
+<h1>1.4 Further Reading</h1>
+
+<p>Some recommended websites are:</p>
+
+<ul>
+<li>Reference guide for Tcl commands: 
+<a href="https://www.tcl.tk/man/tcl8.6/TclCmd/contents.html">
+https://www.tcl.tk/man/tcl8.6/TclCmd/contents.html</a></li>
+
+<li>Tcler's Wiki Community site, with extensive help: <a href="https://wiki.tcl-lang.org">
+https://wiki.tcl-lang.org</a></li>
+
+<li>The TCLLIB &ndash; Tcl Standard Library with extended functionality is distributed 
+with TCAD Sentaurus and can be accessed in all Tcl interfaces. Documentation is available 
+from:<br />
+<a href="https://core.tcl-lang.org/tcllib/doc/trunk/embedded/md/toc.md">
+https://core.tcl-lang.org/tcllib/doc/trunk/embedded/md/toc.md</a></li>
+</ul>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

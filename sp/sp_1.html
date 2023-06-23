@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />1. Getting Started</h1>
+
+<p>
+ <a href="#1">1.1 Working With This Module</a><br />
+ <a href="#2">1.2 File Types</a><br />
+ <a href="#3">1.3 Starting Sentaurus Process</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To provide an introduction to the features of Sentaurus Process.</li>
+ <li>To identify the file types used by Sentaurus Process.</li>
+ <li>To demonstrate how to run Sentaurus Process.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>1.1 Working With This Module</h1>
+
+<p>Sentaurus Process is a highly flexible multidimensional process 
+modeling environment. With its modern software architecture, it constitutes a solid 
+base for process simulation. Calibrated to a wide range of the latest experimental 
+data using proven calibration methodology, Sentaurus Process offers unique predictive 
+capabilities for modern silicon and nonsilicon technologies.</p>
+
+<p>In this module, you are guided through a series of examples of increasing complexity. 
+The most widely used Sentaurus Process commands are introduced in the context of these examples.</p>
+
+<p>The module discusses only arguments and options that are used in the given examples. 
+For details about commands, see the <cite>Sentaurus&trade; Process User Guide</cite>.</p>
+
+<p>A listing of the command file of Sentaurus Process is given at the end of each 
+section in the form of an HTML link. You are encouraged to create a local copy of 
+the command file from the browser (choosing <strong>File</strong> &gt; 
+<strong>Save As</strong>) and to run it. Some examples are given as Sentaurus 
+Workbench package files. After creating a local copy, the files can be opened 
+with Sentaurus Workbench.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>1.2 File Types</h1>
+
+<p>The main file types used in Sentaurus Process are:</p> 
+
+<ul>
+<li>Command file (<tt>*.cmd</tt>)<br />
+This is the main input file for Sentaurus Process. It contains all the process steps and can be 
+edited. This file is referred to as the <em>command file</em> or <em>input file</em>.<br /><br /></li>
+
+<li>Log file (<tt>*.log</tt> and <tt>*.out</tt>)<br />
+Sentaurus Process generates a <tt>.log</tt> file when it is run from the command 
+line and an <tt>.out</tt> file when it is run from Sentaurus Workbench. Both files 
+contain information about each processing step, and the models and values of physical 
+parameters used in it. The amount of information written to the log file is controlled by 
+the <tt>info</tt> argument, which is available in nearly all commands. The global default 
+information level (0) can be changed with <tt>pdbSet InfoDefault &lt;n&gt;</tt>. Allowed 
+values of <tt>InfoDefault</tt> are 0, 1, and 2 with higher values indicating more verbose 
+output. Any value higher than 2 will be interpreted as 2.<br /><br /></li>
+
+<li>TDR boundary file (<tt>*_bnd.tdr</tt>)<br />
+This file stores the boundaries of the structure without the bulk mesh or fields. It can 
+be used as the structure file for the Sentaurus Mesh meshing engine and can be loaded 
+into Sentaurus Visual for viewing. The name of a TDR boundary file can be specified 
+with the <tt>tdr</tt> argument of the <tt>init</tt> command of Sentaurus Interconnect, 
+and then the loaded boundary will be meshed.<br />
+
+To open a TDR file, open a terminal window and launch the TDR file viewer with the command:<br />
+<tt>svisual &lt;file_name&gt;.tdr</tt><br /><br /></li>
+
+<li>TDR grid and doping file (<tt>*_fps.tdr</tt>)<br />
+TDR files can be used to split and restart a simulation. Such restart files are saved using the 
+<tt>struct tdr=&lt;c&gt;</tt> command because restarting requires interface data, parameter and 
+command settings, mesh ordering information, as well as bulk grid and data. If either 
+<tt>!pdb</tt> or <tt>!interfaces</tt> is specified in the <tt>struct</tt> command, the TDR file 
+will not be suitable for restarting. The TDR file can be loaded into Sentaurus Process using 
+the <tt>init</tt> command, but the results of the subsequent simulation steps might differ in a 
+simulation with splits and a restart, compared to a simulation of the entire flow in one 
+attempt.<br /><br /></li> 
+
+<li>XGRAPH file (<tt>*.plx</tt>)<br />
+This file saves the 1D distributions of the doping concentration or other fields 
+in a specified cross section. This file can be viewed by loading into Sentaurus Visual.</li>
+</ul>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Starting Sentaurus Process</h1>
+
+<p>To start Sentaurus Process in interactive mode, 
+type the following on the command line:</p>
+
+<pre>
+&gt; sprocess
+</pre>
+
+<p>Sentaurus Process displays version and host information, 
+followed by the Sentaurus Process command prompt.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/n1_fps.out" startLine=1 endExpr="Checking*" format="wrapTrim" footer="..." -->
+<pre>
+****************************************************************************
+***                          Sentaurus Process                           ***
+***                          Version U-2022.12                           ***
+***                      (2.7039201, x86_64, Linux)                      ***
+***                                                                      ***
+***                       Copyright (C) 1993-2002                        ***
+***          The board of regents of the University of Florida           ***
+***                       Copyright (C) 1994-2022                        ***
+***                            Synopsys, Inc.                            ***
+***                                                                      ***
+***  This software and the associated documentation are confidential     ***
+***  and proprietary to Synopsys, Inc.  Your use or disclosure of this   ***
+***  software is subject to the terms and conditions of a written        ***
+***  license agreement between you, or your company, and Synopsys, Inc.  ***
+****************************************************************************
+
+Compiled Mon Aug  1 18:47:31 PDT 2022 on tcadbld12
+
+Started at: Tue Aug  2 10:29:56 2022 (CEST)
+User name: letay
+Host name: tesla-dell-lnx
+PID: 7693
+Architecture: x86_64
+Operating system: Linux rel. 3.10.0-1127.10.1.el7.x86_64 ver. #1 SMP Wed Jun 8 \
+  14:28:03 UTC 2022
+
+------------------------------------------------------------------------------
+Checking syntax of n1_fps.cmd:
+...
+</pre>
+<!-- grep end -->
+
+<p>Commands can be now entered sequentially at the prompt.</p>
+
+<p>To run Sentaurus Process in batch mode, type:</p>
+
+<pre>
+&gt; sprocess input_fps.cmd
+</pre>
+
+<p>The command file is checked for correct syntax, and then the commands 
+are executed in sequence until the simulation is stopped by the command 
+<tt>exit</tt> or the end of the file is reached. Syntax-checking can be 
+switched off with the command-line option <tt>-n</tt>:</p>
+
+<pre>
+&gt; sprocess -n input_fps.cmd
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

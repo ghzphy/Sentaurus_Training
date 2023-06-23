@@ -1,0 +1,368 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Structure Editor 4. Generating Meshes</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Structure Editor<br />4. Generating Meshes</h1>
+
+<p>
+ <a href="#1">4.1 Overview</a><br />
+ <a href="#2">4.2 Defining Global Mesh Settings</a><br />
+ <a href="#3">4.3 Defining Regional Refinements</a><br />
+ <a href="#4">4.4 Saving the Model</a><br />
+ <a href="#5">4.5 Meshing the Device Structure</a><br />
+ <a href="#6">4.6 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To set up meshing strategies for 2D devices in Sentaurus Structure Editor.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Overview</h1>
+
+<p>This section provides instructions on how to control the mesh generation 
+process.</p>
+
+<p>This process is performed in two steps. The first step defines the meshing 
+strategy, which includes the maximum and minimum meshing step definition in 
+each device dimension as well as the mesh refinement strategies. The second step 
+links the defined strategy from the first step to a specific target, which is, 
+in general, a material, or a device region, or a user-defined evaluation window.</p>
+ 
+<p>Different device regions have different roles in terms of determining the 
+device performance, thereby the required meshing strategies for these regions are typically 
+different.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Defining Global Mesh Settings</h1>
+
+<p>The first step always is the definition of mesh controls that are applied to the entire 
+device structure.</p>
+
+<p>For that, first you define the window, which covers the entire device domain:</p>
+
+<ol>
+<li>Switch off automatic region-naming by choosing <strong>Draw</strong> &gt; <strong>Auto Region Naming</strong>.</li>
+<li>Switch on the Exact Coordinates mode by choosing <strong>Draw</strong> &gt; <strong>Exact Coordinates</strong> or 
+click the <img class="imgline" src="images/icons/exactcoord.png" width="13" height="15" 
+alt="New button" /> toolbar button.</li>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Define Ref/Eval Window</strong> &gt; <strong>Rectangle</strong>.<br />
+In the view window, draw a rectangular window covering the entire device, as shown here.<br />
+
+<p><a href="images/se_m_refineplace.png"><img src="images/se_m_refineplace.png" width="520" 
+alt="Refinement window covering entire device" /></a></p></li>
+
+<li>In the Exact Coordinates dialog box, enter <tt>(-1 -0.5)</tt> in the <strong>First Vertex</strong> 
+fields, and enter <tt>(1&nbsp;1.5)</tt> in the <strong>Second Vertex</strong> fields.</li>
+
+<li>In the <strong>Ref/Eval Window Name</strong> field, enter <tt>RefWin.all</tt>, 
+which is referred to in the subsequent steps.<br />
+
+<p><img src="images/se_m_exactcoord.png" width="288" height="246" alt="Exact Coordinates dialog box" /></p></li>
+
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>The corresponding Scheme command is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdedr:define-refeval-window*" startoccurrence=5 lines=2-->
+<pre>
+(sdedr:define-refeval-window &quot;RefWin.all&quot; 
+  &quot;Rectangle&quot; (position -1 -0.5 0) (position 1 1.5 0))
+</pre>
+<!-- grep end -->
+
+<p>In the next step, you associate the global refinement window with the refinement box 
+and select the mesh controls to be used globally:</p>
+
+<ol>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Refinement Placement</strong>.<br />
+The Refinement Specification dialog box, for setting up the global refinement definition, opens.<br />
+
+<p><a href="images/se_m_refineplace2.png"><img src="images/se_m_refineplace2.png" width="520" 
+alt="Refinement Specification dialog box" /></a></p></li>
+
+<li>Enter <tt>PlaceRF.all</tt> in the <strong>Placement Name</strong> field.</li>
+<li>Under Placement Type, in the <strong>Ref/Eval Window</strong> field, 
+select <tt>RefWin.all</tt>.<br />
+This selection associates the global refinement window with further settings applied 
+in this dialog box.</li>
+<li>Under Refinement Definition, enter <tt>RefDef.all</tt> in the 
+<strong>Name</strong> field. Then, enter the minimum and maximum mesh step values in both 
+the x- and y-directions.</li>
+<li>Click the <strong>More &gt;&gt;</strong> button to expand the dialog box.</li>
+<li>Select the <strong>Value Difference</strong> option, and choose <strong>DopingConcentration</strong> 
+from the list of names in the corresponding box. Enter <tt>1</tt> as a value.
+Click the <strong>Add</strong> button.<br />
+This adds the net doping field, which is computed during meshing, as a criterion for 
+the mesh refinement.</li>
+
+<li>Under Refinement Functions, select the <strong>Interface Length</strong> option, 
+and enter <tt>Silicon</tt> as the first selected material and <tt>SiO2</tt> as the second material. 
+Enter <tt>0.001</tt> as a value and <tt>1.5</tt> as a factor. 
+Click <strong>Add</strong>.<br />
+This adds the silicon&ndash;SiO<sub>2</sub> interface as a criterion for the mesh refinement at the 
+interface.</li>
+
+<li>Click <strong>Create Refinement</strong> if you enter it for the first time, or click 
+<strong>Change Refinement</strong> for further refinement modifications.</li>
+
+<li>Click <strong>Close</strong>.</li>
+</ol>
+     
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdedr:define-refinement-size*" lines=6-->
+<pre>
+(sdedr:define-refinement-size &quot;RefDef.all&quot; 0.25 0.1 0.25 0.1)
+(sdedr:define-refinement-placement &quot;PlaceRF.all&quot; &quot;RefDef.all&quot; &quot;RefWin.all&quot;) 
+(sdedr:define-refinement-function &quot;RefDef.all&quot; 
+  &quot;DopingConcentration&quot; &quot;MaxTransDiff&quot; 1) 
+(sdedr:define-refinement-function &quot;RefDef.all&quot; &quot;MaxLenInt&quot; &quot;Silicon&quot; &quot;Oxide&quot; 
+  0.001 1.5 &quot;DoubleSide&quot; )
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 Defining Regional Refinements</h1>
+
+<p>In addition to the global mesh refinement, the meshing strategy can be restricted 
+to areas of interest, such as specific regions or restricted device domains.</p>
+
+<p>In the discussed example, additional refinement is applied to the epi region 
+<tt>R.Siliconepi</tt> and to the selected domain confined within the transistor channel.</p> 
+
+<p>To define a refinement box confined within the epi region <tt>R.Siliconepi</tt>:</p>
+
+<ol>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Refinement Placement</strong>.<br />
+The Refinement Specification dialog box, for setting up the regionwise refinement definition, opens.<br />
+
+<p><a href="images/se_m_refineplace3.png"><img src="images/se_m_refineplace3.png" width="520" 
+alt="Refinement Specification dialog box" /></a></p></li>
+
+<li>Enter <tt>PlaceRF.Epi</tt> in the <strong>Placement Name</strong> field.</li>
+
+<li>Under Placement Type, in the <strong>Regions</strong> field, select <tt>R.Siliconepi</tt>.<br />
+This selection instructs the mesh engine to confine the refinement within the selected region.</li>
+
+<li>Under Refinement Definition, enter <tt>RefDef.Epi</tt> in the <strong>Name</strong> 
+field. Then, enter the minimum and maximum mesh step values in both the x- and y-directions.<br />
+The values used here are smaller than those used for the global mesh refinement definition.</li>
+
+<li>Click the <strong>More &gt;&gt;</strong> button to expand the dialog box.</li>
+
+<li>Select the <strong>Value Difference</strong> option, and choose <strong>DopingConcentration</strong> 
+from the list of names in the corresponding field. Enter <tt>1</tt> as a value.
+Click the <strong>Add</strong> button.<br />
+Due to the smaller minimal steps used here, compared to the global refinement settings, a finer 
+mesh refinement on doping inside the epi region will be produced.</li>
+
+<li>Under Refinement Functions, select the <strong>Interface Length</strong> option.
+Select the <strong>UseRegionNames</strong> option, and enter <tt>R.Siliconepi</tt> as the first interface 
+region and <tt>R.Gateox</tt> as the second interface region.<br />
+This will apply the mesh refinement at the specified region interface only.</li>
+<li>Select the <strong>DoubleSide</strong> option to instruct the mesh engine to refine the mesh 
+on both sides of the interface.</li>
+<li>Enter <tt>0.0002</tt> as a value and <tt>1.5</tt> as a factor.</li> 
+<li>Click <strong>Add</strong>.</li>
+</ol>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdedr:define-refinement-size*" startoccurrence=2 lines=6-->
+<pre>
+(sdedr:define-refinement-size &quot;RefDef.Epi&quot; 0.1 0.0125 0.0025 0.0025)
+(sdedr:define-refinement-function &quot;RefDef.Epi&quot; 
+  &quot;DopingConcentration&quot; &quot;MaxTransDiff&quot; 1) 
+(sdedr:define-refinement-region &quot;PlaceRF.Epi&quot; &quot;RefDef.Epi&quot; &quot;R.Siliconepi&quot;)
+(sdedr:define-refinement-function &quot;RefDef.Epi&quot; &quot;MaxLenInt&quot; &quot;R.Siliconepi&quot; 
+  &quot;R.Gateox&quot; 0.0002 1.5 &quot;DoubleSide&quot; &quot;UseRegionNames&quot;)
+</pre>
+<!-- grep end -->
+
+<p>The link between the refinement window and the refinement definitions can be directly 
+set in the Refinement Specification dialog box. Here, you see how to refine the mesh in 
+the middle of the transistor channel:</p>
+
+<ol>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Refinement Placement</strong>.<br />
+The Refinement Specification dialog box, for setting up the window-wise refinement 
+definition, opens.<br />
+
+<p><a href="images/se_m_refineplace4.png"><img src="images/se_m_refineplace4.png" width="520" 
+alt="Refinement Specification dialog box" /></a></p></li>
+
+<li>Select the <strong>Define Ref/Eval Window</strong> option, and enter the minimum and 
+maximum window coordinates of the refinement box.</li>
+
+<li>Click the <strong>Create</strong> button.</li>
+
+<li>Under Refinement Definition, enter <tt>RefDef.channel</tt> in the 
+<strong>Name</strong> field. Then, enter the minimum and maximum mesh step values in both 
+the x- and y-directions.<br />
+The values used here are smaller than those used for the epi layer refinement definition.</li>
+
+<li>Click <strong>Create Refinement</strong>.</li>
+</ol>
+
+<p>You should see the refinement box highlighted in green after it is created (see Figure&nbsp;1).</p>
+
+<p><a href="images/se_m_refchannel.png"><img src="images/se_m_refchannel.png" width="570" 
+alt="Channel refinement box" /></a></p>
+
+<p class="caption">Figure 1. Window-based channel refinement box highlighted. 
+(Click image for full-size view.)</p>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdedr:define-refeval-window*" startoccurrence=6 lines=5-->
+<pre>
+(sdedr:define-refeval-window &quot;RefWin.channel&quot; 
+  &quot;Rectangle&quot; (position -0.1 0.0 0.0) (position 0.1  0.1 0.0))
+(sdedr:define-refinement-size &quot;RefDef.channel&quot; 0.25 0.1 0.025 0.01)
+(sdedr:define-refinement-placement &quot;PlaceRF.channel&quot; &quot;RefDef.channel&quot; 
+  &quot;RefWin.channel&quot;) 
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="4"></a>
+<h1>4.4 Saving the Model</h1>
+
+<p>To save the model with the name <tt>soifet</tt>, follow the instructions 
+in <a href="sde_2.html#12">Section 2.12 Saving the Model</a>.</p>
+
+<p>The saved files are <tt>soifet.sat</tt>, <tt>soifet.scm</tt>, <tt>soifet_msh.cmd</tt>, 
+and <tt>soifet_bnd.tdr</tt>.</p>
+
+<p>Click to view all the commands discussed in this section in the command file 
+<a href="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd">
+soifet_dvs.cmd</a>.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>4.5 Meshing the Device Structure</h1>
+
+<p>To this point, several meshing strategies have been defined and placed in various device 
+regions (windows). Now, you need to create the mesh in the device.</p>
+
+<p>To build a mesh:</p>
+
+<ol>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Build Mesh</strong>.<br />
+The Build Mesh dialog box opens.<br />
+
+<p><img src="images/se_m_buildmesh.png" width="548" height="238" 
+alt="Build Mesh dialog box" /></p></li>
+
+<li>Enter <tt>soifet</tt> in the <strong>Save Grid to File</strong> field.</li>
+<li>Click <strong>Build Mesh</strong>.</li>
+</ol>
+
+<p>The corresponding Scheme command for launching the meshing operation is:</p>
+
+<pre>
+(sde:build-mesh &quot;soifet&quot;)
+</pre>
+
+<p>This command saves two files used by Sentaurus Mesh, namely, the mesh command file 
+<tt>soifet_msh.cmd</tt> and the TDR boundary representation <tt>soifet_bnd.tdr</tt>  of 
+the device. In the project, the <tt>n@node@</tt> name is used instead of the 
+<tt>soifet</tt> name.</p>
+
+<p>Click to view the mesh command file 
+<a href="../../Applications_Library/GettingStarted/sde/soifet/soifet_msh.cmd">
+soifet_msh.cmd</a>.</p> 
+
+<p>Figure 2 shows the device structure with its current meshing and doping conditions, 
+viewed using Sentaurus Visual.</p>
+
+<a href="images/se_m_soi.png"><img src="images/se_m_soi.png" width="550" 
+alt="2D SOI MOSFET mesh" /></a>
+
+<p class="caption">Figure 2. Two-dimensional SOI MOSFET meshed with above-described 
+mesh controls.(Click image for full-size view.)</p>
+
+<p>Figure 3 shows a detailed view of the mesh near the drain/channel junction region.</p>
+
+<a href="images/se_m_mesh.png"><img src="images/se_m_mesh.png" width="550" 
+alt="Mesh near drain/channel junction region" /></a>
+
+<p class="caption">Figure 3. Mesh near the drain/channel junction region. 
+(Click image for full-size view.)</p>
+
+<p>Click to view all the commands discussed in this section in the command file 
+<a href="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd">
+soifet_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/soifet</tt>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>4.6 Assignment</h1>
+
+<p>Define a meshing strategy for the SiGe HBT from 
+<a href="sde_3.html#6">Section 3.6 Assignment</a>.</p>
+
+<p><img src="images/se_m_assign.png" width="420" height="190" 
+alt="2D SiGe HBT with current meshing and doping conditions" /></p>
+
+<p class="caption">Figure 4. Two-dimensional SiGe HBT with its current meshing 
+and doping conditions.</p>
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sde/sigehbt/sigehbt_dvs.cmd">
+sigehbt_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/sigehbt</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

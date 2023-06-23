@@ -1,0 +1,469 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 15. Special Focus: SiC Process Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_14.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_16.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />15. Special Focus: SiC Process Simulation</h1>
+
+<p>
+ <a href="#1">15.1 Overview</a><br />
+ <a href="#2">15.2 Substrate Definition</a><br />
+ <a href="#3">15.3 Ion Implantation</a><br />
+ <a href="#4">15.4 Dopant Diffusion and Activation</a><br />
+ <a href="#5">15.5 Oxidation</a><br />
+ <a href="#6">15.6 Application Example: SiC PiN Diode</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to perform process simulations with SiC substrates.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>15.1 Overview</h1>
+
+<p>Sentaurus Process can simulate all process steps on silicon carbide (SiC) 
+substrates. Its capabilities include:</p>
+
+<ul>
+<li>Definition of different SiC polytype substrates and crystal orientations</li>
+<li>Ion implantation</li>
+<li>Diffusion</li>
+<li>Oxidation</li>
+</ul>
+
+<p>This section discusses special settings required to perform SiC process simulations.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>15.2 Substrate Definition</h1>
+
+<p>This section describes how to define the substrate.</p>
+
+<!--===========================-->
+<h2>15.2.1 Polytype Specification</h2>
+
+<p>Unlike silicon, SiC has different crystal structures called <em>polytypes</em>. 
+Sentaurus Process supports simulations with polytypes 2H, 4H, 6H, and 3C. The 
+default polytype is 4H. To set a different polytype, use one of the following 
+commands:</p>
+
+<ul>
+<li><tt>set2H-SiC</tt></li>
+<li><tt>set6H-SiC</tt></li>
+<li><tt>set3C-SiC</tt></li>
+</ul>
+
+<p>If the substrate is 4H-SiC, you should invoke Advanced Calibration using the command:</p>
+
+<pre>
+AdvancedCalibration 4H-SiC
+</pre>
+
+<p>This command will set not only the polytypes but also the correct parameters such 
+as the lattice constants.</p>
+
+<!--===========================-->
+<h2>15.2.2 Wafer and Flat Orientations</h2>
+
+<p>The next step is to choose the wafer orientation and the flat orientation. 
+For the 3C (cubic) polytype, this process is similar to silicon. For the hexagonal 
+polytypes, the hexagonal crystal system must be taken into account.</p>
+
+<p>In a hexagonal crystal, four Miller indices are used to define a direction: 
+<em>a</em><sub>1</sub>, <em>a</em><sub>2</sub>, <em>a</em><sub>3</sub>, and 
+<em>c</em>. However, <em>a</em><sub>1</sub>, <em>a</em><sub>2</sub>, and 
+<em>a</em><sub>3</sub> depend on each other with the relationship: 
+<em>a</em><sub>1</sub> + <em>a</em><sub>2</sub> + <em>a</em><sub>3</sub> = 0. 
+Therefore, it is sufficient to use only three of the four Miller indices to 
+determine any direction.</p>
+
+<p>Sentaurus Process uses only <em>a</em><sub>1</sub>, <em>a</em><sub>2</sub>, 
+and <em>c</em> to define a direction. For example, the direction 
+[11<span style="text-decoration: overline">2</span>0] is specified in Sentaurus 
+Process as {1 1 0}, omitting the third Miller index.</p>
+
+<p><a href="images/sp_sic_hexagonal.png"><img src="images/sp_sic_hexagonal.png" width="550"
+alt="Crystal orientations in a hexagonal SiC polytype" /></a></p>
+
+<p class="caption">Figure 1. Crystal orientations in a hexagonal SiC polytype. 
+(Click image for full-size view.)</p>
+
+<p>To specify the wafer and flat orientations, use the <tt>init</tt> command:</p>
+
+<pre>
+init wafer.orient= {a1 a2 c} notch.direction= {a1 a2 c}
+</pre>
+
+<p>The default wafer orientation is [0001], which is specified as 
+<tt>wafer.orient= {0 0 1}</tt>. Most SiC wafers are grown in this orientation.</p>
+
+<p>In Sentaurus Process, possible flat orientations for such wafers are 
+[1<span style="text-decoration: overline">1</span>00] specified as 
+<tt>notch.direction= {1 -1 0}</tt> or [11<span style="text-decoration: overline">2</span>0] 
+specified as <tt>notch.direction= {1 1 0}</tt>.</p>
+
+<p>Hexagonal SiC lattices with [0001] wafer orientation consist of alternating layers 
+of Si and C in the [0001] direction. As a convention, if the wafer orientation is 
+specified as [0001], this means that the topmost layer is a Si layer. If the topmost 
+layer is a C layer, by convention such wafers are defined to have a wafer orientation 
+of [000<span style="text-decoration: overline">1</span>].</p>
+
+<p>Such wafers can be specified in Sentaurus Process with <tt>wafer.orient= {0 0 -1}</tt>. 
+Choosing the proper topmost layer is important for an accurate oxidation rate.</p>
+
+<!--===========================-->
+<h2>15.2.3 Wafer Miscut</h2>
+
+<p>SiC wafers are usually cut at an angle of 3.5&ndash;8.5&deg;, not exactly at 
+crystal directions. To specify this miscut, use the <tt>miscut.angle</tt> and 
+<tt>miscut.toward</tt> arguments of the <tt>init</tt> command:</p>
+
+<pre>
+init miscut.tilt= 4 miscut.toward= {1 1 0}
+</pre>
+
+<p>The <tt>miscut.tilt</tt> argument is the angle by which the actual wafer 
+normal is tilted with respect to <tt>wafer.orient</tt>. The <tt>miscut.toward</tt> 
+argument specifies the direction towards which the wafer normal is tilted. This 
+is usually the wafer flat direction. Most wafers are miscut towards the 
+[11<span style="text-decoration: overline">2</span>0] orientation (flat orientation), 
+that is, <tt>miscut.toward= {1 1 0}</tt>.</p>
+
+<p><a href="images/sp_sic_miscut.png"><img src="images/sp_sic_miscut.png" width="550"
+alt="Definition of miscut angle" /></a></p>
+
+<p class="caption">Figure 2. Definition of miscut angle. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>15.3 Ion Implantation</h1>
+
+<p>This section discusses ion implantation.</p>
+
+<!--===========================-->
+<h2>15.3.1 Performing MC Ion Implantation Into SiC</h2>
+
+<p>Sentaurus Process supports only Monte Carlo (MC) implantation into SiC. There 
+are no analytic tables. MC implantation can be performed with:</p>
+
+<pre>
+implant &lt;species&gt; dose=&lt;n&gt; energy=&lt;n&gt; tilt=&lt;n&gt; particles=&lt;n&gt; sentaurus.mc
+</pre>
+
+<p class="note">The number of particles specified is per 50&nbsp;nm of the wafer width, 
+<em>not</em> the total number of particles. In general, at least 2000 particles 
+must be implanted to obtain reasonable statistics. For complicated geometries, as many 
+as 10&thinsp;000 particles might be needed.</p>
+
+<p>Sentaurus MC implantation can be slow, so it is advisable to run it using parallel 
+processing with:</p>
+
+<pre>
+math numThreadsMC=&lt;i&gt;
+</pre>
+
+<!--===========================-->
+<h2>15.3.2 Calibration Range of MC Ion Implantation Into SiC</h2>
+
+<p>Extensive calibration of MC implantation parameters has 
+been performed for B, Al, and N implantation into 4H-SiC with wafer orientation 
+[0001], including a small miscut. To use these calibrated parameters, invoke 
+Advanced Calibration:</p>
+
+<pre>
+AdvancedCalibration 4H-SiC
+</pre> 
+
+<p>The calibration is valid in the following dose or energy ranges:</p>
+
+<ul>
+<li>Aluminum:<br />
+  <ul>
+  <li>Most implantation energies in the range between 20 keV and 5 MeV.</li>
+  <li>Most doses in the range between 10<sup>13</sup> cm<sup>&ndash;2</sup> 
+      and 5x10<sup>14</sup> cm<sup>&ndash;-2</sup>.</li>
+  </ul>
+</li>
+
+<li>Boron:<br />
+  <ul>
+  <li>Energies between 10 keV and 5.8 MeV.</li>
+  <li>Most doses in the range between 10<sup>13</sup> cm<sup>&ndash;2</sup> 
+      and 5x10<sup>14</sup> cm<sup>&ndash;2</sup>.</li>
+  </ul>
+</li>
+
+<li>Nitrogen:<br />
+  <ul>
+  <li>Energies between 10 keV and 5.8 MeV.</li>
+  <li>Most doses in the range between 10<sup>14</sup> cm<sup>&ndash;2</sup> 
+      and 2x10<sup>15</sup> cm<sup>&ndash;2</sup>.</li>
+  </ul>
+</li>
+</ul>
+
+<!--===========================-->
+<h2>15.3.3 Performing Additional Calibration</h2>
+
+<p>To calibrate MC implantation models into other SiC polytypes or polytypes 
+of other species into 4H-SiC, you can adjust the following parameters:</p>
+
+<ul>
+<li><tt>LSS.pre</tt>: Nonlocal electronic stopping power.</li>
+<li><tt>nloc.pre</tt>: Local electronic stopping power pre-exponential.</li>
+<li><tt>nloc.exp</tt>: Local electronic stopping power exponent.</li>
+<li><tt>surv.rat</tt>: Dynamic annealing.</li>
+</ul>
+
+<p>These parameters can be changed from their Advanced Calibration values by creating 
+a procedure called <tt>UserImpPreProcess</tt>:</p>
+
+<pre>
+proc UserImpPreProcess { Species Energy Dose Tilt Rotation Slice Mode } {
+     if {$Species=="&lt;dopant&gt;"} {
+  pdbSet SiliconCarbide $Species &lt;parameter&gt; &lt;value&gt;
+     }
+}
+</pre>
+
+<p>The effect of these parameters on the implantation profile is illustrated in 
+Figure&nbsp;3 to Figure&nbsp;5.</p>
+
+<p><a href="images/sp_sic_mc1.png"><img src="images/sp_sic_mc1.png" width="570"
+alt="LSS.pre calibrates the implantation depth" /></a></p>
+
+<p class="caption">Figure 3. The parameter LSS.pre calibrates the implantation 
+depth. (Click image for full-size view.)</p>
+
+<p><a href="images/sp_sic_mc2.png"><img src="images/sp_sic_mc2.png" width="570"
+alt="nloc.pre calibrates the amount of channeling for zero-tilt implantations" /></a></p>
+
+<p><a href="images/sp_sic_mc3.png"><img src="images/sp_sic_mc3.png" width="570"
+alt="nloc.exp calibrates the amount of channeling for zero-tilt implantations" /></a></p>
+
+<p class="caption">Figure 4. The parameters (top) nloc.pre and (bottom) nloc.exp 
+calibrate the amount of channeling for zero-tilt implantations. 
+(Click images for full-size views.)</p>
+
+<p><a href="images/sp_sic_mc4.png"><img src="images/sp_sic_mc4.png" width="570"
+alt="surv.rat calibrates the damage accumulation rate" /></a></p>
+
+<p class="caption">Figure 5. The parameter surv.rat calibrates the damage accumulation 
+rate, which can affect the amount of channeling. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>15.4 Dopant Diffusion and Activation</h1>
+
+<p>Dopants diffuse in SiC using interstitial and vacancy mechanisms like in silicon. 
+Two types of interstitial (IntSilicon, IntCarbon) and two types of vacancy 
+(VacSilicon, VacCarbon) are present.</p>
+
+<p>Since little data exists for interstitial and vacancy components of dopant 
+diffusivities in SiC, macroscopic diffusivity values have been used to develop a 
+diffusion model with constant diffusivity for Al, B, N, and P in 4H-SiC. Literature 
+values for macroscopic diffusivities have been  used without any calibration. The 
+constant diffusivity model does <strong>not</strong> take any of the following 
+effects into account:</p>
+
+<ul>
+<li>Fermi-level dependency</li>
+<li>Oxidation enhancement or retardation</li>
+<li>Transient-enhanced diffusion</li>
+</ul>
+
+<p>By default, Sentaurus Process uses the <tt>Solid</tt> model for dopant activation 
+in SiC, which assumes dopants activate and deactivate to solid solubility values 
+instantly, and this can result in dopants being inactive at the end of the flow.
+Therefore, you should use Advanced Calibration for SiC, which sets the activation 
+model to <tt>Transient</tt>, that is, activation and deactivation with a time constant.</p> 
+
+<p>In addition, Advanced Calibration for SiC increases the maximum annealing temperature, 
+so anneals at high temperature (&gt;1400&deg;C) can be performed.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>15.5 Oxidation</h1>
+
+<p>The mechanism for oxidation of SiC is similar to oxidation of silicon substrates, 
+except that, in addition to SiO<sub>2</sub>, CO and CO<sub>2</sub> are formed as by-products 
+of the reaction. Such carbon oxides diffuse to the surface of the SiO<sub>2</sub> layer 
+and evaporate.</p>
+
+<p>Sentaurus Process provides a calibrated parameter set for the following oxidation 
+conditions:</p>
+
+<ul>
+<li>[0001] surface (Si terminated) for oxidants O<sub>2</sub> and H<sub>2</sub>O</li>
+<li>[000<span style="text-decoration: overline">1</span>] surface (C terminated) for 
+oxidants O<sub>2</sub> and H<sub>2</sub>O</li>
+<li>[11<span style="text-decoration: overline">2</span>0] surface for oxidant O<sub>2</sub></li>
+</ul>
+
+<p>The orientation of the surface is determined automatically from the crystal 
+orientation set by the <tt>init</tt> command and the orientation of the surface 
+within the simulation domain. No intervention by users is needed.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>15.6 Application Example: SiC PiN Diode</h1>
+
+<p>This section presents a SiC process simulation using a PiN diode, 
+which can be found in the project <tt>Applications_Library/GettingStarted/sdevice/4H-SiC_PiN</tt>.</p>
+
+<p>See <a href="../sd/sd_15.html">Section&nbsp;15. Special Focus: 4H-SiC PiN Device Breakdown Simulation</a>
+for a description of the device simulation part of the same example.</p>
+
+<p>The concept of the simulated device in this project and its geometry follows 
+the publication of R.&nbsp;P&eacute;rez <em>et&nbsp;al.</em>, &quot;Planar Edge 
+Termination Design and Technology Considerations for 1.7-kV 4H-SiC PiN Diodes,&quot; 
+<cite>IEEE Transactions on Electron Devices</cite>, vol.&nbsp;52, no.&nbsp;10, 
+pp.&nbsp;2309&ndash;2316, 2005.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>In the first part of the process flow, the substrate definition is performed. 
+The wafer is 4H-SiC, with a wafer orientation of [0001], a flat orientation of 
+[11<span style="text-decoration: overline">2</span>0], and a 4&deg; miscut towards 
+the wafer flat:</p>
+
+<!-- grep startExpr="line x*" endExpr="AdvancedCalibration*" file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd" -->
+<pre>
+line x location= @epithick@     spacing= 0.5	tag= xtop
+line x location= @&lt;epithick+5&gt;@ spacing= 1.0 tag= xbottom
+line y location= 0       		tag= yleft
+line y location= @width@    		tag= yright
+
+region SiliconCarbide xlo= xtop xhi= xbottom ylo= yleft yhi= yright
+init field= Nitrogen concentration= 1e19 !DelayFullD \
+	wafer.orient= {0 0 1} notch.direction= {1 1 0} \
+	miscut.tilt= @miscut@ miscut.toward= {1 1 0}
+
+AdvancedCalibration 4H-SiC
+</pre>
+<!-- grep end -->
+
+<p>In addition, a 10&nbsp;&mu;m epitaxial layer with a concentration of 
+9x10<sup>15</sup> cm<sup>&ndash;3</sup> is grown:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd" startExpr="deposit SiliconCarbide*" Lines=2-->
+<pre>
+deposit SiliconCarbide anisotropic thickness= @epithick@ species= Nitrogen \
+	concentration= 9e15
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sp_sic_step1.png"><img src="images/sp_sic_step1.png" width="550"
+alt="Structure after epitaxy" /></a></p>
+
+<p class="caption">Figure 6. Structure after epitaxy. (Click image for full-size view.)</p>
+
+<p>Then, a series of mask and implantation steps are performed for the JTE1, JTE2, 
+and anode regions. The implantation masks differ depending on whether JTE1 and JTE2 
+overlap or not. Only the anode is shown here:</p>
+
+<!-- grep startExpr="mask name= ANODE*" endExpr="strip Photoresist*" file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd" -->
+<pre>
+mask name= ANODE left= 0 right= @awidth@
+photo mask= ANODE thickness= 3
+
+implant Aluminum dose= 4e13 energy= 20 tilt= 7 rotation= 0 \
+	sentaurus.mc particles= @particles@ info= 1
+implant Aluminum dose= 2e14 energy= 80 tilt= 7 rotation= 0 \
+	sentaurus.mc particles= @particles@ info= 1
+implant Aluminum dose= 2e14 energy= 160 tilt= 7 rotation= 0 \
+	sentaurus.mc particles= @particles@ info= 1
+	
+strip Photoresist
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sp_sic_step2.png"><img src="images/sp_sic_step2.png" width="550"
+alt="Structure after implants" /></a></p>
+
+<p class="caption">Figure 7. Structure after implantations: JTE1 and JTE2 
+do not overlap. (Click image for full-size view.)</p>
+
+<p>After that, the wafer is annealed at 1700&deg;C for 30&nbsp;minutes, followed by 
+oxidation in H<sub>2</sub>O ambient:</p>
+
+<!-- grep startExpr="# Activation*" endExpr="*H2O*" file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd" -->
+<pre>
+# Activation
+diffuse time= 30 temperature= 1700
+
+# Passivation oxide
+diffuse time= 120 temperature= 1200 H2O
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sp_sic_step3.png"><img src="images/sp_sic_step3.png" width="550"
+alt="Structure after anneal and oxidation" /></a></p>
+
+<p class="caption">Figure 8. Structure after anneal and oxidation: 
+JTE1 and JTE2 do not overlap. (Click image for full-size view.)</p>
+
+<p>Then, the contact hole is etched and the anode metal is deposited:</p>
+
+<!-- grep startExpr="deposit*oxide*anisotropic*" endExpr="deposit*Aluminum*" file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd" -->
+<pre>
+deposit oxide anisotropic thickness= 0.4
+
+mask name= ANODE left= 0 right= @awidth@
+photo mask= ANODE thickness= 1
+etch Oxide anisotropic thickness= 0.6
+strip Photoresist
+deposit Aluminum type= fill coord= 0
+</pre>
+<!-- grep end -->
+
+<p>Finally, the device is meshed for device simulations and the contacts are defined. 
+See the Sentaurus Device module, <a href="../sd/sd_15.html#52">
+Section&nbsp;15.5.2 Mesh Construction for Device Simulation</a> for details about this step.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_14.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_16.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

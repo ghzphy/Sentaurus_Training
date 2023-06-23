@@ -1,0 +1,391 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Visual 5. Inspecting the Structure</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Visual<br />5. Inspecting the Structure</h1>
+
+<p>
+ <a href="#1">5.1 Overview</a><br />
+ <a href="#2">5.2 Probe Tool</a><br />
+ <a href="#3">5.3 Cutlines and Cutplanes</a><br />
+ <a href="#4">5.4 Plot Overlay</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To examine results and sample data in Sentaurus Visual.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Overview</h1>
+
+<p>Sentaurus Visual provides functions to probe into the device structure for 
+values of the existing physical quantities. It also provides tools that 
+facilitate making cutlines and cutplanes through the structure to obtain 
+data values. This section discusses the use of these tools.</p>
+
+<!--==================================================-->
+<a name="2"></a>
+<h1>5.2 Probe Tool</h1>
+
+<p>After a device structure has been loaded into Sentaurus Visual, the values of 
+the data fields existing on the structure can be sampled at each point of the 
+structure using the probe tool.</p>
+
+<p>To probe a point:</p>
+
+<ol>
+<li>Click the Probe toolbar button 
+<img class="imgline" src="images/icons/probe.png" width="24" height="22" alt="Probe tool" /> 
+to activate the function.<br />
+The cursor changes to a cross. The Probe panel opens.</li>
+<li>Click the device structure at the point of interest.</li>
+</ol>
+
+<p>The probe tool makes a cross to indicate the location of the data sampling 
+point, and the information on the data field values at the sampled point are 
+displayed in the Probe panel (see Figure&nbsp;1).</p>
+
+<p><img src="images/sv_probe_panel.png" width="382" height="617" alt="Probe panel" /></p>
+
+<p class="caption">Figure 1. Probe panel.</p>
+
+<p>The Probe panel displays all of the available information about the selected 
+point. At the top, it shows the point coordinates: x, y, and z. The 
+<strong>Var Values</strong> tab shows the field values at the point. The 
+<strong>Cell Info</strong> and <strong>Face Neighbor</strong> tabs show information about 
+the finite-element composition and its neighbors.</p>
+
+<p>To probe the field value at the mesh point, select the <strong>Snap to Mesh</strong> option, 
+or hold the Ctrl key while you click the structure for data sampling.</p>
+
+<p>To probe at an exact coordinate, click the <strong>Probe At</strong> button on the 
+Probe panel. A dialog box opens where you can enter the coordinates 
+of the point of interest (see Figure 2).</p>
+
+<p><img src="images/sv_probeat_db.png" width="226" height="226" alt="Probe At dialog box" /></p>
+
+<p class="caption">Figure 2. Probe At dialog box where you can enter exact 
+point coordinates.</p>
+
+<!--==================================================-->
+<a name="3"></a> 
+<h1>5.3 Cutlines and Cutplanes</h1>
+
+<p>This section describes how to generate 1D and 2D cuts. In Sentaurus Visual, 
+you can create a 1D cutline from 2D or 3D structures. Cutlines and cutplanes can be 
+formed orthogonally to one of the Cartesian axes or can be created in an arbitrary 
+direction. Cutlines and cutplanes can be moved and the cut plot is updated automatically. 
+Sentaurus Visual provides the following tools for generating cutlines and cutplanes.</p>
+
+<table>
+<tr>
+<th>Button</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/cut_precision.png" 
+width="24" height="24" alt="Precision Cuts icon" /></td>
+<td>Displays the Cutlines and Cutplanes dialog box to generate non-orthogonal cutlines or 
+cutplanes directly from a 3D plot. It allows you to specify the exact position of the cut.</td>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/cut_cutline.png" 
+width="24" height="24" alt="Cutline icon" /></td>
+<td>Creates a cutline on a 2D plot in a custom direction.</td>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/cut_x.png" 
+width="24" height="24" alt="Cut X icon" />&nbsp;
+<img class="imgline" src="images/icons/cut_y.png" 
+width="24" height="24" alt="Cut Y icon" />
+<img class="imgline" src="images/icons/cut_z.png" 
+width="24" height="24" alt="Cut Z icon" /></td>
+<td>Creates an orthogonal cut to one of the Cartesian axes. The result is a 2D 
+plot of the cutplane if cutting a 3D plot, or an xy plot from a cutline on a 2D 
+plot.</td>
+</tr>
+</table>
+
+<!--================-->
+<a name="31axiscutline"></a>
+<h2>5.3.1 Axis-Aligned Cutline</h2>
+
+<p>On a 2D plot, an axis-aligned cut can be made along the x- or y-coordinate axis. 
+To illustrate this, instructions are given for making a horizontal cut on two linked 
+structures:</p>
+
+<p>Download the following two files by right-clicking and choosing 
+<strong>Save Target As</strong>:</p>
+
+<ul>
+<li><a href="files/pmos1_fps.tdr">pmos1_fps.tdr</a></li>
+<li><a href="files/pmos2_fps.tdr">pmos2_fps.tdr</a></li>
+</ul>
+
+<ol>
+<li>Load the two PMOS structures <tt>pmos1_fps.tdr</tt> and <tt>pmos2_fps.tdr</tt>.</li>
+
+<li>If the <strong>Auto Link</strong> option is selected in user preferences, 
+the two structures will be linked automatically upon loading. The number 
+<strong>A2</strong> should be displayed in the upper-right corner of each plot 
+indicating that plots are linked and belong to group 1.</li>
+
+<li>If the <strong>Auto Link</strong> option is not selected, link the structures 
+manually. Select both structures by holding the Shift key while clicking both 
+structures. A thick border should highlight both plots. Click the Link button 
+<img class="imgline" src="images/icons/link.png" width="24" height="14" alt="Link icon" />. 
+The number <strong>1</strong> should be displayed in the upper-right corner of 
+each plot, indicating that plots are linked and belong to the same group (see Figure 3).<br /><br />
+
+<a href="images/sv_axisalcut_linkedplots.png"><img src="images/sv_axisalcut_linkedplots.png" 
+width="550" alt="Linked plots before cut" /></a>
+
+<p class="caption">Figure 3. Two linked plots before cut. (Click image for full-size view.)</p></li>
+
+<li>Click <img class="imgline" src="images/icons/cut_x.png" 
+width="24" height="24" alt="Cut X icon" /> to make a cutline perpendicular to the x-axis. 
+The cursor changes to a cross. Click a point on the structure where the cut is to be made. 
+Sentaurus Visual opens a new xy plot showing the value of the selected field along the 
+cut direction.</li>
+
+<li>The cutline is displayed as a dashed line on the 2D plot. Note the cutline 
+label and the two cutline handles (small circles) at both ends of the line (see Figure 4). 
+The cutline can be moved by dragging the cutline handle. If the cutline is moved, the 
+xy plot is updated automatically, reflecting the new position of the cutline. To set a 
+precise position of the cut, click one of the handles. The Cutline Properties panel opens. 
+Exact coordinates of the cutline can be specified on the <strong>Position/Size</strong> tab 
+(see Figure 5).<br /><br />
+
+<img src="images/sv_axisalcut_cutline2d.png" width="287" height="270" alt="Cutline location and label" />
+
+<p class="caption">Figure 4. Cutline location and label shown on linked 2D plot.</p><br />
+
+<img src="images/sv_axisalcut_cutline_panel.png" width="356" height="251" alt="Cutline Properties panel" />
+
+<p class="caption">Figure 5. Cutline Properties panel.</p></li>
+
+<li>To enhance the view of the newly created xy plot, minimize both 2D structures.<br /> 
+Select the <tt>pmos1_fps</tt> structure, and choose <strong>Window</strong> &gt; 
+<strong>Minimize Plot</strong> or click 
+<img class="imgline" src="images/icons/minimize_plot.png" width="24" height="24" alt="Minimize Plot icon" />.<br /> 
+Repeat for the <tt>pmos2_fps</tt> structure.</li>
+
+<li>To switch the y-axis scale to logarithmic, click the 
+<img class="imgline" src="images/icons/logscale_y.png" width="24" height="24" alt="Log Scale Y icon" /> button.</li>
+</ol>
+
+<p>Figure 6 shows the final xy plot comparing two NetActive concentrations 
+along the cutlines.</p>
+
+<p><img src="images/sv_axisalcut_final.png" width="489" height="393" 
+alt="An xy plot of the NetActive field after cutting two linked structures" /></p> 
+
+<p class="caption">Figure 6. An xy plot of the NetActive field after cutting two linked
+structures.</p>
+
+<!--======================-->
+<a name="3_2"></a>
+<h2>5.3.2 Band Diagram Along Cutline</h2>
+
+<p>Sentaurus Visual allows you to conveniently plot the band diagram, which shows 
+the electron energy of the conduction and valence band edges versus a spatial dimension.</p>
+
+<p>Open the following TDR file, which contains results from Sentaurus Device: 
+<a href="files/nmos_des.tdr">nmos_des.tdr</a>.</p>
+
+<p>The band diagram can only be plotted for a 1D dataset that is typically created 
+by making a cutline (see <a href="#31axiscutline">Section&nbsp;5.3.1 Axis-Aligned Cutline</a>). 
+After making a cutline, a new xy plot is created.</p>
+
+<p>To create a band diagram, select an xy plot, and click the 
+<img class="imgline" src="images/icons/band_diagram.png" width="24" 
+height="24" alt="Plot Band Diagram icon" /> toolbar button.</p>
+
+<p>The dataset must have the following variables defined (variable names are italicized):</p>
+
+<ul>
+<li>Conduction band energy (<em>ConductionBandEnergy</em>)</li>
+<li>Valence band energy (<em>ValenceBandEnergy</em>)</li>
+<li>Electron quasi-Fermi energy (<em>eQuasiFermiEnergy</em>), or electron quasi-Fermi 
+potential (<em>eQuasiFermiPotential</em>), but not both in the same dataset</li>
+<li>Hole quasi-Fermi energy (<em>hQuasiFermiEnergy</em>), or hole quasi-Fermi potential 
+(<em>hQuasiFermiPotential</em>), but not both in the same dataset</li>
+</ul>
+
+<p>A confirmation dialog box opens to warn you that all existing curves on the 
+selected xy plot will be removed. Click <strong>OK</strong>. The band diagram will be 
+displayed (see Figure 7).</p>
+
+<p><img src="images/sv_band_diagram.png" width="426" height="185" alt="Band diagram" /></p>
+
+<p class="caption">Figure 7. Band diagram.</p>
+
+<p>You can also plot the band diagram using Sentaurus Visual commands. See <a href="../python/py_05.html#2">Section 5.2 Sentaurus Visual: Plotting Band Diagram</a> for an example of plotting the band diagram using Sentaurus Visual Python commands.</p>
+
+<!--=======================-->
+<h2>5.3.3 Cutplane</h2>
+
+<p>To follow this section, download the following file by right-clicking and choosing 
+<strong>Save Target As</strong>: <a href="files/finfet_des.tdr">finfet_des.tdr</a>.</p>
+
+<p>A cutplane can be made on a 3D structure. To specify a cutplane, Sentaurus Visual 
+needs the orientation of the plane and the point that belongs to the plane. For 
+convenience, two types of cutplane with two different interfaces are supported in 
+Sentaurus Visual: cutplanes orthogonal to the coordinate axis and cutplanes in a 
+custom direction.</p>
+
+<p>The three orthogonal cutplanes have dedicated toolbar buttons: 
+<img class="imgline" src="images/icons/cut_x.png" width="24" height="24" alt="Cut X icon" />, 
+<img class="imgline" src="images/icons/cut_y.png" width="24" height="24" alt="Cut Y icon" />, 
+<img class="imgline" src="images/icons/cut_z.png" width="24" height="24" alt="Cut Z icon" />.</p>
+
+<p>To make a cut orthogonal to the x-axis, click 
+<img class="imgline" src="images/icons/cut_x.png" width="24" height="24" alt="Cut X icon" />. 
+The cursor changes to a cross. Click a point on the structure to make a cutplane at 
+that point. A new 2D plot is created in a new frame, and the cutplane position is marked 
+on the original 3D structure with a gray transparent plane and label (see Figure 8). 
+Clicking anywhere on the plane opens the Cutplane Properties panel, where the cut position 
+and label properties can be edited. Changing the plane position automatically updates the 
+2D cut plot.</p>
+
+<p><a href="images/sv_cutplane.png"><img src="images/sv_cutplane.png" 
+width="570" alt="Cutplane on 3D plot and 2D structure produced from cut" /></a></p>
+
+<p class="caption">Figure 8. Cutplane on 3D plot and 2D structure produced 
+from cut. (Click image for full-size view.)</p>
+
+<p>Note that cuts orthogonal to the coordinate axis also can be made in the 
+Cutlines and Cutplanes dialog box, accessible by clicking 
+<img class="imgline" src="images/icons/cut_precision.png" width="20" height="18" 
+alt="Precision Cuts icon" />.</p>
+
+<!--==================================================-->
+<a name="4"></a> 
+<h1>5.4 Plot Overlay</h1>
+
+<p>The plot overlay function provides an intuitive way of comparing simulation 
+results from two or more structures. It allows you to quickly identify differences 
+in structure topology, mesh, junction location, or data fields by plotting one 
+structure on top of another.</p>
+
+<p>In this section, instructions are presented to compare the boundary and junction 
+of two PMOS structures. To compare halo profiles, you will plot arsenic concentration 
+profiles using contour lines.</p>
+
+<p>To follow this exercise, download the following two files by right-clicking and
+choosing <strong>Save Target As</strong>:</p>
+
+<ul>
+<li><a href="files/pmos1_fps.tdr">pmos1_fps.tdr</a></li>
+<li><a href="files/pmos2_fps.tdr">pmos2_fps.tdr</a></li>
+</ul>
+
+<ol>
+<li>Select both structures by holding the Shift key while clicking both 
+structures. To select all structures, use the shortcut keys Ctrl+A.</li>
+
+<li>Click <img class="imgline" src="images/icons/overlay.png" 
+width="24" height="24" alt="Overlay icon" />.</li>
+
+<li>A new frame with two plots overlaid on top of each other is displayed. Note that 
+the Data Selection panel looks different (see Figure 9). At the top, the 
+<strong>Materials</strong> tab displays two sets of materials, one for each dataset. 
+The <strong>Scalars</strong> tab displays two lists of data fields one for each dataset.<br /><br />
+
+<a href="images/sv_overlay_selection.png"><img src="images/sv_overlay_selection.png" 
+height="600" alt="Data Selection panel for overlaid plots" /></a>
+
+<p class="caption">Figure 9. Data Selection panel for overlaid plots. 
+(Click image for full-size view.)</p></li>
+
+<li>Comparing the structure topology is easier if only the boundaries are 
+shown. Hide all regions except <tt>Silicon</tt> and hide fields in all 
+materials except <tt>Silicon</tt>.</li>
+
+<li>Change the boundary color for both structures. On the <strong>Materials</strong> 
+tab of the Data Selection panel, double-click the name of the <tt>pmos1_fps</tt> dataset, 
+select red from the list of colors, and press the Enter key. The black square 
+next to <tt>pmos1_fps</tt> changes to red. All boundaries for the first 
+structure are now displayed in red. In a similar way, change the boundary color of 
+the second structure to blue.</li>
+
+<li>To compare data fields, you will plot them with contour lines. First, change 
+the color of the contour lines. To plot the field with red contour lines, on the 
+<strong>Scalars</strong> tab, double-click the name of the <tt>pmos1_fps</tt> dataset. 
+Then, select red from the list of colors and press the Enter key. In a similar way, 
+change the color of the contour lines for the second structure to blue.</li>
+
+<li>For both datasets, on the <strong>Scalars</strong> tab, clear the check box next to 
+the <tt>NetActive</tt> field, and select plotting of AsActive contour lines by selecting 
+the check box in the second column.</li>
+
+<li>To change the range, highlight the <tt>AsActive</tt> field for the <tt>pmos1_fps</tt> 
+dataset and, on the <strong>Range</strong> tab, enter the range from 5e17 to 7e18. Click the 
+<strong>Levels</strong> tab and enter 14 levels. Do the same for the <tt>pmos2_fps</tt> 
+dataset. Figure 10 shows the Data Selection panel after modifications.<br /><br />
+
+<a href="images/sv_overlay_selection2.png"><img src="images/sv_overlay_selection2.png" 
+height="600" alt="Data Selection panel after modifications" /></a>
+
+<p class="caption">Figure 10. Data Selection panel after modifications. 
+(Click image for full-size view.)</p></li>
+
+<li>Zoom into the channel area.</li>
+</ol>
+
+<p>Figure 11 shows the overlaid plots. The color associated with the structure 
+changes the color of both the region boundary and the mesh.</p>
+
+<a href="images/sv_overlay_plots.png"><img src="images/sv_overlay_plots.png" 
+width="570" alt="Overlaid plots" /></a>
+
+<p class="caption">Figure 11. Overlaid plots. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

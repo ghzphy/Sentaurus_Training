@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tool Overview 1. What Is TCAD?</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="intro_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="intro_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tool Overview<br />1. What Is TCAD?</h1>
+
+<p>
+<a href="#1">1.1 TCAD and the Semiconductor Industry</a><br />
+<a href="#2">1.2 Process Simulation</a><br />
+<a href="#3">1.3 Device Simulation</a><br />
+<a href="#4">1.4 TCAD Simulation Flow</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To briefly introduce TCAD and who uses it.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 TCAD and the Semiconductor Industry</h1>
+
+<p>Technology Computer-Aided Design (TCAD) refers to using computer 
+simulations to develop and optimize semiconductor processing 
+technologies and devices. TCAD simulation tools solve fundamental, 
+physical, partial differential equations, such as diffusion and 
+transport equations for discretized geometries, representing the 
+silicon wafer or the layer system in a semiconductor device. This 
+intensive physical approach gives TCAD simulation predictive accuracy.</p> 
+
+<p>Therefore, it is possible to substitute TCAD computer simulations 
+for costly and time-consuming test wafer runs when developing and 
+characterizing a new semiconductor device or technology.</p>
+
+<p>TCAD simulations are used widely in the semiconductor industry. 
+As technologies become more complex, the semiconductor industry relies 
+increasingly more on TCAD to cut costs and speed up the research and 
+development process. In addition, semiconductor manufacturers use TCAD 
+for yield analysis, that is, monitoring, analyzing, and optimizing 
+their IC process flows, as well as analyzing the impact of IC process variation.</p>
+
+<p>TCAD consists of two main branches: process simulation and device simulation.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>1.2 Process Simulation</h1>
+
+<p>In process simulation, processing steps such as etching, deposition, 
+ion implantation, thermal annealing, and oxidation are simulated based 
+on physical equations, which govern the respective processing steps. 
+The simulated part of the silicon wafer is discretized (meshed) and 
+represented as a finite-element structure (see Figure 1).</p> 
+
+<p>For example, in the simulation of thermal annealing, complex diffusion 
+equations for each dopant species are solved on this mesh. For oxidation 
+simulations, the growth of silicon oxide is simulated taking into account 
+the oxygen diffusion, the mechanical stresses at corners, and so on.</p>
+
+<p><a href="images/ov_sp_mesh.png"><img src="images/ov_sp_mesh.png" width="570" 
+alt="Gate-drain corner of NMOSFET" /></a></p>
+
+<p class="caption">Figure 1. Magnification of gate-drain corner 
+of an NMOSFET with finite-element grid. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Device Simulation</h1>
+
+<p>Device simulations can be thought of as virtual measurements of the 
+electrical behavior of a semiconductor device, such as a transistor or 
+diode. The device is represented as a meshed structure. 
+Each node of the device has properties associated with it, such as 
+material type and doping concentration. For each node, the carrier 
+concentration, the current densities, the electric field, the generation 
+and recombination rates, and so on are computed (see Figure 2).</p>
+
+<p>Electrodes are represented as areas on which boundary conditions, such 
+as applied voltages, are imposed. The device simulator solves the Poisson 
+equation and the carrier continuity equation (and possibly other equations). 
+After solving these equations, the resulting electrical currents at the 
+contacts are extracted (see Figure 3).</p>
+
+<p><img src="images/ov_currentflow.png" width="373" height="315" 
+alt="Current flow lines in NMOSFET" /></p>
+
+<p class="caption">Figure 2. Current flow lines in a 0.13 &mu;m NMOSFET at
+V<sub>gs</sub> = 1.5 V and V<sub>ds</sub> = 3.0 V; shading represents
+current density.</p>
+
+<p><img src="images/ov_idvd.png" width="435" height="385" 
+alt="Drain current as function of drain voltage" /></p>
+
+<p class="caption">Figure 3. Drain current as a function of drain voltage for 
+a 50 nm NMOSFET at V<sub>gs</sub> = 0.25, 0.5, 0.75, 1.0, and 1.25 V.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>1.4 TCAD Simulation Flow</h1>
+
+<p>A typical TCAD simulation flow is integrated in a Sentaurus Workbench project, 
+and the flow usually consists of two main steps (see the 
+<a href="../swb/swb_menu.html">Sentaurus Workbench module</a>):</p>
+
+<ol>
+<li>Structure generation</li>
+<li>Device simulation</li>
+</ol>
+
+<p>Two different approaches can be used for the structure generation:</p>
+
+<ul>
+<li>Process simulation performed by Sentaurus Process is based on physical models 
+for each step that is performed to fabricate a device (see the 
+<a href="../sp/sp_menu.html">Sentaurus Process module</a>). It can refer to a given layout 
+file inside the tool input or can use the mask layout, generated by the Silicon WorkBench tool (see the <a href="../ic/ic_menu.html">Silicon WorkBench Interface module</a>), 
+as shown in Figure&nbsp;4.<br />
+
+<p><img src="images/ov_flow1a.png" width="536" height="109"
+alt="Simulation flow based on Sentaurus Process" /></p>
+
+<p class="caption">Figure 4. TCAD simulation flow (left) started directly from Sentaurus 
+Process or (right) using Silicon WorkBench (Layout Editor) to generate a layout.</p>
+</li>
+
+<li>Process emulation or geometric definition of the device, performed by Sentaurus Structure 
+Editor (see the <a href="../sde/sde_menu.html">Sentaurus Structure Editor module</a>). 
+It uses 2D or 3D predefined geometric objects in combination with analytically defined doping 
+profiles and profiles loaded from the process simulation step. It can refer to a given layout 
+file inside the tool input or can use the mask layout, generated by Silicon WorkBench as 
+shown in Figure&nbsp;5.<br />
+
+<p><img src="images/ov_flow2a.png" width="527" height="107"
+alt="Simulation flow based on Sentaurus Structure Editor" /></p>
+
+<p class="caption">Figure 5. TCAD simulation flow (left) started directly from Sentaurus 
+Structure Editor or (right) using Silicon WorkBench to generate a layout.</p>
+</li>
+</ul>
+
+<p>Process simulation and process emulation require the specification of physical models 
+for each step. Such physical models describe, for example, the diffusion of impurities or 
+the physics of etching and deposition steps. Depending on the simulation task, you can 
+choose models of differing accuracy and complexity. The simple geometric definition of 
+the device can be used if no information about the process flow is available, or if the 
+process flow is not important for the specific simulation task.</p>
+
+<p>In some cases, the combination of Sentaurus Process and Sentaurus Structure Editor is 
+required, for example, a 2D process flow simulation with Sentaurus Process, followed 
+by 3D device geometry construction and 3D doping compilation, performed by Sentaurus Structure 
+Editor to construct the 3D device structure (see Figure&nbsp;6).</p>
+
+<p><img src="images/ov_flow3a.png" width="351" height="128"
+alt="Simulation flow using Sentaurus Process and Sentaurus Structure Editor" /></p>
+
+<p class="caption">Figure 6. TCAD simulation flow using both Sentaurus Process and Sentaurus 
+Structure Editor to construct 3D device structure.</p>
+
+<p>Both process and device simulators use dedicated numeric methods, which require the spatial 
+discretization of the device structure. The discretization is performed by the mesh generation 
+routine, which is coupled with Sentaurus Process and also can be used as a standalone tool 
+(see the <a href="../smesh/smesh_menu.html">Sentaurus Mesh module</a>). After a process simulation, remeshing the device structure is required to fulfill the requirements on the 
+device simulator side.</p>
+
+<p>You can remesh either inside the corresponding structure generation tool or outside the 
+structure generation step using a standalone Sentaurus Mesh tool (see Figure&nbsp;7). Deciding 
+which approach to use depends on your circumstances.</p>
+
+<p><a href="images/ov_flow4.png"><img src="images/ov_flow4.png" width="570" 
+alt="Simulation flow using Sentaurus Process and Sentaurus Structure Editor with Sentaurus Mesh" /></a></p>
+
+<p class="caption">Figure 7. TCAD simulation flow using (left) built-in mesh discretization 
+in Sentaurus Process or (right) standalone mesh discretization performed by Sentaurus Mesh after 
+Sentaurus Structure Editor tool step. (Click image for full-size view.)</p>
+
+<p>After a structure is generated and meshed, you are ready to perform a device simulation 
+with Sentaurus Device (see the <a href="../sd/sd_menu.html">Sentaurus Device module</a>). 
+There might be as many Sentaurus Device tools in the flow as needed to simulate different application 
+tasks (see Figure&nbsp;8).</p>
+
+<p><img src="images/ov_flow5a.png" width="434" height="129" 
+alt="Simulation flow using Sentaurus Process and Sentaurus Device" /></p>
+
+<p class="caption">Figure 8. TCAD simulation flow using one Sentaurus Process tool and 
+multiple Sentaurus Device tools.</p>
+
+<p>Often, the simulation flow needs to end with parameter extraction from the results of the simulation, 
+which is performed by the Sentaurus Visual tool (see the <a href="../sv/sv_menu.html">Sentaurus Visual module</a>). 
+Then, the extracted values can be shown in the Sentaurus Workbench project (see Figure&nbsp;9).</p>
+
+<p><img src="images/ov_flow6a.png" width="275" height="130"
+alt="Data extracted using Sentaurus Visual" /></p>
+
+<p class="caption">Figure 9. TCAD simulation flow ends with Sentaurus Visual, which extracts 
+parameters from the device simulation results.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="intro_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="intro_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

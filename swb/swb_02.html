@@ -1,0 +1,481 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Workbench 2. Running Projects</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_01.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_03.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Workbench<br />2. Running Projects</h1>
+
+<p>
+ <a href="#Load">2.1 Opening Sentaurus Workbench Projects</a><br />
+ <a href="#Node">2.2 Understanding Node Colors</a><br />
+ <a href="#RunProject">2.3 Running Projects</a><br />
+ <a href="#SelectNodes">2.4 Selecting Nodes to Run</a><br />
+ <a href="#DisplayInfo">2.5 Displaying Node Output and Node Information</a><br />
+ <a href="#View">2.6 Viewing Simulation Results</a><br />
+ <a href="#VisTogether">2.7 Visualizing Selected Nodes Together</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To run a Sentaurus Workbench project.</li>
+</ul>
+
+<!--================================================-->
+<a name="Load"></a>
+<h1>2.1 Opening Sentaurus Workbench Projects</h1>
+
+<p>In this section, you will use the project <tt>SimpleMOS</tt>, which is 
+located in the directory <tt>Applications_Library/GettingStarted/swb/</tt>.</p>
+
+<p>To open the <tt>SimpleMOS</tt> project:</p>
+
+<ol>
+<li>Locate and select this project in the projects browser.</li>
+<li>Choose <strong>Edit</strong> &gt; <strong>Copy</strong>, or press Ctrl+C.</li>
+<li>Choose <strong>Edit</strong> &gt; <strong>Paste</strong>, or press Ctrl+V, 
+to copy the project under the <tt>$STDB</tt> directory or a subdirectory of it.</li>
+<li>Double-click the copy of the project under <tt>$STDB</tt>.</li>
+</ol>
+
+<p>The project opens on the <strong>Project</strong> tab of the main window 
+(see Figure 1).</p>
+
+<p><a href="images/swb_loadmain.png"><img src="images/swb_loadmain.png" width="570" 
+alt="Project tab showing open project" /></a></p>
+
+<p class="caption">Figure 1. Project tab showing tool flow (black box), 
+project parameters (blue box), and simulation tree (red box). 
+(Click image for full-size view.)</p>
+
+<p>The tool flow refers to the sequence of simulation tools and their 
+associated input files. In the <tt>SimpleMOS</tt> project, these are 
+Sentaurus Process, Sentaurus Device, and Sentaurus Visual as seen in Figure&nbsp;1. 
+Below the tool flow, the project parameters (Lg, NWell, and so on) are listed.</p>
+
+<p>To display the corresponding node numbers:</p>
+
+<ul>
+<li>Choose <strong>View</strong> &gt; <strong>Tree Options</strong> &gt; 
+<strong>Show Node Numbers</strong>, or press the F9 key.</li>
+</ul>
+ 
+<p>A complete sequence of simulation nodes (comprising all tools in the tool flow) 
+form an <em>experiment</em>, that is, an experiment is a complete horizontal line 
+in the table. Any number of experiments is possible for a given tool flow if 
+parameters are used.</p>
+
+<p>To the right of the tool flow, there are variables and extracted electrical 
+parameters from the simulated I<sub>d</sub>&ndash;V<sub>g</sub> characteristics: 
+tox, Vtgm, Id, SS, and gm (use the scroll bar to see them all). When the simulation 
+is completed, the extracted electrical values appear in their respective columns.</p>
+
+<!--================================================-->
+<a name="Node"></a>
+<h1>2.2 Understanding Node Colors</h1>
+
+<p>Each simulation node in a project has a color that indicates its status. 
+The color chart in the lower-right corner of the main window (see Figure 2) 
+indicates what each color means.</p>
+
+<p><img src="images/swb_colornodes.png" width="493" height="23" 
+alt="Colors indicating different node statuses" /></p>
+
+<p class="caption">Figure 2. Colors indicating different node statuses.</p> 
+
+<p>For example, when the project <tt>SimpleMOS</tt> is opened, the nodes are white, 
+indicating that the nodes were not simulated previously. This is because a 
+ready-to-run project has been copied from the <tt>Applications_Library</tt>.</p> 
+
+<p>The way in which a Sentaurus Workbench project is displayed is very 
+flexible. You can choose to display solely the tool flow, or the 
+number of the simulation nodes, or to display parameters (splits), variables, 
+extracted values, and other details.</p>
+
+<p>To use this feature:</p>
+
+<ul>
+<li>From the <strong>View</strong> menu, select or clear the various options, or 
+choose <strong>View</strong> &gt; <strong>Tree Options</strong> for more features.</li>
+</ul>
+
+<!--================================================-->
+<a name="RunProject"></a>
+<h1>2.3 Running Projects</h1>
+
+<p>To run a project:</p>
+
+<ol>
+<li>Choose <strong>Project</strong> &gt; <strong>Operations</strong> &gt; 
+<strong>Run</strong>, or press Ctrl+R, or click the 
+<img class="imgline" src="images/icons/run.png" width="17" height="19" alt="Run Project toolbar button" /> 
+toolbar button.<br />
+The Run Project dialog box opens (see Figure 3).</li>
+<li>Select which nodes to run (all unsimulated nodes by default) and which 
+simulation queue to use (running on the local host is the default).</li>
+<li>Click <strong>OK</strong> to start the simulation.</li>
+</ol>
+
+<p><img src="images/swb_run.png" width="459" height="433" alt="Run Project dialog box" /></p>
+
+<p class="caption">Figure 3. Run Project dialog box.</p>
+
+<p>Sentaurus Workbench runs the project, and the Project Log dialog box is 
+displayed (see Figure 4) with real-time updates on the status of the project.</p>
+
+<p><a href="images/swb_projectlog.png"><img src="images/swb_projectlog.png" width="570" 
+alt="Project Log dialog box" /></a></p>
+
+<p class="caption">Figure 4. Project Log dialog box. (Click image for full-size view.)</p> 
+
+<p>As the simulation runs, the nodes change status from &quot;none&quot; 
+(white) to &quot;queued&quot; (light green) to &quot;pending&quot; (bright green) 
+to &quot;running&quot; (blue) and finally to &quot;done&quot; (yellow). 
+If a node fails, then it becomes &quot;failed&quot; (red).</p>
+
+<p>To stop a running simulation:</p>
+
+<ul>
+<li>Choose <strong>Nodes</strong> &gt; <strong>Abort</strong>, or press Ctrl+T, 
+or click the <img class="imgline" src="images/icons/cancel.png" width="20" height="20" 
+alt="Cancel toolbar button" /> toolbar button.</li>
+</ul>
+
+<p>After the project run is completed, all variables are extracted (tox, Vtgm, Id, SS, and gm) 
+and displayed to the right of the tool flow on the <strong>Project</strong> tab.</p>
+
+<!--================================================-->
+<a name="SelectNodes"></a>
+<h1>2.4 Selecting Nodes to Run</h1>
+
+<p>Instead of running an entire project, you can run only a subset of nodes. 
+To do this, you can select the nodes in the table (hold the Ctrl key to select 
+multiple nodes). For example, to run only the Sentaurus Process nodes associated 
+with LDD_Dose=1e+14, select nodes 9, 11, 13, and 15, and then click <strong>OK</strong> 
+(see Figure&nbsp;5).</p>
+
+<p><a href="images/swb_runselected.png"><img src="images/swb_runselected.png" width="570" 
+alt="Selecting nodes in table" /></a></p>
+
+<p class="caption">Figure 5. Selecting nodes in the table. (Click image for full-size view.)</p> 
+
+<p>To run an entire experiment (row), click the row number. Multiple rows can 
+be selected as well.</p>
+
+<p>To select all nodes to the right of a certain node, that is, to run 
+all nodes starting with a particular one, click that node and choose 
+<strong>Nodes</strong> &gt; <strong>Extend Selection To</strong> &gt; 
+<strong>Leaves</strong>.</p>
+
+<p>Similarly, all nodes that must be completed before a particular node can be run are 
+selected using <strong>Nodes</strong> &gt; <strong>Extend Selection To</strong> &gt; 
+<strong>Root</strong>. Other node selection criteria can be found by choosing 
+<strong>Nodes</strong> &gt; <strong>Select</strong>.</p>
+
+<!--================================================-->
+<a name="DisplayInfo"></a>
+<h1>2.5 Displaying Node Output and Node Information</h1>
+
+<p>To find the properties of any node, double-click the node. The Node Explorer 
+opens (see Figure&nbsp;6).</p>
+
+<p><a href="images/swb_nodeexplorer.png"><img src="images/swb_nodeexplorer.png" width="570" 
+alt="Node Explorer window" /></a></p>
+
+<p class="caption">Figure 6. Node Explorer window. (Click image for full-size view.)</p> 
+
+<p>In the Node Explorer, the data belonging to a node is split into three groups:</p>
+
+<ul>
+<li>The <strong>Input and Output</strong> tab displays the node results and output files 
+associated with the node.</li>
+<li>The <strong>Node Data</strong> tab shows information about the execution hosts, job ID, 
+run status, and other related information.</li>
+<li>The <strong>Job Log</strong> tab displays the job log file, prologue, epilogue, and 
+execution commands.</li>
+</ul>
+
+<p>Some of the output files can be associated with a file viewer, which opens immediately 
+when you click <strong>Launch</strong>. Text files are displayed in the file viewer in the 
+right pane, where you can search and scroll through the selected content.</p>
+
+<p>In addition, the information written to standard output, when a simulation is running, 
+can be viewed by choosing <strong>Nodes</strong> &gt; <strong>View Output</strong>, or 
+pressing Ctrl+W.</p>
+
+<!--================================================-->
+<a name="View"></a>
+<h1>2.6 Viewing Simulation Results</h1>
+
+<p>A given node has several input and output files associated with it. These can be 
+viewed by right-clicking a node and choosing <strong>Visualize</strong>. You can 
+view all the text and log files, using the text editor, by selecting them.
+Alternatively, to view the output of a node, click the 
+<img class="imgline" src="images/icons/visualize.png" width="32" height="13" 
+alt="Visualize toolbar button" /> toolbar button and select an option.</p>
+
+<p>Sentaurus Visual is the primary tool used to visualize the resulting structures
+from process simulations, mesh and structure generation, as well as the 
+device simulation results, such as I&ndash;V curves. To invoke Sentaurus Visual quickly 
+on all available files for visualization, click the 
+<img class="imgline" src="images/icons/quick_visualize.png" width="21" height="21" 
+alt="Quick visualize toolbar button" /> toolbar button.</p>
+
+<!--================================================-->
+<a name="VisTogether"></a>
+<h1>2.7 Visualizing Selected Nodes Together</h1>
+
+<p>One of the most common tasks in Sentaurus Workbench is to compare
+simulation characteristics of different experiments to each other.</p>
+
+<p>You can easily use this functionality when coding your visualization scripts. 
+The projects <tt>GettingStarted/swb/SimpleMOS</tt> and <tt>GettingStarted/swb/SimpleMOS_py</tt> demonstrate this capability for 
+Sentaurus Visual Tcl and Python modes, respectively. However, the approach applies to any visualization tool.</p>
+
+<p>Start Sentaurus Workbench, copy and open the project, and run all the nodes. Then,
+select several Sentaurus Visual nodes that correspond to the same V<sub>d</sub> bias 
+condition. Alternatively, you can select these nodes by an expression as follows:</p>
+
+<ol>
+<li>Right-click a node and choose <strong>Select</strong> &gt; <strong>By Expression</strong>.</li>
+<li>In the Select Nodes By Expression dialog box, enter <tt>all|last:{$Vd==1.0}</tt>.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>For more details, see <a href="swb_07.html#NodeSel">Section&nbsp;7.1 Node Selection by Expression</a>.</p>
+
+<p>After you select the nodes, click the <strong>Run Selected Visualizer Nodes Together</strong> 
+toolbar button to generate all of the corresponding curves in Sentaurus Visual as shown 
+in Figure&nbsp;7.</p>
+
+<p><a href="images/swb_au_gsproject.png"><img src="images/swb_au_gsproject.png" width="570" 
+alt="SimpleMOS project showing icon to run all visualization scripts together" /></a></p>
+
+<p class="caption">Figure 7. SimpleMOS project showing the toolbar button 
+to launch all visualization scripts together. (Click image for full-size view.)</p>
+
+<p>Sentaurus Visual assembles all of the corresponding I<sub>d</sub>&ndash;V<sub>gs</sub> 
+curves in one plot (see Figure&nbsp;8). The legend contains only those Sentaurus Workbench 
+parameters required to uniquely identify each selected curve.</p>
+
+<p><a href="images/swb_au_svisual.png"><img src="images/swb_au_svisual.png" width="570" 
+alt="Assembled Sentaurus Visual curves" /></a></p>
+
+<p class="caption">Figure 8. Assembled Sentaurus Visual curves. 
+(Click image for full-size view.)</p>
+
+<p>Technically, Sentaurus Workbench performs the following steps when you click the 
+<strong>Run Selected Visualizer Nodes Together</strong> button:</p>
+
+<ul>
+<li>It checks whether any visualization nodes need to be preprocessed.</li>
+<li>It concatenates the preprocessed scripts of the selected nodes, adding some global 
+and node-specific preset variables.</li>
+<li>It runs the concatenated command files of all selected nodes in one Sentaurus Visual 
+tool instance.</li>
+</ul>
+
+<p class="note">To ensure that Sentaurus Workbench preprocesses the selected nodes before
+concatenating the preprocessed scripts, you must preprocess the selected nodes manually 
+by pressing Ctrl+P. To force Sentaurus Workbench to automatically preprocess the selected 
+nodes, you must set <strong>Visualization</strong> &gt; 
+<strong>Run Selected Visualizer Nodes Together</strong> &gt; 
+<strong>Always Preprocess Nodes</strong> to <strong>Yes</strong> in the preferences. 
+Preferences are discussed in <a href="swb_05.html">
+Section&nbsp;5. Preferences and Settings.</a></p>
+
+<p>Sentaurus Workbench adds the following global preset variables:</p>
+
+<ul>
+<li><tt>nodelist</tt>: List of node numbers of all selected nodes</li>
+<li><tt>commonParameters</tt>: String containing all keyword&ndash;value pairs 
+common to all selected nodes</li>
+<li><tt>runVisualizerNodesTogether</tt>: Set to 1 to check the run mode if a
+script is called using the toolbar button</li>
+</ul>
+
+<p>The following preset variables are specific to each node:</p>
+
+<ul>
+<li><tt>legend</tt>: Legend text of the current curve. It is a string composed of 
+all Sentaurus Workbench parameter <tt>name=values</tt> pairs, which uniquely identify 
+the curve within the set of selected experiments.</li>
+<li><tt>color</tt>: A unique color from a color palette of 10 entries. For the 11th 
+node, the cycle restarts and the curve has the first color again.</li>
+<li><tt>marker</tt>: After the color palette is cycled through, a new marker type is set.</li>
+<li><tt>line</tt>: After the color palette is cycled through, a new line type is set.</li>
+<li><tt>cv_index</tt>: Index of the current curve, starting from 1.</li>
+</ul>
+
+<p>As the preprocessed command files are executed sequentially in the same 
+Sentaurus Visual session, consider the following points:</p>
+
+<ul>
+<li><strong>Unique names</strong>: Any variable, dataset, and curve name that is
+created in the script must be unique. This is easily achieved by including a
+unique node number <tt>@node@</tt>. For example:<br />
+<pre>create_curve -name IdVg(@node@)...</pre></li>
+ 
+<li><strong>Execute code only once</strong>: Certain operations such as creating a plot 
+frame must be executed only once. This can be accomplished by using:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/SimpleMOS/IdVg_vis.tcl" startExpr="*if*llength*Plot_1d*" endExpr="*create_plot*" footer="  ...\n}" -->
+<pre>
+if {[llength [list_plots Plot_1D]]==0} {
+  create_plot -1d -name Plot_1D
+  ...
+}
+</pre>
+<!-- grep end -->
+</li>
+
+<li><strong>Detect visualization mode</strong>: Executing multiple nodes can be time-consuming. 
+For a fast response, you might separate expensive postprocessing tasks from pure curve 
+visualization tasks. Whether the script is called in batch mode or visualization mode is determined by:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/SimpleMOS/IdVg_vis.tcl" startExpr="*#*set*curve*properties*" endExpr="*runvisualizernodestogether*" footer="  ...\n}"  -->
+<pre>
+# set curve properties only if script is called through run visualizer button
+if {[info exists runVisualizerNodesTogether]} {
+  ...
+}
+</pre>
+<!-- grep end -->
+</li>
+
+<li><strong>Detect node status</strong>: Visualization can also be performed during 
+simulation. To check the current node status, specify:<br />
+<!-- grep file="../../Applications_Library/GettingStarted/swb/SimpleMOS/IdVg_vis.tcl" startExpr="*#*determine*status*" endExpr="*set*status*" footer="..." -->
+<pre>
+# determine sdevice node status
+set status @[gproject::GetNodeStatus @node|sdevice@]@
+...
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/swb/SimpleMOS/IdVg_vis.tcl" startExpr="*#*extract*curve*" endExpr="*load_library*" footer="  ...\n}" -->
+<pre>
+# Extract curve parameters only when sdevice node has status done
+if { $status == &quot;done&quot; } {
+  load_library extract
+  ...
+}
+</pre>
+<!-- grep end -->
+</li>
+
+<li><strong>Set curve attributes</strong>: To easily identify a curve, use the Sentaurus 
+Workbench preset variable <tt>legend</tt>, which provides a distinct and descriptive 
+legend label. Furthermore, the preset <tt>color</tt> defines a unique color. If each node 
+creates a set of curves, distinguish them by explicitly choosing different markers or line 
+styles for each. If you need to select more than 10 nodes and to distinguish them, use a 
+combination of <tt>color</tt> and <tt>line</tt> as in the following example, or 
+<tt>color/marker</tt> presets, which allow 60 or 80 unique curve attributes, respectively.<br />
+<!-- grep file="../../Applications_Library/GettingStarted/swb/SimpleMOS/IdVg_vis.tcl" startExpr="*set_curve_prop*" endExpr="*line_width*"  -->
+<pre>
+  set_curve_prop IdVg($n) -label &quot;IdVg $legend&quot; \
+    -color $color -line_style $line -line_width 3
+</pre>
+<!-- grep end -->
+</li>
+</ul>
+
+<p> Click to view the commented Sentaurus Visual command file 
+<a href="../../Applications_Library/GettingStarted/swb/SimpleMOS/IdVg_vis.tcl">
+IdVg_vis.tcl</a>.</p>
+
+<p>Here are the equivalent Sentaurus Visual Python commands:</p>
+
+<ul>
+<li><strong>Unique names</strong>:<br />
+<pre>
+n = @node@
+sv.create_curve(name=f'IdVg({n}})', ...
+</pre>
+</li>
+
+<li><strong>Execute code only once</strong>: <br />
+<pre>
+if 'Plot_1D' not in sv.list_plots():
+    sv.create_plot(name='Plot_1D', xy=True)
+    ...
+</pre>
+</li>
+
+<li><strong>Detect visualization mode</strong>:<br />
+<pre>
+# Set curve properties only if script is run using Run Visualizer Nodes Together
+if 'runVisualizerNodesTogether' in globals():
+    ...
+</pre>
+</li>
+
+<li><strong>Detect node status</strong>:<br />
+<pre>
+# Determine Sentaurus Device node status
+status = '@[gproject::GetNodeStatus @node|sdevice@]@'
+...
+
+# Extract device parameters only when Sentaurus Device node has status done
+if status == 'done':
+    # Import extraction module
+    import svisualpylib.extract as ext
+    ...
+</pre>
+</li>
+
+<li><strong>Set curve attributes</strong>:<br />
+<pre>
+sv.set_curve_prop(
+    f'IdVg({n})', plot='Plot_1D', color=color, 
+    label=f'IdVg {legend}', line_style=line, 
+    line_width=3
+)    
+</pre>
+</li>
+</ul>
+
+<p>Click to view the commented Sentaurus Visual command file 
+<a href="../../Applications_Library/GettingStarted/swb/SimpleMOS_py/IdVg_vis.py">
+IdVg_vis.py</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_01.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_03.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tips &amp; Tricks 2. Simulating Wide-Bandgap Semiconductors With Sentaurus Device</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tips &amp; Tricks<br />2. Simulating Wide-Bandgap Semiconductors With Sentaurus Device</h1>
+
+<p>
+<a href="#1">2.1 SiC Process and Device Simulation</a><br />
+<a href="#2">2.2 AlGaN Process and Device Simulation</a><br />
+<a href="#3">2.3 How can I improve convergence in simulations of wide-bandgap-based devices?</a><br />
+<a href="#4">2.4 My simulation runs slowly. How can I speed it up?</a><br />
+<a href="#5">2.5 Relevant Application Notes</a><br />
+<a href="#6">2.6 References</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To provide guidelines for simulating devices made of wide-bandgap materials such as 
+  silicon carbide and III&ndash;nitrides (GaN, AlGaN, and InGaN) with Sentaurus Device.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 SiC Process and Device Simulation</h1>
+
+<p>You can simulate both structure formation and electrical device behavior 
+relevant to SiC technology. Different SiC polytypes are supported such as 
+3C&ndash;SiC, 4H&ndash;SiC, and 6H&ndash;SiC.</p>
+
+<p>For more information about SiC process simulation, see 
+<a href="../sp/sp_15.html">Section&nbsp;15. Special Focus: SiC Process Simulation</a>.</p>
+
+<p>To learn how to simulate SiC devices with Sentaurus Device, see 
+<a href="../sd/sd_15.html">Section&nbsp;15. Special Focus: 4H-SiC PiN Device Breakdown Simulation</a>.</p>
+
+<p>For other examples, see <a href="#5">Section 2.5 Relevant Application Notes</a>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 AlGaN Process and Device Simulation</h1>
+
+<p>TCAD Sentaurus provides relevant models to simulate the processing and
+ electrical device behavior of AlGaN/GaN devices.</p>
+
+<p>For more information about AlGaN process simulation, see 
+<a href="../sp/sp_16.html">Section&nbsp;16. Special Focus: AlGaN Process Simulation</a>.</p>
+
+<p>To find out more about models and settings for AlGaN device simulation, see 
+<a href="../sd/sd_16.html">Section&nbsp;16. Special Focus: Simulating AlGaN Devices With Sentaurus Device</a>.</p>
+
+<p>For other examples, see <a href="#5">Section 2.5 Relevant Application Notes</a>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 How can I improve convergence in simulations of wide-bandgap-based devices?</h1>
+
+<p>Simulations involving wide-bandgap materials are more prone to convergence 
+problems due to the numeric challenges in performing floating-point operations with 
+extremely large and extremely small numbers such as the concentrations of majority 
+and minority carriers in wide-bandgap semiconductors.</p>
+
+<!--=========================-->
+<h2>2.3.1 Troubleshooting</h2>
+
+<p>If you experience convergence problems:</p>
+
+<ol>
+<li>Understand the physics of the device.<br />
+Convergence problems are frequently caused by improper meshing of the structure. 
+A good mesh needs to capture the physics well. For example, depletion regions and 
+impact ionization generation must be captured well to prevent convergence issues.</li>
+
+<li>Tighten up numeric settings.<br />
+For SiC numeric settings, see 
+<a href="../sd/sd_15.html#4">Section&nbsp;15.4 SiC-Specific Numeric Parameters</a>.<br />
+For III&ndash;nitride numeric settings, see 
+<a href="../sd/sd_16.html#6">Section&nbsp;16.6 AlGaN-Specific Numeric Parameters</a>.</li>
+
+<li>To improve convergence in low-density or low-current regions, see 
+<a href="../sd/sd_6.html#6">Section&nbsp;6.6 Improving Convergence in Low-Density or Low-Current Regions</a>.</li>
+
+<li>Start the debugging process by switching off all physical models. Then, switch 
+them on again one-by-one to find out which model causes problems.</li>
+
+<li>See if boundary conditions (BCs) are contradictory.<br />
+For example, an electrode touching a semiconductor and an insulator at a corner 
+will apply an Ohmic BC (default) to nodes touching the semiconductor, and a gate-like 
+BC to nodes touching the insulator. These different BCs will lead 
+to abrupt variations in potential around the corner that can lead to convergence 
+issues, especially if the <tt>Avalanche</tt> model is switched on. The simplest 
+solution to this problem is to use a workfunction specification for an electrode,
+which leads to a flat band condition around the corner.</li>
+
+<li>Often, using more realistic physics and solution methods can lead to better 
+convergence (see 
+<a href="#realphysics">Section&nbsp;2.3.2 Realistic Physics and Solution Methods</a>).</li>
+
+<li>Use Sentaurus Device tools to find out which equation is responsible for problems 
+and where it is in the device (see 
+<a href="#debugtools">Section&nbsp;2.3.3 Tools for Debugging Convergence Problems</a>).</li>
+</ol>
+
+<!--=========================-->
+<a name="realphysics"></a>
+<h2>2.3.2 Realistic Physics and Solution Methods</h2>
+
+<p>Often, removing some numeric idealities can improve convergence, as follows:</p>
+
+<ul>
+<li>Running in transient instead of steady state is often beneficial in terms of robust 
+convergence behavior. It also helps if there are some natively &quot;dynamic&quot; objects 
+(such as traps) involved in the simulation. Using transient is as easy as using steady state. 
+Simply replace <tt>Quasistationary</tt> with <tt>Transient</tt> and, if present, remove 
+the pulse specification from the <tt>Electrode</tt> section. By default, the ramp time is 
+1&nbsp;s, but you can add it explicitly in the <tt>Transient</tt> specification by using 
+the <tt>FinalTime</tt> specification:<br />
+
+<pre>
+Electrode {
+  ...
+  { Name=&quot;drain&quot; Voltage= 0.0 Resistor= 1e10 } 
+}
+Math { Transient= BE }
+Solve {
+  ...
+  Transient ( 
+    InitialStep= 1e-4 Increment= 1.4 [InitialTime=... FinalTime=...]
+    Goal { Name="drain" Voltage=5000 }
+  ) { Coupled {Poisson Electron Hole} } 
+}
+</pre></li>
+
+<li>Sometimes, switching on a small amount of optical generation helps to raise 
+the concentration of minority carriers. Generation rate values as low as 
+10<sup>6</sup> pairs/s-cm<sup>-3</sup>, which translate into a few carriers 
+generated in years in micrometer-scale devices, are sufficient to make 
+simulations of wide-bandgap semiconductors more robust:<br />
+
+<pre>
+Physics {
+  ...
+  Optics(OpticalGeneration(SetConstant(Value=1e6)))
+}
+</pre></li>
+
+<li>Ideal insulators can lead to the accumulation of minute quantities of carriers 
+that are essentially isolated pools of carriers. For example, minority carriers will 
+accumulate at insulator&ndash;semiconductor interfaces of MOSFETs and MISHFETs, or 
+at internal barriers in heterostructure devices and lead to convergence problems with 
+continuity equations.<br />
+Any numeric &quot;tap&quot; into these isolated pools of carriers leads to 
+improved convergence. Switching on tunneling so that carriers connect to the next 
+layer or to the &quot;outside world&quot; is a method used to improve convergence 
+in these cases. Here is an example of how to switch on hole tunneling across an 
+alumina barrier in a MISHFET:<br />
+
+<pre>
+Physics {
+  ...
+  hBarrierTunneling &quot;NLM&quot;
+}
+
+Math {
+  ...
+  Nonlocal &quot;NLM&quot; (Barrier(Region=&quot;Al2O3_Ins&quot;))
+}
+</pre></li>
+</ul>
+
+<!--=========================-->
+<a name="debugtools"></a>
+<h2>2.3.3 Tools for Debugging Convergence Problems</h2>
+
+<p>Sentaurus Device provides the keywords <tt>CNormPrint</tt> and <tt>NewtonPlot</tt>, 
+which constitute powerful tools to understand and resolve convergence issues.</p>
+
+<p><tt>CNormPrint</tt> prints, after each Newton iteration, one line for each equation 
+being solved, with the name of the equation, the maximum update error, its corresponding 
+coordinate, and the value of the solution variable at that location. Inspection of the 
+output or log files typically indicates which equation is responsible for 
+convergence problems and the location where errors are largest.</p>
+
+<p><tt>NewtonPlot</tt> plots TDR files with maps of errors and residuals for each equation, 
+which is essentially the same information as <tt>CNormPrint</tt>, but in a more 
+comprehensive and graphical way.</p>
+
+<p>In both cases, the information is most useful after the Newton iteration that brought 
+the solution closest to convergence, with often only one equation still struggling. 
+In addition, you are typically interested in <em>Newton plots</em> only when the simulation 
+is on the verge of failing to converge, that is, when the bias step is close to its minimum 
+allowed by the <tt>MinStep</tt> keyword.</p>
+
+<p>The following <tt>Math</tt> section excerpt demonstrates how to switch on these 
+convergence-monitoring tools in such a way that Newton plots are created only for small 
+bias steps and for the iteration that was closest to convergence:</p>
+
+<pre>
+Math {
+  ...
+  CNormPrint
+  NewtonPlot (Error MinError Residual)
+}
+</pre>
+
+<p>The generated <tt>NewtonPlot</tt> TDR files in this example are named 
+<tt>n@node@_np_&lt;iteration number&gt;_min_des.tdr</tt>. The choice of file name 
+is specified in the <tt>File</tt> section:</p>
+
+<pre>
+File {
+  ...
+  NewtonPlot= &quot;n@node@_np_%d_%d_des.tdr&quot;
+}
+</pre>
+
+<p>The first C-format specifier (<tt>%d</tt>) is replaced by the bias step number 
+and the second C-format specifier is replaced by <tt>min</tt> since you chose to 
+plot only a file for the Newton iteration that is closest to convergence.</p>
+
+<p>See <a href="../sd/sd_6.html">Section&nbsp;6. Nonlinear System Newton Solver</a> 
+for further help on how to improve convergence.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>2.4 My simulation runs slowly. How can I speed it up?</h1>
+
+<p>Devices based on wide-bandgap materials are usually used in power applications 
+and are often large. As a consequence, mesh sizes also tend to be large and 
+simulations take longer than simulations of devices for other applications.</p>
+
+<p>The default linear solver SUPER is the most accurate and leads to the most 
+robust simulations. Therefore, SUPER is typically the linear solver of choice when 
+simulating wide-bandgap-based devices. However, significant progress has been made 
+with the iterative solver ILS, which is significantly faster than SUPER. 
+In addition, while SUPER can be used only for single-thread (single CPU core) 
+simulations, ILS can be parallelized and can take advantage of modern multicore machines.</p>
+
+<p>The ILS solver with default numeric parameters leads to simulations that are typically not robust 
+enough. However, by tightening up some of its numeric parameters, you can run robust 
+simulations of SiC- and GaN-based devices significantly faster than with the SUPER solver.</p>
+
+<p>Typical <tt>Math</tt> sections are listed in 
+<a href="../sd/sd_15.html#4">Section&nbsp;15.4 SiC-Specific Numeric Parameters</a> and 
+<a href="../sd/sd_16.html#6">Section&nbsp;16.6 AlGaN-Specific Numeric Parameters</a>. 
+However, depending on the specific application, other more relaxed settings might work faster.</p>
+
+<p>To benefit from the multicore capability of the ILS solver, the number of parallel threads 
+is set with <tt>NumberOfThreads</tt>:</p>
+
+<pre>
+Math {
+  ...
+  NumberOfThreads=4    * Simulation uses 4 threads (requires parallel license)
+  ...
+}
+</pre>
+
+<p>See <a href="../sd/sd_9.html#4">Section 9.4 Linear Solvers</a> for details 
+about ILS numeric parameters.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>2.5 Relevant Application Notes</h1>
+
+<dl class="ref">
+<dt>App. 1</dt>
+<dd><cite>Sentaurus Technology Template: Simulation of DC Characteristics of a GaN-Based HFET</cite>, 
+available from <tt>../Applications_Library/Hetero/HFET_GaN_DC</tt>.</dd>
+
+<dt>App. 2</dt>
+<dd><cite>Optimization of GaN MISFET and DC Boost Converter Circuit</cite>, 
+available from <tt>../Applications_Library/Power/BoostConverter_GaN-SiC/BoostConverter_MixedMode</tt>.</dd>
+
+<dt>App. 3</dt>
+<dd><cite>Simulation of Normally Off AlGaN/GaN HFET With p-Type GaN Gate and AlGaN Buffer</cite>, 
+available from <tt>../Applications_Library/Power/GaN/HFET_pGate_GaN</tt>.</dd>
+
+<dt>App. 4</dt>
+<dd><cite>Process and Device Simulation of 4H-SiC NMOS Device Using TCAD Sentaurus</cite>, 
+available from <tt>../Applications_Library/Power/SiC/NMOS_SiC-4H</tt>.</dd>
+
+<dt>App. 5</dt>
+<dd><cite>Simulation of 4H-SiC p-IGBT With TCAD Sentaurus</cite>, available from 
+<tt>../Applications_Library/Power/SiC/pIGBT_SiC-4H</tt>.</dd>
+</dl>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>2.6 References</h1>
+
+<dl class="ref">
+<dt>Ref. 1</dt>
+<dd><a name="ambacher-1999"></a>O. Ambacher <em>et al.</em>, &quot;Two-dimensional electron 
+gases induced by spontaneous and piezoelectric polarization charges in N- and 
+Ga-face AlGaN/GaN heterostructures,&quot; <cite>Journal of Applied Physics</cite>, 
+vol.&nbsp;85, no.&nbsp;6, pp.&nbsp;3222&ndash;3233, 1999.</dd>
+</dl>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

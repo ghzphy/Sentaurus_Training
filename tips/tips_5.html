@@ -1,0 +1,526 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tips &amp; Tricks 5. Simulating Stress Effects in Back-End-of-Line Structures</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tips &amp; Tricks<br />5. Simulating Stress Effects in Back-End-of-Line Structures</h1>
+
+<p>
+<a href="#1">5.1 Effective Material Approach</a><br />
+<a href="#2">5.2 Converting Elastic Material Parameters</a><br />
+<a href="#3">5.3 Avoiding Zero Plastic Hardening Modulus</a><br />
+<a href="#4">5.4 Taking Advantage of Symmetry</a><br />
+<a href="#5">5.5 Mechanical Coupling Boundary Conditions</a><br />
+<a href="#6">5.6 Structure Generation for Cylinders and Spheres in BEOL</a><br />
+<a href="#7">5.7 Structure Generation for Unconventional BEOL Process Steps</a><br />
+<a href="#8">5.8 Defining Contact and Crack Locations in the Unified Coordinate System</a><br />
+<a href="#9">5.9 Linearizing Dielectric Materials at BEOL Process Temperatures</a><br />
+<a href="#10">5.10 Time-Step Control for BEOL Stress Simulation With Only Linear Models</a><br />
+<a href="#11">5.11 Time-Step Control for BEOL Stress Simulation With Nonlinear Models</a><br />
+<a href="#12">5.12 Modeling Deformation With Moving Mesh</a><br />
+<a href="#13">5.13 Modeling Crack Opening on Top Surface</a><br />
+<a href="#14">5.14 J-Integral Calculations With Multiple Contours</a><br />
+<a href="#15">5.15 General Guidelines for Submodel Technique</a><br />
+<a href="#16">5.16 Meshing Parameter Recommendations for Large Structures With Curved Surfaces</a><br />
+<a href="#17">5.17 Guidelines for Cohesive Zone Modeling</a><br />
+<a href="#18">5.18 Defining Surface Contacts to Apply Mechanical Boundary Conditions</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To present some practical approaches for back-end-of-line (BEOL) stress simulation.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Effective Material Approach</h1>
+
+<p>When analyzing stress for a large structure, for example, the thermal mismatch 
+stress between the silicon chip and package substrate, it is not practical to consider 
+fine features such as metal wires in the BEOL layers. However, the contribution of 
+the stressed BEOL stack to the stress equilibrium of the chip-package structure 
+cannot be simply ignored.</p>
+
+<p>One approach to effectively consider the BEOL contribution is to use the concept of 
+&quot;smear&quot; material. With this approach, the BEOL layers are treated as a single 
+layer of &quot;smear&quot; material. The &quot;smear&quot; material properties are the 
+volume average of the metal wires and dielectrics. Typically, three elastic model parameters 
+must be defined: Young's modulus, Poisson ratio, and coefficient of thermal expansion (CTE). 
+For Young's modulus, the &quot;smear&quot; material parameter is calculated as:</p>
+
+<p><em>E</em><sub>smear</sub> = <em>E</em><sub>metal</sub> x 
+<tt>Volume percentage of metal</tt> + <em>E</em><sub>dielectrics</sub> x 
+<tt>Volume percentage of dielectrics</tt></p>
+
+<p>Similar expressions can be written for the Poisson ratio and CTE. These new material 
+properties are introduced in the simulation flow with the following statements:</p>
+
+<pre>
+mater add name= Smear new.like= Nitride
+pdbSet Smear Mechanics BulkModulus 33.0e10
+pdbSet Smear Mechanics ShearModulus 28.2e10
+pdbSet Smear Mechanics ThExpCoeff 15.3e-6
+</pre>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Converting Elastic Material Parameters</h1>
+
+<p>Sentaurus Interconnect uses the bulk modulus and the shear modulus 
+to define material elastic properties, while many times, available BEOL material 
+properties are given in terms of Young's modulus and the Poisson ratio. The following 
+statements convert user data in terms of Young's modulus and the Poisson ratio 
+to the bulk modulus and the shear modulus required in the simulations:</p>
+
+<pre>
+pdbSet Copper Mechanics BulkModulus  [Enu2K 111.5e10 0.343]
+pdbSet Copper Mechanics ShearModulus [Enu2G 111.5e10 0.343]
+</pre>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>5.3 Avoiding Zero Plastic Hardening Modulus</h1>
+
+<p>When modeling plasticity with bilinear hardening laws, the onset of plastic 
+deformation is controlled by the material yield stress, and the material hardening 
+is measured by the hardening modulus. For numeric reasons, it is recommended to 
+avoid using the zero plastic hardening modulus.</p>
+
+<p>Even for rigid plastic materials, a small nonzero value of the hardening modulus 
+can often improve numeric convergence. The following statements can adjust 
+the hardening modulus:</p>
+
+<pre>
+pdbSetDouble &lt;material&gt; Mechanics Hardening.Modulus.Isotropic &lt;n&gt;
+pdbSetDouble &lt;material&gt; Mechanics Hardening.Modulus.Kinematic &lt;n&gt;
+</pre>
+
+<p>The parameter <tt>Hardening.Modulus.Isotropic</tt> corresponds to the isotropic 
+hardening modulus, and the parameter <tt>Hardening.Modulus.Kinematic</tt> corresponds 
+to the kinematic hardening modulus.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>5.4 Taking Advantage of Symmetry</h1>
+
+<p>Symmetry is commonly observed in BEOL structures. Using symmetric boundary 
+conditions can substantially reduce the computational task. For example, stress 
+analysis for a through-silicon via (TSV) array can be performed using a quarter 
+of a TSV with symmetric boundary conditions applied. The mechanical symmetric boundary
+conditions can be specified as:</p>
+
+<pre>
+pdbSet Mechanics Left  BoundaryCondition Dirichlet
+pdbSet Mechanics Right BoundaryCondition Dirichlet
+pdbSet Mechanics Front BoundaryCondition Dirichlet
+pdbSet Mechanics Back  BoundaryCondition Dirichlet
+</pre>
+
+<p>Similarly, the symmetric boundary conditions can be applied with <tt>stressdata</tt> 
+commands:</p>
+
+<pre>
+stressdata bc.location=Left  bc.value= { dy=0.0 }
+stressdata bc.location=Right bc.value= { dy=0.0 }
+stressdata bc.location=Front bc.value= { dz=0.0 }
+stressdata bc.location=Back  bc.value= { dz=0.0 }
+</pre>
+
+<p>After the simulation, the structure with solution fields can be reflected 
+multiple times to generate a large structure for visualization purposes.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>5.5 Mechanical Coupling Boundary Conditions</h1>
+
+<p>When simulating material thermal mismatch of a unit cell inside a large 
+structure with finite layer thicknesses, the deformation of all layers often 
+needs to be modeled explicitly. To approximate the constraints from surrounding 
+materials, mechanical coupling boundary conditions on the unit cell can be applied as:</p>
+
+<pre>
+pdbSet Mechanics &lt;Left | Right | Back | Front&gt; &lt;Cx | Cy | Cz&gt; 1
+</pre>
+
+<p>Here, <tt>Cx</tt>, <tt>Cy</tt>, or <tt>Cz</tt> stands for the coupling of the displacement 
+component in the x-, y-, or z-direction.</p>
+
+<p class="note">All other boundary conditions defined with the <tt>pdbSet</tt> 
+method become invalid with the application of the coupling boundary condition. 
+These boundary conditions must be redefined using the <tt>stressdata</tt> command.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>5.6 Structure Generation for Cylinders and Spheres in BEOL</h1>
+
+<p>Cylinder and sphere objects are common in BEOL structures, for example, interconnect 
+vias, TSVs, microbumps, and solder bumps. These objects cannot easily be generated by 
+deposition and etching with standard masks.</p>
+
+<p>There are several practical approaches to generate these objects. One approach is 
+to generate these objects in Sentaurus Structure Editor and then insert them in the 
+simulation. The following example shows the statements to generate a solder ball:</p>
+
+<pre>
+sde external { (sdegeo:create-sphere (position $x $y $z) 
+  $radius &quot;material&quot; &quot;region&quot;) }
+polyhedron name= sphere1 external.sde
+sde off
+insert polyhedron= sphere1 replace.materials= { replace_material }
+</pre>
+
+<p>Another approach for generating cylinders is to create circular masks either in 
+Silicon WorkBench or in simulation input, and then perform etching 
+and deposition with circular marks. When applying this approach, you must be aware that 
+the number of points defined around a circle will affect the final mesh. Usually, 
+36 points provide good enough resolution. Too many points can lead to an unnecessarily 
+dense mesh. You also can use the shape library for some shapes, for example, 
+<tt>PolygonWaferMask</tt>.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>5.7 Structure Generation for Unconventional BEOL Process Steps</h1>
+
+<p>BEOL structure generation can involve unconventional process steps such as 
+die stacking, bumping, and underfilling. These process steps result in structures 
+that cannot be generated by conventional deposition and etching operations. Sometimes, 
+the structure must be flipped and the location must be translated.</p>
+
+<p>A practical approach for generating such structures is to build 
+structure components individually and then to assemble them. This assembly process 
+can be achieved using statements such as <tt>polyhedron tdr=...</tt> to insert one 
+structure component into the target structure, <tt>transform flip</tt> to flip a 
+component before assembly, and <tt>transform translate ...</tt> to align components 
+in the required locations.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>5.8 Defining Contact and Crack Locations in the Unified Coordinate System</h1>
+
+<p>BEOL stress simulation and failure analysis often require the definition of contact 
+and crack locations. Although the unified coordinate system (UCS) is recommended, the 
+DF&ndash;ISE coordinate system also is supported for structure generation in Sentaurus Structure 
+Editor. The coexistence of the UCS and the DF&ndash;ISE coordinate system can lead to confusion 
+when defining contact and crack locations.</p>
+
+<p>Be aware that all geometry location definitions must be specified in 
+UCS coordinates. For example:</p>
+
+<pre>
+contact box xlo=-0.01 ylo=-0.46 xhi=0.1 yhi=-0.16 name=source Aluminum
+crack name=Si_Ox mat.1=Silicon mat.2=Oxide CZM=none tolerance=1.0e-6 \ 
+  x.min=-0.1 x.max=-0.05 y.min=-0.1 y.max=-0.05 z.min=0.0 z.max=0.4 \
+  normal= { 0.0 0.0 1.0 } angle.tolerance=1.0e-3
+</pre>
+
+<p>The specified coordinates are all in UCS. You must manually convert the coordinates 
+if the original structures are in DF&ndash;ISE coordinates.</p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>5.9 Linearizing Dielectric Materials at BEOL Process Temperatures</h1>
+
+<p>Dielectric materials often exhibit viscoelastic behavior at elevated temperatures 
+but elastic behavior at BEOL process temperatures. By default, TCAD tools use 
+viscoelastic models for dielectric materials. This default setting often leads to 
+unnecessary computation during BEOL stress simulations. It is recommended to 
+linearize dielectric-material mechanical properties at BEOL temperatures with the 
+following statements:</p>
+
+<pre>
+pdbSet &lt;material&gt; Mechanics Vcrit0 1e-30
+pdbSet &lt;material&gt; Mechanics VcritW 0.0
+pdbSet &lt;material&gt; Mechanics Viscosity0 1e40
+pdbSet &lt;material&gt; Mechanics ViscosityW 0.0
+</pre>
+
+<!--================================================-->
+<a name="10"></a>
+<h1>5.10 Time-Step Control for BEOL Stress Simulation With Only Linear Models</h1>
+
+<p>For elastic materials in BEOL structures, the constitutive relations are linear. 
+When performing a thermal ramp from the initial temperature to the final temperature, 
+the <tt>solve</tt> command must be constructed in such a way that only one solve step 
+is performed. For example:</p>
+
+<pre>
+solve temperature=170.0&lt;C&gt; t.final=25.0&lt;C&gt; delNT= 145.0 \
+  time=0.1&lt;s&gt; init= 0.1&lt;s&gt; maxstep= 0.1&lt;s&gt;
+</pre>
+
+<p>In this example, the total time, the initial time step, and the maximum time step 
+are all set to 0.1&nbsp;s. The maximum temperature step during the temperature ramp-down 
+from 170&deg;C to 25&deg;C is defined as 145&deg;C. To avoid large ramp rate&ndash;induced 
+numeric issues, the time step should not be too small.</p>
+
+<!--================================================-->
+<a name="11"></a>
+<h1>5.11 Time-Step Control for BEOL Stress Simulation With Nonlinear Models</h1>
+
+<p>For some materials in BEOL structures such as copper, plastic deformation can 
+occur when the material stress level exceeds the yield strength. For some other 
+materials, creep and viscoplastic deformation can occur. In addition, cohesive 
+surface separation is a nonlinear process. The nonlinear constitutive relation 
+requires small time steps to avoid numeric convergence problems.</p>
+
+<p>It is recommended to limit both the initial time step and the maximum time step 
+for each loading step. The following command sets the initial time step to 1% of the 
+thermal loading and the maximum time step to 10% of the loading:</p>
+
+<pre>
+solve temperature= 170.0&lt;C&gt; t.final= 25.0&lt;C&gt; time= 0.1&lt;s&gt; \
+  init= 0.001&lt;s&gt; maxstep= 0.01&lt;s&gt;
+</pre>
+
+<p>In this example, the initial loading is set to (170 &ndash; 25) x 0.001&deg;C, and 
+the maximum time step is limited to (170 &ndash; 25) x 0.01&deg;C.</p>
+
+<!--================================================-->
+<a name="12"></a>
+<h1>5.12 Modeling Deformation With Moving Mesh</h1>
+
+<p>When a moving mesh is used to resolve structural deformation and displacement 
+under either a point force or a contact loading, it is important to ensure that 
+only small deformations and small displacements occur under each loading/moving 
+step.</p>
+
+<p>For point-force loading, the following parameter must be set to update the 
+point-force location during deformation:</p>
+
+<pre>
+pdbSetBoolean Mechanics Point.Force.Snap 1
+</pre>
+
+<p>For contact loading, the new contact location after mesh moving must be 
+within the original contact box.</p>
+
+<!--================================================-->
+<a name="13"></a>
+<h1>5.13 Modeling Crack Opening on Top Surface</h1>
+
+<p>When modeling a crack opening on the top surface, the top gas region must 
+be removed in the simulation to allow proper crack surface separation and 
+crack opening visualization. This requirement might be removed in a future release.</p>
+
+<!--================================================-->
+<a name="14"></a>
+<h1>5.14 J-Integral Calculations With Multiple Contours</h1>
+
+<p>When calculating J-integral at the crack tip, the mesh must be refined around 
+the crack tip front. The J-integral calculation should always be performed with multiple
+contours. The following example selects nine contours for the calculation:</p>
+
+<pre>
+j_integral crack=edge x=2.0 y=3.0 z=1.0 number=9
+</pre>
+
+<p>The calculated J-integral values should be examined, and the stable contour value 
+away from the crack tip front should be selected.</p>
+
+<!--================================================-->
+<a name="15"></a>
+<h1>5.15 General Guidelines for Submodel Technique</h1>
+
+<p>When applying the submodel technique to obtain accurate resolution in some 
+local regions of interest, several guidelines need to be observed:</p>
+
+<ul>
+<li>Local model boundaries should be far away from high-stress concentration regions.</li>
+
+<li>The global model does not need to include all local details, for example, 
+fillets, chamfers, and tiny features. They complicate the structure and mesh, 
+while not influencing the global analysis outcome.</li>
+
+<li>The global mesh should be fine enough to provide a reasonable solution to be 
+used as the local model boundary conditions.</li>
+
+<li>Mechanical and thermal loadings should be duplicated in both models.</li>
+
+<li>Results should be carefully examined to validate submodel boundary selection.</li>
+
+<li>Absolute coefficients of thermal expansion should be used in both global and 
+local models with the following setting: <tt>pdbSetDouble Mechanics RefThExpCoeff 0.0</tt></li>
+
+<li>When using the <tt>temp_ramp</tt> command in the local model, all 
+<tt>temp_ramp</tt> commands defined in the global model first must be cleared 
+with the following statement in the local model: <tt>temp_ramp clear</tt></li>
+</ul>
+
+<!--================================================-->
+<a name="16"></a>
+<h1>5.16 Meshing Parameter Recommendations for Large Structures With Curved Surfaces</h1>
+
+<p>The default meshing parameters, which are selected to resolve geometry details 
+in small structures with flat surfaces, can lead to highly anisotropic meshes with 
+thin layers of elements at material interfaces and overrefinements on curved surfaces. 
+To generate isotropic-like meshes with regular equilateral elements and to prevent 
+overrefinement on curved surfaces, it is recommended to use meshing parameters 
+that are more suitable for stress analysis in large structures. These meshing parameters 
+can be invoked by the following command:</p>
+
+<pre>
+SetMechanicsMeshMode
+</pre>
+
+<p>After this command, regular mesh-generation commands, such as <tt>grid remesh</tt>, 
+are needed to start mesh-generation operations. Since geometries can be very different in real 
+applications, some manual adjustments of these parameters might still be needed to achieve 
+optimal mesh qualities for stress analysis. The important meshing parameters include:</p> 
+
+<pre>
+pdbSet Grid SnMesh Apply.Brep.DelPSC 1               ;# default 0
+pdbSet Grid SnMesh Apply.Brep.DelPSC.Resolution 0.1  ;# default 0.01 [um] 
+pdbSet Grid SnMesh Apply.Brep.DelPSC.Accuracy 0.005  ;# default 0.0001 [um]
+pdbSet Grid SnMesh ImprintAccuracy 0.1               ;# default 1e-5 [um]
+pdbSet Grid SnMesh SliverDistance 0.1                ;# default 1e-3 [um]
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li>To start manual adjustments, <tt>Apply.Brep.DelPSC</tt> must be switched on, 
+so that the Delaunay refinement for piecewise smooth complex (DelPSC) algorithm can be applied.</li>
+<li>The parameter <tt>Apply.Brep.DelPSC.Resolution</tt> controls the sampling of ridges 
+and its value can change from 0.1 for TSV scale geometries to 10.0 for solder bump scale geometries.</li>
+<li>The parameter <tt>Apply.Brep.DelPSC.Accuracy</tt> controls the accuracy in high 
+curvature areas and its value can range between 0.005 and 0.5 for TSV and solder bump scale geometries.</li>
+<li>The parameter <tt> ImprintAccuracy</tt> controls axis-aligned imprinting and its 
+recommended value can be chosen between 0.1 and 2.0.</li>
+<li>The parameter <tt> SliverDistance</tt> controls the removal of sliver elements and its 
+recommended value can vary between 0.1 and 10.0 for TSV and solder bump scale geometries.</li>
+</ul>
+
+<!--================================================--> 
+<a name="17"></a> 
+<h1>5.17 Guidelines for Cohesive Zone Modeling</h1>
+
+<p>Cohesive zone modeling requires defining (1) a cohesive zone model (CZM) 
+law that governs the traction and separation behavior on cohesive surfaces, and 
+(2) a cohesive  path where cohesive surfaces can separate to form a crack.</p>
+
+<p>The following commands define a CZM law named <tt>law1</tt> and a cohesive path 
+named <tt>crk01</tt>:</p>
+
+<pre>
+CZM name=law1 law=exponential \
+   normal.stress.max=1.0e9 shear.stress.max=1.0e9 \
+   normal.toughness=1e5 shear.toughness=1e5 mat.1=Mat1 mat.2=Mat2
+
+crack name=crk01 CZM=law1 \
+   x.min=0 y.min=0.0 x.max=40.0 y.max=3.0 z.min=0.0 z.max=3.0 \
+   tolerance=1.0e-3 mat.1=Mat1 mat.2=Mat2 angle.tolerance=1.0e-4 \
+   normal= &quot;0 1 0&quot; \
+   CZM.box= {xmin= 5.0 xmax= 40.0 ymin= 0.0 ymax= 3.0 zmin= 0.0 zmax= 3.0} 
+</pre>
+
+<p>In the CZM law definition, the traction and separation relation is chosen to 
+be an exponential function. The maximum material 
+strength in the normal and shear directions are both 10<sup>9</sup>&nbsp;dyn/cm<sup>2</sup>. 
+The material work of separation (that is, material fracture toughness) in the 
+normal and shear directions are both 10<sup>5</sup>&nbsp;dyn/cm. The CZM law 
+applies to a cohesive path between the first material <tt>Mat1</tt> and the second 
+material <tt>Mat2</tt>.</p>
+
+<p>In the crack and cohesive path definition, the entire cracking region contains 
+an initial crack and a cohesive path ahead of the initial crack. The cracking region 
+is named <tt>crk01</tt> and the CZM law to be applied is <tt>law1</tt>.</p>
+
+<p>The larger cube that encloses the initial crack and the cohesive path extends 
+from the lower-front corner (0, 0, 0) to the upper-back corner 
+(40&nbsp;&micro;m, 3&nbsp;&micro;m, 3&nbsp;&micro;m) with a snapping distance of 
+10<sup>&ndash;3&nbsp;</sup>&micro;m.</p>
+
+<p>The smaller cube that encloses only the cohesive path extends from the lower-front 
+corner (5&nbsp;&micro;m, 0&nbsp;&micro;m, 0&nbsp;&micro;m) to the upper-back corner 
+(40&nbsp;&micro;m, 3&nbsp;&micro;m, 3&nbsp;&micro;m).</p>
+
+<p>The initial crack and the cohesive path are between the first material <tt>Mat1</tt> 
+and the second material <tt>Mat2</tt> with a surface normal (0 1 0) and a tolerance of 
+10<sup>&ndash;4</sup>. All of the coordinates must be defined in the unified coordinate 
+system (UCS).</p>
+
+<p>When cohesive surfaces separate along the cohesive path, the cohesive 
+traction first increases, reaches the material strength, then decreases to zero
+after the total separation. To capture this entire separation event, the mesh
+must be relatively uniform around the cohesive path, and the local element size 
+must be comparable to the ratio of the material fracture toughness divided 
+by the material strength. To allow 3D region separation in the mesh and vertex 
+separation at a point on the cohesive path, the following settings must be applied:</p>
+
+<pre>
+pdbSet Mechanics Model CZM
+pdbSet Grid No3DMerge 1
+pdbSet Mechanics Merge.Vertices 0
+</pre>
+
+<!--================================================-->
+<a name="18"></a>
+<h1>5.18 Defining Surface Contacts to Apply Mechanical Boundary Conditions</h1>
+
+<p>When defining surface contacts to apply mechanical boundary conditions, 
+it is important to note the following:</p>
+
+<ul>
+<li>The defined surface area is the precise region where mechanical boundary
+ conditions are applied.</li>
+
+<li>When a surface contact is defined using the box-type option, the surface 
+region is extracted from the mesh cut where the specified box intersects the mesh.</li>
+
+<li>Switching off the <tt>cut.mesh</tt> option can lead to inaccuracy since 
+the defined surface contact region might be smaller than the specification.</li>
+
+<li>To define surface contacts precisely, use the <tt>line</tt> command 
+to insert mesh lines at specified locations.</li>
+
+<li>The point-type contact definition, which converts the bulk surfaces of the box 
+into contacts, is intended for electrical simulations. Do not use this definition 
+for mechanical simulations.</li>
+
+<li>When boundary conditions need to be defined on a point, use the point-force boundary 
+condition definition or the point-displacement rate boundary condition definition to 
+directly specify the point coordinates.</li>
+</ul>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

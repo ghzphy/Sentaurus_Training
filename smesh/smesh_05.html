@@ -1,0 +1,266 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Mesh 5. Axis-Aligned Mesh Options</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_04.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_06.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Mesh<br />5. Axis-Aligned Mesh Options</h1>
+
+<p>
+ <a href="#1">5.1 Mesh Smoothing</a><br />
+ <a href="#2">5.2 Mesh Delaunization</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the axis-aligned mesh options of Sentaurus Mesh.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Mesh Smoothing</h1>
+
+<p>By default, Sentaurus Mesh applies an automatic mesh-smoothing procedure when 
+constructing a mesh to ensure that the mesh-element aspect ratio (the relative 
+difference between adjacent mesh element edges) is maintained.</p>
+
+<p>You can control mesh-smoothing by changing the parameters in the <tt>AxisAligned</tt> 
+section of the Sentaurus Mesh command file, including:</p>
+
+<pre>
+AxisAligned {
+  smoothing = true | false
+  maxAspectRatio = <em>float</em>
+  maxNeighborRatio = <em>float</em>
+  minEdgeLength = <em>float</em>
+  maxAngle = <em>float</em>
+  xCuts = <em>floatlist</em>
+  yCuts = <em>floatlist</em>
+  zCuts = <em>floatlist</em>
+  fitInterfaces = true | false
+}
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>smoothing</tt> switches on (true) or off (false) mesh smoothing. 
+If <tt>smoothing=true</tt> (default), the binary tree uses the <tt>maxAspectRatio</tt> and 
+<tt>maxNeighborRatio</tt> parameter values for the mesh step grading.</li>
+<li><tt>maxAspectRatio</tt> specifies the maximum-allowed element aspect ratio in the binary tree 
+(default is 1e6).</li>
+<li><tt>maxNeighborRatio</tt> specifies the size ratio between adjacent elements
+(default is 2 in 2D, 4 in 3D).</li>
+<li><tt>minEdgeLength</tt> sets the minimum-allowed element edge length produced on the boundary 
+before delaunization (default is 1e-7&nbsp;&mu;m).</li>
+<li><tt>maxAngle</tt> determines the maximum angle produced in the binary tree 
+(default is 90&deg; in two dimensions and 165&deg; in three dimensions).</li>
+<li><tt>fitInterfaces</tt> instructs Sentaurus Mesh to calculate the <tt>Cuts</tt> automatically 
+by first refining along axis-aligned interfaces.</li>
+</ul>
+
+<p>For the rest of the parameters of the <tt>AxisAligned</tt> section, refer 
+to the <cite>Sentaurus&trade; Mesh User Guide</cite>.</p>
+
+<p>The <tt>Applications_Library/GettingStarted/snmesh/Smoothing</tt> Sentaurus Workbench project 
+demonstrates how mesh-smoothing controls work for the above examples. To work with this project, 
+copy it to a local directory within your Sentaurus Workbench working directory.</p>
+
+<p>The Sentaurus Mesh tool instances labeled <tt>NoSmooth</tt> and <tt>Smooth</tt> 
+demonstrate the consequence of the smoothing deactivation for the 
+<a href="smesh_02.html#matwise">previously shown</a> device structure (see Figure&nbsp;1).</p>
+
+<p><a href="images/sm_aa_smoothing.png"><img src="images/sm_aa_smoothing.png" width="570" 
+alt="With (left) smoothing=true and (right) smoothing=false" /></a></p>
+
+<p class="caption">Figure 1. (Left) With smoothing=true and (right) with smoothing=false. 
+(Click image for full-size view.)</p>
+
+<p>Using <tt>smoothing=false</tt>, the mesh-step propagation from the material with the 
+smaller step (oxide) towards the material with the higher step definition (silicon) is suppressed.</p>
+
+<p>The next example illustrates the influence of the <tt>maxNeighborRatio</tt> parameter value 
+on the mesh step smoothing for the <a href="smesh_02.html#rec-ref">previously shown</a> example, 
+with one order of magnitude step difference inside and outside the rectangular area, located in 
+the middle of the device (see Figure&nbsp;2).</p>
+
+<p><a href="images/sm_aa_maxneighbor.png"><img src="images/sm_aa_maxneighbor.png" width="570" 
+alt="With (left) maxNeighborRatio=2, (middle) maxNeighborRatio=4, and (right) maxNeighborRatio=8" /></a></p>
+
+<p class="caption">Figure 2. (Left) With maxNeighborRatio=2, (middle) maxNeighborRatio=4, 
+and (right) maxNeighborRatio=8. (Click image for full-size view.)</p>
+
+<p>The Sentaurus Mesh tool instance labeled <tt>NB_Ratio</tt> demonstrates the consequence 
+of <tt>maxNeighborRatio</tt> control settings. Together with the smoothing control examples 
+above, it is contained in the <tt>Applications_Library/GettingStarted/snmesh/Smoothing</tt> 
+Sentaurus Workbench project.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Mesh Delaunization</h1>
+
+<p>Mesh delaunization is a mandatory meshing step. It produces final grids suitable 
+for the box discretization method, which is used in Sentaurus Process and Sentaurus Device. 
+Delaunization is the most critical part in the case of 3D meshing, which requires some 
+occasional compromises to produce a suitable mesh in terms of quality and size 
+(node count). For 2D meshing, fully Delaunay grids are usually produced.</p>
+
+<p>The delaunization step focuses on several targets. The major ones are:</p>
+
+<ul>
+<li>Each mesh element must meet the Delaunay triangulation criterion. This ensures 
+that convergence is maintained on the simulator side.</li>
+<li>Slivers (elements with zero volume) must be eliminated.</li>
+<li>You must control the average node connectivity.</li>
+<li>During delaunization, the aspect ratio of neighbor elements is maintained.</li>
+</ul>
+
+<table class="breakout" width="530">
+<tr>
+<td>
+<a name="delaunay"></a>
+<strong>Delaunay Triangulation Criterion</strong><br /><br />
+
+Delaunay triangulation requires that the smallest circumscribed sphere around the element 
+boundary faces and ridges must be free of points. This ensures that the following key features 
+in the numeric 2D or 3D process or device simulators are guaranteed:<br />
+
+<ul>
+<li>There is mass conservation within each control volume.</li>
+<li>The material-dependent properties are encapsulated properly.</li>
+<li>The normal fluxes across the control surfaces can be evaluated easily.</li>
+</ul>
+
+</td>
+</tr>
+</table>
+
+<p>The delaunization step controls are in the <tt>Delaunizer</tt> section of the 
+Sentaurus Mesh command file:</p>
+
+<pre>
+Delaunizer {
+  coplanarityAngle = <em>float</em>
+  coplanarityDistance = <em>float</em>
+  delaunayTolerance = <em>float</em>
+  edgeProximity = <em>float</em>
+  faceProximity = <em>float</em>
+  maxAngle = <em>float</em>
+  maxConnectivity = <em>float</em>
+  maxNeighborRatio = <em>float</em>
+  maxPoints = <em>integer</em>
+  maxSolidAngle = <em>float</em>
+  maxTetQuality = <em>float</em>
+  minAngle = <em>float</em>
+  minEdgeLength = <em>float</em>
+  sliverAngle = <em>float</em>
+  sliverDistance = <em>float</em>
+  sliverRemovalAlgorithm = <em>integer</em>
+  storeDelaunayWeight = true | false
+  type = boxmethod | conforming | constrained
+}
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li>The parameter <tt>type</tt> specifies which type of Delaunay mesh must be produced:<br />
+    <ul>
+    <li><tt>boxmethod</tt> (default): Imposes the strictest conditions on the boundaries, requiring 
+        an almost ideal Delaunay mesh to be produced.</li>
+    <li><tt>conforming</tt>: Equivalent to the standard Delaunay condition, where more relaxed 
+        conditions are used for the boundaries of the element.</li>
+    <li><tt>constrained</tt>: Produces the least refinement of all these options. The meshes are 
+        often unsuitable for device simulation.</li>
+    </ul><br />
+    Sentaurus Device simulations require meshes created using <tt>type=boxmethod</tt>. 
+    For Sentaurus Process simulations, creating a slightly non-Delaunay mesh can drastically reduce 
+    the node count without sacrificing simulator accuracy.</li>
+
+<li>The parameter <tt>delaunayTolerance</tt> uses a floating-point number (it must be 
+between 0 and 1) to specify how close the ridges and boundary faces conform to the 
+Delaunay criterion. A value of 0 implies a very strict Delaunay criterion. A value of 1 is 
+equivalent to the construction of a constrained Delaunay triangulation (CDT). The 
+<tt>delaunayTolerance</tt> can be defined materialwise or regionwise. For example, the following
+specification activates the CDT in oxide material only, while everywhere else the <tt>boxmethod</tt> 
+Delaunay triangulation is used:<br />
+
+<pre>
+Delaunizer {...
+  delaunayTolerance=0
+  interior material &quot;Oxide&quot; {delaunayTolerance=1}
+}
+</pre>
+</li>
+
+<li>The parameter <tt>maxPoints</tt> sets a limit on the maximum number of vertices that the 
+delaunizer generates (default is 100000). Be careful because, when meshing a large 3D device, 
+this value can be exceeded easily. In this case, the delaunizer will stop a triangulation 
+and the final mesh might be non-Delaunay.</li>
+
+<li>The parameters <tt>maxAngle</tt> and <tt>minAngle</tt> specify the maximum and minimum angles allowed, 
+respectively, in mesh elements (2D only).</li>
+
+<li>The parameter <tt>minEdgeLength</tt> sets the threshold for the minimum-allowed element edge 
+length (default is 1e-9&nbsp;&mu;m).</li>
+
+<li>The parameter <tt>maxNeighborRatio</tt> specifies the maximum-allowed ratio between the 
+circumscribed spheres of neighbor elements. It can be used in combination with the 
+<tt>maxNeighborRatio</tt> option of the <tt>AxisAligned</tt> section for better mesh grading 
+(default is 2 in two dimensions, 4 in three dimensions).</li>
+</ul>
+
+<p>For the rest of the parameters of the <tt>Delaunizer</tt> section, 
+refer to the <cite>Sentaurus&trade; Mesh User Guide</cite>.</p>
+
+<p>Figure 3 shows the results of varying the value of <tt>minAngle</tt> for the 
+<a href="smesh_02.html#multi">previously shown</a> example.</p>
+
+<p><a href="images/sm_aa_minangle.png"><img src="images/sm_aa_minangle.png" width="570" 
+alt="Mesh with minAngle equal to (left) 5 degrees, (middle) 15 degrees, and (right) 30 degrees." /></a></p>
+
+<p class="caption">Figure 3. Mesh with minAngle equal to (left) 5&deg;, (middle) 15&deg;, 
+and (right) 30&deg;. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_04.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_06.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

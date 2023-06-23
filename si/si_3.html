@@ -1,0 +1,442 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Interconnect 3. Example: Cantilever With End Load (3D)</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Interconnect<br />3. Example: Cantilever With End Load (3D)</h1>
+
+<p>
+ <a href="#1">3.1 Overview</a><br />
+ <a href="#2">3.2 Creating the 3D Structure and Its Mesh</a><br />
+ <a href="#3">3.3 Defining the Elastic Moduli of the Material</a><br />
+ <a href="#4">3.4 Setting the Boundary Conditions and Loads for the Solution</a><br />
+ <a href="#5">3.5 Solving the Problem</a><br />
+ <a href="#6">3.6 Postprocessing the Results</a><br />
+ <a href="#7">3.7 Using Second-Order Elements</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To perform a 3D mechanics simulation of a cantilever with an end load.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Overview</h1>
+
+<p>In this example, Sentaurus Interconnect will solve a simple case of a cantilever 
+with an end load (see <a href="#Fig1">Figure 1</a>). The cantilever is fully clamped 
+at one end, and a point force is applied to the other end. No other loads or 
+boundary conditions (BCs) are applied, and the entire structure is free to move 
+under the effect of the applied force (except, of course, the clamped end).</p>
+
+<p>The cantilever is expected to bend slightly on the xz plane with a maximum displacement 
+\(δ_{\text"max"}\) at the end where the point force is applied, which is given by the 
+analytic model (valid only for small displacements, that is, the linear regime):</p>
+
+<p>\[δ_{\text"max"} = 4 {P L^{3}} / {E α^4} \] </p>
+
+<p>where \(E\) is Young's modulus, \(P\) is the point force, \(L\) is 
+the length of the cantilever, and \(α\) is the edge of the square cross-section of the 
+cantilever.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sinterconnect/3D_Cantilever</tt>.</p>
+
+<p><a name="Fig1" href="images/si_cantilever.png"><img src="images/si_cantilever.png" 
+height="400" alt="Cantilever 3D structure" /></a></p>
+
+<p class="caption">Figure 1. Cantilever 3D structure with an end load and 
+the other end fully clamped. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Creating the 3D Structure and Its Mesh</h1>
+
+<p>In this section, you define the 3D structure of the cantilever and the meshing. 
+The cantilever has a 4&times;4&nbsp;&mu;m<sup>2</sup> square cross-section and 
+is 50&nbsp;&mu;m long (set by the Sentaurus Workbench parameter <tt>@1@</tt>). 
+This is performed using <tt>line</tt> commands to define the boundaries of the 
+structure in the three basic directions: x, y, and z.</p>
+
+<p>The main axis of the cantilever is oriented parallel to the x-axis with the 
+center of its cross section along the line <tt>y=0</tt> <tt>z=0</tt>. The initial 
+meshing of the structure is achieved by specifying <tt>spacing=&lt;n&gt;</tt> of 
+the <tt>line</tt> command. The exact placement of the lines is done by 
+<tt>location=&lt;n&gt;</tt>, and the default unit is &mu;m. Tags can be used to 
+identify the lines of interest by specifying <tt>tag=&lt;c&gt;</tt>.</p>
+
+<p class="note">These tags are not related in any way to the tags used later 
+to set the BCs.</p>
+
+<p>Finally, the grid definition section looks like this:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - lines" endExpr="##end - lines" excludelines="##*" -->
+<pre>
+line x location= 0.0&lt;um&gt;  spacing= @res@&lt;um&gt;   tag= top
+line x location= @l@&lt;um&gt;  spacing= @res@&lt;um&gt;   tag= bottom
+line y location= -2.0&lt;um&gt; spacing= @res@&lt;um&gt;   tag= left
+line y location= 0.0&lt;um&gt;  spacing= @res@&lt;um&gt;
+line y location= 2.0&lt;um&gt;  spacing= @res@&lt;um&gt;   tag= right
+line z location= -2.0&lt;um&gt; spacing= @res@&lt;um&gt;   tag= back
+line z location= 0.0&lt;um&gt;  spacing= @res@&lt;um&gt;
+line z location= 2.0&lt;um&gt;  spacing= @res@&lt;um&gt;   tag= front
+</pre>
+<!-- grep end -->
+
+<p>The Sentaurus Workbench parameter <tt>@res@</tt> sets the global spacing of the 
+grid, and the default value in the project is 0.3 &mu;m. This spacing value can be 
+changed slightly up or down, depending on the global size of the simulation 
+domain and the initial grid division by Sentaurus Mesh. <a href="#Fig2">Figure&nbsp;2</a> 
+shows the meshed 3D model along with the orientation of the coordinate system.</p>
+
+<p><a name="Fig2" href="images/si_cantilever_mesh.png"> 
+<img src="images/si_cantilever_mesh.png" height="400" alt="Cantilever meshed 3D structure" /></a></p>
+
+<p class="caption">Figure 2. Cantilever 3D structure with mesh. 
+(Click image for full-size image.)</p>
+
+<!--=========================-->
+<h2>3.2.1 Defining the Simulation Domain</h2>
+  
+<p>Before proceeding to the next steps, the simulation domain must be defined 
+and initialized in Sentaurus Interconnect. All the initial regions must be set using 
+the already existing tagged coordinates in the grid. In this case, only one region 
+is present that you define using the <tt>region</tt> command. The material has been 
+chosen to be <tt>silicon</tt>, but other materials in the parameter database can be 
+used as well:</p>
+  
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - regions" endExpr="##end - regions" excludelines="##*" format="wrap"-->
+<pre>
+region silicon substrate xlo= top xhi= bottom ylo= left yhi= right zlo= back \
+  zhi= front
+</pre>
+<!-- grep end -->
+
+<p>To obtain a complete list of all the materials in the parameter database, use the 
+command <tt>mater list.all</tt> on the command line. After the region settings, you must 
+initialize the simulation domain with the <tt>init</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - init" endExpr="##end - init" excludelines="##*" -->
+<pre>
+init !DelayFullD
+</pre>
+<!-- grep end -->
+  
+<p>The option <tt>!DelayFullD</tt> is used so that Sentaurus Interconnect considers 
+the full 3D space from the beginning. By default, as in Sentaurus Process, the initial 
+domain is always 1D until a process step forces the simulator to add a dimension 
+(for example, by using a mask). For more details, refer to the Sentaurus Process module, 
+<a href="../sp/sp_3.html#2">Section 3.2 Defining the Initial 2D Grid and Simulation Domain</a>, 
+or the <cite>Sentaurus&trade; Interconnect User Guide</cite>.</p>
+
+<!--=========================-->
+<h2>3.2.2 Saving the Initial Model</h2>
+
+<p>The initialized structure can be saved before proceeding to the next steps 
+with the <tt>struct</tt> command and the <tt>tdr=&lt;c&gt;</tt> argument:</p>
+  
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - struct init" endExpr="##end - struct init" excludelines="##*" -->
+<pre>
+struct tdr=n@node@_init
+</pre>
+<!-- grep end -->
+  
+<p>In order for the saved file to be available in Sentaurus Workbench for visualization, 
+the file name contains the running-node parameter <tt>@node@</tt>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Defining the Elastic Moduli of the Material</h1>
+
+<p>The material properties for silicon are already set in the Sentaurus Interconnect 
+database and, in general, there would be no need to define them. If you need to modify 
+these properties, use the command <tt>pdbSet</tt> followed by the necessary options.</p>
+
+<p>In this example, the bulk and shear moduli of the chosen material are changed to 
+some arbitrary values by setting the Young's modulus and the Poisson ratio equal to 1&nbsp;GPa 
+(=10<sup>10</sup> dyn/cm<sup>2</sup>) and 0.2, respectively. The conversion to the bulk and shear 
+moduli is performed with the built-in Tcl functions <tt>Enu2K</tt> and <tt>Enu2G</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - materials" endExpr="##end - materials" excludelines="##*" -->
+<pre>
+pdbSet Silicon Mechanics BulkModulus [Enu2K 1e10 0.2]
+pdbSet Silicon Mechanics ShearModulus [Enu2G 1e10 0.2]
+</pre>
+<!-- grep end -->
+
+<p class="note">Internally, the Sentaurus Interconnect database always 
+uses the units dyn/cm<sup>2</sup> for pressure and cm for lengths.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>3.4 Setting the Boundary Conditions and Loads for the Solution</h1>
+
+<p>The last important step before the solution is to set all the boundary 
+conditions (BCs) and loads. The general command for setting the BCs or loads 
+is <tt>stressdata</tt> followed by the <tt>bc.location</tt> and <tt>bc.value</tt> 
+arguments:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - BCs" endExpr="##end - BCs" excludelines="##*" format="wrap"-->
+<pre>
+stressdata bc.location=Bottom bc.value= {dx=0 dy=0 dz=0}
+stressdata bc.location=Left bc.value= {sx=0 sy=0 sz=0}
+stressdata bc.location=Right bc.value= {sx=0 sy=0 sz=0}
+stressdata bc.location=Back bc.value= {sx=0 sy=0 sz=0}
+stressdata bc.location=Front bc.value= {sx=0 sy=0 sz=0}
+stressdata bc.location=pointend point.coord= {0 0 0} bc.value= {pfx=0 pfy=0 \
+  pfz=@p@&lt;dyn&gt;}
+</pre>
+<!-- grep end -->
+
+<p>The default BC tags assigned to the five uppermost surfaces of the 3D simulation 
+domain in Sentaurus Interconnect are <tt>Bottom</tt>, <tt>Left</tt>, <tt>Right</tt>, 
+<tt>Back</tt>, and <tt>Front</tt>. There is no &quot;Top&quot; tag for the upper surface.</p>
+
+<p>To constrain the displacements and rotations in the three directions <tt>xyz</tt> 
+at the bottom of the cantilever (at <tt>x=50 &mu;m</tt>), set all velocities 
+to zero by specifying <tt>bc.location=Bottom</tt> and 
+<tt>bc.value= {dx=0 dy=0 dz=0}</tt> (<tt>dx</tt>, <tt>dy</tt>, <tt>dz</tt> are in cm/s 
+with the denominator <tt>/dt</tt> being assumed).</p>
+
+<p>The four lateral surfaces (<tt>Left</tt>, <tt>Right</tt>, <tt>Back</tt>, and <tt>Front</tt>) 
+of the cantilever should not be constrained with any force or displacement restriction 
+and, therefore, zero stresses are applied in all directions with  
+<tt>bc.value= {sx=0 sy=0 sz=0}</tt> in the <tt>stressdata</tt> command.</p>
+
+<p>The point force is applied by specifying the coordinates of the application point with 
+<tt>point.coord=&nbsp;{0 0 0}</tt> and the orientation and value of the force. 
+The latter is done with <tt>bc.value= {pfx=0 pfy=0 pfz=@p@&lt;dyn&gt;}</tt>, 
+where <tt>pfx</tt>, <tt>pfy</tt>, and <tt>pfz</tt> are the point forces along the 
+x-, y-, and z-axes, respectively. During the solution, the nearest mesh node to the 
+defined point will be selected to apply the force. The tolerance of this selection 
+can be controlled by the following command:</p>
+
+<pre>
+pdbSet Mechanics Point.Snap.Dist &lt;n&gt;
+</pre>
+
+<p>The default value of this tolerance is 1 nm. If you activate the moving mesh option 
+in Sentaurus Interconnect, an additional option must be activated to force the application 
+point to follow the mesh updates:</p>
+
+<pre>
+pdbSetBoolean Mechanics Point.Force.Snap 1
+</pre>
+
+<p>In this example, the mesh remains static for simplicity and this does not affect 
+the accuracy of the results. During postprocessing, a deformed version of the structure 
+can be saved by applying all the calculated displacements to the structure. For more 
+information about the moving mesh, refer to the <cite>Sentaurus&trade; Interconnect User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>3.5 Solving the Problem</h1>
+
+<p>When all the BCs and loads are defined, you continue with the solution 
+of the problem. In Sentaurus Interconnect, it is important to specify the 
+mode of the simulation as there are many physical domains that can be simulated 
+(for example, mechanical, electrical, and thermal) alone or combined. For this 
+problem, the mechanical domain is of interest and is set with the <tt>mode</tt> 
+command before the <tt>solve</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - solution" endExpr="##end - solution" excludelines="##*" -->
+<pre>
+mode mechanics
+solve 
+</pre>
+<!-- grep end -->
+
+<p>With <tt>solve</tt>, the simulator assembles the system matrix and solves the problem 
+using the default iterative linear solver (ILS) at the default temperature of 26.85&deg;C. 
+More information about the solvers supported in Sentaurus Interconnect can be found in 
+the <cite>Sentaurus&trade; Interconnect User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>3.6 Postprocessing the Results</h1>
+
+<p>When the solution is completed, you can inspect the results and extract 
+the values of interest. In the case of a mechanics problem, the strains, the 
+stresses, and the displacements are of interest. In general, you can visualize 
+the entire 3D model with the results mapped on it by saving the structure in TDR format:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - struct final" endExpr="##end - struct final" excludelines="##*" -->
+<pre>
+struct tdr=n@node@
+struct tdr=n@node@_def deform deform.scale= 5.0
+</pre>
+<!-- grep end -->
+
+<p>As previously mentioned, you can save the deformed structure in a TDR file using the 
+<tt>deform</tt> option of the <tt>struct</tt> command. Another argument 
+<tt>deform.scale=&lt;n&gt;</tt> can be added if you want to scale the displacement field 
+for easier visualization. In this case, a factor of 5 is used for scaling. The TDR files can 
+be visualized using Sentaurus Visual.</p>
+
+<p>In <a href="#Fig3">Figure 3</a>, the displacements in the z-direction as well as the strains 
+and stresses along the x-axis are shown on the deformed structure. You can clearly see that the 
+displacement is highest at the tip of the cantilever where the force is applied, as expected. 
+The calculated value for the maximum displacement is approximately equal to 0.58&nbsp;&mu;m, 
+very close to the value given by the analytic formula (0.586&nbsp;&mu;m).</p>
+
+<p><a name="Fig3" href="images/si_results.png"><img src="images/si_results.png" width="570" 
+alt="Displacements in z-direction, strains in x-direction, and stresses in x-direction" /></a></p>
+
+<p class="caption">Figure 3. Visualization of (left) displacements in z-direction shown on deformed 
+cantilever, (middle) strains in x-direction on deformed structure, and (right) stresses in x-direction 
+mapped onto deformed structure. (Click image for full-size view.)</p>
+
+<p>It is also possible to control the visualization from a script by selecting 
+the calculated field to be plotted. This is done with the <tt>select</tt> command 
+followed by the definition of the field <tt>z=&quot;&lt;field&gt;&quot;</tt>. You can list 
+all the calculated fields in the TDR file using the <tt>select</tt> command with the 
+option <tt>list.all</tt> on the command line, provided that the TDR file containing the 
+result is loaded beforehand with the command <tt>init tdr=&lt;c&gt;</tt>.</p>
+
+<p>For the fields that are tensors of rank one or higher (for example, vectors and stresses), 
+you can add an underscore and then the index of the tensor element you need as a suffix. 
+For example, for the displacement in the x-direction, use 
+<tt>z=&quot;Displacement_x&quot;</tt> or, for the stress normal to the yz plane, 
+<tt>z=&quot;Stress_xx&quot;</tt> (nodal solution) or <tt>z=&quot;StressEL_xx&quot;</tt> 
+(element solution).</p>
+
+<p>With the field of interest selected, you can create a plot of it along a certain 
+line, as it is done in this project with the <tt>plot.1d</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Cantilever/sinterconnect_sis.cmd" startExpr="##start - postprocessing" endExpr="##end - postprocessing" excludelines="##*" -->
+<pre>
+select z=&quot;Displacement_z&quot;
+plot.1d y=0 z=0
+</pre>
+<!-- grep end -->
+
+<p>When the <tt>plot.1d</tt> command is executed, a window displaying the plot opens 
+as shown in <a href="#Fig4">Figure&nbsp;4</a>. Remember that if you launch Sentaurus Interconnect 
+from Sentaurus Workbench, Sentaurus Interconnect must be set to the <em>interactive</em> mode 
+in order for this window to open.</p>
+
+<p>Other options for plotting and saving the results are available using either 
+the command line or a script, as well as from Sentaurus Visual. For more 
+information about plot commands (for example, <tt>plot.1d</tt>, <tt>plot.2d</tt>), 
+refer to the <cite>Sentaurus&trade; Interconnect User Guide</cite>.</p>
+
+<p><a name="Fig4" href="images/si_plot1d_displace.png"><img src="images/si_plot1d_displace.png" 
+width="500" alt="Plot of displacements in z-direction" /></a></p>
+
+<p class="caption">Figure 4. Plot of the displacements (cm) in the z-direction 
+along the longitudinal axis (y=0 z=0) of the cantilever using the plot.1d command. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>3.7 Using Second-Order Elements</h1>
+
+<p>So far, you have used a relatively dense mesh to obtain enough accuracy in 
+the results. The elements used in the previous part are first-order (linear) elements. 
+In that case, only the corner nodes of each element contain information on displacements 
+and deformation, and the stresses in the element have a constant value.</p>
+
+<p>If second-order (quadratic) elements are used, the centers of all the element edges 
+also contain solution information, and the stresses within the element can vary. This 
+means that the accuracy of the solution is better when second-order elements are used, 
+and this can be achieved with a coarser mesh with respect to a model meshed with 
+first-order elements.</p>
+
+<p>To use second-order elements in Sentaurus Interconnect, use the command:</p>
+
+<pre>
+pdbSetDouble Mechanics FiniteElementOrder 2
+</pre>
+
+<p>It is easy to verify the efficiency of second-order elements in your project. You
+can set the Sentaurus Workbench parameter <tt>@res@=3.0</tt>, that is, a 10 times 
+larger element size for the mesh, with and without using second-order elements 
+(that is, add or remove, respectively, <tt>pdbSetDouble Mechanics FiniteElementOrder 2</tt> 
+in the script).</p>
+
+<p>In <a href="#Fig5">Figure 5</a>, you can see the significant error in the 
+calculated displacements when using first-order elements with such a coarse mesh. In contrast, 
+in <a href="#Fig6">Figure 6</a>, the accuracy is unaffected and remains the same as in 
+<a href="#Fig4">Figure 4</a> where a 10-times smaller element size was used.</p>
+
+<p>The small cost when using second-order elements is that the execution time is longer 
+compared to the solution of the same problem (same mesh density) with first-order elements. 
+Sometimes, convergence takes longer to achieve with quadratic elements compared to linear 
+elements, but this also depends on the problem to be solved.</p>
+
+<p>There are many problems in which the mesh must be very dense to obtain an accurate 
+solution with first-order elements, but they can be very expensive in terms of memory 
+usage and execution time. These problems can benefit from using second-order elements 
+in terms of both memory and execution time by preserving the same level of accuracy 
+as for the fine-meshed models.</p>
+
+<p>In Sentaurus Interconnect, second-order elements can be used with the elasticity 
+and plasticity models only.</p>
+
+<p><a name="Fig5" href="images/si_plot1d_coarsemesh_1st_order.png"><img src="images/si_plot1d_coarsemesh_1st_order.png" 
+width="500" alt="Displacement plot using first-order elements" /></a></p>
+
+<p class="caption">Figure 5. Plot of the displacements (cm) in the z-direction along the 
+longitudinal axis (y=0 z=0) of the cantilever using first-order elements with an element 
+size of 3.0 &mu;m. The accuracy of the result is poor compared to 
+<a href="#Fig4">Figure 4</a> and the analytic solution. (Click image for full-size view.)</p>
+
+<p><a name="Fig6" href="images/si_plot1d_coarsemesh_2nd_order.png"><img src="images/si_plot1d_coarsemesh_2nd_order.png" 
+width="500" alt="Displacement plot using second-order elements" /></a></p>
+
+<p class="caption">Figure 6. Plot of the displacements (cm) in the z-direction along the 
+longitudinal axis (y=0 z=0) of the cantilever using second-order elements and the same 
+element size as in <a href="#Fig5">Figure&nbsp;5</a>. The accuracy of the result is the 
+same as in <a href="#Fig4">Figure 4</a>, where a 10-times smaller mesh cell has been 
+used with first-order elements. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

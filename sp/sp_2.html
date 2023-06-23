@@ -1,0 +1,579 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 2. One-Dimensional Process Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />2. One-Dimensional Process Simulation</h1>
+
+<p>
+ <a href="#1">2.1 Overview</a><br />
+ <a href="#2">2.2 Defining the Initial 1D Grid</a><br />
+ <a href="#3">2.3 Defining the Initial Simulation Domain</a><br />
+ <a href="#4">2.4 Initializing the Simulation</a><br />
+ <a href="#5">2.5 Setting Up a Remeshing Strategy</a><br /> 
+ <a href="#6">2.6 Growing Screening Oxide</a><br />
+ <a href="#7">2.7 Measuring Oxide Thickness</a><br />
+ <a href="#8">2.8 Depositing Screening Oxide</a><br />
+ <a href="#9">2.9 Using Tcl Control Statements</a><br />
+ <a href="#10">2.10 Implanting Arsenic</a><br />
+ <a href="#11">2.11 Saving the As-Implanted Profile</a><br />
+ <a href="#12">2.12 Thermal Annealing, Drive-in, Activation, and Screening Oxide Strip</a><br />
+ <a href="#13">2.13 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To perform a 1D process simulation using Sentaurus Process.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>2.1 Overview</h1>
+
+<p>In this section, a simple 1D process simulation is performed.</p>
+
+<p>Note:</p>
+
+<ul>
+<li>Most arguments of Sentaurus Process can be abbreviated. However, 
+for clarity, arguments are not abbreviated in this module. In addition, 
+you do not need to specify units explicitly.</li>
+
+<li>Sentaurus Process will use the default units. However, in the examples 
+given, units are always given explicitly.</li>
+
+<li>Command files are available in a Sentaurus Workbench project with 
+two instances of Sentaurus Process: The first instance is for the example 
+described below, and the second instance is for the assignment in 
+<a href="sp_2.html#13">Section&nbsp;2.13 Assignment</a>.<br /><br />
+The complete project can be investigated from within Sentaurus 
+Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sprocess/1DGS</tt>.</li>
+</ul>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Defining the Initial 1D Grid</h1>
+
+<p>The initial 1D grid is defined with <tt>line</tt> commands:</p>
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd" startExpr="lin*" Lines=6 -->
+<pre>
+line x location= 0.0      spacing=  1&lt;nm&gt; tag= SiTop       
+line x location= 10&lt;nm&gt;   spacing=  2&lt;nm&gt;                 
+line x location= 50&lt;nm&gt;   spacing= 10&lt;nm&gt;                  
+line x location= 300&lt;nm&gt;  spacing= 20&lt;nm&gt;                  
+line x location= 0.5&lt;um&gt;  spacing= 50&lt;nm&gt;                  
+line x location= 2.0&lt;um&gt;  spacing= 0.2&lt;um&gt; tag= SiBottom    
+</pre>
+<!-- grep end -->
+
+<p>The first argument of the <tt>line</tt> command specifies the direction of the grid. 
+For 1D simulations, this is always <tt>x</tt>.</p>
+
+<p>The grid spacing is defined by pairs of the <tt>location</tt> and <tt>spacing</tt> 
+arguments, where <tt>spacing</tt> defines the spacing between two grid lines at the 
+specified location. Between two locations defined in the <tt>line</tt> command, 
+Sentaurus Process expands or compresses the grid spacing linearly.</p>
+
+<p><img src="images/sp_1d_grid.png" width="537" height="475" alt="Grid spacing" /></p>
+
+<p class="caption">Figure 1. Grid spacing as a function of the x-location.</p>
+
+<p>In Figure 1, the grid spacing is plotted as a function of the x-location for the first 
+50&nbsp;nm. The mesh density decreases linearly from 1 nm at X=0 to 2 nm at X=10&nbsp;nm, 
+and then to 10&nbsp;nm at 50&nbsp;nm. The last grid spacing in each interval usually deviates from the linear 
+expansion to have the mesh point exactly at the location specified in the <tt>line</tt> command.</p>
+
+<p class="note">Units in Sentaurus Process can be specified explicitly in angle 
+brackets. Unless otherwise specified, the default unit of length is micrometer. 
+Therefore, the statements <tt>location=2.0&lt;um></tt> and <tt>location=2.0</tt> 
+are equivalent. In this module, units are always specified explicitly.</p>
+
+<p>A line can be labeled with the <tt>tag</tt> argument for later use in the <tt>region</tt> 
+command.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 Defining the Initial Simulation Domain</h1>
+
+<p>The initial simulation domain is defined with the <tt>region</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd" startExpr="region*" Lines=1 -->
+<pre>
+region Silicon xlo= SiTop xhi= SiBottom 
+</pre>
+<!-- grep end -->
+
+<p>Here, <tt>Silicon</tt> specifies the material of the region. The arguments <tt>xlo</tt> 
+and <tt>xhi</tt> take tags as values, which are defined in the <tt>line</tt> commands.</p>
+
+<p class="note">For 2D and 3D simulations, the additional arguments <tt>ylo</tt>, 
+<tt>yhi</tt>, <tt>zlo</tt>, and <tt>zhi</tt> define rectangular or cuboidal regions. 
+In general, the initial simulation domain can consist of several regions.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>2.4 Initializing the Simulation</h1>
+
+<p>The simulation is initialized with the <tt>init</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd" startExpr="init*" Lines=1 -->
+<pre>
+init concentration= 1.0e15&lt;cm-3&gt; field= Boron 
+</pre>
+<!-- grep end -->
+
+<p>Here, the initial boron concentration in the silicon wafer (as defined in the previous 
+<tt>region</tt> command) is set to 10<sup>15</sup>&nbsp;cm<sup>-3</sup>.</p>
+
+<p class="note">The <tt>init</tt> command can load previous simulations 
+or TDR boundary files (2D and 3D). </p> 
+
+<!--================================================-->
+<a name="5"></a>
+<h1>2.5 Setting Up a Remeshing Strategy</h1>
+
+<p>The initial grid is valid until the first command that changes the geometry, 
+such as oxidation, deposition, and etching. For these steps, a remeshing strategy 
+must be defined. Sentaurus Mesh performs the remeshing.</p>
+
+<p>To define a remeshing strategy, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd" startExpr="grid*" Lines=1 -->
+<pre>
+grid set.min.normal.size= 3&lt;nm&gt; set.normal.growth.ratio.2d= 1.4
+</pre>
+<!-- grep end -->
+
+<p>where:</p>
+
+<ul>
+<li><tt>set.min.normal.size</tt> determines the grid spacing of the first layer 
+starting from the interface. More precisely, the first layer cannot be larger 
+than 0.5*<tt>set.min.normal.size</tt>.</li>
+<li><tt>set.normal.growth.ratio.2d</tt> determines how fast the grid spacing 
+can increase from one layer to another in a 2D mesh.</li>
+</ul>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>2.6 Growing Screening Oxide</h1>
+
+<p>The 1D process simulation is started by thermally growing a thin layer of sacrificial 
+screening oxide:</p>
+
+<pre>
+gas_flow name=O2_1_N2_1 pressure=1&lt;atm&gt; flowO2=1.2&lt;l/min&gt; flowN2=1.0&lt;l/min&gt;
+diffuse temperature=900&lt;C&gt; time=40&lt;min&gt; gas_flow=O2_1_N2_1
+</pre>
+
+<p>The <tt>gas_flow</tt> command specifies the gas mixture, where <tt>name</tt> defines 
+a <tt>gas_flow</tt> record for later use in a <tt>diffuse</tt> command. The pressure of the 
+ambient gas is set to 1&nbsp;atm, and the flows of oxygen and nitrogen are set to 1.2&nbsp;l/minute
+and 1.0&nbsp;l/minute, respectively.</p>
+
+<p class="note">Other gas flow parameters, such as ambient gases and partial pressures, 
+can be defined as well (see the <cite>Sentaurus&trade; Process User Guide</cite>).</p>
+
+<p>The thermal oxidation step is started with the <tt>diffuse</tt> command. Here, the wafer is 
+exposed to the oxidizing gases, defined in the <tt>gas_flow</tt> command, for 40&nbsp;minutes 
+at an ambient temperature of 900&deg;C.</p>
+
+<p class="note"> More options such as temperature ramps and numeric parameters 
+are available (see the <cite>Sentaurus&trade; Process User Guide</cite>).</p>
+
+<p>Sentaurus Process prints information about the progress of the oxidation step:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/n1_fps.out" startExpr="Anneal*" Lines=18 -->
+<pre>
+Anneal step:	
+	Time        = 40min
+	Temperature = 900.0C
+	Ramp rate   = 0C/s
+Reaction :         0s   to    0.0001s   step    :    0.0001s   temp: 900.0C
+sprocess Pardiso thread count = 1
+Mechanics:         0s   to    0.0001s   step    :    0.0001s   temp: 900.0C
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
+Initializing:  
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
+Initialization is done.
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
+Diffusion:         0s   to    0.0001s   step (s):    0.0001s   temp: 900.0C
+Interpolating...elapsed time: 0.01
+Reaction :    0.0001s   to 0.0001727s   step    : 7.268e-05s   temp: 900.0C
+Mechanics:    0.0001s   to 0.0001727s   step    : 7.268e-05s   temp: 900.0C
+Diffusion:    0.0001s   to 0.0001727s   step (s): 7.268e-05s   temp: 900.0C
+Interpolating...elapsed time: 0.0000e+00
+</pre>
+<!-- grep end -->
+...
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/n1_fps.out" startExpr="Reaction*to*40min step*" Lines=6 -->
+<pre>
+Reaction :     38.29min to        40min step    :     1.708min temp: 900.0C
+Mechanics:     38.29min to        40min step    :     1.708min temp: 900.0C
+Diffusion:     38.29min to        40min step (s):     1.708min temp: 900.0C
+Interpolating...elapsed time: 0.01
+
+Elapsed time for diffuse 24.41s
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="7"></a>
+<h1>2.7 Measuring Oxide Thickness</h1>
+
+<p>To measure the thickness of the thermally grown oxide, use:</p>
+
+<pre>
+select z=1
+layers
+</pre>
+
+<p>The <tt>select</tt> command selects a quantity for postprocessing. 
+Selecting &quot;1&quot; is a way to obtain the material thicknesses.</p>
+
+<p>The <tt>layers</tt> command prints a list of regions with their respective 
+top and bottom coordinates. It also prints the integral over the selected 
+quantity in each region. With &quot;1&quot; selected, the integral equals the 
+thickness:</p>
+
+<pre>
+{        Top                Bottom             Integral       Material }
+{ -6.178796082035e-03  3.676329713272e-03  9.855125795306e-07 Oxide }
+{  3.676329713272e-03  2.000000000000e+00  1.996323670287e-04 Silicon }
+</pre>
+
+<p>Here, 3.68 nm of silicon was consumed in the thermal oxidation process, and the 
+final oxide thickness is 9.86&nbsp;nm.</p>
+
+<p class="note">Internally, Sentaurus Process uses centimeter as the unit for length.</p>
+
+<p>Selecting boron, the output of the <tt>layers</tt> command would look like:</p>
+
+<pre>
+{        Top                Bottom             Integral       Material }
+{ -6.178796082035e-03  3.676329713272e-03  3.012697967871e+09 Oxide }
+{  3.676329713272e-03  2.000000000000e+00  1.969873116640e+11 Silicon }
+</pre>
+
+<p>The integral boron concentration in the silicon layer is:</p>
+
+<p>1.97 x 10<sup>11</sup> cm<sup>-2</sup> = 10<sup>15</sup> cm<sup>-3</sup> x 
+(2 x 10<sup>-4</sup>&nbsp;cm - 3.67 x 10<sup>-7</sup>&nbsp;cm)</p>
+
+<p>This is consistent with the specified wafer doping.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>2.8 Depositing Screening Oxide</h1>
+
+<p>A faster alternative to the simulation of the oxide growth is to deposit an oxide layer 
+and to simulate, afterwards, a thermal cycle to account for the thermal budget during the oxidation. 
+This is an efficient way to emulate the creation of the screen oxide if oxidation-enhanced diffusion 
+(OED) and the silicon consumption during the oxidation are not important.</p>
+
+<p>To deposit a 10 nm layer of screening oxide and to perform a thermal cycle in an inert 
+environment, use:</p>
+
+<pre>
+deposit material= {Oxide} type=isotropic time=1.0 rate= {0.01}
+diffuse temperature=900&lt;C&gt; time=40&lt;min&gt; 
+</pre>
+
+<p>The <tt>diffuse</tt> command assumes an inert ambient if no gas flow is specified.</p>
+
+<p class="note">When you want to omit the oxide growth but OED is not negligible, 
+specifying a reacting ambient together with the following flag:<br />
+
+<tt>pdbSetBoolean Grid DoNotMove.Reaction 1</tt><br />
+
+switches on OED without applying velocities to the mesh points. This is often used in 3D simulations. 
+See <a href="sp_4.html#2">Section 4.2 Changing Parameters in the Command File</a> for details about the 
+<tt>pdbSetBoolean</tt> command.</p>
+
+<p class="note">The <tt>deposit</tt> command here is written in <em>long</em> 
+syntax. For simple etching and deposition types, <em>short</em> syntax is 
+also available. This <tt>deposit</tt>command, written in short syntax, would be:<br />
+
+<tt>deposit Oxide type=isotropic thickness=10.0&lt;nm&gt;</tt></p>
+
+<p>Using long syntax is recommended because it is consistent with more advanced etching types such 
+as multimaterial and Fourier, for which only long syntax is available.</p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>2.9 Using Tcl Control Statements</h1>
+
+<p>Tcl constructs can be used freely in the command file of Sentaurus Process 
+(see the <a href="../tcl/tcl_menu.html">Tool Command Language module</a> for 
+an introduction).</p> 
+
+<p>The following code segment simulates oxidation or performs a deposition depending on the 
+value of the Tcl variable <tt>SCREEN</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd" startExpr="set SCREEN*" endExpr="}" -->
+<pre>
+set SCREEN Grow
+
+if { $SCREEN == &quot;Grow&quot; } {
+
+# Growing screening oxide
+# -----------------------
+
+gas_flow name= O2_1_N2_1 pressure= 1&lt;atm&gt; flowO2= 1.2&lt;l/min&gt; flowN2= 1.0&lt;l/min&gt;
+diffuse temperature= 900&lt;C&gt;  time= 40&lt;min&gt; gas.flow= O2_1_N2_1
+
+# Measuring the oxide thickness
+# -----------------------------
+
+select z=1
+layers
+
+} else {
+
+# Depositing screening oxide
+# --------------------------
+
+deposit material= {Oxide} type= isotropic time= 1.0 rate= {0.01}
+diffuse temperature= 900&lt;C&gt;  time= 40&lt;min&gt; 
+
+}
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="10"></a>
+<h1>2.10 Implanting Arsenic</h1>
+
+<p>To implant arsenic with an energy of 30 keV, a dose of 10<sup>14</sup> cm<sup>-2</sup>, 
+an implantation tilt of 7&deg;, and a wafer rotation 0&deg;, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd" startExpr="implant*" Lines=1 format="wrap" -->
+<pre>
+implant Arsenic energy= 30&lt;keV&gt; dose= 1e14&lt;cm-2&gt; tilt= 7&lt;degree&gt;  rotation= \
+  0&lt;degree&gt; 
+</pre>
+<!-- grep end -->
+
+<p>Sentaurus Process reports:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/n1_fps.out" startExpr="Species*" Lines=20 -->
+<pre>
+Species           =  Arsenic
+Dataset           =  Arsenic
+Energy            =  30keV
+Dose (WaferDose)  =  1e+14/cm2
+BeamDivergence    =  0.5deg
+BeamDose          =  1.0075e+14/cm2
+Tilt              =   7deg
+Rotation          =   0deg
+Temperature       = 300.00K
+Total implant time:    0.26sec
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+ Dose in:   Silicon_1     Oxide_1 Oxide_1+Sil       Total
+              Silicon       Oxide Oxide_Silic
+    Boron  1.9685e+11  2.7384e+09  4.0938e+08  2.0000e+11
+  Arsenic  9.9635e+13  2.7549e+12  0.0000e+00  1.0239e+14
+      Int  1.9736e+08  7.7921e+04  1.0000e+05  1.9764e+08
+      Vac  2.6782e+09  1.3372e+08  1.0000e+05  2.8121e+09
+ ICluster  9.6849e+07  0.0000e+00  1.0000e+05  9.7049e+07
+       O2  1.9968e-04  2.6168e+10  1.0000e+00  2.6168e+10
+</pre>
+<!-- grep end -->
+
+<p>The report shows that due to the nonzero tilt angle, Sentaurus Process adapted the beam 
+dose so that the total dose deposited on the wafer is as specified. The slice angle denotes 
+the angle between the simulation plane and the normal to the wafer flat. By default, the 
+simulation domain is parallel to the wafer flat.</p>
+
+<p>The report shows the integrated doping concentrations for each species and region.</p>
+
+<!--================================================-->
+<a name="11"></a>
+<h1>2.11 Saving the As-Implanted Profile</h1>
+
+<p>To save the as-implanted profile, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd" startExpr="SetPlxList*" Lines=2 -->
+<pre>
+SetPlxList { BTotal Arsenic_Implant }
+WritePlx n@node@_1DasImpl.plx
+</pre>
+<!-- grep end -->
+
+<p>The <tt>SetPlxList</tt> command defines which solution variables are saved in the <tt>.plx</tt> 
+file. Here, only the total (chemical) boron and the as-implanted arsenic concentrations are saved. 
+If the <tt>SetPlxList</tt> command is omitted, all available solutions are saved in the <tt>.plx</tt> 
+file by default.</p>
+
+<p>Besides the file name, here <tt>n@node@_1DasImpl.plx</tt>, the <tt>WritePlx</tt> 
+command also accepts a material specifier, which restricts the plot to 
+the given material. For 2D and 3D structures, the x-, y-, or z-coordinates 
+of the 1D cutline must be given.</p>
+
+<p>Figure 2 shows the as-implanted arsenic profiles and the background boron concentration. 
+Note the boron depletion at the interface, which is caused by boron segregation during the oxide 
+growth.</p>
+
+<p><img src="images/sp_1d_asimplant.png" width="537" height="475" 
+alt="As-implanted arsenic profile" /></p>
+
+<p class="caption">Figure 2. As-implanted arsenic profile and background boron concentration.</p>
+
+<p>Figure 2 is generated by loading the <tt>.plx</tt> file into Sentaurus Visual with:</p>
+
+<pre>
+> svisual n1_1DasImpl.plx
+</pre>
+
+<!--================================================-->
+<a name="12"></a>
+<h1>2.12 Thermal Annealing, Drive-in, Activation, and Screening Oxide Strip</h1>
+
+<p>To anneal the damage during implantation, or to drive the dopants deeper into the 
+substrate, or to activate the implanted dopants in an inert environment, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd" startExpr="*Thermal*annealing*" endExpr="WritePlx*" format="excludeEmpty" excludeLines="*#*" -->
+<pre>
+diffuse  temperature= 1000&lt;C&gt; time= 30&lt;min&gt;
+strip Oxide
+SetPlxList { BTotal BActive AsTotal AsActive }
+WritePlx   n@node@_1Danneal.plx
+</pre>
+<!-- grep end -->
+
+<p>Here, the structure is annealed at a constant temperature of 1000&deg;C for 30 minutes. 
+The annealing is performed in an inert gas, because no particular reacting ambient is specified.</p>
+
+<p>The annealed profiles are written to the file <tt>n@node@_1Danneal.plx</tt>. The total (chemical) 
+concentration of boron and arsenic, as well as the respective electrically active (substitutional) 
+concentrations, are saved.</p>
+
+<p><img src="images/sp_1d_as.png" width="537" height="475" 
+alt="Comparison of as-implanted and annealed arsenic profiles" /></p>
+
+<p class="caption">Figure 3. Comparison of as-implanted and annealed arsenic profiles.</p>
+
+<p>Figure 3 compares the as-implanted and the annealed arsenic profiles. It is generated by 
+loading both <tt>.plx</tt> files into Sentaurus Visual with:</p>
+
+<pre>
+&gt; svisual n1_1DasImpl.plx n1_1Danneal.plx
+</pre>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p> 
+
+<!--================================================-->
+<a name="13"></a>
+<h1>2.13 Assignment</h1>
+
+<p>Create a Sentaurus Process command file for simulating the 1D doping profiles for 
+a vertical npn bipolar transistor for the process flow outlined here.</p>
+
+<p><strong>Step 1. Substrate Definition</strong></p>
+
+<ul>
+<li>Declare a 2-&mu;m deep p-type substrate of (100) silicon with a boron concentration 
+of 1.0 x 10<sup>15 </sup> cm<sup>-3</sup>.</li>
+</ul>
+
+<p><strong>Step 2. Buried Layer and Partial Drive-In</strong></p>
+
+<ul>
+<li>Deposit 25 nm of screening oxide.</li>
+<li>Implant antimony with a dose of 1.5 x 10<sup>15</sup> cm<sup>-2</sup> 
+    and an energy of 100 keV.</li>
+<li>Anneal at 1100&deg;C for 60 minutes.</li>
+<li>Strip the screening oxide.</li>
+</ul>
+
+<p><img src="images/sp_1d_npn_sb.png" width="537" height="475" 
+alt="Antimony profiles after implantations and partial drive-in" /></p>
+
+<p class="caption">Figure 4. Antimony profiles after implantations 
+and partial drive-in in Step 2.</p>
+
+<p><strong>Step 3. Epi Layer</strong></p>
+<ul>
+<li>Deposit 4 &mu;m of lightly doped silicon.</li>
+<li>Emulate the thermal budget during the epi growth with another annealing at 1100&deg;C for 
+60&nbsp;minutes.</li>      
+</ul>
+
+<p><strong>Step 4. Base Implantation and Drive-In</strong></p>
+<ul>
+<li>Deposit 25 nm of screening oxide.</li>
+<li>Implant boron with a dose of 1.0 x 10<sup>14</sup > cm<sup>-2</sup>, an energy of 50 keV, 
+and a tilt angle of 7&deg;.</li>
+<li>Anneal at 1000&deg;C for 50 minutes.</li>
+</ul>
+
+<p><strong>Step 5. Emitter Implantation and Activation</strong></p>
+
+<ul>
+<li>Implant arsenic with a dose of 2.0 x 10<sup>15</sup> cm<sup>-2</sup>, an energy of 55 keV, 
+and a tilt angle of 7&deg;.</li>
+<li>Anneal at 1000&deg;C for 35 minutes.</li>
+</ul>
+
+<p><img src="images/sp_1d_npn_final.png" width="537" height="475" alt="Final profiles" /></p>
+
+<p class="caption">Figure 5. Final profiles.</p>
+
+<p>For the assignment:</p>
+
+<ul>
+<li>Define an initial mesh and an initial simulation domain before defining the substrate.</li>
+<li>Define a remeshing strategy before the first <tt>deposit</tt> command.</li>
+<li>Save the 1D profiles after each major implantation and annealing step.</li>
+</ul> 
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/1DGS/sprocess1_fps.cmd">
+sprocess1_fps.cmd</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

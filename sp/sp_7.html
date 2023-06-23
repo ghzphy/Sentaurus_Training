@@ -1,0 +1,376 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 7. Custom Models With Alagator</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_6.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_8.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />7. Custom Models With Alagator</h1>
+
+<p>
+ <a href="#1">7.1 Overview</a><br />
+ <a href="#2">7.2 A Model for Alagator</a><br />
+ <a href="#3">7.3 Introducing a Solution</a><br />
+ <a href="#4">7.4 Defining an Equation Directly</a><br />
+ <a href="#5">7.5 Defining an Equation Using Terms</a><br />
+ <a href="#6">7.6 Defining an Equation Using Callback Procedures</a><br />
+ <a href="#7">7.7 Simulating a Diffusion Step With New Model</a><br />
+ <a href="#8">7.8 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To demonstrate the capabilities of the Alagator scripting language 
+by creating a model.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>7.1 Overview</h1>
+
+<p>In Sentaurus Process, the Alagator (A Layered Approach to Generating Advanced Technically 
+Oriented Research) scripting language is used to specify partial differential equations and 
+boundary conditions for use with diffusion simulations. All Sentaurus Process diffusion models 
+are defined using Alagator.</p>
+
+<p>This design enables you to create custom diffusion models and to integrate them with native 
+Sentaurus Process models easily. Alagator can be used to solve any diffusion equation including 
+dopant, defect, impurity, and oxidant diffusion equations.</p>
+
+<p class="note">To use the Alagator scripting language efficiently, some understanding 
+of Tcl is required (see the <a href="../tcl/tcl_menu.html">Tool Command Language module</a> 
+for an introduction).<br /><br />
+The files discussed in this section are part of the Sentaurus 
+Workbench project <tt>Alagator</tt>. The complete project can be 
+investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sprocess/Alagator</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>7.2 A Model for Alagator</h1>
+
+<p>To introduce the Alagator scripting language, the following diffusion problem 
+is considered:</p>
+
+<p> \[ {∂C_{M}} / {∂t} = ∇D_{M} ∇C_{M} - 2k_{1} (C_{M}^{2} - k_{2} C_{M2}) \] </p>
+
+<p> \[ {∂C_{M2}} / {∂t} = k_{1} (C_{M}^{2} - k_{2} C_{M2}) \] </p>
+
+<p>where \(C_{M}\) is the concentration in cm<sup>&ndash;3</sup> of a new species &quot;M&quot;, and
+\(C_{M2}\) is the concentration of trapped clusters of two &quot;M&quot;s.</p>
+
+<p>The diffusivity of &quot;M&quot; is given by:</p>
+
+<p>\[D_{M} = 10^{-4} · e^{-{1.5\: \text"eV"}/{kT}} [{\text"cm"^2}/{\text"s"}] \] </p>
+
+<p>The &quot;M&quot; forward reaction rate given by:</p>
+
+<p>\[k_{1} = 4 · π · 2.7 · 10^{-8} · D_{M} [{\text"cm"^3}/{\text"s"}] \] </p>
+
+<p>The binding coefficient of &quot;M2&quot; clusters is given by:</p>
+
+<p>\[ k_{2} = 5 · 10^22 · e^{- {3.0\: \text"eV"} / {kT}} [\text"cm"^{-3}] \] </p>
+
+<p class="note">&quot;M2&quot; clusters are assumed to be immobile.</p> 
+
+<!--================================================-->
+<a name="3"></a>
+<h1>7.3  Introducing a Solution</h1>
+
+<p>Sentaurus Process refers to a species as a <em>solution</em>. 
+To introduce a new species to Sentaurus Process, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="solution*" Lines=2 -->
+<pre>
+solution name= M  add !negative !damp ifpresent = &quot;M&quot;
+solution name= M2 add !negative !damp ifpresent = &quot;M2 M&quot;
+</pre>
+<!-- grep end -->
+
+<p> Here, the name &quot;M&quot; is used for the concentration field \(C_{M}\) 
+of the new species and &quot;M2&quot;  is used for the &quot;M&quot; cluster 
+concentration \(C_{M2}\). The option <tt>add</tt> creates a new species.</p>
+
+<p>The <tt>!negative</tt> option states that this field cannot have negative values. 
+The <tt>!damp</tt> option suppresses damping of the Newton iterations. The 
+<tt>ifpresent</tt> argument activates a conditional solve.</p> 
+
+<p>Here, the equation for &quot;M&quot; will be solved only if &quot;M&quot; is present, 
+that is, if the field <em>C<sub>M</sub></em> was previously defined. Similarly, the 
+equation for &quot;M2&quot; clusters is solved only if both &quot;M&quot; and &quot;M2&quot; 
+are present.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>7.4 Defining an Equation Directly</h1>
+
+<p>To define the diffusion equation for the species &quot;M&quot; and &quot;M2&quot;, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="set D0*" EndExpr="*ddt(M2)*" -->
+<pre>
+set D0 &quot;\[Arrhenius 1e-4 1.5\]&quot;
+set k1 &quot;4 * 3.1415 * 2.7e-8 * $D0&quot;
+set k2 &quot;\[Arrhenius 5.0e22 3.0\]&quot;
+
+pdbSetString Silicon M Equation &quot;ddt(M)-$D0*grad(M)+2*$k1*(M^2-$k2*M2)&quot; 
+
+pdbSetString Silicon M2 Equation &quot;ddt(M2)-$k1*(M^2-$k2*M2)&quot; 
+</pre>
+<!-- grep end -->
+
+<p>The first set of Tcl <tt>set</tt> commands defines the coefficients for the diffusion model. 
+The brackets are masked by backslashes to suppress the evaluation of the Arrhenius law at the 
+time of the definition (see <a href="sp_4.html#2">Section 4.2 Changing Parameters in the Command File</a>).</p> 
+
+<p>The <tt>pdbSetString</tt> command makes an entry into the parameter database. 
+Here, entries of type <tt>Equation</tt> are created for the material silicon, and the 
+species &quot;M&quot; and &quot;M2&quot;. Alagator scans <tt>Equation</tt> entries 
+in the parameter database to determine which differential equations to solve.</p>
+
+<p>The differential equation itself is given as a string where <tt>ddt(M)</tt> denotes a 
+partial differentialization with respect to time, and <tt>$D0 * grad(M)</tt> denotes 
+\(∇D_{M} ∇C_{M}\).</p>
+
+<p class="note">The <tt>grad</tt> operator implements a simple diffusion equation, 
+that is, the divergence operator is implied automatically.<br /><br />
+
+When working with <em>preexisting</em> parameter data entries, it is 
+recommended to use the command <tt>pdbSet</tt> instead of the type-specific command 
+(such as <tt>pdbSetString</tt> and <tt>pdbSetDouble</tt>), because <tt>pdbSet</tt> 
+automatically checks for the type and syntax. However, if a <em>new</em> parameter data entry 
+is to be created, the typed versions must be used, for the same reason: <tt>pdbSet</tt> will 
+flag an error because this new entry cannot (yet) be found in the parameter database.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>7.5 Defining an Equation Using Terms</h1>
+
+<p>The diffusion equations for &quot;M&quot; and &quot;M2&quot; 
+share the reaction term \(k_{1} (C_{M}^{2} - k_{2} C_{M2})\).</p>
+
+<p>In the implementation discussed in the previous section, the reaction term is defined 
+separately and independently for the two equations. For a complex set of diffusion equations, 
+this approach is tedious and error prone. It is better to define the coupling term once and 
+then use it in both equations.</p>
+
+<p>Define the reaction term with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="term name*" Lines=1 -->
+<pre>
+term name= MReact Silicon add eqn= &quot;$k1 * ( M^2 - $k2 * M2)&quot;
+</pre>
+<!-- grep end -->
+
+<p>Define the diffusion equation with the term:</p>
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="pdbSetString*" Lines=2 startOccurrence=3-->
+<pre>
+pdbSetString Silicon M  Equation &quot;ddt(M) - $D0 * grad(M) + 2 * MReact&quot;
+pdbSetString Silicon M2 Equation &quot;ddt(M2) -  MReact&quot;
+</pre>
+<!-- grep end -->
+
+<p class="note"><tt>MReact</tt> is an Alagator term and not a Tcl variable. Therefore, 
+it is not de-referenced with the dollar sign.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>7.6 Defining an Equation Using Callback Procedures</h1>
+
+<p>So far, equations for specific species have been defined. However, often the diffusion 
+of several different species is described by the same equation, but possibly with different 
+coefficients or parameters. Alagator supports the reuse of equations by using callback procedures.</p>
+
+<p>Implement the &quot;M&quot; and &quot;M2&quot; diffusion equations 
+with callback procedures following these steps.</p>
+
+<p><strong>Step 1.</strong> Make new entries in the parameter database for the species 
+&quot;M&quot; in silicon:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="*M EquationProc*" EndExpr="*M React*" -->
+<pre>
+pdbSetString Silicon  M EquationProc MEquation 
+
+pdbSetDouble Silicon  M D0 &quot;\[Arrhenius 1e-4 1.5\]&quot;
+pdbSetDouble Silicon  M k1 &quot;4*3.1415*2.7e-8*\[pdbDelayDouble Silicon M D0\]&quot;
+pdbSetDouble Silicon  M M2 k2 &quot;\[Arrhenius 5.0e22 3.0\]&quot;
+pdbSetString Silicon  M React &quot;M2&quot;
+</pre>
+<!-- grep end -->
+
+<p>In the first line, an entry is made for an equation, which is defined by the Tcl procedure 
+<tt>MEquation</tt>. Then, the parameters <tt>D0</tt> and <tt>k1</tt> are defined. Note that 
+<tt>k1</tt> actually uses the defined <tt>D0</tt> value. The parameter <tt>k2</tt> is under the 
+sub-entry &quot;M2&quot;. The string parameter <tt>React</tt> is defined and set to &quot;M2&quot;.</p>
+
+<p class="note">Formally, the <tt>pdbSet*</tt> command creates only a hierarchical 
+data structure, where the last argument is the value, and the list of previous 
+arguments is used to access this value. At this point, the meaning of these entries 
+is open to discussion.</p>
+
+<p><strong>Step 2.</strong> Define the equation procedure:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="proc MEquation*" EndExpr="}*" -->
+<pre>
+proc MEquation { Material Solution } {
+    
+    set D0    [pdbDelayDouble $Material $Solution D0]
+    set k1    [pdbDelayDouble $Material $Solution k1]
+    set React [pdbGetString $Material $Solution React]
+    set k2    [pdbDelayDouble $Material $Solution $React k2]
+    
+    term name= ${Solution}React $Material add \
+         eqn= &quot;$k1 * ( $Solution^2 - $k2 * $React)&quot;
+    
+    pdbSetString $Material $Solution  Equation \
+      &quot;ddt($Solution) - $D0 * grad($Solution) + 2 * ${Solution}React&quot;
+
+    pdbSetString $Material $React Equation \
+      &quot;ddt($React) -  ${Solution}React&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>The procedure <tt>MEquation</tt> takes two arguments: a material and a solution or 
+species. So this equation can be reused for other species.</p>
+
+<p>The first set of commands retrieves the parameters that were previously defined 
+in the parameter database. Note that the <tt>React</tt> parameter is used to define the name 
+of the clusters for the given species.</p>
+
+<p>Again, a term and the diffusion equations are defined in the same way as in previous 
+sections. The only difference is that now the species and the material names are Tcl variables.</p>
+
+<p class="note">Here, the &quot;M2&quot; equation is set up implicitly together with the 
+&quot;M&quot; equation. This approach is adequate for the example under consideration, because the &quot;M2&quot; 
+equation is not needed unless an &quot;M&quot; equation is defined.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>7.7 Simulating a Diffusion Step With New Model</h1>
+
+<p><strong>Step 1.</strong> Set up the grid and the initial structure with:</p>
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="line x*" Lines=5 -->
+<pre>
+line x location= 0.0&lt;um&gt; spacing= 1.0&lt;nm&gt; tag= top
+line x location= 0.5&lt;um&gt; spacing= 5.0&lt;nm&gt;
+line x location= 10.0&lt;um&gt; spacing= 5.0&lt;nm&gt; tag= bottom
+region Silicon xlo= top xhi= bottom
+init
+</pre>
+<!-- grep end -->
+
+<p><strong>Step 2.</strong> Define the new model with one of the three methods previously discussed:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="solution*" Lines=2 -->
+<pre>
+solution name= M  add !negative !damp ifpresent = &quot;M&quot;
+solution name= M2 add !negative !damp ifpresent = &quot;M2 M&quot;
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="*Arrhenius*" EndExpr="set k2*" -->
+<pre>
+set D0 &quot;\[Arrhenius 1e-4 1.5\]&quot;
+set k1 &quot;4 * 3.1415 * 2.7e-8 * $D0&quot;
+set k2 &quot;\[Arrhenius 5.0e22 3.0\]&quot;
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="*M Equation*" EndExpr="*ddt(M2)*" -->
+<pre>
+pdbSetString Silicon M Equation &quot;ddt(M)-$D0*grad(M)+2*$k1*(M^2-$k2*M2)&quot; 
+
+pdbSetString Silicon M2 Equation &quot;ddt(M2)-$k1*(M^2-$k2*M2)&quot; 
+</pre>
+<!-- grep end -->
+
+<p><strong>Step 3.</strong> Create the initial &quot;M&quot; and &quot;M2&quot; fields 
+manually with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="sel*" EndExpr="WritePlx*" -->
+<pre>
+select z= &quot;2.0e18 * exp(-(x-0.5)*(x-0.5) / (0.03 * 0.03)) + 1.0e10&quot; \
+	name= M store 
+select z= 1e5 name= M2 store
+SetPlxList { M M2 }
+WritePlx  n@node@_Minitial.plx
+</pre>
+<!-- grep end -->
+
+<p><strong>Step 4.</strong> Start the diffusion with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd" startExpr="*diffuse*" EndExpr="WritePlx*" -->
+<pre>
+diffuse info= 2 temperature= 800.00&lt;C&gt; time= 20&lt;s&gt; init= 1.e-08&lt;s&gt;
+WritePlx  n@node@_Mfinal_V1.plx
+</pre>
+<!-- grep end -->
+
+<p><img src="images/sp_alag_mprofile.png" width="537" height="475" 
+alt="Comparing M and M2 profiles after diffusion" /></p> 
+
+<p class="caption">Figure 1. Comparing &quot;M&quot; and &quot;M2&quot; 
+profiles after the diffusion step.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>7.8 Assignment</h1>
+
+<p>Set up a Sentaurus Process command file, which implements and runs the custom 
+&quot;M&quot; diffusion model as in <a href="#7">Section 7.7 Simulating a Diffusion Step With New Model</a> 
+in three versions using: (1) the direct method, (2) terms, and (3) callback procedures.</p>
+
+<p>Compare the &quot;M&quot; and &quot;M2&quot; profiles after the diffusion step, 
+and verify that all three versions give identical results.</p>
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Alagator/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_6.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_8.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

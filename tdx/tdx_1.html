@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Data Explorer 1. Command-Line Functionality</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tdx_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tdx_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Data Explorer<br />1. Command-Line Functionality</h1>
+
+<p>
+<a href="#1">1.1 Overview</a><br />
+<a href="#2">1.2 Examples of Applications</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To explain the command-line functionality of Sentaurus Data Explorer.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Overview</h1> 
+
+<p>Sentaurus Data Explorer is used from the command line. Typical 
+applications are the conversion of files coming from different TCAD 
+simulators and the reflection of the device with respect to an 
+axis. The full list of options is printed by using the following 
+command on the command line:</p>
+
+<pre>
+&gt; tdx -h
+</pre>
+
+<p>Another application is to start Sentaurus Data Explorer 
+in batch mode together with a script in the Tcl/Tk programming 
+language. The file name of the script must be specified with 
+the following command-line option:</p>
+
+<pre>
+&gt; tdx -tcl &lt;filename&gt;
+</pre>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>1.2 Examples of Applications</h1>
+
+<p>This section presents examples of typical applications of 
+Sentaurus Data Explorer.</p>
+
+<!--========================-->
+<h2>1.2.1 Reflection</h2>
+
+<p>The following command takes the file <tt>half.tdr</tt> 
+as input and reflects the structure (data fields, regions, and mesh); 
+the reflected drain contact is renamed to source; and the result is saved 
+as <tt>full.tdr</tt>:</p>
+
+<pre>
+&gt; tdx -mtt -X -ren drain=source half full
+</pre>
+
+<p>In general, reflected regions are merged with the original 
+region and receive the original region name if the original part 
+and the reflected part are simply connected.</p>
+
+<p>If the reflected part and the original part are not simply 
+connected (that is, if they form two separated regions), the 
+name of the reflected part is <tt>&lt;original_name&gt;_mirrored</tt> 
+(see Figure&nbsp;1). If the reflection is applied more than once, 
+the string <tt>_mirrored</tt> is appended as often as required.</p>
+
+<p>The <tt>-ren newname oldname</tt> option renames the reflected part. 
+Several regions can be renamed by using 
+<tt>-ren newname1=oldname1/newname2=oldname2</tt> and so on.</p>
+
+<p><a href="images/tdx_reflect.png"><img src="images/tdx_reflect.png" width="570" 
+alt="Reflected structure" /></a></p>
+
+<p class="caption">Figure 1. The original structure (left) is reflected 
+once. The region &quot;R.Substrate&quot; consists of one 
+simply connected piece; the reflected part is merged with the 
+original part. For the region &quot;R.SiGeEpi&quot;, the 
+reflection creates a region that is not simply connected to the 
+original region. The reflected region is named 
+&quot;R.SiGeEpi_mirrored&quot;. The option &quot;-ren drain=source&quot; 
+causes the reflected part of &quot;drain&quot; to be renamed to 
+&quot;source&quot;. (Click image for full-size view.)</p>
+
+<!--========================-->
+<h2>1.2.2 Converting Files</h2>
+
+<p>The following command reads the file <tt>structure.tif</tt>, 
+converts it, and saves it to the file name <tt>structure.tdr</tt>:</p>
+
+<pre>
+&gt; tdx -f structure
+</pre>
+
+<p>To list all options for file conversion, use:</p>
+
+<pre>
+&gt; tdx -h
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tdx_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tdx_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

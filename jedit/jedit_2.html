@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; jEdit 2. Main Features of TCAD Customization</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">jEdit<br />2. Main Features of TCAD Customization</h1>
+
+<p>
+ <a href="#1">2.1 Syntax Highlighting</a><br />
+ <a href="#2">2.2 Macros</a><br />
+ <a href="#3">2.3 Command Completion</a><br />
+ <a href="#4">2.4 Abbreviations</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To describe the most commonly used and convenient functionality of jEdit.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Syntax Highlighting</h1>
+
+<p>Syntax highlighting is implemented for selected TCAD Sentaurus tools. 
+For syntax highlighting to work, jEdit must recognize the extension 
+of the command file as an appropriate Sentaurus command file. The 
+file extensions of the TCAD Sentaurus tools are assumed to be as follows:</p>
+
+<table>
+<tr>
+<th>Tool</th>
+<th>File extension</th>
+</tr>
+
+<tr>
+<td>Sentaurus Process</td>
+<td><tt>*_fps.cmd</tt>, <tt>*.fps</tt></td>
+</tr>
+
+<tr>
+<td>Sentaurus Structure Editor</td>
+<td><tt>*_dvs.cmd</tt>, <tt>*.scm</tt></td>
+</tr>
+
+<tr>
+<td>Sentaurus Structure Editor sdeepi CSV file</td>
+<td><tt>*_epi.csv</tt></td>
+</tr>
+
+<tr>
+<td>Sentaurus Mesh</td>
+<td><tt>*_msh.cmd</tt></td>
+</tr>
+
+<tr>
+<td>Sentaurus Device</td>
+<td><tt>*_des.cmd</tt></td>
+</tr>
+
+<tr>
+<td>Sentaurus Device parameter file</td>
+<td><tt>*.par</tt></td>
+</tr>
+
+<tr>
+<td>Sentaurus Device Electromagnetic Wave Solver (EMW)</td>
+<td><tt>_eml.cmd</tt></td>
+</tr>
+
+<tr>
+<td>Sentaurus Visual</td>
+<td><tt>*_vis.cmd</tt>, <tt>*_vis.tcl</tt></td>
+</tr>
+
+<tr>
+<td>Inspect</td>
+<td><tt>*_ins.cmd</tt></td>
+</tr>
+
+<tr>
+<td>Sentaurus Interconnect</td>
+<td><tt>*_sis.cmd</tt>, <tt>*.sis</tt></td>
+</tr>
+
+</table>
+
+<p>If you use Sentaurus Workbench to create project and command files, 
+these files will already use these extensions.</p>
+
+<p>In addition, regardless of the file extension, jEdit supports syntax
+highlighting for preprocessor statements if the first line of a file contains 
+a <tt>#setdep</tt> command.</p>
+
+<p>With jEdit, you have different methods to insert frequently 
+used commands or command blocks into the command file: macros, 
+command completion, and abbreviations.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Macros</h1>
+
+<p>The simplest way to quickly insert commands or command blocks is 
+to use macros. The Sentaurus customization package for jEdit provides 
+many predefined macros for all Sentaurus modes.</p>
+
+<p>To insert a macro and to see which macros are available, for example, 
+in Sentaurus Process mode, choose <strong>Macros</strong> &gt; 
+<strong>Sentaurus-Process</strong> &gt; <strong>&lt;name of macro&gt;</strong> 
+(see Figure&nbsp;1).</p>
+
+<p>New macros cannot be defined using the user interface of jEdit. See the 
+Download and Installation Instructions section of the customization package 
+for details on how new macros can be defined 
+(see <a href="jedit_1.html#2">Section&nbsp;1.2 Downloading the Customization Package</a>).</p>
+
+<p><a href="images/je_macros.png"> <img src="images/je_macros.png" width="550" 
+alt="Using macros to insert commands" /></a></p> 
+                                               
+<p class="caption">Figure 1. Using macros to insert commands. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 Command Completion</h1>
+
+<p>jEdit allows you to start typing a command and then press a combination of 
+keys to show a list of known commands that start with the typed portion. For example, 
+in Sentaurus Structure Editor mode, you can type <tt>sdegeo:</tt> and then use 
+the shortcut keys Ctrl+b. jEdit will show a list of all known commands 
+that start with <tt>sdegeo:</tt> (see Figure&nbsp;2).</p>
+
+<p>Bold keywords are valid keywords according to the mode definition of jEdit. Non-bold
+keywords are other possible completions such as variable names that appear elsewhere
+in the command file.</p>
+
+<p><a href="images/je_completion.png">
+<img src="images/je_completion.png" width="550" alt="Command completion" /></a></p> 
+                                                      
+<p class="caption">Figure 2. Command completion dialog box after 
+pressing Ctrl+b. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>2.4 Abbreviations</h1>
+
+<p>You can type a portion of the text for a command, and then jEdit completes 
+it automatically. You would typically type a few letters that represent the 
+abbreviation and then press Ctrl+; (the Ctrl key with the semicolon key) to 
+expand the abbreviation.</p>
+
+<p>Abbreviations can be defined interactively by typing the intended new
+abbreviation and then pressing the Ctrl+; keys. This displays the dialog box 
+shown in Figure&nbsp;3.</p>
+
+<p><img src="images/je_add_abbrev.png" width="360" height="288" 
+alt="Add Abbreviation dialog box" /></p>
+
+<p class="caption">Figure 3. Add Abbreviation dialog box.</p>
+
+<p>After typing the expansion text, the new abbreviation can be stored and
+activated globally or for a certain mode only. The existing abbreviations can be
+edited in the dialog box shown in Figure&nbsp;4.</p>
+
+<p>To view the list of defined abbreviations:</p>
+
+<ol>
+<li>Choose <strong>Utilities</strong> &gt; <strong>Global Options</strong>, 
+or press Ctrl+F12.</li>
+<li>In the left pane, expand <strong>jEdit</strong> &gt; <strong>Abbreviations</strong>.</li>
+</ol>
+
+<p><a href="images/je_edit_abbrev.png"><img src="images/je_edit_abbrev.png" 
+width="550" alt="Dialog box for editing abbreviations" /></a></p> 
+                                                      
+<p class="caption">Figure 4. Dialog box for editing abbreviations.
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_3.html">next section &gt;&gt;</a>
+</p>
+
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+</div>
+</body>
+</html>

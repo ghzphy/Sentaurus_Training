@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 6. Working With Advanced Calibration</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_7.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />6. Working With Advanced Calibration</h1>
+
+<p>
+ <a href="#1">6.1 Overview</a><br />
+ <a href="#2">6.2 Activating Advanced Calibration</a><br />
+ <a href="#3">6.3 Describing the Advanced Calibration File</a><br />
+ <a href="#4">6.4 Performing Additional Calibration</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to work with Advanced Calibration.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>6.1 Overview</h1>
+
+<p>Advanced Calibration is a selection of models and parameters, which are 
+recommended by Synopsys to be used for accurate process simulation. It is 
+used as a starting point of process calibration for all silicon-based 
+technologies. In Sentaurus Process, this selection of models and parameters 
+is contained in a text file, which can be opened with any standard text editor. 
+For additional calibration, it is recommended to put all project-specific 
+parameter changes into a separate file, which is sourced after loading the 
+Advanced Calibration defaults.</p>
+
+<p>The files for the Advanced Calibration of Sentaurus Process 
+are located at:</p>
+
+<pre>
+$STROOT/tcad/$STRELEASE/lib/sprocess/TclLib/AdvCal
+</pre>
+
+<p>The file associated with this training material is 
+<a href="../../lib/sprocess/TclLib/AdvCal/AdvCal_2022.12.fps">AdvCal_2022.12.fps</a>.
+</p>
+
+<p>If you need to fine-tune the parameters of Advanced Calibration, make a local file including 
+additional calibration and source it after initialization of the default Advanced Calibration.</p>
+
+<p>See the <cite>Advanced Calibration for Process Simulation User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>6.2 Activating Advanced Calibration</h1>
+
+<p>To activate Advanced Calibration of the current release, insert the following command at 
+the beginning of the command file of Sentaurus Process:</p>
+
+<pre>
+AdvancedCalibration
+</pre>
+ 
+<p>You can specify the release of Advanced Calibration explicitly. For example:</p>
+
+<pre>
+AdvancedCalibration 2022.12
+</pre>
+
+<p>Earlier releases of Advanced Calibration are activated. For example:</p>
+
+<pre>
+AdvancedCalibration 2022.03
+</pre>
+
+<p>Then, you can build the Sentaurus Process process flow with basic 
+processing commands, without specifying parameters and models.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>6.3 Describing the Advanced Calibration File</h1>
+
+<p>The Advanced Calibration file begins with a set of basic model 
+switches, such as:</p>
+
+<!-- grep file="$env(STROOT)/tcad/$env(STRELEASE)/lib/sprocess/TclLib/AdvCal/AdvCal_2*.fps" startExpr="pdbSet*Si*Dopant*" Lines=5 -->
+<pre>
+pdbSet        Si Dopant     DiffModel    ChargedPair
+pdbSet        Si Dopant     ChargeModel  DopantDefect
+pdbSet        Si Defect     ChargeModel  Defect
+
+pdbSet        Ge Dopant     DiffModel    ChargedPair
+</pre>
+<!-- grep end -->
+<!-- grep file="$env(STROOT)/tcad/$env(STRELEASE)/lib/sprocess/TclLib/AdvCal/AdvCal_2*.fps" startExpr="pdbSet*Si*Boron*" Lines=10 -->
+<pre>
+pdbSet        Si Boron      ActiveModel  Transient
+pdbSet        Si Indium     ActiveModel  Transient
+pdbSet        Si Arsenic    ActiveModel  Transient
+pdbSet        Si Phosphorus ActiveModel  Transient
+pdbSet        Si Antimony   ActiveModel  Transient
+pdbSet        Si Germanium  ActiveModel  None
+pdbSet        Si Carbon     ActiveModel  NeutralCluster
+
+pdbSet        Ge Boron      ActiveModel  Transient
+pdbSet        Ge Arsenic    ActiveModel  Transient
+</pre>
+<!-- grep end -->
+
+<pre>
+&lt;<em>other model settings</em>&gt;
+</pre>
+
+<p>The second part of the Advanced Calibration file contains 
+the parameters for the diffusion and reaction equations, 
+which are set at the beginning of the process simulation and 
+remain valid for all process steps, such as:</p>
+
+<!-- grep file="$env(STROOT)/tcad/$env(STRELEASE)/lib/sprocess/TclLib/AdvCal/AdvCal_2*.fps" startExpr="pdbSet*Si*Int*Cstar*" Lines=12 -->
+<pre>
+pdbSet            Si Int Cstar {[Arr 3.12e23 2.932]}
+pdbSetDouble      Si Int Di    {[Arr 51.0     1.77]}
+
+pdbSetDoubleArray Si Int D     { -1 {[pdbGetDouble Si Int Di]}
+                                  0 {[pdbGetDouble Si Int Di]}
+                                  1 {[pdbGetDouble Si Int Di]}
+                                  2 {[pdbGetDouble Si Int Di]} }
+
+pdbSetDoubleArray Si Int ChargeStates { -1 {[Arr 6.0   0.52]}
+                                         0       1.0
+                                         1 {[Arr 1.68  0.0655]}
+                                         2 {[Arr 0.001 0.0655]} }
+</pre>
+<!-- grep end -->
+
+<pre>
+&lt;<em>other parameter settings</em>&gt;
+</pre>
+
+<p>Process condition&ndash;dependent changes, such as the initial conditions 
+after ion implantation, are facilitated by Sentaurus Process callback procedures. 
+<a href="sp_5.html">Section 5. Working With Custom Calibration Files</a> provides 
+a simple application of these callback procedures.</p>
+
+<p>The model used to calculate point defects can be selected with the 
+<tt>defect.model</tt> argument. Its options are <tt>plus.one</tt> (default), 
+<tt>effective.plus.n</tt>, <tt>frenkel.pair</tt>, and <tt>user.defined</tt>.</p>
+
+<p>The value can be set directly in the <tt>implant</tt> command:</p>
+
+<pre>
+implant Boron energy=50 dose=2e13 defect.model=user.defined
+</pre>
+
+<p>or globally, for any implantation step, in the PDB Browser:</p>
+
+<pre>
+pdbSet ImplantData defect.model user.defined
+</pre>
+
+<p>When <tt>user.defined</tt> is selected, Sentaurus Process assumes that 
+the point defects are updated by the <tt>UserPointDefectModel</tt> procedure, 
+which is defined in section 3.5 of <tt>AdvCal_2022.12.fps</tt>.</p>
+
+<p><tt>UserPointDefectModel</tt> calls other procedures such as 
+<tt>impPostProcess_AdvCal</tt>, which is introduced for all data-field 
+postprocessing. In particular, the scaling factors for point defects 
+and damage are set, such as:</p>
+
+<!-- grep file="$env(STROOT)/tcad/$env(STRELEASE)/lib/sprocess/TclLib/AdvCal/AdvCal_2*.fps" startExpr="fproc*impPostProcess*" Lines=1 format="wrap"-->
+<pre>
+fproc impPostProcess_AdvCal { Species Name Energy Dose Model IFac VFac CDose \
+  {Suffix &quot;&quot;} } {
+</pre>
+<!-- grep end -->
+<!-- grep file="$env(STROOT)/tcad/$env(STRELEASE)/lib/sprocess/TclLib/AdvCal/AdvCal_2*.fps" startExpr="*expr*$IFac*" Lines=11 -->
+<pre>
+        if { [expr $IFac &gt;= 0.0] } {
+            set ifactor $IFac
+        } else {
+            if { [info procs ifactor_${mat}_${Species}] != &quot;&quot; } {
+                set ifactor [ifactor_${mat}_${Species} $Energy $Dose]
+            } elseif { [info procs ifactor_$Species ] != &quot;&quot; } {
+	        set ifactor [ifactor_$Species $Energy $Dose] 
+            } else {
+	        set ifactor 1.0
+            }
+        }
+</pre>
+<!-- grep end -->
+
+<p>The <tt>ifactor</tt>, <tt>vfactor</tt>, <tt>dfactor</tt>, <tt>aminit</tt>, and 
+<tt>acinit</tt> can be defined per species in procedures, such as:</p>
+
+<!-- rep file="./files/AdvCal_*.fps" startExpr="*ifactor_Ars*" EndExpr="}*" -->
+<!-- grep file="$env(STROOT)/tcad/$env(STRELEASE)/lib/sprocess/TclLib/AdvCal/AdvCal_2*.fps" startExpr="*ifactor_Ars*" EndExpr="*return*" EndOffset=1 startOccurrence=2 format="trimWrap" -->
+<pre>
+fproc ifactor_Arsenic { Energy Dose } {
+return [expr 1.0 + \
+  8.0*$Dose/($Dose+1.0e14)*$Energy*$Energy/($Energy*$Energy+4.0)]
+}
+</pre>
+<!-- grep end -->
+
+<p class="note">The command <tt>fproc</tt> defines a Tcl procedure in the 
+same way as the <tt>proc</tt> command. The advantage of using <tt>fproc</tt> 
+is that the procedure is saved and restored in TDR files, which guarantees 
+exact restarting.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>6.4 Performing Additional Calibration</h1>
+
+<p>For the process simulation of any new technology or technology node, you should use 
+Advanced Calibration as the starting point. In many cases, it will give accurate results 
+without requiring additional fine-tuning.</p>
+
+<p>However, as previously mentioned, if additional fine-tuning is needed for customized 
+calibration, you should create a local user calibration file <tt>user_calibration.fps</tt>, 
+including only the model and parameter changes compared to the default Advanced Calibration. 
+This file should be sourced after the initialization of Advanced Calibration:</p>
+
+<pre>
+AdvancedCalibration 2022.12
+source user_calibration.fps
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_7.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

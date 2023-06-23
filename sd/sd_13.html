@@ -1,0 +1,676 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" /> 
+  
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 13. Special Focus: Traps</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_12.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_14.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />13. Special Focus: Traps</h1>
+
+<p>
+ <a href="#1">13.1 Trap Types</a><br />
+ <a href="#2">13.2 Defining Traps</a><br />
+ <a href="#3">13.3 Types of Trap Density-of-States</a><br />
+ <a href="#4">13.4 Trap Spatial Distribution</a><br />
+ <a href="#5">13.5 Trap Occupation</a><br />
+ <a href="#6">13.6 Trap Cross-Section</a><br />
+ <a href="#7">13.7 Trap as Doping</a><br />
+ <a href="#8">13.8 Trap Fill Controls</a><br />
+ <a href="#9">13.9 Trap Visualization</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to work with traps in simulations using Sentaurus Device.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>13.1 Trap Types</h1>
+
+<p>Traps are very important physical quantities that can drastically affect the electrical 
+performance of a device. They act similarly to dopings, supplying free carriers, enhancing 
+recombination, increasing leakage, and (when charged) also contributing to a total charge in 
+the right-hand side of the Poisson equation, thereby influencing device electrical behavior.</p>
+
+<p>In Sentaurus Device, different trap objects are considered:</p>
+
+<ul>
+<li>Rechargeable bulk and interface traps, energetically distributed inside a semiconductor 
+or an insulator material band gap</li>
+<li>Fixed charges, distributed inside an insulator bulk material or at arbitrary material 
+interfaces</li>
+</ul>
+
+<p>For rechargeable traps, two trap types are available:</p>
+
+<ul>
+<li>An <tt>Acceptor</tt> (or <tt>eNeutral</tt>) trap that is uncharged when unoccupied and 
+becomes negatively charged when capturing an electron.</li>
+<li>A <tt>Donor</tt> (or <tt>hNeutral</tt>) trap that is uncharged when unoccupied and becomes 
+positively charged when capturing a hole.</li>
+</ul>
+
+<p>For both trap types, electron&ndash;hole recombination through such a trap is allowed.</p>
+
+<p class="note">There is no default trap type. Therefore, you must specify a trap type 
+explicitly.</p>
+
+<p>Another available species is the fixed charge, which is a trap fully occupied by either 
+electrons or holes. Therefore, its charge stays constant throughout the entire simulation and does 
+not depend on electrical bias conditions. Electron&ndash;hole recombination through such a trap is 
+not allowed. This type of trap uses the <tt>FixedCharge</tt> keyword for a trap specification.</p>
+
+<p class="note">Both rechargeable and fixed-charge traps can be 
+specified at the bulk or at any material interface.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>13.2 Defining Traps</h1>
+
+<p>Traps can be defined globally, materialwise, regionwise, or interface-wise.</p>
+
+<p>The following template shows the materialwise definition of a bulk trap:</p>
+
+<pre>
+Physics (Material=&quot;&lt;material_name&gt;&quot;) {
+  Traps( 
+    ( &lt;trap_type&gt; Conc=&lt;value&gt;
+     [&lt;trap_DOS_type&gt;
+      &lt;trap_cross_section&gt; 
+      &lt;trap_tunneling_parameters&gt;])
+    (...)
+  )
+}
+</pre>
+
+<p>where <tt>Conc</tt> represents a trap concentration. Other trap-related parameters 
+are explained later. As many traps as needed can be specified inside a single <tt>Traps</tt> 
+section.</p>
+
+<p class="note">In the case of a bulk trap, its concentration is given in cm<sup>-3</sup> 
+or cm<sup>-3</sup>&nbsp;eV<sup>-1</sup>. For interface traps, it is given in cm<sup>-2</sup> 
+or cm<sup>-2</sup>&nbsp;eV<sup>-1</sup>, depending on the type of trap density-of-states (see 
+<a href="#3">Section&nbsp;13.3 Types of Trap Density-of-States</a>).</p>
+
+<p>Here is an example of the global specification of a rechargeable bulk trap:</p>
+
+<pre>
+Physics {
+  Traps(
+    (eNeutral Level fromMidBandGap EnergyMid=0. 
+     Conc=1e15 eXsection=1e-10 hXsection=1e-10)
+  )
+}
+</pre>
+
+<p>Similar syntax is applied for an interface trap specification:</p>
+
+<pre>
+Physics (MaterialInterface= &quot;&lt;Material_1&gt;/&lt;Material_2&gt;&quot; ) {
+  Traps( 
+    ( &lt;trap_type&gt; Conc=&lt;value&gt;
+     [&lt;trap_DOS_type&gt;
+      &lt;trap_cross_section&gt;
+      &lt;trap_tunneling_parameters&gt;])
+    (...)
+  )
+}
+</pre>
+
+<p>The following example shows the typical syntax for an interface fixed-charge trap 
+specification at material interfaces:</p>
+
+<pre>
+Physics (MaterialInterface= &quot;Silicon/Oxide&quot; ) {
+  Traps (FixedCharge Conc=-1e11)
+}
+</pre>
+
+<p>For the <tt>FixedCharge</tt> trap type, the sign of 
+<tt>Conc</tt> denotes the sign of the fixed charges.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>13.3 Types of Trap Density-of-States</h1>
+      
+<p>The trap energy distribution inside a material band gap is defined in the 
+<tt>Traps</tt> section by specifying any of the available trap density-of-states (DOS):</p>
+
+<ul>
+<li><tt>Level</tt> represents a single-energy trap level at a predefined <tt>EnergyMid</tt> 
+position. Trap concentration is given in cm<sup>-3</sup> (bulk traps) or cm<sup>-2</sup> 
+(interface traps).</li>
+
+<li><tt>Uniform</tt> represents a uniformly energy-distributed trap inside a material band gap, 
+controlled by the energy reference point, <tt>EnergyMid</tt> and <tt>EnergySig</tt> parameters. 
+Trap concentration is given in cm<sup>-3</sup>&nbsp;eV<sup>-1</sup> (bulk traps) or 
+cm<sup>-2</sup>&nbsp;eV<sup>-1</sup> (interface traps).</li>
+
+<li><tt>Exponential</tt> represents an exponentially energy-distributed trap inside a material 
+band gap, controlled by the energy reference point, <tt>EnergyMid</tt> and <tt>EnergySig</tt> 
+parameters. Trap concentration is given in cm<sup>-3</sup>&nbsp;eV<sup>-1</sup> (bulk traps) or 
+cm<sup>-2</sup>&nbsp;eV<sup>-1</sup> (interface traps).</li>
+
+<li><tt>Gaussian</tt> represents a Gaussian energy-distributed trap inside a material band gap, 
+controlled by the energy reference point, <tt>EnergyMid</tt> and <tt>EnergySig</tt> parameters. 
+Trap concentration is given in cm<sup>-3</sup>&nbsp;eV<sup>-1</sup> (bulk traps) or 
+cm<sup>-2</sup>&nbsp;eV<sup>-1</sup> (interface traps).</li>
+
+<li><tt>Table</tt> specifies a tabular trap energy distribution. Trap concentration is given in 
+cm<sup>-3</sup>&nbsp;eV<sup>-1</sup> (bulk traps) or cm<sup>-2</sup>&nbsp;eV<sup>-1</sup> (interface traps).</li>
+</ul>
+
+<p class="note">There is no default trap DOS type. Therefore, you must 
+specify it explicitly.</p>
+
+<p>The following example shows the trap energy distribution&ndash;related syntax:</p>
+
+<pre>
+Traps(
+  (...
+   &lt;trap_DOS_type&gt;
+   &lt;energy_reference_point&gt;
+   EnergyMid=&lt;E<sub>0</sub>&gt;
+   EnergySig=&lt;Es&gt;
+  )
+)
+</pre>
+
+<p>For the energy reference point, any of the following keywords can be used:</p>
+
+<ul>
+<li><tt>FromConBand</tt> selects a material conduction band edge as a reference point.</li>
+<li><tt>FromValBand</tt> selects a material valence band edge as a reference point.</li>
+<li><tt>FromMidBandGap</tt> selects the middle of a semiconductor material band gap as a reference 
+point.</li>
+</ul>
+
+<p>The following example defines the <tt>eNeutral</tt> level-type trap 
+located exactly in the middle of a material band gap:</p>
+
+<pre>
+Physics {
+  Traps(
+    (eNeutral Level fromMidBandGap EnergyMid=0. 
+     Conc=1e15 eXsection=1e-10 hXsection=1e-10)
+  )
+}
+</pre>
+
+<p>The complete project that demonstrates different definitions of trap DOS types 
+can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/Traps/TrapDOS</tt>.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/Traps/TrapDOS/sim1_des.cmd">
+sim1_des.cmd</a>.</p>
+
+<p>This file shows how different trap DOS specifications can be 
+activated, where the <tt>DOS</tt> project parameter is used to select a 
+trap DOS type.</p>
+
+<p>To plot the trap density versus energy distribution, the 
+<tt>TrappedCarDistrPlot</tt> section is used in the project. In this section, 
+you must specify the exact locations of traps within a material or region, 
+where the trap data will be plotted:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/Traps/TrapDOS/sim1_des.cmd" startExpr="*TrappedCarDistr*" endExpr="}*" -->
+<pre>
+TrappedCarDistrPlot {
+        Material=&quot;Silicon&quot;{(0. 0.)}
+}
+</pre>
+<!-- grep end -->
+
+<p>Figure 1 shows the results of this command.</p>
+
+<p><img src="images/sd_trap_dos.png" width="566" height="361" 
+alt="Trap DOS energy distributions" /></p>
+
+<p class="caption">Figure 1. Trap DOS energy distributions for different 
+definitions of trap DOS.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>13.4 Trap Spatial Distribution</h1>
+
+<p>By default, traps are distributed uniformly inside a material or at a material 
+interface. You can have a spatially nonuniformly distributed trap profile by 
+introducing the <tt>SFactor</tt> specification inside the <tt>Trap</tt> section 
+of the command file:</p>
+
+<pre>
+Traps( (... SFactor= &quot;&lt;dataset_name&gt;&quot;) )
+</pre>
+
+<p> Here, <tt>&lt;dataset_name&gt;</tt> indicates the external data field on which the
+trap spatial nonuniformity is based.</p>
+
+<p>Limited dataset names are allowed in the <tt>SFactor</tt> specification, such as 
+<tt>DeepLevels</tt>, <tt>xMoleFraction</tt>, and <tt>yMoleFraction</tt> (read from 
+the doping file), <tt>eTrappedCharge</tt> and <tt>hTrappedCharge</tt> (read from 
+the file specified by <tt>DevFields</tt> in the <tt>File</tt> section), or PMI user 
+fields <tt>PMIUserField0...10</tt> (read from the file specified by <tt>PMIUserFields</tt> 
+in the <tt>File</tt> section).</p>
+
+<p>Now look at the corresponding Sentaurus Workbench project, which 
+can be found in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/Traps/TrapSpatial</tt>.</p>
+
+<p>It represents the concept of how to introduce a nonuniform 2D spatial 
+trap distribution. The project involves Sentaurus Structure Editor and 
+Sentaurus Device.</p>
+
+<p>Sentaurus Structure Editor defines the device geometry and doping profile. 
+In addition, it defines the nonuniformly distributed function, called 
+<tt>DeepLevels</tt>. Mesh generation is performed inside Sentaurus Structure 
+Editor by directly calling Sentaurus Mesh.</p>
+
+<p>Sentaurus Device defines the nonuniform traps, applying the <tt>SFactor</tt> 
+specification to the trap definition, which refers to the <tt>DeepLevels</tt> 
+dataset name.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/Traps/TrapSpatial/sim1_des.cmd">
+sim1_des.cmd</a>.</p>
+
+<p>The <tt>DeepLevels</tt> dataset name is taken from the <tt>Grid</tt> file, 
+which is specified in the <tt>File</tt> section, while <tt>trap_type</tt> 
+and <tt>conc</tt> are the project parameters:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/Traps/TrapSpatial/sim1_des.cmd" startExpr="*File*" lines=2 -->
+<pre>
+File {
+  grid    = &quot;@tdr@&quot;
+</pre>
+<!-- grep end -->
+<pre>
+...
+}
+</pre>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/Traps/TrapSpatial/sim1_des.cmd" startExpr="*Physics*" lines=5 -->
+<pre>
+Physics {
+  Traps(
+    (@trap_type@ Conc=@conc@ SFactor=&quot;DeepLevels&quot;)
+  )  
+}
+</pre>
+<!-- grep end -->
+
+<p>Two values are assigned to the <tt>conc</tt> parameter: 0 and \(10^{18}\). 
+Having the <tt>conc</tt> parameter value set to zero indicates to Sentaurus Device 
+that the specified dataset determines the spatial distribution directly. 
+For a nonzero <tt>conc</tt> parameter value, the resulting distribution 
+is scaled according to the following formula:</p>
+
+<p>\[N_{\text"trap"}(x,y) = \text"conc" · {\text"DeepLevels"(x,y)} / {\text"DeepLevels"(\text"max")} \] </p>
+<!--<pre>
+Ntrap(x,y) = conc*DeepLevels(x,y)/DeepLevels(max)
+</pre> -->
+
+<p>where \(\text"DeepLevels"(\text"max")\) <!--<tt>DeepLevels(max)</tt> --> refers to the 
+<tt>DeepLevels</tt> dataset peak value.</p>
+
+<p>Figure 2 shows the resulting trapped hole concentration profiles.</p>
+
+<p><a href="images/sd_trap_holeconc.png"><img src="images/sd_trap_holeconc.png" width="570"
+alt="Trapped hole concentrations" /></a></p>
+
+<p class="caption">Figure 2. Trapped hole density distributions plotted for 
+(left) conc=0  and (right) conc=1e18 trap specifications. (Click image for 
+full-size view.)</p>
+
+<p>The following syntax illustrates the definition of an acceptor-type interface 
+trap spatial distribution, based on the <tt>PMIUserField0</tt> dataset, loaded 
+from the external <tt>abc.tdr</tt> file:</p>
+
+<pre>
+File {
+  ...
+  PMIUserFields = &quot;abc.tdr&quot;
+}
+
+Physics(MaterialInterface=&quot;Silicon/Oxide&quot;){
+  Traps(
+    Acceptor Conc=1e11 Gaussian fromMidBandGap EnergyMid=0. EnergySig=0.1
+    SFactor=&quot;PMIUserField0&quot;
+  )
+}
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>13.5 Trap Occupation</h1>
+      
+<p>Trap occupation is controlled by a trap-energy distribution, 
+doping, and bias conditions, which define a carrier quasi-Fermi-level 
+location inside a semiconductor band gap. It dynamically changes due to 
+carrier capture or emission by or from a trap. As previously mentioned, 
+Sentaurus Device allows you to plot a trap-energy distribution and occupation 
+using the <tt>TrappedCarDistrPlot</tt> section in the input.</p>
+
+<p>The specification inside the <tt>TrappedCarDistrPlot</tt> section defines a trap spatial 
+location within a specified material, at which a trap distribution or occupation must be plotted. 
+Resulting trapped charge density, trap occupation probability, and trap density quantities as 
+functions of energy are saved in a file indicated by the keyword <tt>TrappedCarPlotFile</tt> in 
+the <tt>File</tt> section.</p>
+
+<p>The <tt>Applications_Library/GettingStarted/sdevice/Traps/TrapOccupation</tt> 
+project demonstrates the consequence of varying the Gaussian DOS trap-level 
+peak position inside the silicon material band gap.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/Traps/TrapOccupation/sim1_des.cmd">
+sim1_des.cmd</a>.</p>
+
+<p>The quasi-Fermi-level position is established by the uniformly distributed p-type doping with 
+a concentration of 10<sup>17</sup>&nbsp;cm<sup>&ndash;3</sup>. The <tt>eNeutral</tt> trap-type energy position 
+within the band gap is controlled by the <tt>shift</tt> parameter, whose value varies between 
+-0.4&nbsp;eV and 0.3&nbsp;eV, having the silicon mid&ndash;band gap as a reference point:</p>
+
+<pre>
+Physics {
+  ...
+</pre>
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/Traps/TrapOccupation/sim1_des.cmd" startExpr="*Traps*" endExpr="}*" -->
+<pre>
+  Traps(
+    (@trap_type@ Gaussian fromMidBandGap
+     Conc=1e17 EnergyMid=@shift@ EnergySig=0.1
+     eXsection=1e-8 hXsection=1e-8)
+  )
+}
+</pre>
+<!-- grep end -->
+
+<p>Figure 3 shows the resulting trap-density energetic distributions. 
+Figure&nbsp;4 shows the corresponding trapped charge densities 
+as well as their occupation probability as a function of energy. The 
+corresponding electron quasi-Fermi-level position is indicated by a 
+vertical green line.</p>
+
+<p><a href="images/sd_trap_density.png"><img src="images/sd_trap_density.png" width="450" 
+alt="Trap density variations in energy space" /></a></p>
+
+<p class="caption">Figure 3. Trap density variations in energy space 
+for different energy-peak displacement values, which move the 
+trap-energy reference point from the mid&ndash;band gap towards 
+the conduction or valence band edges. (Click image for full-size view.)</p>
+
+<p><a href="images/sd_trap_chargedens.png"><img src="images/sd_trap_chargedens.png" width="450" 
+alt="Trapped charge-density variations in energy space" /></a></p>
+
+<p class="caption">Figure 4. Trapped charge-density variations in energy 
+space corresponding to above shown trap densities. The trap occupation 
+probability is indicated by black-dotted curve and is established by the 
+quasi-Fermi-level position (vertical green line). As can be seen, shallower 
+traps capture more carriers than traps located far away from the valence band 
+edge. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>13.6 Trap Cross-Section</h1>
+
+<p>The trap cross-section is the key parameter that defines the charge-trapping dynamics and 
+the carrier recombination rate through a trap. The effective trap time constant (the time 
+required for a single-trapping or de-trapping event) can be estimated as:</p>
+
+<p> \[ τ_{\text"eff"} = {1}/{N_t \ v_{\text"th"}·σ} \] </p>
+
+<p>where \(N_t\) is the trap level concentration, \(v_{\text"th"}\) 
+is the thermal velocity, and \(σ\) is the trap cross-section.</p>
+
+<p>For example, for \(N_t = 10^{17}\)&nbsp;cm<sup>-3</sup>, \(v_{\text"th"} = 2·10^7\)&nbsp;cm/s, 
+and \(σ = 10^{-14}\)&nbsp;cm<sup>-2</sup>, the estimated trap lifetime \(τ_{\text"eff"}\) is 
+\(5·10^{-11}\)&nbsp;s.</p>
+
+<p>While in the case of a transient simulation, the carrier trap capture and emission 
+are described by the detailed balance equation, under the steady-state assumption, 
+the net carrier recombination through a single trap level is represented as:</p>
+
+<p> \[ R_{\text"net"} = {N_0\ v_{\text"th"}^n\ v_{\text"th"}^p\ σ_n\ σ_p ( np - n_{i,\text"eff"}^2 )}/
+{v_{\text"th"}^n\ σ_n ( n+n_1/g_n)+v_{\text"th"}^p\ σ_p ( p+p_1/g_p)} \] </p>
+
+
+<p>where \(N_0\) denotes the trap concentration, and the \(n\) and \(p\)
+indexes correspond to electrons and holes.</p>
+
+<p>Assuming equal electron and hole trap cross-sections and unit degeneration factors 
+\(g_n = g_p = 1\), the above 
+formula can be represented in a form of the well-known SRH approximation:</p>
+
+<p> \[ R_{\text"net"}^{\text"SRH"} = {np-n_{i,\text"eff"}^2}/{τ_p (n + n_1) + τ_p (p + p_1)} \] </p>
+
+<p>where \(τ_n\) and \(τ_p\) represent effective 
+carrier lifetimes, and the \(n_1\) and \(p_1\) parameters 
+implicitly take a trap-level energy into consideration.</p>
+      
+<p>The <tt>Applications_Library/GettingStarted/sdevice/Traps/TrapRecombination</tt> 
+project demonstrates the influence of the trap cross-section value on a p-n 
+junction leakage current under reverse bias condition. The trap cross-section 
+for a specified <tt>eNeutral</tt> trap is varied as the <tt>Xsec</tt> project 
+parameter.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/Traps/TrapRecombination/sim1_des.cmd">
+sim1_des.cmd</a>.</p>
+
+<p>Under the reverse bias condition, the p-n junction is fully depleted 
+of carriers, thereby resulting in a strong carrier generation inside the 
+depleted region (see Figure&nbsp;5). This causes the higher leakage current 
+in the case of a higher trap cross-section value, as shown in Figure&nbsp;6.</p>
+
+<p><img src="images/sd_trap_gapstate.png" width="505" height="175" 
+alt="Gap-state recombination rate distribution" /></p>
+
+<p class="caption">Figure 5. Gap-state recombination rate distribution 
+inside a p-n junction structure, taken at &ndash;100&nbsp;V bias. Negative 
+recombination rate values represent the carrier generation.</p>
+
+<p><img src="images/sd_trap_reverse.png" width="489" height="468" 
+alt="Reverse diode I-Vs" /></p>
+
+<p class="caption">Figure 6. Reverse diode I&ndash;Vs calculated 
+with different bulk trap cross-section values. Higher leakage 
+is observed for the higher trap cross-section.</p>
+
+<p class="note">The highest recombination through a trap level is 
+achieved if a trap is positioned in the middle of the semiconductor 
+material band gap, where the electron- or hole-capturing 
+probabilities are the highest.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>13.7 Trap as Doping</h1>
+
+<p>Charged traps also act like scattering centers (similar to doping), so their 
+influence on carrier kinetics must be accounted for when using doping-dependent 
+carrier mobility. To add a trap to the doping concentrations, specify the keyword 
+<tt>Add2TotalDoping</tt> in the <tt>Trap</tt> section in  combination with an 
+appropriate mobility-doping dependency model, for example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/Traps/Trap2Doping/sdevice_des.cmd" startExpr="*Physics*" lines=2 -->
+<pre>
+  Physics {
+    Mobility( DopingDep )     * turns on mobility doping dependency
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/Traps/Trap2Doping/sdevice_des.cmd" startExpr="*Traps*" lines=2 -->
+<pre>
+    Traps(                    
+      ( Donor                 * electron trap level (synonym of eNeutral)
+</pre>
+<!-- grep end -->
+<pre>
+    &nbsp;... 
+</pre>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/Traps/Trap2Doping/sdevice_des.cmd" startExpr="*Add2T*" startoccurrence=2 lines=1 -->
+<pre>
+        Add2TotalDoping
+</pre>
+<!-- grep end -->
+<pre>
+    )
+  )
+}
+</pre>
+
+<p>The <tt>Applications_Library/GettingStarted/sdevice/Traps/Trap2Doping</tt> 
+project demonstrates how this option activation affects carrier mobility.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/Traps/Trap2Doping/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Figure 7 illustrates the hole mobility dependency on doping concentration, 
+having different combinations of doping and trap specifications.</p>
+      
+<p><a href="images/sd_trap_holebulk.png"> <img src="images/sd_trap_holebulk.png" width="570" 
+alt="Hole bulk-mobility variation" /></a></p>
+
+<p class="caption">Figure 7. Hole bulk-mobility variation with different combinations 
+of doping and trap specifications. In all cases, the 1e18 cm<sup>-3</sup> donor trap 
+concentration is defined. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>13.8 Trap Fill Controls</h1>
+      
+<p>Under certain circumstances, it can be useful to define a trap occupancy explicitly. 
+Sentaurus Device provides such a capability using trap fill controls, which use an explicit 
+way to specify a trap occupation. Trap fill controls are specified in the <tt>Solve</tt> 
+section, for example:</p>
+
+<pre>
+Solve {
+  Set (TrapFilling=Empty)
+  Quasistationary {...}
+  UnSet (TrapFilling)
+  Transient {...}
+}
+</pre>
+
+<p>In this example, the first <tt>Set</tt> statement sets all traps as empty (not charged). 
+After the <tt>Quasistationary</tt> simulation, the <tt>UnSet (TrapFilling)</tt> statement releases 
+all traps to their actual state, which are used in the subsequent <tt>Transient</tt> simulation.</p>
+
+<p>The available trap fill controls are:</p>
+
+<ul>
+<li><tt>Set (TrapFilling=Full)</tt> sets all traps as fully occupied.</li>
+<li><tt>Set (TrapFilling=Empty)</tt> sets all traps as empty.</li>
+<li><tt>Set (TrapFilling=0)</tt> provides a trap occupation for the n=p=0 condition.</li>
+<li><tt>Set (TrapFilling=n)</tt>, <tt>Set (TrapFilling=p)</tt> sets a trap occupation 
+to be in equilibrium with a very high n(p) concentration and zero p(n) concentration.</li>
+<li><tt>Set (TrapFilling=Frozen)</tt> provides unchanged (from previous step) trap occupation.</li>
+<li><tt>UnSet (TrapFilling)</tt> resets any of these controls and switches on the regular 
+trap-filling dynamics.</li>
+</ul>
+
+<p>The <tt>Applications_Library/GettingStarted/sdevice/Traps/FillControls</tt> 
+project demonstrates the consequence of using different trap fill controls.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/Traps/FillControls/sim1_des.cmd">
+sim1_des.cmd</a>.</p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>13.9 Trap Visualization</h1>
+      
+<p>To visualize trap-related quantities in Sentaurus Visual, the following 
+keywords can be specified in the <tt>Plot</tt> section of the Sentaurus Device 
+command file:</p>
+
+<pre>
+Plot {
+ eTrappedCharge           * plots electron concentration trapped on eNeutral 
+                          * and Acceptor traps
+ hTrappedCharge           * plots hole concentration trapped on hNeutral 
+                          * and Donor traps
+ eInterfaceTrappedCharge  * plots electron concentration trapped in eNeutral 
+                          * and Acceptor interface traps
+ hInterfaceTrappedCharge  * plots hole concentration trapped in hNeutral and 
+                          * Donor interface traps
+ TotalTrapConcentration   * plots total bulk trap concentration
+ TotalTrapConcentration/RegionInterface  * plots the absolute value of the net
+					   interface trap concentration; does
+					   not account for trap occupancy
+ eTrapConcentration	  * plots absolute value of bulk trap concentration
+ 			    for eNeutral and Acceptor traps
+ hTrapConcentration	  * plots absolute value of bulk trap concentration
+ 			    for hNeutral and Donor traps
+ TotalInterfaceTrapConcentration  * plots total interface trap concentration;
+ 				    stored as a bulk quantity with a nonzero 
+                                    value only on interfaces
+ TrapConcPerEntry 	  * plots trap concentrations for each energy level 
+ 			    of each trap entry specified in the command file; 
+ 			    also stores integrated trap concentration (summed 
+                            over all energy levels for given trap entry)
+ eGapStatesRecombination  * plots electron recombination rate through traps
+ hGapStatesRecombination  * plots hole recombination rate through traps
+}
+</pre>
+
+<p class="note">The <tt>eTrappedCharge</tt> and <tt>hTrappedCharge</tt> datasets 
+include the contribution of interface charges as well. To this end, Sentaurus Device 
+converts the interface densities to volume densities and, therefore, their contribution 
+depends on the mesh spacing. To plot interface charges separately as interface densities, 
+use <tt>eTrappedCharge/RegionInterface</tt> and <tt>hTrappedCharge/RegionInterface</tt>.</p>
+
+<p>For the visualization of the trapped carrier charge density, the trap occupancy 
+probability, and the trap density distribution in energy space, see 
+<a href="#5">Section 13.5 Trap Occupation</a> for details.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_12.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_14.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

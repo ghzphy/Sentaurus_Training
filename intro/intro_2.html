@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tool Overview 2. TCAD Tools</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="intro_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="intro_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tool Overview<br />2. TCAD Tools</h1>
+
+<p>
+<a href="#swb">2.1 Sentaurus Workbench</a><br />
+<a href="#sp">2.2 Sentaurus Process</a><br />
+<a href="#st">2.3 Sentaurus Topography 3D</a><br />
+<a href="#sde">2.4 Sentaurus Structure Editor</a><br />
+<a href="#smesh">2.5 Sentaurus Mesh</a><br />
+<a href="#sd">2.6 Sentaurus Device</a><br />
+<a href="#emw">2.7 Sentaurus Device Electromagnetic Wave Solver</a><br />
+<a href="#si">2.8 Sentaurus Interconnect</a><br />
+<a href="#vis">2.9 Sentaurus Visual</a><br />
+<a href="#tdx">2.10 Sentaurus Data Explorer</a><br />
+<a href="#calikit">2.11 Calibration Kit</a><br />
+<a href="#garand">2.12 Garand</a>
+</p>
+
+<!--==============================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To present an overview of the TCAD Sentaurus tool suite.</li>
+</ul>
+
+<!--================================================-->
+<a name="swb"></a>
+<h1>2.1 Sentaurus Workbench</h1>
+
+<p>Sentaurus Workbench is the graphical front end that integrates Sentaurus
+simulation tools into one environment. Its  user interface is used to design, 
+organize, and run simulations for semiconductor research and manufacturing. 
+Simulations are comprehensively organized into projects.</p>
+
+<p>A simulation flow typically consists of several tools, such as the process 
+simulator Sentaurus Process, the meshing tool Sentaurus Mesh, the device 
+simulator Sentaurus Device, and the plotting and analysis tool Sentaurus Visual.</p>
+
+<p>Sentaurus Workbench automatically manages the information flow from one 
+tool to another. This includes preprocessing user input files, parameterizing 
+projects, setting up and executing tool instances, and visualizing the results.</p> 
+
+<p>Sentaurus Workbench allows you to define parameters and variables to run 
+comprehensive parametric analyses. The use of mathematical and logical 
+expressions serves to preprocess the simulation input dynamically. The resulting 
+data can be used with statistical and spreadsheet applications.</p>
+
+<p>See the <a href="../swb/swb_menu.html">Sentaurus Workbench module</a>.</p>
+
+<p><a href="images/ov_swb.png"><img src="images/ov_swb.png" width="570" 
+alt="User interface of Sentaurus Workbench" /></a></p>
+
+<p class="caption">
+Figure 1. User interface of Sentaurus Workbench with a loaded project. The left 
+pane shows the projects browser; the tool flow of the loaded project is shown 
+on the Project tab; and the parameter definitions of different experiments are 
+shown under the tool row. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="sp"></a>
+<h1>2.2 Sentaurus Process</h1>
+
+<p>Sentaurus Process is a comprehensive and highly flexible multidimensional 
+process modeling environment. Calibrated to a wide range of the latest 
+experimental data using proven calibration methodology, Sentaurus Process 
+offers unique predictive capabilities for modern silicon and nonsilicon technologies.</p>
+
+<p>Sentaurus Process includes an interface to Sentaurus Structure Editor for 
+3D etching and deposition capabilities, a lattice mismatch model for simulating 
+SiGe and strained silicon, Monte Carlo implantation, analytic implantation and 
+damage models, and state-of-the-art diffusion models.</p>
+
+<p>The Alagator scripting language used in Sentaurus Process allows you to 
+develop new diffusion models quickly, making Sentaurus Process a very 
+convenient tool for calibration purposes.</p>
+
+<p>See the <a href="../sp/sp_menu.html">Sentaurus Process module</a>.</p>
+
+<p><img src="images/ov_gswbd.gif" width="300" height="320" alt="Animated cross sections" /></p>
+
+<p class="caption">Figure 2. Animated cross sections of a 90 nm NMOSFET 
+during various stages of processing.</p>
+
+<!--================================================-->
+<a name="st"></a>
+<h1>2.3 Sentaurus Topography 3D</h1>
+
+<p>Sentaurus Topography 3D is a three-dimensional (3D) simulator for evaluating 
+and optimizing critical topography-processing steps such as etching and deposition.</p>
+
+<p>The two-dimensional (2D) mode of Sentaurus Topography 3D makes the physical 
+models available for 2D structures as well. Therefore, both 2D and 3D structures 
+can be simulated with consistent results.</p>
+
+<p>The main Sentaurus Topography 3D functionality for advanced etching and deposition 
+modeling is supported by the Sentaurus Process and Sentaurus Interconnect tools. 
+This integration enables users of Sentaurus Process and Sentaurus Interconnect to easily 
+incorporate one or more etching and deposition process steps into their simulation flow 
+without having to create a separate command file and simulation node for Sentaurus 
+Topography 3D.</p>
+
+<p>Moreover, advanced lithography processes can be simulated with Sentaurus Topography 3D 
+by invoking Sentaurus Lithography commands from within Sentaurus Topography 3D.</p>
+
+<p>See the <a href="../stopo/stopo_menu.html">Sentaurus Topography 3D module</a>.</p>
+
+<p><img src="images/ov_topo.gif" height="320" 
+alt="Animated surface evolution during RIE2 model etching" /></p>
+
+<p class="caption">Figure 3. Animation showing surface evolution during RIE2 model 
+etching. The surface plots are saved at different etching times (first available 
+times after the specified interval). The values assumed by the ion reflection flux 
+on the surface are plotted. The formation of microtrenches at the bottom of the 
+trench sidewalls due to ion reflection is shown.</p>
+
+<!--================================================-->
+<a name="sde"></a>
+<h1>2.4 Sentaurus Structure Editor</h1>
+
+<p>Sentaurus Structure Editor is a 2D and 3D device editor, and 3D process 
+emulator. It has three distinct operational modes: 2D structure editing, 3D
+structure editing, and 3D process emulation. Geometric and process
+emulation operations can be mixed freely.</p>
+
+<p>From the user interface, 2D and 3D device models are created geometrically 
+using 2D or 3D primitives such as rectangles, polygons, cuboids, cylinders, 
+and spheres. Three-dimensional regions also can be created by extruding 2D 
+objects or sweeping 2D objects along a path.</p> 
+
+<p>Sentaurus Structure Editor offers state-of-the-art visualization. 
+Structures are displayed as they are created and powerful view filters
+make it possible to select only a subset of regions or make certain
+regions transparent.</p> 
+
+<p>Doping profiles and meshing strategies are defined
+interactively. Placements are visualized as semitransparent boxes for
+easy verification. All doping and meshing options of the mesh
+generation tool Sentaurus Mesh are supported.</p>
+
+<p>The user interface features a command-line window, in which Sentaurus Structure Editor 
+prints script commands corresponding to the user interface operations. 
+Script commands also can be entered directly in the command-line window.</p>
+
+<p>See the <a href="../sde/sde_menu.html">Sentaurus Structure Editor module</a>.</p>
+
+<p><a href="images/ov_sde.png"><img src="images/ov_sde.png" width="570" 
+alt="User interface of Sentaurus Structure Editor" /></a></p>
+
+<p class="caption">Figure 4. User interface of Sentaurus Structure Editor. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="smesh"></a>
+<h1>2.5 Sentaurus Mesh</h1>
+
+<p>TCAD Sentaurus provides state-of-the-art approaches for the automatic
+generation of meshes.</p> 
+
+<p>Sentaurus Mesh is a modular Delaunay mesh generator of high-quality spatial 
+discretization grids for complex 2D and 3D devices. It integrates the 
+axis-aligned mesh generator and the tensor-product mesh generator.</p>
+
+<p>Sentaurus Mesh creates meshes that can be used for the discretization 
+methods used in process and device simulators. The meshes are adapted not 
+only to the geometry, but also to the doping concentration to capture steep gradients.</p>
+
+<p>See the <a href="../smesh/smesh_menu.html">Sentaurus Mesh module</a>.</p>
+
+<p><img src="images/ov_mesh.png" width="476" height="329" alt="SiGe HBT with nitride spacers" /></p>
+
+<p class="caption">Figure 5. SiGe HBT with nitride spacers (gray). 
+Oxide regions are not shown. The doping profiles are superimposed 
+on the polysilicon and silicon areas. N-doped areas are red and 
+p-doped areas are blue. The axis-aligned mesh is created with Sentaurus Mesh.</p>
+
+<!--================================================-->
+<a name="sd"></a>
+<h1>2.6 Sentaurus Device</h1>
+
+<p>Sentaurus Device simulates the electrical, thermal, and optical characteristics 
+of semiconductor devices. It is the leading device simulator and handles 
+1D, 2D, and 3D geometries, mixed-mode circuit simulation with compact 
+models, and numeric devices. It provides a comprehensive set of physical 
+models that can be applied to all relevant semiconductor devices and operation conditions.</p>
+
+<p>Sentaurus Device is used to evaluate and understand how a device works,
+to optimize devices, and to extract SPICE models and statistical data early
+in the development cycle. Applications of Sentaurus Device include:</p>
+
+<ul>
+<li>VDSM silicon, where Sentaurus Device has proven accuracy to well below 100-nm
+technology</li>
+<li>Silicon-on-insulator (SOI) devices, where Sentaurus Device is known for its 
+robust convergence and accuracy</li>
+<li>Double-gate and FinFET devices, where quantum transport is a reality</li>
+<li>SiGe, thin-film transistors, and optoelectronics</li>
+<li>Heterojunction HEMTs and HBTs</li>
+<li>Power and RF semiconductor devices</li>
+</ul>
+
+<p>See the <a href="../sd/sd_menu.html">Sentaurus Device module</a>.</p>
+
+<p><img src="images/ov_radiation.gif" width="300" height="288" alt="Animated evolution of current density" />
+<img src="images/ov_radiation.png" width="470" height="419" alt="Drain current as function of time" /></p>
+
+<p class="caption">Figure 6. (Top) Animated evolution of the current density in an SOI MOSFET during
+exposure to radiation with a dose rate of 50 krad/s. The device is biased at V<sub>gs</sub> = 0 V 
+and V<sub>ds</sub> = 2 V. The radiation charges up traps, in particular, in the buried oxide 
+(brown region at the bottom). This creates a leakage path along the silicon-buried oxide interface. 
+Current densities range from &lt;&nbsp;10<sup>-5 </sup>Acm<sup>-3</sup> (blue) to &gt;&nbsp;10<sup>3 
+</sup>Acm<sup>-3</sup> (red). (Bottom) Drain current as a function of time during the irradiation.</p>
+
+<!--================================================-->
+<a name="emw"></a>
+<h1>2.7 Sentaurus Device Electromagnetic Wave Solver</h1>
+
+<p>Sentaurus Device Electromagnetic Wave Solver is a simulation 
+module for the numeric analysis of electromagnetic waves. It is a 
+full-wave time-domain simulator based on the finite-difference time-domain 
+method. It is typically used to simulate the electromagnetic wave 
+propagation in solid media as a stand-alone tool and can be linked to the 
+electrical device simulator by calculating the carrier generation inside 
+a device, caused by external light illumination.</p>
+
+<p>See the <a href="../emw/emw_menu.html">Sentaurus Device Electromagnetic Wave Solver module</a>.</p>  
+
+<p><img src="images/ov_emw.gif" width="300" height="543" 
+alt="Animated evolution of electromagnetic plane wave" /></p>
+
+<p class="caption">Figure 7. Animated evolution of an 
+electromagnetic plane wave incident on a CMOS image sensor.</p>
+
+<!--================================================-->
+<a name="si"></a>
+<h1>2.8 Sentaurus Interconnect</h1>
+
+<p>Sentaurus Interconnect is a highly flexible, multidimensional, IC interconnect
+reliability analysis environment. With its modern software architecture and extensive breadth
+of capabilities, Sentaurus Interconnect is a state-of-the-art simulation tool. It offers unique
+predictive capabilities for modern silicon and nonsilicon technologies such as analyzing the
+reliability of semiconductor interconnect structures.</p>
+
+<p>In particular, Sentaurus Interconnect identifies hot spots in interconnect 
+structures that are susceptible to void formation, debonding, and cracking 
+due to physical phenomena such as stress and temperature excursions. These 
+reliability concerns arise from both the manufacturing process and the circuit operation.</p>
+
+<p>Several commands allow you to select physical models and parameters, grid strategies, and
+graphical output preferences if required. In addition, the Alagator scripting language allows
+you to describe and implement your own models as well as thermal, electrical, and mass transport
+analysis equations.</p>
+
+<p>See the <a href="../si/si_menu.html">Sentaurus Interconnect module</a>.</p>
+
+<p><img src="images/ov_si.gif" width="600" height="424" 
+alt="Animated results of interconnects of 6T SRAM cell" /></p>
+
+<p class="caption">Figure 8. Animation showing the von Mises stresses and the 
+current density in the interconnects of a 6T SRAM cell calculated using 
+Sentaurus Interconnect.</p>
+
+<!--================================================-->
+<a name="vis"></a>
+<h1>2.9 Sentaurus Visual</h1>
+
+<p>Sentaurus Visual is an interactive tool for data visualization and postprocessing. 
+It can be used to explore and analyze data, to produce informative 2D and 3D views, 
+to create presentation-quality plots and animations, and to share results on the Web.</p>
+
+<p>See the <a href="../sv/sv_menu.html">Sentaurus Visual module</a>.</p>
+
+<p><a href="images/ov_sv.png"><img src="images/ov_sv.png" width="570" 
+alt="User interface of Sentaurus Visual showing total current density distribution" /></a></p>
+
+<p class="caption">Figure 9. User interface of Sentaurus Visual 
+showing the total current density distribution inside a 25&nbsp;nm FinFET device. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="tdx"></a>
+<h1>2.10 Sentaurus Data Explorer</h1>
+
+<p>Sentaurus Data Explorer is a tool for editing and converting 
+files in TDR format, which is the standard file format for 
+exchanging data between TCAD Sentaurus tools.</p>
+
+<p>On the command line, you can use simple commands to convert files 
+to different formats and to create new files by copying and modifying 
+files. This is most convenient when converting many files at the same 
+time, using a batch file or script, and then continuing to work with 
+these files in other tools.</p>
+
+<p>The batch mode allows you to use the full flexibility of the 
+Tcl/Tk programming language to manipulate TDR file datasets.</p>
+
+<p>See the <a href="../tdx/tdx_menu.html">Sentaurus Data Explorer module</a>.</p>
+
+<!--================================================-->
+<a name="calikit"></a>
+<h1>2.11 Calibration Kit</h1>
+
+<p>The Calibration Kit is a software package that extends the functionality of 
+Sentaurus Workbench. It serves as a database browser (calibration libraries
+containing secondary ion mass spectroscopy (SIMS) data) and a simulation 
+and project manager.</p>
+
+<p>The Calibration Kit assists you to:</p>
+
+<ul>
+<li>Perform efficient calibration of the process simulators Sentaurus Process and Taurus&trade; 
+TSUPREM-4&trade; in one dimension.</li>
+<li>Obtain a fast, accurate, and reliable method of evaluating and optimizing process conditions.</li>
+<li>Understand the sensitivity of processes to various control parameters.</li>
+</ul>
+
+<p>It allows a predictive analysis of the influence of process equipment parameters 
+on electrical device data and enables you to optimize equipment efficiently.</p>
+
+<p>For more information, see the <cite>Calibration Kit User Guide</cite>.</p>
+
+<p><a href="images/ov_calibration.png"><img src="images/ov_calibration.png" width="570" 
+alt="Experiments visualized in Sentaurus Visual" /></a></p>
+
+<p class="caption">Figure 10. Four experiments visualized in Sentaurus Visual. 
+Comparison between experimental data of implantation (SIMS) (red curves), 
+analytic models (green curves in the two top plots), and Monte Carlo simulation 
+(green curves in the two bottom plots). (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="garand"></a>
+<h1>2.12 Garand</h1>
+
+<p>Garand is a TCAD device simulator that models the electrical characteristics 
+of individual CMOS transistors. The base simulator is a finite-difference drift-diffusion 
+simulator. Garand also uses the density gradient model of quantum corrections to account 
+for quantum-mechanical confinement in a device structure.</p>
+
+<p>The variability engine, Garand VE, has been developed primarily for modeling 
+statistical variability. Variability sources associated with random discrete dopants, 
+line edge roughness, polycrystallinity of gate materials, and interface-trapped charges 
+can be activated and configured from the input file.</p>
+
+<p><a href="images/ov_garand.png"><img src="images/ov_garand.png" width="500" 
+alt="Potential distribution in a FinFET example simulated by Garand VE" /></a></p>
+
+<p class="caption">Figure 11. Potential distribution in a FinFET example simulated 
+by Garand&nbsp;VE, showing statistical variation from random discrete dopants and 
+metal gate granularity. (Click image for full-size view.)</p>
+
+<p>Garand MC is a Monte Carlo simulator for devices, with a three-dimensional,
+self-consistent, ensemble quantum-corrected Monte Carlo engine. It can simulate both 
+electron and hole transport in various default calibrated materials.</p>
+
+<p>Garand, Garand VE, and Garand MC are simulation tools in the TCAD to SPICE product family. 
+They all use finite-difference tensor meshes. In order for a device structure including 
+doping information generated by TCAD Sentaurus tools, such as Sentaurus Process, to be 
+compatible with Garand, Garand&nbsp;VE, and Garand&nbsp;MC, tensor mesh conversion using 
+Sentaurus Mesh is required. This is demonstrated in the Sentaurus Mesh module, 
+<a href="../smesh/smesh_07.html#6">Section&nbsp;7.6 Tensor Mesh for Garand VE</a>.</p>
+
+<p>See the <a href="../tcadtospice/t2s_menu.html">TCAD to SPICE module</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="intro_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="intro_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

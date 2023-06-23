@@ -1,0 +1,960 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Visual 6. Automating Tasks With Scripting</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Visual<br />6. Automating Tasks With Scripting</h1>
+
+<p>
+ <a href="#1">6.1 Introduction</a><br />
+ <a href="#2">6.2 Plotting an I<sub>d</sub>&ndash;V<sub>g</sub> Curve</a><br />
+ <a href="#3">6.3 Exporting Cutline Data to an ASCII File</a><br />
+ <a href="#4">6.4 Calculating the Sheet Resistance</a><br />
+ <a href="#5">6.5 Performing Fast Fourier Transforms of Periodic Signals</a><br />
+ <a href="#6">6.6 Creating GIF Movies</a><br />
+ <a href="#7">6.7 Sentaurus Visual in Python Mode</a><br />
+ <a href="#8">6.8 Sentaurus Visual Python Extraction Modules and Tcl Extraction Libraries</a><br />
+ <a href="#9">6.9 Running Inspect Scripts</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To learn the basics of scripting in Sentaurus Visual.</li>
+</ul>
+
+<!--==================================================-->
+<a name="1"></a> 
+<h1>6.1 Introduction</h1>
+
+<p>Sentaurus Visual scripting commands are built on the tool command language 
+(Tcl) or Python and, therefore, provide a powerful and flexible way to automate tasks.</p>
+
+<p>Sentaurus Visual features a large set of mathematical functions for dataset manipulation,
+such as differentiation, integration, and finding the minimum and maximum. In addition, 
+a Tcl list, a Python list or 1D NumPy array can be converted into a Sentaurus Visual dataset, 
+and the Sentaurus Visual dataset can be reconverted into a Tcl list or a 1D NumPy array, 
+allowing for a wide range of data manipulation of TCAD results.</p>
+
+<p>Almost every action performed in the user interface of Sentaurus Visual has an 
+equivalent Tcl or Python command. The commands displayed in the Tcl or Python Console 
+can be saved and used to create scripts.</p>
+
+<p>You can start Sentaurus Visual Python in interactive mode and use the Sentaurus Visual 
+Console as an interactive Python interpreter using the <tt>-p</tt> option.</p>  
+
+<p>You can execute scripting commands in Sentaurus Visual in different ways:</p>
+
+<ul>
+<li>You can start Sentaurus Visual in interactive mode using the <tt>svisual</tt> command 
+from a Linux command prompt (see <a href="sv_1.html#2">Section 1.2 Starting Sentaurus Visual</a>):<br />
+
+<pre>
+&gt; svisual &amp;
+</pre>
+
+Then, you can enter commands sequentially in the Console.</li>
+
+<li>You can create a Tcl or Python script by opening a new text file in a text editor, 
+entering commands from this section into the file, and then saving the file. You can then 
+run the script using the <tt>svisual</tt> command. For example, you can run the Tcl script <tt>idvg_tcl_vis.tcl</tt> as follows:<br />
+
+<pre>
+&gt; svisual idvg_tcl_vis.tcl &amp;
+</pre>
+
+Similarly, you can run the Python script <tt>idvg_py_vis.py</tt> as follows:<br />
+
+<pre>
+&gt; svisual idvg_py_vis.py &amp;
+</pre>
+
+As a result, the Sentaurus Visual GUI opens in the mode determined by the file extension 
+and then it runs the script.<br />
+
+You can run scripts in batch mode using the <tt>-b</tt> command-line option.<br /> 
+
+The <tt>-bx</tt> command-line option starts a virtual X server that allows picture exporting 
+in batch mode:<br />
+
+<pre>
+&gt; svisual -bx idvg_tcl_vis.tcl
+</pre>
+</li>
+
+<li>You can work with the Sentaurus Workbench project containing the Sentaurus Visual tool 
+instance, modify the primary command file of the tool instance, and then run the corresponding 
+node inside Sentaurus Workbench by selecting the node and pressing Ctrl+R. 
+For more information, see the <a href="../swb/swb_menu.html">Sentaurus Workbench module</a>.</li>
+
+<li>You can click the <strong>Run Selected Visualizer Nodes Together</strong> toolbar button 
+(see <a href="../swb/swb_02.html#VisTogether">Section 2.7 Visualizing Selected Nodes Together</a>).</li>
+</ul>
+
+<p>In this section, the first example plots an I<sub>d</sub>&ndash;V<sub>g</sub> curve 
+using a PLT file from Sentaurus Device. The second example creates a cutline on a 2D 
+structure and saves the data to an ASCII file. The third example shows how to extract 
+the position of the junction along a cutline of a 2D diode and to calculate the sheet 
+resistance of the n-well. The fourth example is more advanced and discusses how to calculate 
+the fast Fourier transform (FFT) of a periodic signal. The fifth example shows how to 
+create GIF movies of field plots. All these examples require an understanding of basic Tcl 
+scripting. </p>
+
+<!--==================================================-->
+<a name="2"></a> 
+<h1>6.2 Plotting an I<sub>d</sub>&ndash;V<sub>g</sub> Curve</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus
+Workbench project <tt>export</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/svisual/export</tt>.</p> 
+
+<p>This section discusses how to plot an Id&ndash;Vg curve using a PLT file from Sentaurus Device.  
+This example is the first tool instance (<tt>idvg_tcl</tt>) in the Sentaurus Workbench project.</p>
+
+<p>Click to view the primary file  
+<a href="../../Applications_Library/GettingStarted/svisual/export/idvg_tcl_vis.tcl"> 
+idvg_tcl_vis.tcl</a>.</p>
+
+<p>Below are explanations of the command file line by line.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/idvg_tcl_vis.tcl" startExpr="*load_file*" lines=1 --> 
+<pre>
+set mydata [load_file @pwd@/idvg1_des.plt]
+</pre>
+<!-- grep end -->
+
+<p>The <tt>load_file</tt> command loads all data in the <tt>idvg_des.plt</tt> file 
+and returns the name of the dataset. By assigning a return value to the Tcl variable 
+<tt>mydata</tt>, you can reference the loaded data in the script.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/idvg_tcl_vis.tcl" startExpr="*create_plot*" lines=1 -->
+<pre>
+set myplot [create_plot -1d]
+</pre>
+<!-- grep end -->
+
+<p>The <tt>create_plot -1d</tt> command creates a new empty frame for an xy plot. 
+Setting the return value of the command to a Tcl variable <tt>myplot</tt> allows 
+you to reference the plot at later steps of the script as you can see here.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/idvg_tcl_vis.tcl" startExpr="*create_curve*" endExpr="*nMOS*" -->
+<pre>
+set IdVgcurve [create_curve -plot $myplot -dataset $mydata \
+		-axisX &quot;gate InnerVoltage&quot; -axisY &quot;drain TotalCurrent&quot;]
+
+set_curve_prop $IdVgcurve -plot $myplot -show_markers -markers_size 7 \
+     -markers_type circlef -label &quot;nMOS&quot;
+</pre>
+<!-- grep end -->
+
+<p>The first command <tt>create_curve</tt> uses data from the <tt>$mydata</tt> dataset 
+and plots it on an empty frame of plot <tt>$myplot</tt>. To set the properties of this 
+newly created curve, again you set the results of the <tt>create_curve</tt> command to a 
+Tcl variable. In the second command, curve attributes are modified to include a label 
+and to show symbols.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/idvg_tcl_vis.tcl" startExpr="*set_plot_prop*" endExpr="*y -range*" format="wrap" -->
+<pre>
+set_plot_prop -show_grid
+set_grid_prop -show_minor_lines  \
+    -line1_style dash -line1_color #a0a0a4 \
+    -line2_style dot -line2_color #c0c0c0 
+
+set_axis_prop -plot $myplot -axis x -title &quot;V&lt;sub&gt;gate&lt;/sub&gt; (V)&quot;
+set_axis_prop -plot $myplot -axis y -title &quot;I&lt;sub&gt;drain&lt;/sub&gt; \
+  (A/&lt;greek&gt;m&lt;/greek&gt;m)&quot; -type log
+set_axis_prop -plot $myplot -axis y -range {1e-08 0.001}
+</pre>
+<!-- grep end -->
+
+<p>This section of the script changes the view of the plot. The first command switches 
+on the grid lines. The second command sets the color grid lines to gray and light gray, 
+and the line type to dashed and dotted lines. The next three commands set the title of the 
+x-axis and y-axis, and the range.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/idvg_tcl_vis.tcl" startExpr="export_view*" endExpr="*-overwrite*" -->
+<pre>
+export_view &quot;n@node@_curve.png&quot; -plots $myplot -resolution 500x500 \
+    -format PNG -overwrite 
+</pre>
+<!-- grep end -->
+
+<p>This command exports a plot into a graphics file in PNG format with resolution of 
+500&nbsp;x&nbsp;500 pixels.</p>
+
+<p><img src="images/sv_scripts_idvg.png" width="471" height="462" 
+alt="Id-Vg curve created by Tcl script" /></p>
+
+<p class="caption">Figure 1. I<sub>d</sub>&ndash;V<sub>g</sub> curve created 
+by Tcl script idvg_vis.tcl.</p>
+
+<!--==================================================-->
+<a name="3"></a> 
+<h1>6.3 Exporting Cutline Data to an ASCII File</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus 
+Workbench project <tt>export</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/svisual/export</tt>.</p> 
+
+<p>This section discusses the third Sentaurus Visual tool instance <tt>npn</tt>. 
+In this example, a 2D structure is cut and the cutline information is exported to a 
+comma-separated value (CSV) file.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/svisual/export/npn_vis.tcl">npn_vis.tcl</a>.</p>
+
+<p>Below are explanations of the command file line by line.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/npn_vis.tcl" startExpr="*load_file*" endExpr="*create_plot*" -->
+<pre>
+set mydata2D [load_file @pwd@/npn_msh.tdr]
+# create new plot
+set myplot2D [create_plot -dataset $mydata2D]
+</pre>
+<!-- grep end -->
+
+<p>The first command loads the TDR file. The command returns the value of the dataset that is 
+assigned to the Tcl variable <tt>mydata2d</tt>. The second command creates a 2D plot from 
+the loaded dataset.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/npn_vis.tcl" startExpr="*create_cutline*" lines=1 -->
+<pre>
+set mydata1D [create_cutline -plot $myplot2D -type x -at -0.005]
+</pre>
+<!-- grep end -->
+
+<p>The <tt>create_cutline</tt> command creates a 1D cutline normal to the x-axis at point 
+x=&ndash;0.005. The result of this command is a dataset that includes all fields from the original 
+TDR file.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/npn_vis.tcl" startExpr="*export_variables*" endExpr="*-overwrite*" -->
+<pre>
+export_variables {DopingConcentration xMoleFraction Y} \
+    -dataset $mydata1D -filename &quot;n@node@_data.csv&quot; -overwrite
+</pre>
+<!-- grep end -->
+
+<p>The <tt>export_variables</tt> command exports the data for the specified datasets 
+into a text file in CSV format.</p>
+
+<p>This script exports the CSV file without generating any graphical output and 
+does not require a virtual X server. Therefore, it can be run in batch mode using the 
+<tt>-b</tt> option:</p>
+
+<pre>
+svisual -b npn_vis.tcl
+</pre>
+
+<!--==================================================-->
+<a name="4"></a> 
+<h1>6.4 Calculating the Sheet Resistance</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus
+Workbench project <tt>export</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/svisual/export</tt>.</p> 
+
+<p>This section discusses how to extract the position of the junction along a cutline 
+of a 2D diode and to calculate the sheet resistance of the n-well. This example assumes 
+familiarity with Tcl scripting.</p>
+
+<p>This example is the fourth tool instance in the Sentaurus Workbench project.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl">
+sheet_res_vis.tcl</a>.</p>
+
+<p>Below are explanations of the command file line by line.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl" startExpr="*load_file*" endExpr="*create_plot*" -->
+<pre>
+set dataName [load_file @pwd@/diode_des.tdr]
+set plotName [create_plot -dataset $dataName]
+</pre>
+<!-- grep end -->
+
+<p>The first two commands load the TDR file and create a plot.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl" startExpr="*load_library*" endExpr="*position*" -->
+<pre>
+load_library physicalconstants
+set q $const::ElementaryCharge
+set position 10
+</pre>
+<!-- grep end -->
+
+<p>The next block of Tcl commands initializes the variables. The value of the 
+elementary charge is read from the library and stored in the Tcl variable <tt>q</tt>. 
+The variable <tt>position</tt> stores the position of the cutline in micrometers.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl" startExpr="*NetAct*" endExpr="*hMobility*" -->
+<pre>
+create_field -dataset $dataName -name NetAct -function &lt;DopingConcentration&gt;
+create_field -dataset $dataName -name Cond \
+	-function &lt;eDensity&gt;*&lt;eMobility&gt;+&lt;hDensity&gt;*&lt;hMobility&gt; 
+</pre>
+<!-- grep end -->
+
+<p>Two new fields are created: the first one contains the net doping concentration, 
+and the second one contains the conductance. These quantities are needed to extract 
+the position of the junction and to evaluate the sheet resistance, respectively.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl" startExpr="*create_cutline*" endExpr="*$position*" -->
+<pre>
+set cutline [create_cutline -plot $plotName -type x -at $position]
+</pre>
+<!-- grep end -->
+
+<p>The <tt>create_cutline</tt> command creates a 1D cutline normal to the x-axis at point 
+x=10&nbsp;&mu;m. The result of this command is a dataset that includes all fields from 
+the original TDR file.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl" startExpr="*-1d*" endExpr="*Sheet_Resistance*" -->
+<pre>
+set cutplot [create_plot -dataset C1($dataName) -1d]
+
+create_curve -name NetActPlot -plot $cutplot -dataset $cutline \
+	-axisX Y -axisY NetAct 
+create_curve -name CondPlot -plot $cutplot -dataset $cutline \
+	-axisX Y -axisY Cond 
+create_curve -name RsheetPlot -plot $cutplot \
+	-function 1.0e4/($q*integr(&lt;CondPlot&gt;)) 
+
+set_axis_prop -plot $cutplot -axis y -type log
+set_curve_prop NetActPlot -plot $cutplot -line_width 3 -label &quot;Doping&quot;
+set_curve_prop CondPlot -plot $cutplot -line_width 3 -label &quot;Conductance&quot;
+set_curve_prop RsheetPlot -plot $cutplot -line_width 3 -label &quot;Sheet_Resistance&quot;
+</pre>
+<!-- grep end -->
+
+<p>A new empty frame for an xy plot along the cutline is created. The first two 
+<tt>create_curve</tt> commands use data from the <tt>$cutline</tt> dataset and 
+plot them in the empty frame. The net doping concentration and the conductance 
+curves use the previously created fields. The third <tt>create_curve</tt> command 
+calculates and plots the sheet resistance along the cutline. The function 
+<tt>integr(&lt;CondPlot&gt;)</tt> calculates the integral of the conductance along 
+the y-axis.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl" startExpr="*1e-10*" endExpr="}*" -->
+<pre>
+set x1 1e-10
+set x2 10
+set ypn &quot;no_junction&quot;
+set datax [get_curve_data NetActPlot -axisX ]
+set datay [get_curve_data NetActPlot -axisY ]
+if {[lindex $datay 0]&lt;0} {set sign -1} else {set sign 1}
+
+for {set i 0} {$i&lt;[expr [llength $datax] - 1]} {incr i} {
+	if {([lindex $datax $i]&gt;=$x1)&amp;&amp;([lindex $datax $i]&lt;=$x2)} {
+		if {[expr [lindex $datay $i]*$sign]&lt;0.0} {
+		set ypn [lindex $datax $i]
+		set sign [expr -1.0*$sign]
+		}	
+	}
+}
+</pre>
+<!-- grep end -->
+
+<p>The next block extracts the position of the junction along the y-axis. 
+The variables <tt>x1</tt> and <tt>x2</tt> define the window where you look 
+for the junction position. The junction is defined as the location where the 
+net doping concentration changes sign. Therefore, a <tt>for</tt> loop goes 
+through all of the positions along the cutline in the defined window and checks 
+whether the net doping concentration changes its sign. If such a condition is 
+satisfied, the junction position is stored in the variable <tt>ypn</tt>.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl" startExpr="*Rsheety*" endExpr="*$ypn*" -->
+<pre>
+set Rsheety [probe_curve RsheetPlot -valueX $ypn]
+</pre>
+<!-- grep end -->
+
+<p>Finally, the command <tt>probe_curve</tt> extracts the value of the sheet resistance at the junction.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/sheet_res_vis.tcl" startExpr="puts*" endExpr="*$Rsheety*" -->
+<pre>
+puts &quot;DOE: ypn [format %.2f $ypn]&quot;
+puts &quot;DOE: Rsheet [format %.2f $Rsheety]&quot;
+</pre>
+<!-- grep end -->
+
+<p>The calculated junction position and sheet resistance of the n-well are printed out in Sentaurus Workbench.</p>
+
+<p class="note">You can extract the junction position and sheet resistance using 
+the Tcl extraction library procedure <tt>ExtractRsh</tt> or the Python Extraction 
+Module function <tt>extract_rsh</tt>.</p>
+
+<!--==================================================-->
+<a name="5"></a> 
+<h1>6.5 Performing Fast Fourier Transforms of Periodic Signals</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus
+Workbench project <tt>export</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/svisual/export</tt>.</p> 
+
+<p>This section discusses how to calculate the fast Fourier transform (FFT) of a periodic 
+signal. Familiarity with Tcl scripting is a prerequisite.</p>
+
+<p>Click to view the primary file of the FFT tool instance in the given Sentaurus Workbench project, 
+<a href="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl">FFT_vis.tcl</a>.</p>
+
+<p>To use the FFT algorithms in Sentaurus Visual, it is required that 2<sup><em>n</em></sup> 
+equidistant data points are contained in the dataset and that the dataset spans one 
+period of the signal. Even if these requirements are not fulfilled, Sentaurus Visual 
+will return a curve, but the results cannot be interpreted in any meaningful way.</p>
+
+<p>For this example, you will look at one period of a voltage waveform at a gate contact. 
+The signal consists of a DC value of 0.5&nbsp;V and sinusoidal components of 
+0.5*sin(&omega;t)+0.25*cos(2*&omega;t)&nbsp;V. Thereby, the angular frequency &omega; 
+corresponds to 100 MHz. Figure 2 shows one period of that signal.</p>
+
+<p><img src="images/sv_periodic_signal.png" width="537" height="555" 
+alt="Voltage signal for one time period" /></p>
+
+<p class="caption">Figure 2. Voltage versus time curve to be Fourier transformed.</p>
+
+<p>The following explanations describe the FFT command file line by line. To calculate 
+the  discrete Fourier transformation of that signal, first the values are read from a 
+Sentaurus Device <tt>.plt</tt> file and the signal curve is created:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*load_file*" endExpr="*-axisX*" --> 
+<pre>
+load_file transient.plt -name &quot;ACdata&quot;
+create_plot -1d -name &quot;FFT&quot;
+link_plots &quot;FFT&quot; -unlink
+create_curve -name signal -plot &quot;FFT&quot; -dataset &quot;ACdata&quot; \
+             -axisX &quot;time&quot; -axisY &quot;gate InnerVoltage&quot;
+</pre>
+<!-- grep end -->
+
+<p>From the  signal curve, you obtain a list <tt>tlist</tt> with the time data points. 
+This list is used to extract information about the period length, the number of data 
+points, and the time interval between points. This information will be used later for 
+normalization purposes:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*set tlist*" endExpr="*set anorm*" --> 
+<pre>
+set tlist [get_variable_data &quot;time&quot;  -dataset &quot;ACdata&quot;]
+
+set np    [llength $tlist]                     ;#number of data points
+set t0    [lindex $tlist 0]                    ;#start time
+set dt    [expr [lindex $tlist 1]-$t0]         ;#time step
+set t1    [expr [lindex $tlist end]+$dt]       ;#end time of period
+
+set tp    [expr $t1-$t0]                       ;#period duration
+set fper  [expr 1.0/$tp]                       ;#period frequency
+set fmax  [expr 1.0/$dt]                       ;#max representable frequency
+set anorm [expr 1.0/double($np)]               ;#normalization 
+</pre>
+<!-- grep end -->
+
+<p>Before the calculation of the FFT, you check whether the number of data points 
+fullfils the requirement that 2<sup><em>n</em></sup> data points represent the signal 
+and that the data points are equidistant in time:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*expr fmod*" lines= 3 --> 
+<pre>
+if  { [expr fmod(log($np)/log(2.0),1)] &gt; 1e-16 } { 
+      puts &quot;number of data points not 2^n&quot; ; exit 
+}
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*set tol*" lines= 7 --> 
+<pre>
+set tol [expr $dt*1e-12]
+for { set it 1 } { $it &lt; $np } { incr it } {
+      set tp1 [lindex $tlist $it] ; set tp0 [lindex $tlist [expr $it-1]] 
+      if { [expr abs($tp1-$tp0-$dt)] &gt; $tol } {
+      	   puts &quot;data points are not equidistant&quot;; exit
+      }
+}
+</pre>
+<!-- grep end -->
+
+<p>The real and imaginary parts of the Fourier tranform are now calculated from 
+the signal curve <tt>&lt;signal&gt;</tt>. Then, the signal curve is removed:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*fftre(*" endExpr="*remove*" --> 
+<pre>
+create_curve -name ffre  -plot &quot;FFT&quot; -function &quot;fftre(&lt;signal&gt;)&quot;
+create_curve -name ffim  -plot &quot;FFT&quot; -function &quot;fftim(&lt;signal&gt;)&quot;
+remove_curves &quot;signal&quot;
+</pre>
+<!-- grep end -->
+
+<p>Figure 3 shows the resulting Fourier coefficients.</p>
+
+<p><a href="images/sv_fft.png"><img src="images/sv_fft.png" width="570" 
+alt="Fourier coefficients" /></a></p>
+
+<p class="caption">Figure 3. Fourier coefficients of the real (cos) and imaginary (sin) 
+FFT. The coefficients are indexed from 0 to n&ndash;1. Here n=128, which is the number 
+of equidistant data points in the signal curve. (Click image for full-size view.)</p>
+
+<p>After some self-explanatory settings of plot properties in Figure 3, the FFT curve 
+data is exported to a file for later use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*export_curves*" lines= 1 --> 
+<pre>
+export_curves {ffre ffim} -plot &quot;FFT&quot; -filename ./FFTdata.plx -format plx \
+</pre>
+<!-- grep end -->
+
+<p>For a normalized representation, you reorder the coefficients, normalize the 
+amplitude, and assign frequencies to the coefficient number. To that end, you extract 
+coefficient numbers as well as real and imaginary FFT data to lists:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*set freqs*" endExpr="*set ffti*" --> 
+<pre>
+set freqs  [get_curve_data ffre -plot &quot;FFT&quot; -axisX]
+set fftr   [get_curve_data ffre -plot &quot;FFT&quot; -axisY]
+set ffti   [get_curve_data ffim -plot &quot;FFT&quot; -axisY]
+</pre>
+<!-- grep end -->
+
+<p>Using the symmetry of the Fourier transform, you map the coefficients above 
+the Nyquist frequency to the negative frequency branch. The frequencies associated with 
+the coefficient number are calculated from the signal period and the number of data points:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*set frequency*" lines= 19 --> 
+<pre>
+set frequency [list]
+set RePart    [list]
+set ImPart    [list]
+set AbsPart   [list]
+set nNyq      [expr $np/2.0]
+foreach  freq $freqs ffr $fftr ffi $ffti {
+ if { $freq &gt; $nNyq } {	
+  lappend frequency [expr $freq*$fper-$fmax]
+  lappend RePart    [expr $ffr*$anorm]
+  lappend ImPart    [expr $ffi*$anorm]
+  lappend AbsPart   [expr $anorm*sqrt($ffr*$ffr + $ffi*$ffi)]
+}}
+foreach  freq $freqs ffr $fftr ffi $ffti {
+ if { $freq &lt;= $nNyq } {	
+  lappend frequency [expr $freq*$fper]
+  lappend RePart    [expr $ffr*$anorm]
+  lappend ImPart    [expr $ffi*$anorm]
+  lappend AbsPart   [expr $anorm*sqrt($ffr*$ffr + $ffi*$ffi)]
+}}
+</pre>
+<!-- grep end -->
+
+<p>For the resulting values, you create variables for a new dataset:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*create*frequency*" endExpr="*create*magnit*" --> 
+<pre>
+create_variable -name &quot;frequency&quot; -dataset &quot;FFTdata&quot; -values $frequency
+create_variable -name &quot;real_part&quot; -dataset &quot;FFTdata&quot; -values $RePart
+create_variable -name &quot;imag_part&quot; -dataset &quot;FFTdata&quot; -values $ImPart
+create_variable -name &quot;magnitude&quot; -dataset &quot;FFTdata&quot; -values $AbsPart
+</pre>
+<!-- grep end -->
+
+<p>With this normalized data, a new spectrum plot is created with the real and imaginary 
+parts, and the absolute Fourier components:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*create_p*symFFT*" endExpr="*axisY*imag_part*" --> 
+<pre>
+create_plot -1d -name &quot;symFFT&quot;
+link_plots &quot;symFFT&quot; -unlink
+create_curve -name absval   -plot &quot;symFFT&quot; -dataset &quot;FFTdata&quot; \
+             -axisX &quot;frequency&quot; -axisY &quot;magnitude&quot;
+create_curve -name realpart -plot &quot;symFFT&quot; -dataset &quot;FFTdata&quot; \
+             -axisX &quot;frequency&quot; -axisY &quot;real_part&quot;
+create_curve -name imagpart -plot &quot;symFFT&quot; -dataset &quot;FFTdata&quot; \
+             -axisX &quot;frequency&quot; -axisY &quot;imag_part&quot;
+</pre>
+<!-- grep end -->
+
+<p>Figure 4 shows the resulting plot after setting some properties for axes and curves.</p>
+
+<p><a href="images/sv_spectra.png"><img src="images/sv_spectra.png" width="570" 
+alt="Fourier spectra" /></a></p>
+
+<p class="caption">Figure 4. Fourier spectra from the real and imaginary FFT parts 
+and its absolute value. Spectral data is represented by symbols only. Lines are only 
+visual aids. (Click image for full-size view.)</p>
+
+<p>In a completely analogous fashion, the inverse FFT can be calculated. To demonstrate 
+this, the FFT data stored earlier to file is loaded, and the corresponding curves are 
+recreated:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*load*iFFTdata*" lines= 7 --> 
+<pre>
+load_file ./FFTdata.plx -name &quot;iFFTdata&quot;
+create_plot -1d -name &quot;iFFT&quot;
+link_plots &quot;iFFT&quot; -unlink
+create_curve -name ffre -plot &quot;iFFT&quot; -dataset &quot;iFFTdata&quot; \
+             -axisX &quot;ffre x&quot; -axisY &quot;ffre y&quot;
+create_curve -name ffim -plot &quot;iFFT&quot; -dataset &quot;iFFTdata&quot; \
+             -axisX &quot;ffim x&quot; -axisY &quot;ffim y&quot;
+</pre>
+<!-- grep end -->
+
+<p>Then, the inverse FFT is calculated based on these curves and scaled to obtain the 
+original voltage components and time period. Finally, the initial FFT curves are removed 
+from the plot:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/FFT_vis.tcl" startExpr="*create*ifftre*" lines= 4 --> 
+<pre>
+create_curve -name sim -plot &quot;iFFT&quot; -function &quot;ifftre(&lt;ffim&gt;)/$np&quot;
+create_curve -name sre -plot &quot;iFFT&quot; -function &quot;ifftim(&lt;ffre&gt;)&quot;
+set_curve_prop -plot &quot;iFFT&quot; &quot;sim sre&quot; -xScale [expr $tp/$np]
+remove_curves &quot;ffre ffim&quot;
+</pre>
+<!-- grep end -->
+
+<p>Figure 5 shows the resulting plots. The even part contains the DC signal part along 
+with the even AC signal part. The DC signal could be eliminated if the 0<sup>th</sup> 
+Fourier coefficient is set to zero before the inverse transformation is performed.</p>
+
+<p><a href="images/sv_sin_cos_components.png"><img src="images/sv_sin_cos_components.png" 
+width="570" alt="Odd and even parts of the signal from inverse FFT" /></a></p>
+
+<p class="caption">Figure 5. Even (cos) and odd (sin) contributions of the signal, 
+calculated by inverse FFT from the Fourier spectra. (Click image for full-size view.)</p>
+
+<p>Plot properties and window-style settings form the remaining part of the FFT script.</p>
+
+<p>In interactive mode, finally, you can move through different plots using the Page Up key 
+and the Page Down key.</p>
+
+<!--==================================================-->
+<a name="6"></a> 
+<h1>6.6 Creating GIF Movies</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus
+Workbench project <tt>export</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/svisual/export</tt>.</p> 
+
+<p>This section discusses the sixth Sentaurus Visual tool instance <tt>movie</tt>.
+It demonstrates how to create GIF movies of field plots.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/svisual/export/movie_vis.tcl">movie_vis.tcl</a>.</p>
+
+<p>Below are explanations of the command file line by line.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/movie_vis.tcl" startExpr="*set*dir*" endExpr="*set*filelist*" --> 
+<pre>
+set dir &quot;@pwd@/fdsoi_movie&quot;
+set filelist [lsort [glob -tails -dir $dir IdVgSat__*_des.tdr]]
+</pre>
+<!-- grep end -->
+
+<p>The <tt>glob</tt> Tcl command returns a list of file names matching the 
+<tt>IdVgSat__*_des.tdr</tt> pattern under the <tt>./fdsoi_movie</tt> directory 
+inside the Sentaurus Workbench project. The returned value is stored in the Tcl 
+variable <tt>filelist</tt>.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/movie_vis.tcl" startExpr="*set_window_full*" endExpr="*windows_style*" -->
+<pre>
+set_window_full -on
+windows_style -style max
+</pre>
+<!-- grep end -->
+
+<p>The first command maximizes the display of the plots within the Sentaurus Visual 
+window (hiding all panels and toolbars). The second command maximizes the display 
+of the active plot within the plot area.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/svisual/export/movie_vis.tcl" startExpr="*foreach*file*" endExpr="}*" format="excludeEmptyLines" excludeLines="*puts*"-->
+<pre>
+foreach file  $filelist {
+  set data [file rootname $file]
+  set datalist &quot;$datalist $data&quot;
+  load_file $dir/$file -name $data
+  set plotname &quot;Plot_${data}&quot;
+  set plotlist &quot;$plotlist $plotname&quot;
+  create_plot -name $plotname -dataset $data
+}
+</pre>
+<!-- grep end -->
+
+<p>A <tt>foreach</tt> loop loads all the files (<tt>load_file $dir/$file -name $data</tt>) 
+and creates the plots (<tt>create_plot -name $plotname -dataset $data</tt>). The lists 
+of data and plots are stored under the <tt>datalist</tt> and <tt>plotlist</tt> Tcl lists, 
+respectively.</p>
+
+<pre>
+link_plots $plotlist -unlink
+
+foreach plotname $plotlist  data $datalist {
+  select_plots $plotname
+
+  set title &quot;Vd=0.9V&quot;
+  set_plot_prop -plot $plotname -title $title -title_font_family arial \
+    -title_font_factor 2 -title_font_color #000000 -title_font_att bold
+
+  set_material_prop Silicon -plot $plotname -geom $data -show_bulk
+
+  set_field_prop -plot $plotname -geom $data Abs(eCurrentDensity-V) \
+    -show_bands -min 10 -min_fixed -max 1e8 -max_fixed -levels 41
+  set_field_prop -plot $plotname -geom $data ElectrostaticPotential \
+    -show -levels 41 -min -0.5 -min_fixed -max 1.5 -max_fixed
+
+  zoom_plot -plot $plotname -window {-0.03 -0.040 0.02 0.045}
+  set_legend_prop -plot $plotname -position {0.19 0.45} -size {0.51 0.33} \
+    -precision 1 -orientation horizontal -show_background -nof_labels 8
+  move_plot -plot $plotname -position {0 0}
+}
+
+link_plots $plotlist 
+link_plots $plotlist -unlink
+</pre>
+
+<p>The <tt>link_plots $plotlist -unlink</tt> command unlinks all the plots and the next 
+<tt>foreach</tt> loop applies user-specific properties to all the plots (the field to be plotted, 
+zoom level, axis, legend, and so on). Then, the plots are linked back (<tt>link_plots $plotlist</tt>) 
+together to ensure having exactly the same view for all plots. The plots are then unlinked 
+(<tt>link_plots $plotlist -unlink</tt>) for the next steps.</p>
+
+<pre>
+start_movie -resolution 1300x657
+</pre>
+
+<p>The <tt>start_movie -resolution 1300x657</tt> command starts the recording of the movie 
+and sets the resolution of the frames.</p>
+
+<pre>
+foreach plotname $plotlist {
+  select_plots $plotname
+  set framename &quot;Frame_$plotname&quot;
+  set framelist &quot;$framelist $framename&quot;
+  add_frame -plot $plotname -name $framename
+}
+</pre>
+
+<p>For each plot of <tt>$plotlist</tt>, the <tt>add_frame</tt> command creates the 
+frames to be used in the movie. The order of frames in the movie is given by the 
+order of the Tcl list <tt>framelist</tt> that stores the list of frames.</p>
+
+<pre>
+export_movie -filename eCurrentDensity.gif -frames &quot;$framelist&quot; \
+  -frame_duration 100 -overwrite
+stop_movie
+</pre>
+
+<p>The GIF movie itself is created using the <tt>export_movie</tt> command with the 
+<tt>stop_movie</tt> command. You must specify the list of frames to be used, the 
+frame duration, and the name of the movie.</p>
+
+<p>The resulting movie is shown in Figure 6.</p>
+
+<p><img src="images/sv_fdsoi_eCurrentDensity.gif" width="570" 
+alt="Electron current density and electrostatic potential isoline movie" /></p>
+
+<p class="caption">Figure 6. Animation of electron current density and electrostatic 
+potential isolines during V<sub>gs</sub> ramp-up at V<sub>d</sub>&nbsp;=&nbsp;0.9&nbsp;V 
+performed by the 
+<a href="../../Applications_Library/GettingStarted/svisual/export/movie_vis.tcl">
+movie_vis.tcl</a> script.</p>
+
+<!--==================================================-->
+<a name="7"></a> 
+<h1>6.7 Sentaurus Visual in Python Mode</h1>
+
+<p>All of the functionality previously discussed for the Sentaurus Visual Tcl mode is 
+also supported in Python mode.</p>
+
+<p class="note"> For an introduction to Python and using Python for scientific computing, see 
+the <a href="../python/py_menu.html">Python Language module</a>.</p> 
+
+<p>To add a Sentaurus Visual Python mode instance to a Sentaurus Workbench project, 
+choose the <tt>svisualpy</tt> tool. Sentaurus Visual Python Mode consists of several packages:</p>
+
+<ul>
+<li> The Sentaurus Visual Python package <tt>svisual</tt> contains Python functions, which 
+are also called Python commands, for visualizing and analyzing TCAD simulation results.</li>
+<li> The <tt>svisualpylib</tt> package contains several modules for extracting device parameters 
+(see <a href="#8">Section 6.8 Sentaurus Visual Python Extraction Modules and Tcl Extraction 
+Libraries</a>).</li>
+</ul>
+
+<p>On startup, Sentaurus Visual Python Mode executes the following <tt>import</tt> statement:</p>
+
+<pre>
+import svisual as sv
+</pre>
+
+<p>As a result, the Sentaurus Visual Python package <tt>svisual</tt> is renamed <tt>sv</tt>. 
+Therefore, all calls to the Sentaurus Visual Python package functions are prefixed with 
+<tt>sv</tt>. For example, the second Sentaurus Visual tool instance <tt>idvg_py</tt> in the 
+project <tt>Applications_Library/GettingStarted/svisual/export</tt> loads curve data from 
+a device simulation, plots the I<sub>d</sub>&ndash;V<sub>g</sub> curve, and sets curve and axes properties as follows:</p>
+
+<pre>
+# Load plt file and create dataset PLT
+sv.load_file('idvg1_des.plt', name='PLT')
+
+# Create plot Plot_IdVg
+plot = sv.create_plot(name='Plot_IdVg', xy=True)
+sv.select_plots(plot)
+
+# Set plot and axes property
+sv.set_plot_prop(show_curve_markers=True, show_grid=True, title='IdVg')
+sv.set_axis_prop(axis='x', title='Gate Voltage [V]')
+sv.set_axis_prop(axis='y', title='Drain Current [A]')
+
+# Create Id-Vg curve
+sv.create_curve(
+    name='IdVg', axisX='gate InnerVoltage', 
+    axisY='drain TotalCurrent', dataset='PLT'
+)
+</pre>
+
+<p>To access the documentation for the Sentaurus Visual Python commands as well as 
+documentation for the <tt>svisualpylib</tt> package, from the Sentaurus Visual GUI, 
+choose <strong>Help</strong> &gt; <strong>Python API Reference</strong>. Alternatively, 
+you can use the Python <tt>help</tt> function to access command information:</p>
+
+<pre>
+help(sv.&lt;command_name&gt;)
+</pre>
+
+<!--==================================================-->
+<a name="8"></a> 
+<h1>6.8 Sentaurus Visual Python Extraction Modules and Tcl Extraction Libraries</h1>
+
+<p>The Sentaurus Visual Python mode <tt>svisualpylib</tt> package contains 
+the following  modules for extracting device parameters:</p>
+
+<ul>
+<li>Extraction module: The functions of this module are used to extract various 
+parameters from the I&ndash;V characteristics of various device types.</li>
+<li>IFM module: The impedance field method (IFM) data postprocessing module helps to manage 
+and analyze large amounts of linear current response data obtained by using the IFM in 
+Sentaurus Device.</li>
+<li>RF extraction module: Under the assumption that a transistor can be modeled by a 
+two-port network, the methods of the two-port network radio frequency (RF) extraction 
+module are used to compute RF parameters from AC analysis data and noise parameters from 
+noise analysis data.</li>
+<li>Harmonic Balance module: This module is useful for analysis of Sentaurus Device Harmonic Balance simulation results.</li>
+</ul>
+
+<p>The Sentaurus Visual Tcl mode includes the Extraction, IFM, and RF libraries.</p>
+
+<p>On startup, the Sentaurus Visual Python mode automatically imports the extraction modules:</p>
+
+<pre>
+import svisualpylib.extract as sv.ext
+import svisualpylib.rfx as sv.rfx
+import svisualpylib.hb as sv.hb
+import svisualpylib.ifm as sv.ifm
+</pre>
+
+<p>As a result, all the extraction modules in the <tt>svisualpylib</tt> package are imported 
+as submodules of the Sentaurus Visual Python package.</p>
+
+<p>You can also explicitly import the extraction modules. For example, the second Sentaurus 
+Visual tool instance <tt>svisualpy</tt> in the <tt>export</tt> project imports the extraction 
+module, extracts the threshold voltage, and writes it into the Sentaurus Workbench table:</p>
+
+<pre>
+# Import NumPy package
+import numpy as np
+# Import extraction module and rename to ext
+import svisualpylib.extract as ext
+
+# Set number of digits of precision for printing 
+# floating-point numbers in NumPy objects
+np.set_printoptions(precision=4)
+
+# Get gate voltage and drain current values
+# sv.get_curve_data returns 1D NumPy array
+vgs = sv.get_curve_data('IdVg', axisX=True) 
+ids = sv.get_curve_data('IdVg', axisY=True)
+
+# Extract threshold voltage and write to Sentaurus Workbench table
+vt = ext.extract_vtgm(vgs, ids, name='Vtgm') 
+</pre>
+
+<p>Click to view the primary file  
+<a href="../../Applications_Library/GettingStarted/svisual/export/idvg_py_vis.py"> 
+idvg_py_vis.py</a>.</p>
+
+<p>This script also imports the NumPy (Numerical Python) package. NumPy provides 
+the N-dimensional array object, which is used instead of Python lists for storing 
+data and performing fast vectorized operations. The Sentaurus Visual Python command 
+<tt>get_curve_data</tt> returns a 1D NumPy array.</p>
+
+<p class="note">For an introduction to NumPy arrays, see 
+<a href="../python/py_02.html#2_5_3">Section 2.2.5.3 One-Dimensional NumPy Arrays</a>. 
+For examples on using Sentaurus Visual Python along with TCAD Sentaurus tools, see 
+<a href="../python/py_05.html">Section 5. Examples</a>.</p> 
+
+<p>The Applications Library project <tt>Applications_Library/CMOS/CMOS_Characterization</tt> 
+is a tutorial on using the Python Extraction module. The Applications Library project 
+<tt>Applications_Library/CMOS/PDSOI</tt> is a tutorial on using the Tcl Extraction library.</p>
+
+<p>Example scripts demonstrating the use of these Python functions and methods or Tcl 
+procedures are included in the Sentaurus Workbench projects. There is one project for 
+each Python module or Tcl library.</p>
+
+<p>The complete projects can be investigated from within Sentaurus Workbench in the 
+directories <tt>Applications_Library/GettingStarted/svisual/python</tt> and 
+<tt>Applications_Library/GettingStarted/svisual/tcl</tt>.</p>
+
+<!--==================================================-->
+<a name="9"></a> 
+<h1>6.9 Running Inspect Scripts</h1>
+
+<p>Sentaurus Visual can run Inspect command files.</p>
+
+<p>To run Inspect command files, specify either the <tt>-inspect</tt> or <tt>-i</tt> 
+command-line option.</p>
+
+<p>Some Inspect commands and library scripts are not supported. For a complete list 
+of supported Inspect commands and library functions, see the 
+<cite>Sentaurus&trade; Visual User Guide</cite>, Appendix E.</p>
+
+<p>Inspect commands are executed in a compatibility mode. You cannot mix native Sentaurus 
+Visual commands with Inspect commands in the same command file.</p>
+
+<!--==================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

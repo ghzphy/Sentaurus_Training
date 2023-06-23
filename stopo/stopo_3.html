@@ -1,0 +1,288 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 3. Example: Material Etching</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />3. Example: Material Etching</h1>
+
+<p>
+ <a href="#1">3.1 Overview</a><br />
+ <a href="#2">3.2 Generating the Initial Structure</a><br />
+ <a href="#3">3.3 Performing Material Etching</a><br />
+ <a href="#4">3.4 Saving the Final Structure</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To perform an etching simulation using Sentaurus Topography 3D.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Overview</h1>
+
+<p>This section demonstrates an example of material etching. You are introduced 
+to the Monte Carlo method that performs the flux integration as well as to the 
+surface plots for visualizing the internal quantities during the simulation.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sptopo3d/etch_rie2</tt>. If you are not familiar 
+with Sentaurus Workbench projects, the preprocessed script file <tt>etch_rie2_t3d.cmd</tt> 
+can be found in this directory.</p>
+
+<p>To download the preprocessed script file, right-click the following link and choose 
+<strong>Save Target As</strong>: 
+<a href="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/etch_rie2_t3d.cmd">
+etch_rie2_t3d.cmd</a>.</p>
+
+<p>To execute the file in Sentaurus Topography 3D on the command line, type:</p>
+
+<pre>
+&gt; sptopo3d etch_rie2_t3d.cmd
+</pre>
+
+<p>After the command file is executed, the generated TDR file is <tt>etch_rie2_t3d.tdr</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Generating the Initial Structure</h1>
+
+<p>The <tt>fill</tt> command is used here to generate the initial structure.</p>
+
+<p>First, the bulk structure is defined:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - def_bulk" endExpr="##end - def_bulk" excludelines="##*" -->
+<pre>
+define_structure material=Silicon point_min= {0 0 0} point_max= {0.1 0.1 0.01}
+</pre>
+<!-- grep end -->
+ 
+<p>To create an oxide and a photoresist layer, the <tt>fill</tt> command is used 
+and the resulting structure is saved:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - fill" endExpr="##end - fill" excludelines="##*" -->
+<pre>
+fill material=Oxide thickness=0.15
+fill material=Photoresist thickness=0.02
+save
+</pre>
+<!-- grep end -->
+
+<p>The bulk silicon is filled first with 0.15&nbsp;&mu;m of oxide and then with 
+0.02&nbsp;&mu;m of photoresist. Figure&nbsp;1 shows the resulting structure.</p>
+
+<p><a href="images/tp_etch_fill.png"><img src="images/tp_etch_fill.png" width="300" 
+alt="Filled structure" /></a></p>
+
+<p class="caption">Figure 1. Resulting structure after filling the bulk silicon 
+with oxide and photoresist. (Click image for full-size view.)</p>
+
+<p>Geometric etching is performed to remove part of the photoresist:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - geom_etch" endExpr="##end - geom_etch" excludelines="##*" -->
+<pre>
+define_shape type=cube point_min= {0.05 0.05 0.16} point_max= {0.1 0.1 0.18} \
+	name=subtract
+etch shape=subtract
+</pre>
+<!-- grep end -->
+
+<p>Finally, the initial structure is saved:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - save_init" endExpr="##end - save_init" excludelines="##*" -->
+<pre>
+save
+</pre>
+<!-- grep end -->
+
+<p>Figure 2 shows the initial structure to be processed.</p>
+
+<p><a href="images/tp_etch_initial_structure.png"><img src="images/tp_etch_initial_structure.png" 
+width="300" alt="Initial structure" /></a></p>
+
+<p class="caption">Figure 2. Generated initial structure. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Performing Material Etching</h1>
+
+<p>The next subsections demonstrate the use of the etching models in Sentaurus Topography 3D. 
+This example illustrates the reactive ion etch 2 (RIE2) model.</p>
+
+<p>Other etching models, such as dry etching, ion-enhanced etching, ion-milling, and 
+simultaneous etching and deposition, can be specified similarly (see the 
+<cite>Sentaurus&trade; Topography 3D User Guide</cite>).</p>
+
+<!--======================-->
+<a name="3.1"></a>
+<h2>3.3.1 Defining the Etching Machine</h2>
+
+<p>An etching machine that uses the RIE2 model is defined with the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - def_etch" endExpr="##end - def_etch" excludelines="##*" -->
+<pre>
+define_etch_machine model=rie2 exponent=100
+</pre>
+<!-- grep end -->
+
+<p>Similar to the deposition example, the exponent of the ion-angular distribution function, 
+which is material independent, is set here with the parameter <tt>exponent</tt>.</p>
+
+<p>Although, so far, the command sequence is similar to that used for deposition models, 
+etching models allow you to define material-dependent parameters using the 
+<tt>add_material</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - mat_dep" endExpr="##end - mat_dep" excludelines="##*" -->
+<pre>
+add_material material=Photoresist rate=0.0 anisotropy=0.0 sticking=1.0 \
+	reflection=@refl@
+add_material material=Oxide rate=0.1 anisotropy=0.8 sticking=0.5 \
+	reflection=@refl@
+</pre>
+<!-- grep end -->
+
+<!--The rie2 model considers the etching process as the result of two contributions:-->
+<!--chemical reactions induced by radicals and desorptions from the surface induced by ions.-->
+
+<p>The rates, the anisotropy, and the sticking coefficients assume different values 
+for the photoresist and the oxide. Moreover, ions are reflected by both materials.</p>
+
+<!--Similarly to the deposition example described in the previous section, 
+both neutral and ion fluxes are considered here.--> 
+
+<p>The <tt>reflection</tt> parameter, which is related to the reflection probability of ions, 
+is equal to the Sentaurus Workbench parameter <tt>refl</tt>. The value of <tt>refl</tt>, 
+in turn, is set in Sentaurus Workbench, as shown in Figure&nbsp;3. It is used here 
+to switch on ion reflection (when <tt>refl&ne;0</tt>) or to switch off ion reflection 
+(when <tt>refl=0</tt>). This allows you to investigate the impact of ion reflection on the 
+trench shape by comparing simulation results obtained with and without activating ion 
+reflection.</p>
+
+<p><img src="images/tp_etch_swb.png" width="396" height="134" 
+alt="Sentaurus Workbench setup of the project" /></p>
+
+<p class="caption">Figure 3. Sentaurus Workbench setup of the project, showing different 
+nodes relative to different values of the refl parameter.</p>
+
+<p>For details about the physics of the RIE2 model and  other etching models, 
+see the <cite>Sentaurus&trade; Topography 3D User Guide</cite>.</p>
+
+<!--======================-->
+<a name="3.2"></a>
+<h2>3.3.2 Starting the Etching Process</h2>
+
+<p>In this example, flux integration is performed using the Monte Carlo method, 
+which allows the use of multiple CPU cores to accelerate simulations on shared-memory 
+computers. Multithreaded computation is activated with the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - paral" endExpr="##end - paral" excludelines="##*" -->
+<pre>
+let parallel=true
+let num_threads=8
+</pre>
+<!-- grep end -->
+
+<p>To start the etching process with the Monte Carlo method, and to set the level-set 
+grid spacing, the etching time, and the surface plotting interval, use the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - etch" endExpr="##end - etch" excludelines="##*" -->
+<pre>
+etch spacing={0.0015 0.0015 0.0015} time=0.3 plot_interval=0.1 \
+	engine=monte_carlo integration_samples=100
+</pre>
+<!-- grep end -->
+
+<p>In this example, the grid spacing is set to 1.5 nm in all three directions. The etching is 
+simulated for 0.3&nbsp;minutes, and a surface plot is saved and appended to the output TDR file 
+every 0.1&nbsp;minutes.</p>
+
+<p>The number of neutral and ion particles used in the Monte Carlo method is set with the 
+parameter <tt>integration_samples</tt> (here, 100). By increasing this 
+value, the simulation accuracy increases but at a higher computational cost.</p>
+
+<p>Surface plots allow you to monitor the evolution of the surface during the simulation. 
+In addition, you can plot the value of the internal quantities on the surface, such as velocity 
+and visibility, as well as the direct, reflected, and reflection fluxes.</p>
+
+<p class="note">The level-set grid must be set fine enough to capture correctly the relevant 
+physical effects (for example, ion reflection) during the simulation, while having a reasonable 
+simulation time.</p>  
+
+<!--================================================-->
+<a name="4"></a>
+<h1>3.4 Saving the Final Structure</h1>
+
+<p>The simulation result is saved to a TDR file:</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/etch_rie2/sptopo3d_t3d.cmd" startExpr="##start - save_final" endExpr="##end - save_final" excludelines="#*" -->
+<pre>
+save
+</pre>
+<!-- grep end -->
+
+<p>Figure&nbsp;4 shows the processed structures, with and without considering ion reflection.</p>
+
+<p><a href="images/tp_etch_final.png"><img src="images/tp_etch_final.png" width="570" 
+alt="Final structures after etching, with and without reflection" /></a></p>
+
+<p class="caption">Figure 4. Resulting structures after etching with RIE2 model: 
+(left) without activating and (right) with activating ion reflection computation. 
+(Click image for full-size view.)</p>
+
+<p>To better investigate the effect of ion reflection on the final trench shape, 
+surface plots are saved at different times. Figure&nbsp;5 shows that ion reflection 
+clearly contributes to microtrenching at the bottom of the sidewalls. Microtrenches 
+are known to have adverse effects during process steps of transistor fabrication. 
+High stresses tend to develop at the vertices of these microtrenches, increasing 
+the probability of device damage.</p>
+
+<p><a href="images/tp_etch_surfaceplots.png"><img src="images/tp_etch_surfaceplots.png" 
+width="570" alt="Surface plots showing surface evolution" /></a></p>
+
+<p class="caption">Figure 5. Surface plots showing surface evolution during RIE2 model etching. 
+The plots are saved at different etching times (first available times after the specified 
+interval). The values assumed by the ion reflection flux on the surface are plotted. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

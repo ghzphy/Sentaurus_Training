@@ -1,0 +1,733 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 3. Two-Dimensional Process Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />3. Two-Dimensional Process Simulation</h1>
+
+<p>
+ <a href="#1">3.1 Overview</a><br />
+ <a href="#2">3.2 Defining the Initial 2D Grid and Simulation Domain</a><br />
+ <a href="#3">3.3 Boron Implantations</a><br />
+ <a href="#4">3.4 Growing Gate Oxide</a><br /> 
+ <a href="#5">3.5 Defining Polysilicon Gate</a><br />
+ <a href="#6">3.6 Polysilicon Reoxidation</a><br />
+ <a href="#7">3.7 Saving Snapshots</a><br />
+ <a href="#8">3.8 Remeshing for LDD and Halo Implantations</a><br />
+ <a href="#9">3.9 LDD and Halo Implantations</a><br />
+ <a href="#10">3.10 Spacer Formation</a><br />
+ <a href="#11">3.11 Remeshing for Source/Drain Implantations</a><br />
+ <a href="#12">3.12 Source/Drain Implantations</a><br />
+ <a href="#13">3.13 Contact Pads</a><br />
+ <a href="#14">3.14 Saving the Full Structure</a><br />
+ <a href="#15">3.15 Extracting 1D Profiles</a><br />
+ <a href="#16">3.16 Animated Process Flow</a><br />
+ <a href="#17">3.17 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To perform a 2D process simulation using Sentaurus Process.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>3.1 Overview</h1>
+
+<p>In this section, many widely used process and control commands are 
+introduced in the context of a <em>nominal</em> 0.18 &mu;m n-channel 
+MOSFET process flow. The MOSFET structure is simulated in two dimensions 
+and processing of the isolation is excluded. A simplified treatment is 
+presented using only default parameters and models.</p>
+
+<p>Command files are available in a Sentaurus Workbench project 
+with two instances of Sentaurus Process: The first instance is for the 
+example described below, and the second instance is for the assignment 
+in <a href="#17">Section&nbsp;3.17 Assignment</a>.</p>  
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory 
+<tt>Applications_Library/GettingStarted/sprocess/2DGS</tt>.</p>
+    
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Defining the Initial 2D Grid and Simulation Domain</h1>
+
+<p>The initial 2D grid is defined with <tt>line</tt> commands:</p>
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="lin*" Lines=10 --> 
+<pre>
+line x location= 0.0      spacing= 1.0&lt;nm&gt;  tag= SiTop        
+line x location= 50.0&lt;nm&gt; spacing= 10.0&lt;nm&gt;                    
+line x location= 0.5&lt;um&gt;  spacing= 50.0&lt;nm&gt;                      
+line x location= 2.0&lt;um&gt;  spacing= 0.2&lt;um&gt;                       
+line x location= 4.0&lt;um&gt;  spacing= 0.4&lt;um&gt;                       
+line x location= 10.0&lt;um&gt; spacing= 2.0&lt;um&gt;  tag= SiBottom   
+
+line y location= 0.0      spacing= 50.0&lt;nm&gt; tag= Mid         
+line y location= 0.40&lt;um&gt; spacing=50.0&lt;nm&gt;  tag= Right       
+
+</pre>
+<!-- grep end -->
+
+<p>Sentaurus Process uses coordinate systems such that 1D and 2D (and 3D) simulations 
+are consistent. For 1D simulations, the natural choice for <tt>x</tt> is to point 
+downwards (into the wafer); Sentaurus Process keeps this definition for 2D simulations. 
+Consequently, the y-axis points to the side (parallel to the wafer).</p>
+
+<p>Here, a depth-dependent initial mesh is defined, which is tight at the surface (1 nm) 
+and relaxes up to 2 &mu;m into the depth. For the lateral direction, a constant mesh spacing 
+of 50 nm is used.</p>
+
+<p><img src="images/sp_2d_mesh.png" width="263" height="259" alt="Initial 2D mesh" /></p>
+
+<p class="caption">Figure 1. Initial 2D mesh.</p>
+
+<p>Note that:</p>
+
+<ul>
+<li>Sentaurus Process simulates in one dimension until the first mask is used. 
+The simulation remains 1D if the mask entirely covers the simulation domain or 
+is completely outside the simulation domain.</li>
+<li>Two-dimensional grid initialization must be performed more carefully than 
+for 1D  grid initialization to achieve timely solutions because the number of 
+grid points in the x-direction are multiplied by every line in the y-direction.</li>
+<li>The size and dimension of the simulation domain, and its location within a
+layout, also can be specified using the <tt>icwb</tt> command 
+(see <a href="../si/si_4.html#2">Section&nbsp;4.2 Using a Mask Layout to Build the Structure</a>). 
+To process mask information, you also can use the Silicon WorkBench interface (see 
+the <a href="../ic/ic_menu.html">Silicon WorkBench Interface module</a>).
+Both methods allow you to separate mask coordinates from the process flow and, therefore, are 
+highly recommended.</li>
+</ul>
+
+<p class="note"><strong>HINT</strong> Start with a coarse mesh. Automatic meshing 
+adds mesh points during the simulation. Starting with too many mesh points unnecessarily 
+slows down the earlier parts of the simulation. Meshing after the simulation has 
+started can be controlled by modifying the mesh using <tt>refinebox</tt> commands.</p>
+      
+<p>The initial simulation domain is defined with the <tt>region</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="region*" Lines=1 -->
+<pre>
+region Silicon xlo= SiTop xhi= SiBottom ylo= Mid yhi= Right
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="init*" Lines=1 -->
+<pre>
+init concentration= 1.0e+15&lt;cm-3&gt; field= Phosphorus
+</pre>
+<!-- grep end -->
+
+<p>For a 2D simulation, the substrate region is defined by referring to the tag for the 
+x-direction and y-direction. These tags were defined previously in the <tt>line</tt> commands.</p>
+
+<p>Here, you use an n-doped substrate with a phosphorus concentration of 
+10<sup>15</sup>&nbsp;cm<sup>-3</sup>. The wafer orientation is set to (100), 
+which is the default.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Boron Implantations</h1>
+
+<p>The following boron implantations are performed:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="implant*" Lines=3 -->
+<pre>
+implant  Boron  dose= 2.0e13&lt;cm-2&gt;  energy= 200&lt;keV&gt; tilt= 0 rotation= 0  
+implant  Boron  dose= 1.0e13&lt;cm-2&gt;  energy= 80&lt;keV&gt; tilt= 0 rotation= 0  
+implant  Boron  dose= 2.0e12&lt;cm-2&gt;  energy= 25&lt;keV&gt; tilt= 0 rotation= 0  
+</pre>
+<!-- grep end -->
+
+<p>The first high-energy implantation creates the p-well, the second 
+medium-energy implantation defines a retrograde boron profile to prevent 
+punch-through, and the third low-energy implantation is for a threshold 
+voltage (Vt) adjustment.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>3.4 Growing Gate Oxide</h1>
+
+<p>The gate oxide is grown at 850&deg;C for 10&nbsp;minutes in pure oxygen ambient using:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="diffuse temperature*=*850*" Lines=1 -->
+<pre>
+diffuse temperature= 850&lt;C&gt; time= 10.0&lt;min&gt; O2
+</pre>
+<!-- grep end -->
+
+<p>Before the diffusion step, a remeshing strategy is defined (see 
+<a href="sp_2.html#5">Section 2.5 Setting Up a Remeshing Strategy</a>).</p>
+
+<p>The keyword <tt>O2</tt> is shorthand for a pure oxygen ambient at a pressure of 1 atm.</p>
+
+<p>The <tt>layers</tt> command shows that the thickness of the grown oxide is 2.9&nbsp;nm:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/n1_fps.out" startExpr="{         Top*" Lines=3 -->
+<pre>
+{         Top                Bottom             Integral             Material }
+{ -2.041418763714e-03 8.183964101445e-04 2.859815173859e-07 Oxide }
+{ 8.183964101445e-04 1.000000000000e+01 9.999181603590e-04 Silicon }
+</pre>
+<!-- grep end -->
+
+<p>See <a href="sp_2.html#7">Section 2.7 Measuring Oxide Thickness</a> for details.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>3.5 Defining Polysilicon Gate</h1>
+
+<p>The polysilicon gate is created using:</p>
+
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="deposit*" Lines=1 -->
+<pre>
+deposit material= {PolySilicon} type= anisotropic time= 1 rate= {0.18}
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="mask*" Lines=4 -->
+<pre>
+mask name= gate_mask left=-1 right= 90&lt;nm&gt;
+etch material= {PolySilicon} type= anisotropic time= 1 rate= {0.2} \
+  mask= gate_mask
+etch material= {Oxide}       type= anisotropic time= 1 rate= {0.1}
+</pre>
+<!-- grep end -->
+
+<p>First, 0.18 &mu;m of polysilicon is deposited over the entire structure. Here, 
+<tt>type=anisotropic</tt> means that the layer is grown only in the vertical direction.</p>
+
+<p>Second, a mask is defined to protect the gate area. In this project, only half 
+of the transistor is simulated. Therefore, the left edge of the gate mask is unimportant. 
+As a shortcut, it is set to &ndash;1. The name <tt>gate_mask</tt> is associated with this 
+mask for later reference.</p>
+
+<p>Third, the <tt>etch</tt> command refers to the previously defined mask and, therefore, 
+only the exposed part of the polysilicon is etched. Since the requested etching depth 
+(0.2&nbsp;&mu;m) is larger than the deposited layer, this overetching ensures that no 
+residual islands remain. The etching is specified to be anisotropic, that is, the applied 
+mask is transferred straight down, without any undercut.</p>
+
+<p>The second <tt>etch</tt> statement does not refer to any masks. However, the polysilicon acts 
+naturally as a mask for this selective etching process. Again, a considerable overetching 
+is specified.</p>
+
+<p class="note">Masks can be inverted using the <tt>negative</tt> option, for example:<br /><br />
+
+<tt>mask name=gate_mask segments= {-1 0.09} negative</tt><br /><br />
+
+When used in an <tt>etch</tt> command, this option prevents etching for y &gt; 90 nm.</p>
+
+<p class="note">Do not use a mask directly in an <tt>implant</tt> command. Instead, 
+use the <tt>photo</tt> command to deposit a layer of photoresist, with a flat top 
+surface, to perform the implantation, and then to strip the photoresist. For example:<br /><br />
+
+<tt>mask name=gate_mask segments= {-1 0.09} negative<br />
+photo mask=gate_mask thickness=1&lt;um&gt;<br />
+implant Boron energy=100&lt;keV&gt; dose=1e14&lt;cm-2&gt;<br />
+strip PhotoResist</tt>
+</p>
+
+<p>Refer to the <cite>Sentaurus&trade; Process User Guide</cite> for details about 
+the <tt>photo</tt> command.</p>
+    
+<!--================================================-->
+<a name="6"></a>
+<h1>3.6 Polysilicon Reoxidation</h1>
+
+<p>To release stresses, a thin oxide layer is grown on the polysilicon 
+before spacer formation:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="diffuse temperature*=*900*" Lines=1 -->
+<pre>
+diffuse temperature= 900&lt;C&gt; time= 10.0&lt;min&gt;  O2 
+</pre>
+<!-- grep end -->
+
+<p>Here, the 1 atm default is overwritten by explicitly specifying a pressure of 0.5 atm. In all 
+diffusion steps, Sentaurus Process accounts for a very thin native oxide layer, which is always 
+present on silicon and quickly forms on newly created interfaces. The default thickness is 1.5&nbsp;nm.</p>
+
+<p><img src="images/sp_2d_polyreox.png" width="267" height="259" alt="Polysilicon oxidation" /></p>
+
+<p class="caption">Figure 2. Polysilicon reoxidation.</p>
+
+<p>The edges in the growing oxide, perpendicular to the interface, can be split if their length 
+exceeds a certain value. This value can be set with the following command (unit is cm):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="pdbSet Oxide*" Lines=1 -->
+<pre>
+pdbSet Oxide Grid perp.add.dist 1e-7
+</pre>
+<!-- grep end -->
+
+<p>Its default value is 10e-7 cm. See <a href="sp_4.html#2">
+Section&nbsp;4.2 Changing Parameters in the Command File</a> for details.</p>
+
+<p><img src="images/sp_2d_polyreox_mesh.png" width="281" height="264" 
+alt="Details of mesh in thin oxide layer and adjacent polysilicon and silicon" /></p>
+
+<p class="caption">Figure 3. Details of mesh in thin oxide layer and in adjacent polysilicon and silicon. 
+The effect of perp.add.dist is apparent.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>3.7 Saving Snapshots</h1>
+
+<p>To save a snapshot of the current structure, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="struct*" Lines=1 -->
+<pre>
+struct tdr= n@node@_NMOS1  ; # p-Well
+</pre>
+<!-- grep end -->
+
+<p>The <tt>tdr</tt> argument specifies that the snapshot is saved in TDR format. 
+The value of <tt>tdr</tt> specifies the stem used for the file name. Here, the 
+file <tt>n1_NMOS1_fps.tdr</tt> is created. The figures in this section were 
+generated from such snapshots.</p>
+
+<p>To open a TDR file, open a terminal window and launch Sentaurus Visual with 
+the following command:</p>
+
+<pre>
+svisual n1_NMOS1_fps.tdr
+</pre>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>3.8 Remeshing for LDD and Halo Implantations</h1>
+
+<p>Next, the low-doped drain (LDD) and halo implantations are performed. 
+However, before that, the meshing strategy is updated:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="refinebox*" Lines=3 -->
+<pre>
+refinebox Silicon min= {0.0 0.05} max= {0.1 0.12} xrefine= {0.01 0.01 0.01} \
+                                                  yrefine= {0.01 0.01 0.01} add
+grid remesh
+</pre>
+<!-- grep end -->
+
+<p>The mesh in the lateral direction was specified with the initial <tt>line</tt> command 
+to be uniform with a spacing of 50 nm. This was appropriate for the steps performed so far, 
+but it will not be sufficiently fine to resolve the source/drain extensions (also known as 
+LDD) as well as the halo implantations.</p>
+
+<p>For this reason, a finer mesh is defined in the area where these profiles are important. This 
+is performed with the <tt>refinebox</tt> command. The new meshing strategy can be restricted to 
+a material, here <tt>Silicon</tt>.</p>
+
+<p>Both the <tt>min</tt> and <tt>max</tt> arguments take an x-coordinate and a y-coordinate pair 
+as their value, which defines the extent of the refinement box.</p>
+
+<p class="note">The coordinate pair must be enclosed in braces.</p>
+
+<p>The grid spacing is defined with the <tt>xrefine</tt> and <tt>yrefine</tt> arguments, which 
+can take up to three numbers as values. The first number specifies the spacing at the top or 
+left side of the box, the second number defines the spacing in the center, and the third number 
+specifies the spacing at the bottom or right side of the box.</p>
+
+<p>When two numbers are given, they define the spacing at the top or left side of the box and 
+the spacing at the bottom or right side of the box, respectively. Only one number can be given 
+when uniform spacing is required.</p>
+
+<p>The <tt>add</tt> option adds the refinement box to the current list of refinement boxes. 
+The command <tt>refinebox remesh</tt> forces a remeshing using the new meshing strategy.</p>
+
+<p><img src="images/sp_2d_ldd_refbox.png" width="280" height="262" 
+alt="Creating refinement box to define finer mesh" /></p>
+
+<p class="caption">Figure 4. Creating a refinement box to define a finer mesh for LDD and 
+halo implantations.</p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>3.9 LDD and Halo Implantations</h1>
+
+<p>The LDD and halo implantations are performed using:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="implant Arsenic*" Lines=1 -->
+<pre>
+implant Arsenic dose= 4e14&lt;cm-2&gt; energy= 10&lt;keV&gt; tilt= 0 rotation= 0  
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="implant Boron dose*=*0.25*" Lines=8 -->
+<pre>
+implant Boron dose= 0.25e13&lt;cm-2&gt; energy= 20&lt;keV&gt; tilt= 30&lt;degree&gt; \
+              rotation= 0            
+implant Boron dose= 0.25e13&lt;cm-2&gt; energy= 20&lt;keV&gt; tilt= 30&lt;degree&gt; \
+              rotation= 90&lt;degree&gt;   
+implant Boron dose= 0.25e13&lt;cm-2&gt; energy= 20&lt;keV&gt; tilt= 30&lt;degree&gt; \
+              rotation= 180&lt;degree&gt;  
+implant Boron dose= 0.25e13&lt;cm-2&gt; energy= 20&lt;keV&gt; tilt= 30&lt;degree&gt; \
+              rotation= 270&lt;degree&gt;  
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="diffuse*" startOccurrence=4 Lines=1 -->
+<pre>
+diffuse temperature= 1050&lt;C&gt; time= 0.1&lt;s&gt; ; # Quick activation 
+</pre>
+<!-- grep end -->
+
+<p>The LDD implantation uses a high dose of 4 x 10<sup>14</sup> cm<sup>-2</sup> and a relatively low 
+energy of 10 keV. The halo is created by a quad implantation, that is, the implantation is performed in 
+four steps, each at a different angle. This ensures that the boron penetrates well into the 
+channel at the tips of the source/drain extensions. Again, a relatively high total dose of 
+1 x 10<sup>14</sup> cm<sup>-2</sup> is used.</p>
+
+<p>The implantations are activated with a short thermal cycle or rapid thermal anneal (RTA).</p>
+
+<p><img src="images/sp_2d_ldd_implant.png" width="278" height="263" 
+alt="Doping concentration in structure after LDD implantations" /></p>
+
+<p class="caption">Figure 5. Doping concentration (donor dopants) in 
+the structure after LDD implantations.</p>
+
+<p><img src="images/sp_2d_halo.png" width="278" height="264" 
+alt="Doping concentration in structure after halo implantations" /></p>
+
+<p class="caption">Figure 6. Doping concentration (acceptor dopants) in 
+the structure after halo implantations.</p>
+
+<!--================================================-->
+<a name="10"></a>
+<h1>3.10 Spacer Formation</h1>
+
+<p>The nitride spacers are formed using:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="deposit*{Nitride}*" endExpr="*Oxide*" -->
+<pre>
+deposit material= {Nitride} type= isotropic  time= 1 rate= {0.06}
+etch    material= {Nitride} type= anisotropic time=1 rate= {0.084} \
+				isotropic.overetch= 0.01
+etch    material= {Oxide}   type= anisotropic time= 1 rate= {0.01} 
+</pre>
+<!-- grep end -->
+
+<p>First, a uniform, 60-nm thick layer of nitride is deposited over the entire structure. 
+Here, <tt>type=isotropic</tt> ensures that the growth rate of the layer is the same 
+in all directions.</p>
+
+<p>Second, the nitride is etched again. However, now anisotropic etching is used. 
+This means that the nitride deposited on the vertical sides of the gate is not 
+fully removed and can serve as a mask for the source/drain implantations.</p>
+
+<p>Finally, the thin oxide layer, grown during the poly reoxidation step, is removed.</p>
+
+<p><img src="images/sp_2d_spacer_anima.gif" width="300" height="297" 
+alt="Animation of spacer formation and nitride deposition" /></p>
+
+<p class="caption">Figure 7. Animation of spacer formation and nitride deposition.</p>
+
+<!--================================================-->
+<a name="11"></a>
+<h1>3.11 Remeshing for Source/Drain Implantations</h1>
+
+<p>Next, the source/drain implantations are performed. 
+However, before that, the meshing strategy is updated:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="refinebox*" startOccurrence=2 Lines=4 -->
+<pre>
+refinebox Silicon min= {0.04 0.12} max= {0.18 0.4} xrefine= {0.01 0.01 0.01} \
+                                                   yrefine= {0.05 0.05 0.05} add
+grid remesh
+implant Arsenic dose= 5e15&lt;cm-2&gt; energy= 40&lt;keV&gt; \
+</pre>
+<!-- grep end -->
+
+<p>This refinement box ensures that the mesh is sufficiently fine 
+in the vertical direction to resolve the junction depth.</p>
+
+<p><img src="images/sp_2d_refboxsd.png" width="279" height="261" 
+alt="Refinement box for source/drain implantation" /></p>
+
+<p class="caption">Figure 8. Refinement box for source/drain implantation.</p>
+
+<!--================================================-->
+<a name="12"></a>
+<h1>3.12 Source/Drain Implantations</h1>
+
+<p>The source and drain regions are created using:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="implant Arsenic*40*<keV>*" endExpr="diffuse*" excludeLines="#*" format="excludeEmpty" -->
+<pre>
+implant Arsenic dose= 5e15&lt;cm-2&gt; energy= 40&lt;keV&gt; \
+        tilt= 7&lt;degree&gt; rotation= -90&lt;degree&gt;  
+diffuse temperature= 1050&lt;C&gt; time= 10.0&lt;s&gt; 
+</pre>
+<!-- grep end -->
+
+<p>To ensure a low resistivity of the source and drain regions, this implantation step 
+uses a very high dose of 5 x 10<sup>15</sup>&nbsp;cm<sup>-2</sup>. A tilt of 7&deg; is 
+used to reduce channeling, and a rotation of &ndash;90&deg; ensures that the plane of 
+incidence is parallel to the gate stack, such that the 7&deg; tilt angle does not lead 
+to asymmetry between the source and drain.</p>
+
+<p><img src="images/sp_2d_implantsd.png" width="278" height="256" 
+alt="Doping concentration in structure after source/drain implantations" /></p>
+
+<p class="caption">Figure 9. Doping concentration (donor dopants) 
+in the structure after source/drain implantations.</p>
+
+<!--================================================-->
+<a name="13"></a>
+<h1>3.13 Contact Pads</h1>
+
+<p>Finally, metal pads are defined with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="deposit material= {Alu*" Lines=5 -->
+<pre>
+deposit material= {Aluminum} type= isotropic time= 1 rate= {0.03}
+
+mask name= contacts_mask left= 0.2&lt;um&gt; right= 1.0&lt;um&gt;
+etch material= {Aluminum} type= anisotropic time= 1 rate= {0.25} \
+     mask= contacts_mask
+</pre>
+<!-- grep end -->
+
+<p>Here, no real backend simulation is performed. Metal pads are created by deposition and 
+etching to identify the contact areas for later use in the device simulator. The method is 
+very similar to the one used for the polysilicon gate definition.</p>
+
+<p>See <a href="#5">Section&nbsp;3.5 Defining Polysilicon Gate</a>.</p>
+
+<!--================================================-->
+<a name="14"></a>
+<h1>3.14 Saving the Full Structure</h1>
+
+<p>To save the full structure, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="transf*" Lines=2 -->
+<pre>
+transform reflect left 
+struct tdr= n@node@_NMOS ; # Final
+</pre>
+<!-- grep end -->
+
+<p>In addition to the <tt>*_fps.tdr</tt> files discussed in <a href="#7">Section&nbsp;3.7 Saving Snapshots</a>, 
+other input files for Sentaurus Mesh are saved: a boundary file <tt>*_bnd.tdr</tt> and a command file 
+<tt>*_msh.cmd</tt>.</p>
+
+<!--================================================-->
+<a name="15"></a>
+<h1>3.15 Extracting 1D Profiles</h1>
+
+<p>One-dimensional profiles can be saved at any point of interest in the process flow using:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="SetPlx*" startOccurrence=1 Lines=2 -->
+<pre>
+SetPlxList   {BTotal NetActive}
+WritePlx n@node@_NMOS_channel.plx  y=0.0 Silicon
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="SetPlx*" startOccurrence=2 Lines=2 -->
+<pre>
+SetPlxList   {AsTotal BTotal NetActive}
+WritePlx n@node@_NMOS_ldd.plx y=0.1 Silicon
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd" startExpr="SetPlx*" startOccurrence=3 Lines=2 -->
+<pre>
+SetPlxList   {AsTotal BTotal NetActive}
+WritePlx n@node@_NMOS_sd.plx y=0.39 Silicon
+</pre>
+<!-- grep end -->
+
+<p>See <a href="sp_2.html#11">Section&nbsp;2.11 Saving the As-Implanted Profile</a> for details.</p>
+
+<p><img src="images/sp_2d_boron1d.png" width="537" height="475" 
+alt="1D profiles of acceptor concentration" /></p>
+
+<p class="caption">Figure 10. One-dimensional profiles of acceptor concentration (boron) in channel 
+(black), LDD (blue), and source/drain (red) versus depth.</p>
+
+<p><img src="images/sp_2d_arsenic1d.png" width="537" height="475" 
+alt="1D profiles of donor concentration" /></p>
+
+<p class="caption">Figure 11. One-dimensional profiles of donor concentration (arsenic) in 
+source/drain (blue) and LDD (red) versus depth.</p>
+
+<!--================================================-->
+<a name="16"></a>
+<h1>3.16 Animated Process Flow</h1>
+
+<p>Figure 12 shows an animation of snapshots taken at important points of the 
+process flow.</p>
+
+<p>The color shading shows the net doping concentration. Red areas are heavily n-doped, and blue areas 
+are heavily p-doped. Concentrations in-between are colored according to the visible spectrum.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p> 
+
+<p><img src="images/sp_2d_flow_anima.gif" width="300" height="297" 
+alt="Animation of process flow" /></p>
+
+<p class="caption">Figure 12. Animation of snapshots taken of process flow.</p>
+
+<!--================================================-->
+<a name="17"></a>
+<h1>3.17 Assignment</h1>
+
+<p>Create a command file of Sentaurus Process for simulating a vertical npn bipolar transistor 
+from the process flow outlined here.</p>
+
+<p class="note">You can modify the 1D command file from the 1D npn bipolar assignment 
+(see <a href="sp_2.html#13">Section&nbsp;2.13 Assignment</a>) or you can start from the beginning.</p>
+
+<p><strong>Step 1. Substrate Definition</strong></p>
+
+<ul>
+<li>Declare a 2 &mu;m deep and 30 &mu;m wide p-type substrate of (100) silicon with a boron 
+concentration of 1.0 x 10<sup>15</sup> cm<sup>-3</sup>.</li>
+</ul>
+
+<p><strong>Step 2. Lay Out Device</strong></p>
+<ul>
+<li>Define a masking layer to allow an implantation (called "sinker") to pass into the silicon 
+from 22.0 to 24.0&nbsp;&mu;m.</li>
+<li>Define a masking layer to allow an implantation (called "base") to pass into the silicon 
+from 1.5 to 13.0 &mu;m.</li>
+<li>Define a masking layer to allow an implantation (called "emitter") to pass into the silicon 
+from 2.5 to 8.0 &mu;m and from 22 to 24 &mu;m.</li>
+<li>Define a masking layer (called "contact") for the etchant to pass through from 3.5 to 7.0&nbsp;&mu;m, 
+and 10.0 to 12.0 &mu;m, and 22.5 to 23.5 &mu;m.</li>
+<li>Define a masking layer (called "metal") for the etchant to pass through the <em>negative image</em> 
+from 2.0 to 8.0 &mu;m, 9.0 to 13.0 &mu;m, and 22.0 to 24.0 &mu;m.</li>
+</ul>
+
+<p><strong>Step 3. Buried Layer</strong></p>
+
+<ul>
+<li>Deposit 25 nm of screening oxide.</li>
+<li>Implant antimony with a dose of 1.5 x 10<sup>15</sup> cm<sup>-2</sup> and an energy of 100 keV.</li>
+<li>Strip the screening oxide.</li>
+</ul>
+
+<p><strong>Step 4. Epi Layer</strong></p>
+
+<ul>
+<li>Deposit 4 &mu;m of lightly doped silicon.</li>
+<li>Emulate the thermal budget during the epi growth with another annealing at 1100&deg;C 
+for 60&nbsp;minutes.</li>      
+</ul>
+
+<p><strong>Step 5. Sinker Implantation and Drive-In</strong></p>
+
+<ul>
+<li>Implant phosphorus with a dose of 5.0 x 10<sup>15</sup> cm<sup>-2</sup> and an energy of 
+200 keV.</li>
+<li>Use the mask defined in Step 2 for the "sinker".</li>
+<li>Anneal at 1100&deg;C for 5 hours.</li>
+</ul>
+
+<p><strong>Step 6. Base Implantation and Drive-In</strong></p>
+
+<ul>
+<li>Deposit 25 nm of screening oxide.</li>
+<li>Implant boron with a dose of 1.0 x 10<sup>14</sup> cm<sup>-2</sup>, an energy of 50 keV, 
+and a tilt angle of 7&deg;.</li>
+<li>Anneal at 1100&deg;C for 35 minutes.</li>
+</ul>
+
+<p><strong>Step 7. Emitter Implantation and Activation</strong></p>
+
+<ul>
+<li>Implant arsenic with a dose of 5.0 x 10<sup>15</sup> cm<sup>-2</sup>, an energy of 55 keV, 
+and a tilt angle of 7&deg;.</li>
+<li>Anneal at 1100&deg;C for 25 minutes.</li>
+</ul>
+
+<p><strong>Step 8. Etch Oxide</strong></p>
+
+<ul>
+<li>Anisotropically etch the oxide using the "contact" mask previously defined.</li>
+</ul>
+
+<p><strong>Step 9. Deposit Aluminum</strong></p>
+
+<ul>
+<li>Deposit 1 &mu;m of aluminum.</li>    
+</ul>
+
+<p><strong>Step 10. Etch Aluminum</strong></p>
+
+<ul>
+<li>Anisotropically etch the aluminum using the "metal" mask previously defined.</li>    
+</ul>      
+
+<p>In this assignment:</p>
+
+<ul>
+<li>Define an initial mesh and an initial simulation domain before defining the substrate.</li>
+<li>Define a remeshing strategy before the first <tt>deposit</tt> command.</li>
+<li>Save the 2D structure files after each major implantation and annealing step.</li>
+<li>Use the <tt>photo</tt> command to deposit photoresist to mask implantation.</li>
+</ul> 
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/2DGS/sprocess1_fps.cmd">
+sprocess1_fps.cmd</a>.</p>
+
+<p><img src="images/sp_2d_npn_anima.gif" width="600" height="208" 
+alt="Animation of process flow of npn bipolar transistor" /></p>
+
+<p class="caption">Figure 13. Animation of the process flow of the npn bipolar transistor.</p>
+
+<p><img src="images/sp_2d_npn_final.png" width="537" height="475" 
+alt="Final doping profiles at cutline at middle of emitter" /></p>
+
+<p class="caption">Figure 14. Final doping profiles for cutline at middle of emitter 
+(x = 5 &mu;m).</p>
+
+<p><img src="images/sp_2d_npn_sink.png" width="537" height="475" 
+alt="Final doping profiles for cutline at middle of collector sink" /></p>
+
+<p class="caption">Figure 15. Final doping profiles for cutline at middle of collector sink 
+(x = 23 &mu;m).</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

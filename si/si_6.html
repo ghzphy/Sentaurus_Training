@@ -1,0 +1,272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Interconnect 6. Example: Inverter</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Interconnect<br />6. Example: Inverter</h1>
+
+<p>
+<a href="#1">6.1 Overview</a><br />
+<a href="#2">6.2 Defining New Materials</a><br />
+<a href="#3">6.3 Defining the Initial 3D Grid</a><br />
+<a href="#4">6.4 Defining the Initial Simulation Domain</a><br />
+<a href="#5">6.5 Initializing the Simulation</a><br />
+<a href="#6">6.6 Setting Up Meshing and Refinement Strategies</a><br />
+<a href="#7">6.7 Performing Etching and Deposition</a><br />
+<a href="#8">6.8 Defining the Contacts and Supplies</a><br />
+<a href="#9">6.9 Electrostatic Simulation</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to build a simplified inverter and to run the electrostatic 
+analysis with it.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>6.1 Overview</h1>
+
+<p>The section shows the steps to build a simplified inverter and to run the electrostatic 
+analysis with it. Besides the commands that have been used in the damascene example, a few 
+more commands will be introduced.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>6.2 Defining New Materials</h1>
+
+<p>You can create new materials from  existing ones. All material properties are inherited 
+from the source material. The following command creates a new material <tt>DIEL</tt> from 
+<tt>Oxide</tt>:</p>
+
+<!-- grep startExpr="mater*" lines=1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+mater add name= DIEL new.like= Oxide
+</pre>
+<!-- grep end -->
+
+<p>After the definition, the material properties are changed with <tt>pdbSet</tt> commands. 
+The dielectric constant is changed to 3.0:</p>
+
+<!-- grep startExpr="pdbSet DIEL*" lines=1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+pdbSet DIEL Potential Permittivity 3.0
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="3"></a>
+<h1>6.3 Defining the Initial 3D Grid</h1>
+
+<p>The initial 3D grid is defined with <tt>line</tt> commands:</p>
+
+<!-- grep startExpr="*Initial 3D grid*" endExpr="*Initial simulation domain*" endOffset=-2 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+line x location= 0.0
+line x location= 0.1
+line y location= 0.0
+line y location= 1.5
+line z location= 0.0
+line z location= 1.0
+</pre>
+<!-- grep end -->
+
+<p>The default unit is micrometer.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>6.4 Defining the Initial Simulation Domain</h1>
+
+<p>The initial simulation domain is defined with the <tt>region</tt> command, and the material 
+is silicon, which serves as the ground in this inverter structure:</p>
+
+<!-- grep startExpr="region*" lines=1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+region Silicon
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="5"></a>
+<h1>6.5 Initializing the Simulation</h1>
+
+<p>The simulation is initialized with default settings:</p>
+
+<!-- grep startExpr="init*" lines=1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+init
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="6"></a>
+<h1>6.6 Setting Up Meshing and Refinement Strategies</h1>
+
+<p>Next, global meshing and local refinement strategies are defined. For refinements, 
+only interface refinement is used in the example:</p>
+
+<!-- grep startExpr="*Settings for automatic*" endExpr="*Define polygons*" endOffset=-1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+pdbSet Grid SnMesh min.normal.size 0.050
+refinebox min.normal.size= 0.05 interface.materials= { Copper DIEL }
+
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="7"></a>
+<h1>6.7 Performing Etching and Deposition</h1>
+
+<p>First, masks must be defined for etching operations. While a simple mask can be 
+defined by specifying its boundary, a more complicated mask can be defined from one 
+or more polygons like  masks <tt>m1</tt> and <tt>m3</tt> here:</p>
+
+<!-- grep startExpr="*Define polygons*" endExpr="*Set pdb parameters*" endOffset=-1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+polygon name= p1 \
+  segments= {0.55 0.50 1.6 0.50 1.6 0.65 1.4 0.65 1.4 0.55 0.55 0.55}
+polygon name= p2 min= {0.4 0.3}   max= {0.7 0.7}  rectangle
+polygon name= p3 min= {1.25 0.35} max= {1.75 0.5} rectangle
+polygon name= p4 min= {1.4 0.55}  max= {1.6 0.65} rectangle
+
+mask clear
+mask name= m1 polygons= {p1} negative
+mask name= m2 left= 1.47 right= 1.53 front= 0.55 back= 0.60 negative
+mask name= m3 polygons= {p2 p3 p4}
+
+</pre>
+<!-- grep end -->
+
+<p>The stress simulation is omitted in this example, so the following two switches are turned 
+off before any deposition or etching steps:</p>
+
+<pre>
+pdbSet Mechanics EtchDepoRelax 0
+pdbSet Mechanics StressHistory 0
+</pre>
+
+<p>Second, the inverter structure is defined with a set of <tt>deposit</tt> 
+and <tt>etch</tt> commands. Initially, only half of the structure is constructed:</p>
+
+<!-- grep startExpr="*Structure generation*" endExpr="transform*" endOffset=-1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+deposit DIEL thickness= 0.1 isotropic
+deposit Copper thickness= 0.03 anisotropic mask= m1
+
+deposit DIEL coord= -0.35 fill
+etch    DIEL thickness= 0.3 anisotropic mask= m2
+deposit Copper coord= -0.35 fill
+
+deposit Copper coord= -0.4 fill
+etch    Copper thickness= 0.1 anisotropic mask= m3
+deposit DIEL coord= -0.9 fill
+
+</pre>
+<!-- grep end -->
+
+<p>Then, the <tt>transform</tt> command reflects the half-structure to the 
+whole structure:</p>
+
+<!-- grep startExpr="transform*" lines=1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+transform reflect right
+</pre>
+<!-- grep end -->
+
+<p>Figure 1 shows the final structure. The DIEL region is not displayed for better visualization.</p>
+
+<p><a name="Fig1" href="images/si_inverter_struct.png"><img src="images/si_inverter_struct.png" 
+width="500" alt="Final inverter structure" /></a></p>
+
+<p class="caption">Figure 1. Final inverter structure. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>6.8 Defining the Contacts and Supplies</h1>
+
+<p>Point-type contacts are defined in this example for the etch metal region 
+and then are supplied with a fixed voltage. One contact is set to 1 V and 
+the others are set to 0 V:</p>
+
+<!-- grep startExpr="*Define contacts*" endExpr="*Define solve mode*" endOffset=-1 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+contact name= c0 x=  0.05 y= 1.5 z= 0.5 point Silicon !replace
+contact name= c1 x= -0.38 y= 1.5 z= 0.6 point Copper !replace
+contact name= c2 x= -0.38 y= 1.5 z= 0.4 point Copper !replace
+contact name= c3 x= -0.38 y= 0.6 z= 0.5 point Copper !replace
+contact name= c4 x= -0.38 y= 2.4 z= 0.5 point Copper !replace
+
+supply contact.name= c0 voltage= 0.0
+supply contact.name= c1 voltage= 0.0
+supply contact.name= c2 voltage= 1.0
+supply contact.name= c3 voltage= 0.0
+
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="9"></a>
+<h1>6.9 Electrostatic Simulation</h1>
+
+<p>To perform the electrostatic simulation, the <tt>mode</tt> command must be 
+called before the <tt>solve</tt> command:</p>
+
+<!-- grep startExpr="mode*" lines=4 file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+mode electrostatic
+
+solve info= 2
+</pre>
+<!-- grep end -->
+
+<p>Figure 2 shows a snapshot after the electrostatic simulation is completed. 
+Only half of the structure is shown and the dielectric region is transparent.</p>
+
+<p><a name="Fig2" href="images/si_inverter_potential.png"><img src="images/si_inverter_potential.png" 
+width="400" alt="Snapshot saved after electrostatic analysis is completed" /></a></p>
+
+<p class="caption">Figure 2. Snapshot saved after the electrostatic analysis 
+is completed. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

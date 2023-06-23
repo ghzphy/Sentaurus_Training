@@ -1,0 +1,430 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Visual 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Visual<br />1. Getting Started</h1>
+
+<p>
+ <a href="#1">1.1 Overview</a><br />
+ <a href="#2">1.2 Starting Sentaurus Visual</a><br />
+ <a href="#3">1.3 Loading Data Files</a><br />
+ <a href="#4">1.4 Reloading Data</a><br />
+ <a href="#5">1.5 Exporting and Printing Plots, Creating Movies, and Saving Tcl or Python 
+Commands to File</a><br />
+ <a href="#6">1.6 Hiding, Maximizing, and Deleting Plots</a><br />
+ <a href="#7">1.7 Managing Data</a><br />
+ <a href="#8">1.8 User Preferences</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the basic operations of Sentaurus Visual.</li>
+</ul>
+
+<!--==================================================-->
+<a name="1"></a> 
+<h1>1.1 Overview</h1>
+
+<p>Sentaurus Visual is advanced visualization software developed by Synopsys
+based on the Visualization Toolkit.</p>
+
+<p>Sentaurus Visual is used to visualize results created by TCAD simulation tools 
+in one, two, and three dimensions. To assist in better understanding of physical 
+processes captured in simulations, Sentaurus Visual provides tools to probe data 
+fields, to make cutlines and cutplanes, to perform analysis on data fields, and to 
+export data in ASCII format for further analysis by third-party software. It is also 
+equipped with tools to conveniently overlay structures, to look at the solution 
+differences, to inspect band diagrams, and more.</p>
+
+<!--==================================================-->
+<a name="2"></a> 
+<h1>1.2 Starting Sentaurus Visual</h1>
+
+<p>Sentaurus Visual can be run in either Tcl mode or Python mode. Sentaurus Visual 
+can be started from the command line:</p>
+
+<pre>
+&gt; svisual &amp;
+</pre>
+
+<p>Alternatively, to launch Sentaurus Visual from Sentaurus Workbench:</p>
+
+<ul>
+<li>Choose <strong>Extensions</strong> &gt; <strong>Run Sentaurus Visual</strong>.</li>
+</ul>
+
+<p>Sentaurus Visual starts in the mode set in user preferences as discussed in 
+<a href="#8">Section 1.8 User Preferences</a>.</p>
+
+<!--==================================================-->
+<a name="3"></a> 
+<h1>1.3 Loading Data Files</h1>
+
+<p>In TCAD Sentaurus, two file types are most commonly used in visualization 
+and can be loaded into Sentaurus Visual:</p>
+
+<ul>
+<li>Files with the <tt>*.tdr</tt> extension describe a device structure, its 
+mesh, and data fields stored on the mesh.</li>
+
+<li>Files with the <tt>*.plt</tt> extension store terminal characteristics produced 
+by the device simulator. The <tt>*.plt</tt> files are used to create I&ndash;V curve 
+plots, also referred to as <em>xy plots</em>.</li>
+</ul>
+
+<p>To follow this module, download the following files by right-clicking and selecting 
+<strong>Save Target As</strong>:</p>
+
+<ul>
+<li><a href="files/nmos_fps.tdr">nmos_fps.tdr</a></li>
+<li><a href="../../Applications_Library/GettingStarted/svisual/export/idvg_des.plt">idvg_des.plt</a></li>
+</ul>
+
+<p>To start Sentaurus Visual and simultaneously load data files, include the 
+file names on the command line:</p>
+
+<pre>
+&gt; svisual nmos_fps.tdr
+</pre>
+
+<p>To include multiple data files on the command line, separate the names 
+with space:</p>
+
+<pre>
+&gt; svisual nmos_fps.tdr pmos1_fps.tdr pmos2_fps.tdr
+</pre>
+
+<p>To load data files from the user interface of Sentaurus Visual:</p>
+
+<ol>
+<li>Choose <strong>File</strong> &gt; <strong>Open</strong>, or press Ctrl+O, or click the 
+<img class="imgline" src="images/icons/open.png" width="24" height="20" alt="Open icon" /> toolbar button.<br />
+The Open Plot File dialog box opens. By default, this dialog box lists all standard files relevant to Synopsys TCAD 
+visualization, including <tt>*.tdr</tt> and <tt>.plt</tt> files.<br />
+
+<p><img src="images/sv_openfile_db.png" width="508" height="291" alt="Open Plot File dialog box" /></p></li>
+
+<li>Load a particular file by selecting it from the list.<br />
+To load multiple data files, hold the Ctrl key while selecting files.</li>
+<li>Click <strong>Open</strong>.</li>
+</ol>
+
+<!--=========================-->
+<h2>1.3.1 Device Structures</h2> 
+
+<p>When a file is loaded, the device is shown in the plot area. Figure&nbsp;1 shows 
+the result after loading the file <tt>nmos_fps.tdr</tt>.</p>
+
+<p><a href="images/sv_openedfile.png"><img src="images/sv_openedfile.png" width="570" 
+alt="NMOS structure with electrostatic potential" /></a></p>
+
+<p class="caption">Figure 1. NMOS structure showing doping profile distribution. 
+(Click image for full-size view.)</p>
+
+<p> In subsequent sections, you will learn how to control the view, to display 
+materials and regions, and to select data fields and field ranges.</p>
+
+<!--=========================-->
+<h2>1.3.2 XY Plots</h2>
+
+<p>Sentaurus Visual behaves differently when loading xy data files. It displays 
+panels and toolbars for creating and editing xy plots. Upon loading xy data, 
+Sentaurus Visual creates an empty frame for the xy plot. Since a typical xy 
+data file contains multiple columns of data, you must specify manually which data 
+variable will be plotted against which axis.</p>
+
+<p>Figure 2 shows the plot area with panels and toolbars related to xy plots as well 
+as an empty frame created after loading the xy data file <tt>idvg_des.plt</tt>.</p>
+
+<p><a href="images/sv_emptyplot.png"><img src="images/sv_emptyplot.png" width="570" 
+alt="Panels and toolbars showing after loading idvg_des.plt" /></a></p>
+
+<p class="caption">Figure 2. Panels and toolbars related to xy plots after loading 
+idvg_des.plt. (Click image for full-size view.)</p>
+
+<!--==================================================-->
+<a name="4"></a> 
+<h1>1.4 Reloading Data</h1>
+
+<p>Sentaurus Visual allows you to reload datasets from the same file after 
+they have been loaded into the frames, and the plots have been created. This 
+allows you to update the plot with any changes made to the file outside of Sentaurus 
+Visual. You can choose to reload a selected dataset or all datasets.</p>
+
+<p>To reload data, either:</p>
+
+<ul>
+<li>Choose <strong>File</strong> &gt; <strong>Reload All</strong>.</li>
+<li>Choose <strong>File</strong> &gt; <strong>Reload Selected</strong>.</li>
+</ul>
+
+<!--==================================================-->
+<a name="5"></a> 
+<h1>1.5 Exporting and Printing Plots, Creating Movies, and Saving Tcl or Python 
+Commands to File</h1>
+
+<p>This section discusses how to export plots to a graphics file, to print plots, 
+to create movies, and to save Tcl or Python commands to a file.</p>
+
+<!--=========================-->
+<h2>1.5.1 Exporting Plots</h2>
+
+<p>To export a plot into a graphics file from the user interface of Sentaurus Visual:</p>
+
+<ol>
+<li>Choose <strong>File</strong> &gt; <strong>Export Plot</strong>, or press  Ctrl+E, or click 
+the <img class="imgline" src="images/icons/export_plot.png" width="22" height="19" alt="Export Plot icon" /> toolbar button.<br />
+The Export Plot dialog box opens.<br />
+
+<p><img src="images/sv_exportplot_db.png" width="269" height="319" alt="Export Plot dialog box" /></p></li>
+
+<li>Select the plot resolution and how multiple plots should be exported.</li>
+<li>Click <strong>OK</strong>.<br />
+The Save to File dialog box opens.<br />
+
+<p><img src="images/sv_savetofile_db.png" width="473" height="221" alt="Save to File dialog box" /></p></li>
+
+<li>Specify a file name and select the file format to use, such as BMP, EPS, or PNG.<br />
+The file format is determined from the file extension.</li>
+<li>Click <strong>Save</strong>.</li>
+</ol>
+
+<!--=========================-->
+<h2>1.5.2 Printing Plots</h2>
+
+<p>To print a plot directly to a printer from the user interface:</p>
+
+<ol>
+<li>Choose <strong>File</strong> &gt; <strong>Print Plots</strong>, or press Ctrl+P, or click the 
+<img class="imgline" src="images/icons/print_plots.png" width="23" height="21" alt="Print Plots icon" /> 
+toolbar button.<br />
+The Print dialog box opens.<br />
+
+<p><img src="images/sv_print_db.png" width="431" height="225" alt="Print dialog box" /></p></li>
+
+<li>Select the printer or send output to a PDF file, and specify the printing options.</li>
+<li>Click <strong>Print</strong>.</li>
+</ol>
+
+<!--=========================-->
+<h2>1.5.3 Creating Movies</h2>
+
+<p>To create a movie from several plots:</p>
+
+<ol>
+<li>Choose <strong>Tools</strong> &gt; <strong>Movies</strong> &gt; <strong>Start Recording</strong>, 
+or click the 
+<img class="imgline" src="images/icons/startmovie_icon.png" width="25" height="26" alt="Start Movie icon" /> toolbar button.<br />
+The Start Recording dialog box opens.<br />
+
+<p><img src="images/sv_startmovie_window.png" width="265" height="218" alt="Start Recording dialog box" /></p></li>
+
+<li>Select either <strong>Screen Resolution</strong> or a user-defined resolution.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>Then, select the plot to be added as a frame to the movie and perform the following:</p>
+
+<ol>
+<li>Choose <strong>Tools</strong> &gt; <strong>Movies</strong> &gt; <strong>Add Frames</strong>, 
+or click the 
+<img class="imgline" src="images/icons/addframe_icon.png" width="25" height="26" alt="Add Frames icon" /> 
+toolbar button.</li>
+<li>Repeat Step 1 for each frame to be added to the movie.</li>
+</ol>
+
+<p>When all the frames are created, you can stop recording the movie as follows:</p>
+
+<ol>
+<li>Choose <strong>Tools</strong> &gt; <strong>Movies</strong> &gt; <strong>Stop Recording</strong>, 
+or click the <img class="imgline" src="images/icons/stopmovie_icon.png" width="25" height="26" alt="Stop Movie icon" /> toolbar button.<br />
+The Export Movie dialog box opens.<br />
+
+<p><a href="images/sv_stopmovie_window.png"><img src="images/sv_stopmovie_window.png" width="500" 
+alt="Export Movie dialog box" /></a></p></li>
+
+<li>Select and sort frames to be exported.<br />
+The frame duration (in 1/100&nbsp;s) can be changed.</li>
+<li>Click <strong>OK</strong>.<br />
+A dialog box opens where the location for saving the movie as well as its name can be entered.</li>
+</ol>
+
+<!--=========================-->
+<h2>1.5.4 Saving Tcl or Python Commands to File</h2>
+
+<p>When you work on a plot, Sentaurus Visual records the equivalent Tcl or Python commands 
+for all the steps performed in the user interface. This command journal can be used 
+later to recreate the same state of the plot. In the Tcl or Python Console, click 
+<strong>Save</strong> to save the current set of Tcl or Python commands to a file.</p>
+
+<p><a href="images/sv_tclconsole.png"><img src="images/sv_tclconsole.png" width="570" 
+alt="Tcl Console" /></a></p>
+
+<p class="caption">Figure 3. Tcl Console. (Click image for full-size view.)</p>
+
+<p class="note">The Tcl or Python command file produced by Sentaurus Visual does not 
+contain data files, but rather links to the data files that were used during plot creation. 
+Therefore, all TDR or PLT files must be present on the file system to recreate the 
+same plot with the saved command file.</p>
+
+<p>You can enter commands at the command prompt in the Console. The Tcl Console has 
+the prompt <tt>%</tt>; whereas, the Python Console has the prompt <tt>&gt;&gt;&gt;</tt>.</p>
+
+<!--==================================================-->
+<a name="6"></a> 
+<h1>1.6 Hiding, Maximizing, and Deleting Plots</h1>
+
+<p>In Sentaurus Visual, the selected plot is marked by a thick border. 
+To hide the selected plot:</p>
+
+<ul>
+<li>Choose <strong>Window</strong> &gt; <strong>Minimize Plot</strong> or click the 
+<img class="imgline" src="images/icons/minimize_plot.png" width="24" height="15" alt="Minimize Plot icon" /> toolbar button.</li>
+</ul>
+
+<p>To display a hidden plot, choose <strong>Window</strong> and then select the plot name 
+in the lower part of the menu list. All plots that are currently hidden do not display 
+a check mark next to their name. Click the plot name to restore it.</p>
+
+<p>To maximize a plot:</p>
+
+<ul>
+<li>Choose <strong>Window</strong> &gt; <strong>Maximize</strong>, or press the F10 key, or 
+click the 
+<img class="imgline" src="images/icons/maximize.png" width="23" height="22" alt="Maximize icon" /> 
+toolbar button.</li>
+</ul>
+
+<p>To delete a selected plot:</p>
+
+<ul>
+<li>Choose <strong>Edit</strong> &gt; <strong>Delete Selected Plots</strong>, or press Ctrl+D.</li>
+</ul>
+
+<!--==================================================-->
+<a name="7"></a> 
+<h1>1.7 Managing Data</h1>
+
+<p>Deleting a plot does not remove the dataset.</p>
+
+<p>To remove the dataset:</p>
+
+<ul>
+<li>Choose <strong>Data</strong> &gt; <strong>View Info Loaded</strong>.</li>
+</ul>
+
+<p>The Manage Loaded Data dialog box opens, where you can manage data 
+loaded in the current session (see Figure 4).</p>
+
+<p>The Files pane lists all the loaded files. The Datasets pane lists all the loaded 
+datasets. The Plots pane shows the plot name and the corresponding dimensionality is 
+shown in the Dimension pane. The data in all columns is connected, allowing you to 
+easily find the dataset to be deleted or reloaded.</p>
+
+<p class="note">The Manage Loaded Data dialog box has two <strong>Remove</strong> buttons. 
+The button on the right deletes the plot and the button on the left deletes the dataset.</p>
+
+<p><a href="images/sv_manage_loaded_data_db.png"><img src="images/sv_manage_loaded_data_db.png" 
+width="570" alt="Manage Loaded Data dialog box" /></a></p>
+
+<p class="caption">Figure 4. Manage Loaded Data dialog box can be used to inspect, 
+reload, and delete datasets in Sentaurus Visual. (Click image for full-size view.)</p>
+
+<!--==================================================-->
+<a name="8"></a> 
+<h1>1.8 User Preferences</h1>
+
+<p>The settings of Sentaurus Visual can be customized in the User Preferences
+dialog box (see Figure&nbsp;5). You can set the appearance of the labels and legends, 
+rendering options for 3D plots, and so on. To display the User Preferences dialog box:</p>
+
+<ul>
+<li>Choose <strong>Edit</strong> &gt; <strong>Preferences</strong>.</li>
+</ul>
+
+<p><img src="images/sv_user_preferences.png" width="584" height="642" 
+alt="User Preferences dialog box" /></p>
+
+<p class="caption">Figure 5. Customizing automatic plot linking upon loading in
+User Preferences dialog box.</p>
+
+<p>To better explain the tool customization process, as an example, here are 
+instructions for customizing the linking behavior of loaded plots. To set properties:</p>
+
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>Preferences</strong>.</li>
+
+<li>In the User Preferences dialog box, navigate to 
+<strong>Common</strong> &gt; <strong>Miscellaneous</strong>.</li>
+
+<li>Select the <strong>Auto</strong> option.</li>
+
+<li>Click <strong>Save</strong>.</li>
+</ol>
+
+<p>With the <strong>Auto</strong> option selected, Sentaurus Visual automatically links 
+plots of the same dimension, that is, all 2D plots are linked into one group upon loading, 
+and all 3D plots are linked into one group upon loading.</p>
+
+<p class="note">User preferences settings are applied the next time you 
+launch Sentaurus Visual.</p>
+
+<p>You can set a preferred scripting language in user preferences as follows:</p>
+
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>Preferences</strong>.</li>
+
+<li>In the User Preferences dialog box, navigate to <strong>Common</strong> &gt; 
+<strong>Miscellaneous</strong>.</li>
+
+<li>Under Preferred Scripting Language, select the required language.</li>
+
+<li>Click <strong>Save</strong>.</li>
+</ol>
+
+<p>With the Python option selected, Sentaurus Visual starts in Python mode the next time you 
+launch it.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

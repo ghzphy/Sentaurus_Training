@@ -1,0 +1,817 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+    <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+    <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 15. Special Focus: 4H-SiC PiN Device Breakdown Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_14.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_16.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />15. Special Focus: 4H-SiC PiN Device Breakdown Simulation</h1>
+
+<p>
+ <a href="#1">15.1 Overview</a><br />
+ <a href="#2">15.2 SiC Parameter Files</a><br />
+ <a href="#3">15.3 SiC-Specific Physical Models</a><br /> 
+ <a href="#4">15.4 SiC-Specific Numeric Parameters</a><br />
+ <a href="#5">15.5 Application Example: SiC PiN Diode Breakdown</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to perform a 4H-SiC PiN device breakdown simulation in Sentaurus Device.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>15.1 Overview</h1>
+
+<p>This example follows the description of the project process part in 
+<a href="../sp/sp_15.html">Section&nbsp;15. Special Focus: SiC Process Simulation</a> 
+and provides more insight into how to perform a SiC device simulation in conjunction 
+with the SiC process simulation.</p>
+
+<p>The complete project can be accessed from Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/4H-SiC_PiN</tt>.</p> 
+
+<p>The concept of the simulated device in this project and its geometry follows 
+the publication of R.&nbsp;P&eacute;rez <em>et&nbsp;al.</em>, &quot;Planar Edge 
+Termination Design and Technology Considerations for 1.7-kV 4H-SiC PiN Diodes,&quot; 
+<cite>IEEE Transactions on Electron Devices</cite>, vol.&nbsp;52, no.&nbsp;10, 
+pp.&nbsp;2309&ndash;2316, 2005.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>15.2 SiC Parameter Files</h1>
+
+<p>The dedicated parameter files for 4H-SiC and 6H-SiC polytypes are provided 
+in the <tt>$STROOT/tcad/$STRELEASE/lib/sdevice/MaterialDB/</tt> repository. 
+Sentaurus Workbench provides an easy way to access these files. See 
+<a href="../swb/swb_07.html#Key">Section&nbsp;7.2 Customizing Tool Input File</a>.</p>
+
+<p>In this example, the <tt>4HSiC.par</tt> file from the <tt>MaterialDB</tt> 
+is used directly.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>15.3 SiC-Specific Physical Models</h1>
+
+<p>Several physical models, which are relevant to SiC technology, must be used 
+in the case of SiC device simulations, including:</p>
+
+<ul>
+<li>Band gap model, including bandgap narrowing</li>
+<li>Dopant incomplete ionization</li>
+<li>Parameter anisotropy due to hexagonal crystal structure</li>
+</ul>
+
+<!--=========================-->
+<h2>15.3.1 Band Gap Model</h2>
+
+<p>The standard band gap model is used in SiC device simulations, which includes:</p>
+
+<ul>
+<li>Bandgap dependency on lattice temperature</li>
+<li>Bandgap narrowing due to high doping and carrier statistics</li>
+<li>Electron affinity dependency on the lattice temperature and bandgap narrowing</li>  
+</ul>
+
+<p>The model for bandgap dependency on the lattice temperature uses parameters 
+from the material parameter file, which were extracted from the literature:</p>
+
+<p><img src="images/sd_sic_bg.png" width="550" 
+alt="Parameters for the model for bandgap dependency on lattice temperature" /></p>
+
+<p>The bandgap narrowing (BGN) term &Delta;E<sub>BGN</sub> consists of three contributions. 
+The first and second ones are determined by the model selection in the command file 
+input:</p>
+
+<pre>
+Physics { ...
+  Fermi
+  EffectiveIntrinsicDensity(Slotboom noFermi)
+}
+</pre>
+
+<p>The value for the third contribution is entered directly in the corresponding 
+parameter file section:</p>
+
+<p><img src="images/sd_sic_bgn.png" width="550" alt="Value for third contribution to BGN term" /></p>
+
+<p>The model parameters to compute the electron affinity dependency on the lattice 
+temperature and the BGN are provided in the <tt>Bandgap</tt> section of the material 
+parameter file:</p>
+
+<p><img src="images/sd_sic_affinity.png" width="550" alt="Parameters for effective electron affinity" /></p>
+
+<p>The value of the parameter &gamma; in the above formula determines how 
+&Delta;E<sub>BGN</sub> splits between the conduction and valence bands 
+(see Figure&nbsp;1).</p>
+
+<p><a href="images/sd_sic_gamma.png"><img src="images/sd_sic_gamma.png" width="550" 
+alt="Schematic of DeltaE_BGN split between the conduction and valence bands" /></a></p>
+
+<p class="caption">Figure 1. Schematic representation of the &Delta;E<sub>BGN</sub>
+split between the conduction and valence bands. (Click image for full-size view.)</p>
+
+<!--=========================-->
+<h2>15.3.2 Dopant Incomplete Ionization</h2>
+
+<p>The typical dopants used in SiC technology are shown in Table 1.</p>
+
+<table width="60%">
+<caption>Table 1. Dopants used in SiC technology.</caption>
+
+<tr>
+<th>Donors</th>
+<th>Acceptors</th>
+</tr>
+
+<tr>
+<td>Nitrogen (N)</td>
+<td>Aluminum (Al)</td>
+</tr>
+
+<tr>
+<td>Phosphorus (P)</td>
+<td>Boron (B)</td>
+</tr>
+
+<tr>
+<td>Arsenic (As)</td>
+<td>Gallium (Ga)</td>
+</tr>
+</table>
+
+<p>By default, Sentaurus Device assumes that all active dopants, either coming from 
+a Sentaurus Process simulation or specified in Sentaurus Structure Editor, are fully 
+ionized. In SiC materials, for both donors and acceptors, their energy levels can be 
+deeply positioned inside the band gap. This requires an ionized doping density 
+computation for each individual dopant.</p>
+
+<p>Both 4H-SiC and 6H-SiC lattices are formed by a corresponding number of cubic and 
+hexagonal bonds with a stacking sequences of ABCB (4H-SiC) or ABCACB (6H-SiC), as 
+shown in Figure&nbsp;2.</p>
+
+<p><a href="images/sd_sic_polytypes.png"><img src="images/sd_sic_polytypes.png" width="550" 
+alt="Layer structure of SiC" /></a></p>
+
+<p class="caption">Figure 2. Layer structure of SiC (towards [0001] direction) with 
+(left) tetrahedrally bonded carbon atoms linked to three Si atoms within the bilayer 
+and (right) shown together with the stacking sequences for 4H-SiC and 6H-SiC polytypes.
+(Click image for full-size view.)</p>
+
+<p>In such a stacking sequence, all A sites are hexagonal (&quot;h&quot;) sites, and 
+all B and C sites are cubic (&quot;k&quot;) sites. For some dopants such as 
+nitrogen or phosphorus, their ionization energy depends on which site (&quot;k&quot; 
+or &quot;h&quot;) a dopant prefers to occupy. Table&nbsp;2 lists the typical 
+ionization energies for different dopants in 4H-SiC and 6H-SiC polytypes.</p>
+
+<table>
+<caption>Table 2. Dopant ionization energies for 4H-SiC and 6H-SiC polytypes.</caption>
+
+<tr>
+<th>Polytype</th>
+<th>Al</th>
+<th>B</th>
+<th>N in &quot;h&quot; sites</th>
+<th>N in &quot;k1&quot; sites</th>
+<th>N in &quot;k2&quot; sites</th>
+<th>P in &quot;h&quot; sites</th>
+<th>P in &quot;k1&quot; sites</th>
+</tr>
+
+<tr>
+<td>4H-SiC</td>
+<td>220 &plusmn; 20&nbsp;meV</td>
+<td>330 &plusmn; 30&nbsp;meV</td>
+<td>70.9&nbsp;meV</td>
+<td>123.7&nbsp;meV</td>
+<td>&ndash;</td>
+<td>50 &plusmn; 5&nbsp;meV</td>
+<td>100 &plusmn; 10&nbsp;meV</td>
+</tr>
+
+<tr>
+<td>6H-SiC</td>
+<td>220 &plusmn; 20&nbsp;meV</td>
+<td>330 &plusmn; 30&nbsp;meV</td>
+<td>80 &plusmn; 5&nbsp;meV</td>
+<td>140 &plusmn; 5&nbsp;meV</td>
+<td>145 &plusmn; 5&nbsp;meV</td>
+<td>100 &plusmn; 10&nbsp;meV</td>
+<td>155 &plusmn; 5&nbsp;meV</td>
+</tr>
+</table>
+
+<p>The dopant incomplete ionization model in Sentaurus Device takes into consideration 
+the following phenomena:</p>
+
+<ul>
+<li>Impurity level degeneration</li>
+<li>Activation energy doping dependency</li>
+<li>Multiple lattice site occupation</li>
+<li>Time-delay transient effects</li>
+</ul>  
+
+<p>The model is activated in the global <tt>Physics</tt> section of the command file 
+as shown here:</p>
+
+<pre>
+Physics { 
+  IncompleteIonization[(Dopants = &quot;AluminumActive&quot;)]
+}
+</pre>
+
+<p>The optional <tt>Dopants</tt> parameter allows you to specify particular dopants 
+for which the incomplete ionization will be activated. Otherwise, the model is applied 
+to all dopants.</p>
+
+<p>The corresponding model parameters can be found in the material parameter file under
+the <tt>Ionization</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/4HSiC.par" startExpr="*AluminumConcentration*" endExpr="*}*" -->
+<pre>
+   Species (&quot;AluminumConcentration&quot;) {
+                                             #4H-SiC Al
+        E_0           =       0.265          #4H-SiC [09Koi]
+        alpha         =       3.60e-08       #4H-SiC [09Koi]
+        g             =       4.0
+        Xsec          =       1.0000e-12
+   }
+</pre>
+<!-- grep end -->
+
+<p>To activate the incomplete ionization model for those dopants that occupy multiple 
+sites, you must use the <tt>Split</tt> statement. It allows you to take into account 
+different ionization energies for dopants that occupy both cubic and hexagonal lattice 
+sites.</p>
+
+<p>The following specification demonstrates the <tt>Split</tt> option activation for 
+nitrogen dopants:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/BV_des.cmd" startExpr="*IncompleteIonization*" endExpr="*Effective*" endOffset=-1 header="Physics {" footer="}" -->
+<pre>
+Physics {
+  IncompleteIonization (
+    Split (
+      Doping = &quot;NitrogenConcentration&quot;
+      Weights = (0.5 0.5)
+    )
+  )
+}
+</pre>
+<!-- grep end -->
+
+<p>Here:</p>
+
+<ul>
+<li>The <tt>Split</tt> statement activates the model.</li>
+<li>The <tt>Doping</tt> keyword specifies the species name for which 
+the <tt>Split</tt> statement must be applied.</li>
+<li>The <tt>Weights</tt> keyword defines the probabilities of the dopant 
+occupying different lattice sites. The sum of weights must be one.</li>
+</ul>
+
+<p>When activated, the dopant profile split is performed internally without user 
+interaction, such that the sum of split profiles equals the original profile distribution. 
+The split dopants are recognized by their names, for example:</p>
+
+<pre>
+NitrogenConcentration_split1
+NitrogenActiveConcentration_split1
+NitrogenPlusConcentration_split1
+NitrogenConcentration_split2
+NitrogenActiveConcentration_split2
+NitrogenPlusConcentration_split2
+</pre>
+
+<p>Here, <tt>NitrogenConcentration_split1</tt> indicates the split amount of the 
+total nitrogen doping, which occupies &quot;h&quot; lattice sites, 
+<tt>NitrogenActiveConcentration_split1</tt> corresponds to the active (substitutional) 
+part of the total doping, and <tt>NitrogenPlusConcentration_split1</tt> represents 
+the part of the doping that is fully ionized. Correspondingly, the <tt>*_split2</tt> 
+suffix corresponds to the dopant species that occupies &quot;k&quot; lattice sites. 
+The above names can be used inside the <tt>Plot</tt> command for visualization with 
+Sentaurus Visual.</p>
+
+<p>The model parameters for the split dopants are entered in the same way as for other 
+dopants in the <tt>Ionization</tt> section of the parameter file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/4HSiC.par" startExpr="*NitrogenConcentration_split1*" endExpr="*}*" -->
+<pre>
+  Species (&quot;NitrogenConcentration_split1&quot;) {
+                                            #4H-SiC Nitrogen hexagonal site
+       E_0           =       0.0709         #4H-SiC h [04Kag]
+       alpha         =       3.3800e-08     #4H-SiC h [04Kag]
+       g             =       2.0            #4H-SiC h
+       Xsec          =       1.0000e-12     #4H-SiC h
+  }                                                
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/4HSiC.par" startExpr="*NitrogenConcentration_split2*" endExpr="*}*" -->
+<pre>
+  Species (&quot;NitrogenConcentration_split2&quot;) {
+                                              #4H-SiC Nitrogen cubic site
+        E_0           =       0.1237          #4H-SiC k [04Kag]
+        alpha         =       4.6500e-08      #4H-SiC k [04Kag]
+        g             =       2.0             #4H-SiC k
+        Xsec          =       1.0000e-12      #4H-SiC k
+   }                                                   
+</pre>
+<!-- grep end -->
+
+<!--=========================-->
+<a name="33"></a>
+<h2>15.3.3 Material Parameter Anisotropy</h2>
+
+<p>Another important phenomenon for SiC materials is the crystal anisotropy, caused 
+by the layer-stacking sequence.</p>
+
+<p>This results in anisotropy of carrier transport parameters, where the most 
+important are:</p>
+
+<ul>
+<li>Carrier mobility</li>
+<li>Impact ionization coefficients</li>
+<li>Electrical permittivity</li>
+<li>Thermal conductivity </li>
+<li>Carrier quantization</li>
+</ul>
+
+<p>In the case of material anisotropy, the default numeric approximation for the 
+carrier transport equations is no longer valid because the transport coefficients, 
+such as the carrier mobility, become tensor quantities.</p> 
+
+<p>Different approximations are available in Sentaurus Device to address the 
+problems caused by numeric discretization of the anisotropic terms in carrier 
+transport equations.</p>
+
+<table>
+<caption>Table 3. Anisotropic approximations in Sentaurus Device.</caption>
+
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Syntax</th>
+</tr>
+
+<tr>
+<td>AverageAniso</td>
+<td>Used by default for both anisotropic and stress simulations. Requires full Delaunay mesh. 
+Suitable if main axis of anisotropy is aligned to the simulation axis.</td>
+<td><tt>Math {<br />
+&nbsp;&nbsp;AverageAniso<br />}</tt></td>
+</tr>
+
+<tr>
+<td>TensorGridAniso</td>
+<td>Correct approximation for tensor and near-tensor grids only. Ignores off-diagonal 
+elements of tensor matrix. It handles both anisotropic and stress-related problems. 
+Due to its simplicity, it might run faster than the default method.</td>
+<td><tt>Math {<br />
+&nbsp;&nbsp;TensorGridAniso<br />
+&nbsp;&nbsp;TensorGridAniso(Piezo)<br />
+&nbsp;&nbsp;TensorGridAniso(Aniso)<br />
+&nbsp;&nbsp;TensorGridAniso(Aniso Piezo)<br />}</tt></td>
+</tr>
+
+<tr>
+<td>AnisoSG</td>
+<td>No dependency on mesh orientation. Applies generalized Scharfetter&ndash;Gummel 
+approximation to anisotropic tasks. It might be numerically less stable than 
+AverageAniso or TensorGridAniso.</td>
+<td><tt>Math {<br />
+&nbsp;&nbsp;AnisoSG <br />}</tt></td>
+</tr>
+
+<tr>
+<td>StressSG</td>
+<td>No dependency on mesh orientation. Applies generalized Scharfetter&ndash;Gummel 
+approximation to stress tasks. It might be numerically less stable than AverageAniso 
+or TensorGridAniso.</td>
+<td><tt>Math {<br />
+&nbsp;&nbsp;StressSG<br />}</tt></td>
+</tr>
+</table>
+
+<p>The anisotropic model parameters are entered in the material parameter file 
+under the section name <tt>&lt;model&gt;_aniso</tt>. For example, mobility values that 
+correspond to the direction of anisotropy in 4H-SiC material (&lt;0001&gt; axis direction) 
+are specified inside the <tt>ConstantMobility_aniso</tt> section. On the other hand, 
+parameters relevant to the orthogonal direction of the anisotropy axis 
+(&lt;11<span style="text-decoration: overline">2</span>0&gt;) are specified inside 
+the <tt>ConstantMobility</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/4HSiC.par" startExpr="*ConstantMobility*" endExpr="*}*" -->
+<pre>
+ConstantMobility {
+  mumax	= 950.0,	125.	  #[04Aya]
+  Exponent  =2.4,	2.15	  #[04Aya]
+}
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/4HSiC.par" startExpr="*ConstantMobility_aniso*" endExpr="*}*" -->
+<pre>
+ConstantMobility_aniso {
+  mumax	= 1140.0, 125	      #[04Aya], for electrons mu//=mu_perp/0.83 [94Sch1]
+  Exponent = 2.4,	2.15  #[04Aya]
+}
+</pre>
+<!-- grep end -->
+
+<p>To switch on a specific anisotropic model, specify the corresponding keyword 
+in the <tt>Aniso</tt> subsection of the global <tt>Physics</tt> section:</p>
+
+<pre>
+Physics {...
+  Aniso (
+    Mobility 
+    Poisson
+    Avalanche
+    direction(SimulationSystem)= (1 0 0)
+  )
+}
+</pre>
+
+<p class="note">In the case of the Hatakeyama avalanche model, activation of model 
+anisotropy in the <tt>Aniso</tt> subsection is not required because the model is 
+implicitly anisotropic.</p>
+
+<p>The <tt>direction</tt> keyword indicates the anisotropic axis direction, for
+which the corresponding parameter values from the <tt>*_aniso</tt> sections in
+the parameter file will be used. The symbolic direction definition is also possible, 
+for example, <tt>direction(SimulationSystem)= xAxis</tt>. The <tt>SimulationSystem</tt>
+option indicates that the anisotropic direction is given in simulation system coordinates.
+In this example, the substrate miscut is taken into account while specifying the
+direction of anisotropy.</p>
+
+<p class="note">The difference in breakdown voltage can be expected between the 
+Hatakeyama and Okuto avalanche model results, because they use different model
+parameter values for the direction of crystal anisotropy.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>15.4 SiC-Specific Numeric Parameters</h1>
+
+<p>SiC device simulations typically require a much higher numeric accuracy to resolve 
+very-low intrinsic carrier densities, caused by the wide bandgap of the material. For this 
+purpose, it is advisable to run SiC device simulations in the <tt>ExtendedPrecision</tt> 
+mode and to tighten the corresponding computation error controls.</p>
+
+<p>The proposed numeric parameter set for SiC device simulation is:</p>
+
+<pre>
+Math {
+  Extrapolate		    * Always good for Quasistationary simulations,
+       			    * should be used with care in Transient 
+  Iterations=15	            * Default is 50
+  ExtendedPrecision(80)     * Floating-point operations with 80 bits on Linux  
+  NotDamped=20		    * Avoids solution correction damping
+  RHSMin=1e-15		    * RHS often below default 1e-5 with ExtendedPrecision
+  ErrRef(electron)=1E-2     * Tightened computation error controls help
+  ErrRef(hole) = 1E-2       * simulator to converge better
+  Method=Super&#124;ILS(set=25)  * Linear solver selection, choose either Super or ILS  
+  ILSrc= &quot;set (25) {     
+    iterative(gmres(100), tolrel=1e-10, tolunprec=1e-4, tolabs=0, maxit=200);
+    preconditioning(ilut(1.5e-6,-1), right);
+    ordering(symmetric=nd, nonsymmetric=mpsilst);
+    options(compact=yes, linscale=0, refineresidual=10, verbose=0);
+  };&quot;
+
+  Transient=BE     	    * Switches on backward Euler transient scheme
+  TensorGridAniso(aniso)    * Fast and efficient Aniso approximation
+  
+  RefDens_eGradQuasiFermi_ElectricField_HFS= 1e12
+  RefDens_hGradQuasiFermi_ElectricField_HFS= 1e12
+}
+</pre>
+
+<p>Table 4 shows the attainable numeric accuracy, which is relevant to the 
+<tt>ExtendedPrecision</tt> arithmetic, specified by <tt>ExtendedPrecision(&lt;EP&gt;)</tt> 
+in the <tt>Math</tt> section.</p>
+
+<table width="90%">
+<caption>Table 4. Attainable accuracy for specified ExtendedPrecision arithmetic.</caption>
+
+<tr>
+<th>Math command</th>
+<th>Size</th>
+<th>Accuracy</th>
+</tr>
+
+<tr>
+<td><tt>-ExtendedPrecision</tt></td>
+<td>64 bits (default)</td>
+<td>2.22x10<sup>-16</sup></td>
+</tr>
+
+<tr>
+<td><tt>ExtendedPrecision<br />ExtendedPrecision(80)</tt></td>
+<td>80 bits (Intel/Linux)</td>
+<td>1.08x10<sup>-19</sup></td>
+</tr>
+
+<tr>
+<td><tt>ExtendedPrecision(128)</tt></td>
+<td>128 bits</td>
+<td>4.93x10<sup>-32</sup></td>
+</tr>
+
+<tr>
+<td><tt>ExtendedPrecision(256)</tt></td>
+<td>256 bits</td>
+<td>1.22x10<sup>-63</sup></td>
+</tr>
+</table>
+
+<p>The <tt>TensorGridAniso(Aniso)</tt> approximation is suggested when the physical 
+parameter anisotropy (mobility, permittivity, and so on) of the device is taken into 
+consideration.</p>
+
+<p><tt>Transient=BE</tt> activates the backward Euler transient method instead of 
+the default TRBDF2 method, which makes simulations run faster.</p>
+
+<p>Use <tt>Method=Super</tt> or <tt>Method=ILS(set=5)</tt> with the dedicated solver 
+parameter set, which works more reliably in the case of wide-bandgap device simulations. 
+The SUPER solver is good for small- or medium-sized 2D tasks. The ILS solver is 
+more suitable for large 2D or 3D tasks.</p>
+
+<p>A wide-bandgap material requires higher computational accuracy than common
+silicon device simulations. This is achieved by tightening the reference error
+control criteria <tt>ErrRef(electron)=1E-2</tt> and <tt>ErrRef(hole)=1E-2</tt>.</p>
+
+<p>For the Newton solver, typically, you should limit the number of nonlinear 
+iterations to a small enough value, such as <tt>Iterations=15</tt>, and also avoid 
+solution damping by specifying the number of nondamped iterations to be higher than 
+the number of allowed Newton iterations (<tt>NotDamped=20</tt>).</p>
+
+<p>Use <tt>RHSMin=1e-15</tt> to ensure the Newton solver exits as soon as an 
+integral relative error criterion for the solution quantities is achieved.</p>
+
+<p>For device simulations that use the velocity high-field saturation model,
+to avoid  convergence instablities within regions with small densities, driving force
+smoothing between the default driving force (<tt>GradQuasiFermi</tt>) and the electric 
+field is suggested. The carrier density, used within the smoothing procedure, is chosen 
+according to a given <tt>RefDens_e(h)GradQuasiFermi_ElectricField_HFS</tt> value, 
+provided in the <tt>Math</tt> section.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>15.5 Application Example: SiC PiN Diode Breakdown</h1>
+
+<p>This example demonstrates the simulation of the breakdown of a SiC PiN diode.</p>
+
+<!--=========================-->
+<h2>15.5.1 Project Configuration</h2>
+
+<p>The simulations are organized as a Sentaurus Workbench project (see Figure&nbsp;3).</p>
+
+<p><a href="images/sd_sic_project.png"><img src="images/sd_sic_project.png" width="570" 
+alt="SiC PiN diode project in Sentaurus Workbench" /></a></p>
+
+<p class="caption">Figure 3. Organization of SiC PiN diode project in Sentaurus Workbench. 
+(Click image for full-size view.)</p>
+
+<p>The project consists of Sentaurus Process and Sentaurus Device. The description of 
+the process simulation part is provided in the Sentaurus Process module, 
+<a href="../sp/sp_15.html">Section&nbsp;15. Special Focus: SiC Process Simulation</a>.</p>
+
+<p>This section focuses on the device simulation part.</p>
+
+<!--=========================-->
+<a name="52"></a>
+<h2>15.5.2 Mesh Construction for Device Simulation</h2>
+
+<p>Requirements for mesh construction for process and device simulations are different. 
+For device simulations, the mesh must be refined within the areas of spatial 
+nonuniformities, such as large net doping profile gradients, material interfaces, and 
+regions within the device where some solution variables might experience large 
+perturbations (areas with a strong electric field and large carrier impact ionization).</p>
+
+<p>In this project, mesh generation for the device simulation is performed within 
+Sentaurus Process as the last step of the process flow.</p>
+
+<p>The mesh steps for the global domain discretization (<tt>stepx</tt> and <tt>stepy</tt>) 
+are computed according to the general rule implemented in the quadtree recursive space 
+decomposition algorithm, which is described in the Sentaurus Mesh module, 
+<a href="../smesh/smesh_02.html">Section&nbsp;2. Axis-Aligned Mesh Refinement</a>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd" startExpr="set sx*" endExpr="set stepy*" -->
+<pre>
+set sx @&lt;epithick+5&gt;@
+set sy @width@ 
+
+set stepx [expr min(2, $sx/pow(2, 4))]
+set stepy [expr min(6, $sy/pow(2, 4))]
+</pre>
+<!-- grep end -->
+
+<p>Two dedicated refinement boxes are defined:</p>
+
+<ul>
+<li><tt>active_box</tt> covers the active device domain, which includes the entire 
+p-n junction and also extends slightly away towards the device periphery.</li>
+
+<li><tt>corner_box</tt> is confined around the mask corner and covers the 
+lateral part of the p-n junction, which is assumed to be a region of the strongest 
+carrier impact ionization (see Figure&nbsp;4).</li>
+</ul>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd" startExpr="*refinement boxes*" endExpr="#endif*" -->
+<pre>
+#-- refinement boxes
+#if @Overlap@
+refinebox name= corner_box SiliconCarbide min= {-1 @&lt;awidth+LJTE2-5.&gt;@} \
+          max= {@epithick@ @&lt;awidth+LJTE2+10.&gt;@} \
+          xrefine= [expr $stepx/4] yrefine= [expr $stepy/4]
+refinebox name= active_box SiliconCarbide min= {-1 0} \
+          max= {$sx @&lt;awidth+LJTE2+15.&gt;@} yrefine=[ expr $stepy/2]
+#else
+refinebox name= corner_box SiliconCarbide min= {-1 @&lt;awidth+LJTE1+LJTE2-25.&gt;@} \
+          max= {@epithick@ @&lt;awidth+LJTE1+LJTE2+10.&gt;@} \
+          xrefine= [expr $stepx/4] yrefine= [expr $stepy/4]
+refinebox name= active_box SiliconCarbide min= {-1 0} \
+          max= {$sx @&lt;awidth+LJTE1+LJTE2+15.&gt;@} yrefine=[ expr $stepy/2]
+#endif
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sd_sic_cornerbox.png"><img src="images/sd_sic_cornerbox.png" width="550" 
+alt="Refinement box at junction corner" /></a></p>
+
+<p class="caption">Figure 4. Variant of the device structure showing the local refinement 
+box location, which covers the p-n junction corner. (Click image for full-size view.)</p>
+
+<p>Finally, the usual mesh refinements on net doping and at the material and contact 
+interfaces are defined. Afterwards, the device is remeshed:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd" startExpr="refinebox name= doping*" endExpr="grid remesh*" -->
+<pre>
+refinebox name= doping SiliconCarbide Adaptive \
+	refine.fields= {NetActive} max.asinhdiff= {NetActive= 1.0} \
+	refine.min.edge= {0.015 0.1} refine.max.edge= {$stepx $stepy}
+refinebox interface.mat.pairs= {SiliconCarbide Oxide} \
+	min.normal.size= 0.001 normal.growth.ratio= 2
+refinebox interface.mat.pairs= {SiliconCarbide Aluminum} \
+	min.normal.size= 0.001 normal.growth.ratio= 2
+grid remesh info= 2
+</pre>
+<!-- grep end -->
+
+<p>Figure 5 shows the constructed mesh for the device simulation, with a part 
+of the structure magnified to demonstrate the accurate interface and junction 
+mesh refinements.</p>
+
+<p><a href="images/sd_sic_mesh_zoom.png"><img src="images/sd_sic_mesh_zoom.png" width="550" 
+alt="Final mesh for SiC device simulation" /></a></p>
+
+<p class="caption">Figure 5. Mesh constructed for the device simulation showing 
+the interface and junction mesh refinements. The x/y aspect ratio has been changed 
+for viewing convenience. (Click image for full-size view.)</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<!--=========================-->
+<h2>15.5.3 Device Simulation Parameters</h2>
+
+<p>Several parameters in Sentaurus Device allow you to have more flexibility 
+when studying the effect of different options:</p>
+
+<ul>
+<li><tt>EP</tt> controls extended-precision arithmetics in the <tt>Math</tt> section. 
+Suggested values are 80 or 128.</li>
+ 
+<li><tt>extra</tt> controls the solution extrapolation. If <tt>extra=0</tt>, solution 
+extrapolation is switched off. If <tt>extra=1</tt>, linear solution extrapolation will be used. 
+If <tt>extra=2</tt>, quadratic extrapolation will be applied.</li>
+
+<li><tt>slae</tt> specifies the linear solver to use. If <tt>slae=ILS</tt>, the 
+iterative linear solver ILS is used with the dedicated solver parameter set. 
+Otherwise, the direct linear solver <tt>Super</tt> will be activated.</li>
+
+<li><tt>amodel</tt> selects the avalanche model to be used (Hatakeyama or Okuto).</li>
+
+<li><tt>update</tt> specifies whether the Newton solver should check only the 
+relative error criterion is fulfilled (<tt>update=0</tt>), or both the error 
+and RHSmin criteria are fulfilled (<tt>update!=0</tt>).</li>
+
+<li><tt>res</tt> sets the external resistor value, connected in series to the cathode 
+electrode.</li>
+
+<li><tt>aniso</tt> switches on (<tt>aniso=1</tt>) or switches off (<tt>aniso=0</tt>) 
+the corresponding models and numeric approximation to account for SiC material anisotropy.</li>
+</ul>
+
+<p>This project uses 80-bit extended precision (<tt>EP=80</tt>), no solution 
+extrapolation, ILS as the linear solver, the Okuto model for the carrier avalanche 
+generation, and the convergence criterion checks only on the solutions error 
+(<tt>update=0</tt>).</p>
+
+<p>The SiC material parameter anisotropy is taken into consideration (<tt>aniso=1</tt>).</p>
+
+<p>To account for a 4&#176; wafer miscut angle, the following anisotropic direction 
+is used for the mobility and dielectric permittivity model parameters:</p>
+<pre>
+Aniso (
+  Mobility 
+  Poisson
+  direction(SimulationSystem)= (0.998 0.070 0)
+)
+</pre>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/4H-SiC_PiN/BV_des.cmd">
+BV_des.cmd</a>.</p>
+
+<!--=========================-->
+<h2>15.5.4 Simulation Results</h2>
+
+<p>Figure 6 and Figure 7 show the impact ionization and the current density profile 
+distributions at the breakdown location, obtained for two device constructions 
+&ndash; Al implantations distributed over two different implantation openings 
+(<tt>Overlap=0</tt>) and Al implantations into the same implantation window 
+(<tt>Overlap=1</tt>).</p>
+
+<p><a href="images/sd_sic_ii.png"><img src="images/sd_sic_ii.png" width="550" 
+alt="Total impact ionization rate distributions" /></a></p>
+
+<p class="caption">Figure 6. Distribution of the total impact ionization rate 
+under breakdown condition for the two device structures under consideration. 
+(Click image for full-size view.)</p>
+
+<p><a href="images/sd_sic_curdens.png"><img src="images/sd_sic_curdens.png" width="550" 
+alt="Total current density distributions" /></a></p>
+
+<p class="caption">Figure 7. Distribution of the total current density and current 
+potential isolines under breakdown condition for the two device structures under 
+consideration. (Click image for full-size view.)</p>
+
+<p>Figure 8 and Figure 9 illustrate the total, active, and incomplete ionized Al 
+and N doping profiles, taken along the cross section, indicated by the dashed line 
+on the 2D plot.</p>
+
+<p><a href="images/sd_sic_al.png"><img src="images/sd_sic_al.png" width="550" 
+alt="Aluminum dopant distributions" /></a></p>
+
+<p class="caption">Figure 8. Total, active, and incomplete ionized Al profiles 
+along the cutline, indicated by dashed line in the 2D plot (top). 
+(Click image for full-size view.)</p>
+
+<p><a href="images/sd_sic_nitrogen.png"><img src="images/sd_sic_nitrogen.png" width="550" 
+alt="Nitrogen dopant distributions" /></a></p>
+
+<p class="caption">Figure 9. Distributions of the N total, active, and incomplete 
+ionized profiles along the cutline, indicated by dashed line in the 2D plot (top). 
+The ionized profiles show how the N dopant is split between hexagonal (&quot;h&quot;) 
+and cubic (&quot;k&quot;) lattice sites. (Click image for full-size view.)</p>
+
+<p>Figure 10 shows the corresponding device I&ndash;V characteristics, obtained 
+for two different device constructions.</p>
+
+<p><a href="images/sd_sic_iv.png"><img src="images/sd_sic_iv.png" width="550" 
+alt="Device I-V characteristics" /></a></p>
+
+<p class="caption">Figure 10. I&ndash;V characteristics obtained for different device 
+constructions. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_14.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_16.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Workbench 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_02.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Workbench<br />1. Getting Started</h1>
+
+<p>
+ <a href="#1">1.1 Overview</a><br />
+ <a href="#2">1.2 Starting Sentaurus Workbench</a><br />
+ <a href="#3">1.3 Attaching Project Directories</a><br />
+ <a href="#4">1.4 Project Structure: Traditional and Hierarchical Organizations</a> 
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To present an introduction to Sentaurus Workbench.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>1.1 Overview</h1>
+
+<p>Sentaurus Workbench is the graphical front end that integrates TCAD Sentaurus 
+simulation tools into one environment. Simulations are organized comprehensively 
+into projects. Sentaurus Workbench automatically manages the information flow, 
+which includes preprocessing user input files, parameterizing projects, setting 
+up and executing tool instances, and visualizing results.</p>
+
+<p>Sentaurus Workbench allows you to define parameters and variables to run 
+comprehensive parametric analyses. The resulting data can be used with statistical 
+and spreadsheet applications.</p>
+
+<!--================================================-->
+<a name="2"></a> 
+<h1>1.2 Starting Sentaurus Workbench</h1>
+
+<p>Before starting Sentaurus Workbench, you must set the <tt>STDB</tt> environment 
+variable to any directory path where you have write access. You should specify a 
+location with plenty of disk space.</p> 
+
+<p>In this module, the <tt>DB</tt> directory under your home directory will be used 
+to set <tt>STDB</tt>. To create such a directory and to set <tt>STDB</tt>, use the 
+following C shell commands:</p>
+
+<pre>
+mkdir /home/&lt;your_login&gt;/DB       
+setenv STDB /home/&lt;your_login&gt;/DB
+</pre>
+
+<p>If you use the Bash shell, then use the commands:</p>
+
+<pre>
+mkdir /home/&lt;your_login&gt;/DB      
+export STDB=/home/&lt;your_login&gt;/DB 
+</pre>
+
+<p>To start Sentaurus Workbench, enter:</p>
+
+<pre>
+swb &amp;
+</pre>
+
+<p>If <tt>STDB</tt> is not set, then you will be prompted at the beginning of 
+a Sentaurus Workbench session to choose the <tt>STDB</tt> directory to be 
+used for that session only (see Figure 1).</p>
+
+<p><img src="images/swb_stdb.png" width="422" height="275" alt="Choose STDB directory dialog box" /></p>
+
+<p class="caption">Figure 1. Choose STDB directory dialog box.</p>
+
+<p>When Sentaurus Workbench is launched, it looks at the value of the 
+<tt>STDB</tt> environment variable and displays the directory contents 
+in the projects browser (Projects panel) (see Figure&nbsp;2, blue box). 
+In addition, the <tt>Applications_Library</tt> directory appears in the
+Projects panel (see Figure&nbsp;2, red box).</p> 
+
+<p><a href="images/swb_main.png"><img src="images/swb_main.png" width="570" 
+alt="Sentaurus Workbench user interface" /></a></p>
+
+<p class="caption">Figure 2. Main window of Sentaurus Workbench. (Click image for 
+full-size view.)</p>
+
+<p>The <tt>Applications_Library</tt> directory contains many projects that illustrate 
+how to use Sentaurus tools including the projects used in this tutorial.</p>
+
+<p>The Sentaurus Applications Library package can be downloaded and installed 
+with Sentaurus binaries by the person administering the software installation.</p> 
+
+<p>Valid Sentaurus Workbench projects have the 
+<img class="imgline" src="images/icons/project.png" width="16"  
+alt="Icon for valid traditional projects" /> or 
+<img class="imgline" src="images/icons/project_h.gif" width="16" height="14" 
+alt="Icon for valid hierarchical projects" /> icon preceding the name of a 
+project with traditional or hierarchical organization, respectively. The color of the 
+icon indicates the status of the project.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Attaching Project Directories</h1>
+
+<p>In addition to displaying the projects in the <tt>$STDB</tt> directory, projects 
+located elsewhere can be <em>attached</em>, that is, displayed as read-only projects 
+in the projects browser.</p>
+
+<p>To attach a project directory:</p>
+ 
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>Attach Root</strong>.</li>
+<li>Select a project directory.</li>
+</ol>
+
+<p class="note">This procedure can be repeated to attach up to five project directories. 
+You cannot execute projects under any attached directories (roots). These projects must 
+first be copied to a directory under the <tt>$STDB</tt> directory.</p>
+ 
+<p> To detach a project directory:</p>
+ 
+<ol>
+<li>Select a project directory.</li>
+<li>Choose <strong>Edit</strong> &gt; <strong>Detach Root</strong>.</li>
+</ol>
+
+<p>Only attached directories can be detached. The projects in the <tt>$STDB</tt> 
+directory cannot be detached, but they can be deleted permanently.</p> 
+
+<p>When exiting Sentaurus Workbench, all attached directories are detached 
+automatically.</p>
+
+<p>To ensure directories are always attached:</p>
+
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>Preferences</strong>, or press the F12 key.</li>
+<li>In the SWB Preferences dialog box, expand <strong>Miscellaneous</strong> &gt; 
+<strong>Attached Roots on Start Up</strong>.</li>
+<li>Double-click one the <strong>Root</strong> directories.</li>
+<li>In the Choose Directory dialog box, navigate to the required directory, and 
+click <strong>OK</strong>.</li>
+<li>When you have finished specifying all the required directories, click 
+<strong>Apply</strong>.</li>
+</ol>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>1.4 Project Structure: Traditional and Hierarchical Organizations</h1>
+
+<p class="note">If you are a new user of TCAD Sentaurus tools, then omit this 
+section and return to it when you become familiar with tool usage.</p>
+
+<p>Sentaurus Workbench supports two different project organizations:</p>
+
+<ul>
+<li>Traditional, where all project data is placed in one directory</li>
+<li>Hierarchical, where core project files, and simulation results are separated</li>
+</ul>
+
+<p>While the traditional project organization is very simple and easy to use, it has 
+limitations when working with large projects. With the growing number of splits, 
+resulting in hundreds or thousands of experiments, Sentaurus Workbench starts to slow down on 
+specific tasks, such as copying, pasting, and deleting experiments, as well as cleaning 
+up nodes or the entire project.  Another issue with the traditional project organization 
+is that the simulation tree renumbering leads to the loss of results.</p>
+
+<p>The hierarchical project organization addresses these limitations. It separates the 
+core project files (such as tool primary files and the simulation tree file <tt>gtree.dat</tt>) 
+and the results. For each node of the simulation tree, its files are stored in a unique folder 
+for each node directory (see Figure&nbsp;3).</p>
+
+<p><a href="images/swb_orghierarch.png"><img src="images/swb_orghierarch.png" 
+width="570" alt="Hierarchical organization of Sentaurus Workbench project" /></a></p>
+
+<p class="caption">Figure 3. Hierarchical organization of a Sentaurus Workbench 
+project, where core project files are separated from individual node files. 
+(Click image for full-size view.)</p>
+
+<p>You can even completely separate all primary files from all result files in general, 
+by specifying a different root directory for any project output file. To do so, set the 
+user preferences <strong>Project</strong> &gt; <strong>Organization</strong> &gt; 
+<strong>Settings for Hierarchical Project Organization</strong> &gt; 
+<strong>Project Output Files Location</strong> accordingly. For example, assume your 
+project resides under <tt>@STDB@/tmp/myproject</tt> and you set 
+<strong>Project Output Files Location</strong> to <tt>/scratch/db</tt>, then all 
+project results will be written to <tt>/scratch/db/tmp/myproject/results</tt>.</p>
+                                
+<p>The organization of the currently opened project is indicated in the Sentaurus 
+Workbench window title and also by the bisque background color (see Figure&nbsp;4). 
+The background and foreground colors can be adjusted in the user preferences by expanding 
+<strong>Project</strong> &gt; <strong>Organization</strong> &gt; 
+<strong>GUI Settings for Hierarchical Projects</strong>.</p>
+
+<p><a href="images/swb_orgstatus.png"><img src="images/swb_orgstatus.png" width="570" 
+alt="Indication of hierarchical project in main title of window" /></a></p>
+
+<p class="caption">Figure 4. Hierarchical project organization is indicated in the 
+window title and by a different background color. (Click image for full-size view.)</p>
+
+<p>To help recognize projects with hierarchical organization in the projects browser,
+such projects have a distinct project icon (see Figure&nbsp;5).</p>
+
+<p><img src="images/swb_projbrowse.png" width="250" alt="Hierarchical project icon"/></p>
+
+<p class="caption">Figure 5. Unique icon identifying project with hierarchical 
+organization in projects browser.</p>
+
+<p>Pressing Ctrl+N creates a new project assuming the project organization selected
+in preferences, that is, choose <strong>Edit</strong> &gt; <strong>Preferences</strong>, 
+and then expand <strong>Project</strong> &gt; <strong>Organization</strong> &gt; 
+<strong>Default Project Organization</strong> (traditional by default). 
+Alternatively, you can choose <strong>Project</strong> &gt; <strong>New</strong> and then 
+select the required project organization from the submenu. There is also a toolbar button 
+for new project creation, which allows you to select the project organization (see Figure&nbsp;6).</p>
+
+<p><img src="images/swb_newproj.png" width="203" height="128" alt="New hierarchical project"/></p>
+
+<p class="caption">Figure 6. Toolbar button to create a new project with either 
+traditional or hierarchical organization.</p>
+
+<p>To convert a project with traditional organization to hierarchical organization, either 
+choose <strong>Project</strong> &gt; <strong>Operations</strong> &gt; 
+<strong>Convert to Hierarchical</strong>, or click the toolbar button shown in Figure&nbsp;7.</p>
+
+<p><img src="images/swb_convert.png" width="190" height="71" 
+alt="Toolbar button for converting traditional project to hierarchical project"/></p>
+
+<p class="caption">Figure 7. Toolbar button (red box) for converting project with traditional 
+organization to hierarchical organization.</p>
+
+<p>After a project conversion is triggered, Sentaurus Worbkench opens the Convert to Hierarchical 
+dialog box, which has several conversion options (see Figure&nbsp;8).</p>
+
+<p><img src="images/swb_hierarch_popup.png" width="262" height="220" 
+alt="Convert to Hierarchical dialog box" /></p>
+
+<p class="caption">Figure 8. Convert to Hierarchical dialog box provides options about 
+how to convert a project from traditional to hierarchical organization.</p>
+
+<p>By default, the project is converted to hierarchical organization and its results are 
+relocated to the corresponding node folders. If you select <strong>Convert Command Files</strong>, 
+then Sentaurus Workbench goes through all tool input files and adapts the input file 
+patterns required for hierarchical project organization.</p>
+
+<p>If you select <strong>Save Backup</strong>, then a copy of the project with traditional 
+organization is created with the indicated name.</p>
+
+<p>If you select <strong>Display Changes</strong>, then Sentaurus Workbench launches a 
+<em>diff</em> tool for every tool input file changed during the conversion (see Figure&nbsp;9).</p>
+
+<p><a href="images/swb_tkdiff.png"><img src="images/swb_tkdiff.png" width="570" 
+alt="TkDiff tool compares inputs before and after project conversion" /></a></p>
+
+<p class="caption">Figure 9. Difference between tool inputs is illustrated using TkDiff 
+(left) before conversion and (right) after conversion. (Click image for full-size view.)</p>
+ 
+<p class="note">You can change the default settings of the Convert to Hierarchical dialog box 
+and the <em>diff</em> tool in the user preferences under <strong>Project</strong> &gt; 
+<strong>Organization</strong> &gt; <strong>Converter From Traditional Project Organization</strong> 
+and <strong>Utilities</strong> &gt; <strong>Diff Tool</strong>, respectively.</p>
+
+<p>The hierarchical project organization allows you to renumber the simulation tree nodes 
+without losing simulation results. To apply node renumbering, choose <strong>Nodes</strong> 
+&gt; <strong>Renumber All Nodes</strong>, or press Ctrl+Alt+R.</p>
+
+<p>To support the hierarchical project organization, the Sentaurus Workbench preprocessor 
+substitutes <tt>@...@</tt> references inside node files with their corresponding relative 
+path to the current node folder and also uses some dedicated reference constructions to 
+provide the correct path to node outputs, as shown in Table&nbsp;1.</p>
+
+<p>For projects that must be converted to hierarchical organization, some changes to the 
+tool inputs are usually required to reflect the difference between the traditional and 
+hierarchical project data locations.</p>
+
+<p>For further explanations about the reserved keywords, see 
+<a href="swb_09.html#3">Section&nbsp;9.3 Reserved Keywords</a>.</p>
+
+<table>
+<caption>Table 1. Preprocessor references and their substitutions for different 
+project organizations.</caption>
+
+<tr>
+ <th>@...@ syntax</th>
+ <th>Path type</th>
+ <th>Substitution in traditional project organization</th>
+ <th>Substitution in hierarchical project organization</th>
+</tr>
+
+<tr>
+ <td><tt>@prjorg@</tt></td>
+ <td>NA</td>
+ <td><tt>traditional</tt></td>
+ <td><tt>hierarchical</tt></td>
+</tr>
+
+<tr>
+ <td><tt>@pwd@</tt></td>
+ <td>Absolute</td>
+ <td>Full path to current project</td>
+ <td>Full path to current project</td>
+</tr>
+
+<tr>
+ <td><tt>@pwdout@</tt></td>
+ <td>Absolute</td>
+ <td><tt>@pwdout@=@pwd@</tt></td>
+ <td>Common storage (default): <tt>@pwdout@=@pwd@</tt></td>
+</tr>
+
+<tr>
+ <td><tt>@[abspath &lt;expression&gt;]@</tt></td>
+ <td>Absolute</td>
+ <td>Adds full path to <tt>&lt;expression&gt;</tt> assuming traditional organization</td>
+ <td>Adds full path to <tt>&lt;expression&gt;</tt> assuming hierarchical organization</td>
+ </tr>
+
+<tr>
+ <td><tt>@[relpath &lt;expression&gt;]@</tt></td>
+ <td>Relative</td>
+ <td>Adds relative path to <tt>&lt;expression&gt;</tt> assuming traditional organization</td>
+ <td>Adds relative path to <tt>&lt;expression&gt;</tt> assuming hierarchical organization</td>
+</tr>
+</table>
+
+<p>For traditional project organization, the core project files and the reproducible 
+(output) data are stored in the same project directory, referred to as <tt>@STDB@</tt>. 
+Therefore, <tt>@pwd@</tt> and <tt>@pwdout@</tt> return the same absolute path to 
+the project data.</p>
+
+<p>For hierarchical project organization, however, the location of the project output 
+files can be set to a different directory in the user preferences. Therefore, <tt>@pwdout@</tt> 
+can take a completely different path from <tt>@pwd@</tt>.</p>
+
+<p>By using predefined Tcl preprocessor commands for absolute and relative paths, Sentaurus 
+Workbench has instructions to prepend <tt>&lt;expression&gt;</tt> with either an absolute 
+path or a relative path.</p>
+
+<p>For example, the following line in a Sentaurus Visual command file:</p>
+
+<pre>
+load_file @[relpath IdVg_n@node|sdevice@_des.plt]@ -name PLT(@node|sdevice@)
+</pre>
+
+<p>is replaced in a project with traditional organization with:</p>
+
+<pre>
+load_file IdVg_n45_des.plt -name PLT(45)
+</pre>
+
+<p>and in a project with hierarchical organization with:</p>
+
+<pre>
+load_file ../45/IdVg_n45_des.plt -name PLT(45)
+</pre>
+
+<p>A similar instruction with the <tt>abspath</tt> command:</p>
+
+<pre>
+load_file @[abspath IdVg_n@node|sdevice@_des.plt]@ -name PLT(@node|sdevice@)
+</pre>
+
+<p>is replaced in a project with traditional organization with:</p>
+
+<pre>
+load_file /path/to/prj/IdVg_n45_des.plt -name PLT(45)
+</pre>
+
+<p>and in a project with hierarchical organization with:</p>
+
+<pre>
+load_file /path/to/prj/results/nodes/45/IdVg_n45_des.plt -name PLT(45)
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_02.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

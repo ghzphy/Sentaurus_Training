@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; jEdit 4. Notes and Limitations</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">jEdit<br />4. Notes and Limitations</h1>
+
+<p>
+ <a href="#1">4.1 Sentaurus Process Mode and Sentaurus Interconnect Mode</a><br />
+ <a href="#2">4.2 Sentaurus Device Mode</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To provide information about the limitations of the Sentaurus Process mode, 
+Sentaurus Interconnect mode, and Sentaurus Device mode.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Sentaurus Process Mode and Sentaurus Interconnect Mode</h1>
+
+<p>Syntax highlighting is activated only when certain additional conditions (not
+imposed by Sentaurus Process or Sentaurus Interconnect) are met:</p>
+
+<ul>
+<li>Placement of the equal sign: No space between the keyword and the equal sign,
+and at least one space between the equal sign and the value:<br />
+<ul>
+<li><tt><span class="green">name=</span> mask6</tt> (highlight)</li>
+<li><tt>name = mask6</tt> (no highlight)</li>
+<li><tt>name=mask6</tt> (no highlight)</li>
+</ul></li>
+<li>Two conditions after the hash (#):<br />
+<ul>
+<li><tt><span class="blue">#header</span></tt> (highlight as a Sentaurus Workbench variable)</li>
+<li><tt><span class="red">#this is a comment line</span></tt> (highlight as a comment line)</li>
+</ul></li>
+<li>Aliases and abbreviations are commonly not highlighted:<br />
+<ul>
+<li><tt><span class="green">location=</span></tt> (highlight)</li>
+<li><tt>loc=</tt> (no highlight)</li>
+</ul></li>
+</ul>
+
+<p><a href="images/je_sprocess_input.png"><img src="images/je_sprocess_input.png" 
+width="550" alt="Syntax highlighting in Sentaurus Process" /></a></p> 
+                                                                        
+<p class="caption">Figure 1. Syntax highlighting in 
+Sentaurus Process. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Sentaurus Device Mode</h1>
+
+<p>Syntax highlighting is activated only when certain additional conditions (not imposed
+by Sentaurus Device) are met:</p>
+
+<ul>
+<li> Two conditions after the hash (#):<br />
+<ul>
+<li><tt><span class="blue">#header</span></tt> (highlight as a Sentaurus Workbench variable)</li>
+<li><tt><span class="red">#this is a comment line</span></tt> (highlight as a comment line)</li>
+</ul></li>
+<li> Sentaurus Device accepts certain abbreviations and tolerates certain misspelled
+keywords. However, aliases and abbreviations are commonly not highlighted:<br />
+<ul>
+<li><tt><span class="fuchsia">EffectiveIntrinsicDensity</span></tt> (highlight)</li>
+<li><tt>EffectiveIntrinsicDen</tt> (no highlight)</li>
+</ul></li>
+<li>Keywords are context sensitive, that is, a keyword will be highlighted only
+if it appears inside the section to which it belongs. For example, <tt>SRH</tt> 
+will be highlighted in the <tt>Recombination()</tt> section but not in the
+<tt>Mobility()</tt> section. Therefore, the parts of the code that do not have
+highlighting potentially follow incorrect syntax.</li>
+</ul>
+
+<p>A separate mode for the parameter files of Sentaurus Device (<tt>.par</tt>) 
+is available as well. The mode simply describes the general file structure and 
+ensures that indentation is correct. No special keywords are coded; therefore, 
+command completion is very limited.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="jedit_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

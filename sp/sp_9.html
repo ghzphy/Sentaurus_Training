@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 9. Special Focus: Meshing</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_8.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_10.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />9. Special Focus: Meshing</h1>
+
+<p>
+ <a href="#1">9.1 Overview</a><br />
+ <a href="#2">9.2 Initialization</a><br />
+ <a href="#3">9.3 Remeshing</a><br />
+ <a href="#4">9.4 Refinement Boxes</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate the most important remeshing options available in Sentaurus Process.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>9.1 Overview</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus 
+Workbench project <tt>Remeshing</tt>. The complete project can be investigated 
+from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sprocess/Remeshing</tt>.</p>
+
+<p>To show how to work with the capabilities of Sentaurus Mesh in Sentaurus Process, 
+a simple structure is remeshed with various meshing options.</p>
+
+<p>The generated mesh is anisotropic. The mesh spacing is controlled with the 
+<tt>set.min.normal.size</tt> and <tt>set.normal.growth.ratio</tt> arguments 
+of the <tt>grid</tt> command.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>9.2 Initialization</h1>
+
+<p>The initial (line) mesh and a simple structure are defined:</p>
+
+<pre>
+line x location= -0.15 spacing=0.01  tag=GateTop    
+line x location= -0.02 spacing=0.005                 
+line x location= -0.01 spacing=0.005 tag=OxTop      
+line x location=  0.0  spacing=0.005 tag=SiTop      
+line x location=  0.05 spacing=0.01                  
+line x location=  0.5  spacing=0.05                 
+line x location=  1.0  spacing=0.2   tag=SiBottom   
+                         
+line y location= 0.0   spacing=0.05  tag=Mid        
+line y location= 0.1   spacing=0.05  tag=Gate       
+line y location= 0.4   spacing=0.05  tag=Right      
+    
+region Silicon     xlo=SiTop   xhi=SiBottom ylo=Mid yhi=Right
+region Oxide       xlo=OxTop   xhi=SiTop    ylo=Mid yhi=Right
+region PolySilicon xlo=GateTop xhi=OxTop    ylo=Mid yhi=Gate
+
+init concentration=1.00e+15 field=Phosphorus
+
+struct tdr=grid_mg0
+</pre>
+
+<p>See <a href="sp_3.html#2">Section 3.2 Defining the Initial 2D Grid and Simulation Domain</a> for details.</p>
+
+<p><img src="images/sp_mgoals_initial.png" width="516" height="358" alt="Initial line mesh" /></p>
+
+<p class="caption">Figure 1. Initial line mesh.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>9.3  Remeshing</h1>
+
+<p>After creating the initial tensor mesh, the mesh can be refined with:</p>
+
+<pre>
+grid set.min.normal.size=0.01 set.normal.growth.ratio=2.0
+grid remesh
+</pre>
+
+<p>The normal mesh spacing at the interface is set with <tt>set.min.normal.size</tt>. 
+Away from the interface, the mesh expands and the expansion rate is set with 
+<tt>set.normal.growth.ratio</tt>.</p>
+
+<p><img src="images/sp_mgoals_remesh1.png" width="516" height="358" 
+alt="Remeshing with normal mesh spacing" /></p>
+
+<p class="caption">Figure 2. Remeshing with normal mesh spacing (0.01).</p>
+
+<p>To highlight the effect of the normal mesh spacing, the resulting mesh for a five-times 
+finer normal mesh spacing is shown:</p>
+
+<pre>
+grid set.min.normal.size=0.002 set.normal.growth.ratio=2.0
+grid remesh
+</pre>
+
+<p><img src="images/sp_mgoals_remesh2.png" width="516" height="358" 
+alt="Remeshing for five-times finer normal mesh spacing" /></p>
+
+<p class="caption">Figure 3. Remeshing for five-times finer normal mesh 
+spacing (0.002).</p>
+
+<p>To highlight the effect of the expansion rate, the resulting mesh for a lower expansion 
+rate is given:</p>
+
+<pre>
+grid set.min.normal.size=0.002 set.normal.growth.ratio=1.2
+grid remesh
+</pre>
+
+<p><img src="images/sp_mgoals_lowexpans.png" width="516" height="358" 
+alt="Remeshing with lower expansion rate of mesh" /></p>
+
+<p class="caption">Figure 4. Remeshing with lower expansion rate of mesh.</p>
+
+<p>The effects of the various settings are clearly observed in Figure&nbsp;5.</p>
+
+<p><img src="images/sp_mgoals_mesh_anima.gif" width="516" height="358" 
+alt="Animation of different meshing and remeshing steps" /></p>
+
+<p class="caption">Figure 5. Animation of different meshing and remeshing 
+steps.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>9.4 Refinement Boxes</h1>
+
+<p>In process simulations, a good resolution at interfaces is important and certain 
+regions in the bulk must be refined properly, for example, to adequately resolve a 
+steep doping profile.</p>
+
+<p>This can be accomplished with refinement boxes:</p>
+
+<pre>
+refinebox min= {-0.1 0.05} max= {0.1 0.15} xrefine= {0.015} \
+  yrefine= {0.015} all add
+grid remesh
+</pre>
+
+<p>The extent of the refinement box is defined with the <tt>min</tt> and 
+<tt>max</tt> arguments.</p>
+
+<p>The <tt>xrefine</tt> and <tt>yrefine</tt> arguments control the mesh spacing. 
+If only one number is given, the mesh spacing is constant throughout the refinement 
+box. The option <tt>all</tt> activates the refinement box for all materials, and the 
+option <tt>add</tt> ensures that previously defined refinement boxes are maintained.</p>
+
+<p><img src="images/sp_mgoals_refbox.png" width="516" height="358" 
+alt="Refinement box used for better resolution at interfaces" /></p>
+
+<p class="caption">Figure 6. Refinement box used for better resolution at interfaces.</p>
+
+<p>In the following example, the refinement box is activated in silicon only, and the mesh 
+in the y-direction is nonuniform. The spacing at the left side of the box is 5 nm; in the center, 
+it is 15&nbsp;nm; and at the right side, it is 2.5&nbsp;nm.</p>
+
+<pre>
+refinebox min= {-0.1 -0.2} max= {0.1 -0.05} xrefine= {0.015} \
+  yrefine= {0.005 0.015 0.0025} Silicon add
+grid remesh
+</pre>
+
+<p><img src="images/sp_mgoals_refbox2.png" width="516" height="358" 
+alt="Activation of refinement box in silicon" /></p>
+
+<p class="caption">Figure 7. Activation of refinement box in silicon.</p>
+
+<p>The effects of the various settings can be seen even better in Figure 8.</p>
+
+<p><img src="images/sp_mgoals_set_anima.gif" width="516" height="358" 
+alt="Animation of effects of various settings" /></p>
+
+<p class="caption">Figure 8. Animation of effects of various settings previously 
+described.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_8.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_10.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

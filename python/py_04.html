@@ -1,0 +1,1370 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" /> 
+
+<!-- for equation support -->
+ <link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+ <script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+ <script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+ <script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = true</script>
+
+ <title>TCAD Sentaurus Tutorial &ndash; Python 4. Loops, Conditional Branching, and Operations on Sequences</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_03.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_05.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Python Language<br />
+4. Loops, Conditional Branching, and Operations on Sequences</h1>
+
+<p>
+<a href="#1">4.1 More on Looping</a><br />
+<a href="#2">4.2 Conditional Branching</a><br />
+<a href="#3">4.3 More on Sequence Types</a><br />
+<a href="#4">4.4 More on scipy.constants Module</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce additional looping concepts, conditional branching, and sequence operations.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 More on Looping</h1>
+
+<p class="note">The scripts discussed here are available in the directory 
+<tt>Applications_Library/GettingStarted/python/py_basics</tt>. The code examples 
+that must be entered at the interactive prompt are also available in this 
+Sentaurus Workbench project.<br /><br />
+
+Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/python/py_basics/python_pyt.py">
+python_pyt.py</a>.</p> 
+
+<p><a href="py_02.html#6">Section 2.6 Introduction to Looping</a> introduced the concept 
+of looping.</p>
+
+<p>This section introduces the <tt>in</tt> operator, the <tt>range</tt> object, the 
+<tt>enumerate</tt> function, and iterating over two sequences.</p>
+
+<!--===============================-->
+<a name="1_1"></a>
+<h2>4.1.1 Membership Testing</h2>
+
+<p>The <tt>for</tt> statement uses the Boolean <tt>in</tt> operator. Both the <tt>in</tt> and 
+<tt>not in</tt> Boolean operators test for membership in a sequence, that is, whether the 
+value is an element of the sequence (see <a href="https://docs.python.org/3/reference/expressions.html?highlight=membership#membership-test-operations">
+The Python Language Reference: Membership test operations</a>). For example:</p>
+
+<pre>
+&gt;&gt;&gt; numbers = [11, 22, 33, 43]
+&gt;&gt;&gt; 22 in numbers
+True
+&gt;&gt;&gt; 1 not in numbers
+True
+</pre>
+
+<!--===============================-->
+<a name="1_2"></a>s
+<h2>4.1.2 Range Object</h2>
+
+<p>The built-in <a href="https://docs.python.org/3/library/functions.html#func-range"><tt>range</tt></a> 
+function has the syntax: <tt>range(start, stop, end)</tt></p>   
+
+<p>It takes the integer values <tt>start</tt>, <tt>stop</tt>, and <tt>step</tt> as arguments 
+and returns a series of integers in arithmetic progression. For a positive step, the 
+progression is given by:<br />
+<tt>r[i] = start + i * step &lt; stop</tt>, where <tt>i</tt> &ge; <tt>0</tt>. 
+The step should not be zero. For example:</p>
+
+<pre>
+&gt;&gt;&gt; range(1, 6, 2)
+range(1, 6, 2)
+</pre>
+
+The <tt>range</tt> function creates objects of type <tt>range</tt>:
+
+<pre>
+&gt;&gt;&gt; type(range(1, 6, 2))
+&lt;class 'range'&gt;
+</pre>
+
+<p>These objects can be used anywhere a sequence of integers is used. For example, 
+they can be used in <tt>for</tt> loops:</p>
+
+<pre>
+&gt;&gt;&gt; for i in range(1, 6, 2):
+...     print(i)
+...
+1
+3
+5
+</pre>
+
+<p>The output shows that the <tt>range</tt> function generated the arithmetic progression 
+of integers <tt>1</tt>, <tt>3</tt>, <tt>5</tt>. If <tt>start</tt> &lt; <tt>stop</tt> and 
+<tt>step</tt> is positive, then an increasing progression is generated. The given value 
+of <tt>stop</tt> is never part of the progression.</p>
+
+<p>You can  use the <tt>list</tt> constructor to create a list of integers in arithmetic 
+progression from the <tt>range</tt> function. This is useful for checking the 
+progression generated by the <tt>range</tt> function:</p>
+
+<pre>
+&gt;&gt;&gt; integers = list(range(1, 6, 2))
+&gt;&gt;&gt; integers
+[1, 3, 5]
+</pre>
+
+<p>You can generate a decreasing sequence of integers by specifying <tt>start</tt> 
+&gt; <tt>stop</tt> and a negative <tt>step</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; list(range(6, 1, -2))
+[6, 4, 2]
+</pre>
+
+<p>As discussed in <a href="https://docs.python.org/3/library/stdtypes.html#ranges">
+The Python Standard Library: Ranges</a>, <tt>start</tt> and <tt>step</tt> are optional 
+and have the default values of <tt>0</tt> and <tt>1</tt>, respectively. If only one 
+argument is passed to the <tt>range</tt> function, then that argument is assumed to be 
+<tt>stop</tt>, and the default values of <tt>start = 0</tt> and <tt>step = 1</tt> are used. 
+If two arguments are passed, then the default value of <tt>step = 1</tt> is used. For 
+example, both <tt>range(0, 4)</tt> and <tt>range(4)</tt> produce the integers <tt>0</tt>, 
+<tt>1</tt>, <tt>2</tt>, <tt>3</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; list(range(0, 4))  # start=0, stop=4, step=1 (default)
+[0, 1, 2, 3]
+&gt;&gt;&gt; list(range(4))     # start=0 (default), stop=4, step=1 (default)
+[0, 1, 2, 3]
+</pre>
+
+<p>You can use the <tt>range</tt> function and <tt>for</tt> loops to convert the unit of
+a progression of temperatures <tt>0</tt>, <tt>20</tt>, <tt>40</tt>, <tt>60</tt>, <tt>80</tt> from 
+degree Fahrenheit to degree Celsius:</p>
+
+<pre>
+# Script: tempf2c_for.py 
+print(f'Fahren Celsius')
+for fahren in range(0, 100, 20):
+    celsius = (5 / 9) * (fahren - 32)
+    print(f'{fahren:6.0f} {celsius:7.1f}') 
+</pre>
+
+<pre>
+&gt; gpythonsh tempf2c_for.py    
+Fahren Celsius
+     0   -17.8
+    20    -6.7
+    40     4.4
+    60    15.6
+    80    26.7
+</pre>
+
+<p>Here, format specifiers are used to print values in tabular format, so that the values 
+in each column are right justified (see <a href="py_02.html#4_3_1">Section 2.4.3.1 Formatted Strings (f-Strings) and Format Specification</a>).</p>
+
+<p>You can iterate over the indices of a sequence by combining the <tt>range</tt> and 
+<tt>len</tt> functions:</p>
+
+<pre>
+# Script: for_rangelen.py 
+greeting = 'Hello'
+for i in range(len(greeting)):
+    print(f'Element {i} is {greeting[i]}') 
+</pre>
+
+<pre>
+&gt; gpythonsh for_rangelen.py  
+Element 0 is H
+Element 1 is e
+Element 2 is l
+Element 3 is l
+Element 4 is o
+</pre>
+
+<p>Here, you explicitly access the indices as well as the characters in the string 
+<tt>greeting</tt>. Whenever you want to access both the indices and the elements 
+of a sequence, it is more convenient to use the built-in <tt>enumerate</tt> function 
+as discussed in <a href="#1_3">Section 4.1.3 <tt>enumerate</tt> Function</a>.</p>
+
+<p>Often, the name of the variable to which the current element of a sequence is assigned during execution of the <tt>for</tt> statement
+is not important. For example, in the following code, the <tt>for</tt> statement is used to print a string three times and the variable is not accessed in the loop body:</p>
+
+<pre>
+&gt;&gt;&gt; for _ in range(3):
+...     print("Hello, World")
+Hello, World
+Hello, World
+Hello, World
+</pre>  
+
+<p>In such cases, it is common to use an underscore (<tt>_</tt>) as the 
+variable name.</p>
+
+<!--===============================-->
+<a name="1_3"></a>
+<h2>4.1.3 <tt>enumerate</tt> Function</h2>
+
+<p>The <a href="https://docs.python.org/3/library/functions.html#enumerate"><tt>enumerate</tt></a> 
+function accepts a sequence and returns the tuple <tt>(index, element)</tt> during 
+each iteration of the <tt>for</tt> loop:</p>
+
+<pre>
+&gt;&gt;&gt; greeting = 'Hello'
+&gt;&gt;&gt; for i_elem in enumerate(greeting):
+...     print(i_elem)
+...
+(0, 'H')
+(1, 'e')
+(2, 'l')
+(3, 'l')
+(4, 'o')
+</pre>
+
+<p>You can use tuple unpacking to conveniently access both the indices and the elements:</p>
+
+<pre>
+# Script: for_enumerate.py 
+greeting = 'Hello'
+for i, char in enumerate(greeting):
+    print(f'Element {i} is {char}') 
+</pre>
+
+<pre>
+&gt; gpythonsh for_enumerate.py   
+Element 0 is H
+Element 1 is e
+Element 2 is l
+Element 3 is l
+Element 4 is o
+</pre>
+
+<!--===============================-->
+<a name="1_4"></a>
+<h2>4.1.4 Iterating Over Two Sequences</h2>
+
+<p>You can use the built-in <a href="https://docs.python.org/3/library/functions.html#zip"><tt>zip</tt></a> 
+function to combine two sequences. When it is used in a <tt>for</tt> statement, during 
+each iteration, it returns a tuple consisting of elements from the first sequence and 
+the second sequence. The two sequences need not have the same length. For example:</p>
+
+<pre>
+&gt;&gt;&gt; # Iterating over two lists of unequal length
+&gt;&gt;&gt; numbers = list(range(1, 7))
+&gt;&gt;&gt; chars = 'abcde'
+&gt;&gt;&gt; for num_char in zip(numbers, chars):
+...     print(num_char)
+...
+(1, 'a')
+(2, 'b')
+(3, 'c')
+(4, 'd')
+(5, 'e')
+</pre>
+
+<p>For sequences of unequal lengths, iterations are performed until the smaller sequence 
+is exhausted.</p>
+
+<p>You can use tuple unpacking to access the individual elements of the two sequences:</p>
+
+<pre>
+# Script: list_zip.py 
+numbers = list(range(1, 7))
+chars = 'abcde'
+for num, char in zip(numbers, chars):
+    print(f'The {num} letter of the alphabet is {char}')
+</pre>
+
+<pre>
+&gt; gpythonsh list_zip.py 
+The 1 letter of the alphabet is a
+The 2 letter of the alphabet is b
+The 3 letter of the alphabet is c
+The 4 letter of the alphabet is d
+The 5 letter of the alphabet is e
+</pre>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Conditional Branching</h1>
+
+<p>Executing a code block only when a particular condition is true is called <em>conditional</em> 
+execution. You can perform conditional execution in Python using the <tt>if</tt> statement. 
+The condition is defined using Boolean and comparison operators.</p>
+
+<p><em>Boolean expressions</em> are expressions that evaluate to a Boolean value. 
+They can be created using comparison and Boolean operators.</p>
+
+<!--===============================-->
+<a name="2_1"></a>
+<h2>4.2.1 Comparison Operators</h2>
+
+<p>You can compare two values in Python using the <em>comparison operators</em> 
+listed in Table 1 (see 
+<a href="https://docs.python.org/3/library/stdtypes.html?highlight=boolean#comparisons">
+The Python Standard Library: Comparisons</a>).</p>
+
+<a name="table1"></a>
+<table>
+<caption>Table 1. Comparison operators.</caption>
+
+<thead>
+<tr>
+<th>Operation</th>
+<th>Operator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Strictly less than</td>
+<td><tt>&lt;</tt></td>
+</tr>
+<tr>
+<td>Less than or equal to</td>
+<td><tt>&lt;=</tt></td>
+</tr>
+<tr>
+<td>Strictly greater than</td>
+<td><tt>&gt;</tt></td>
+</tr>
+<tr>
+<td>Equal</td>
+<td><tt>==</tt></td>
+</tr>
+<tr>
+<td>Not equal</td>
+<td><tt>!=</tt></td>
+</tr>
+</tbody>
+</table>
+
+<p>The syntax for using comparison operators is:</p>
+
+<pre>
+<em>operand operator operand</em>
+</pre>
+
+<p>Here, the operands are values. The result of a comparison is a Boolean value. If the 
+operands meet the condition, then the result is <tt>True</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; 5 == 5  # Test whether 5 is equal to 5
+True
+</pre>
+
+<p>Otherwise, the result is <tt>False</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; 5.5 &lt; 2.0  # Test whether 5.5 is strictly less than 2.0
+False
+</pre>
+
+<p>All the comparison operators have the same priority. Their priority is higher 
+than that of Boolean operators.</p>
+
+<p>Comparison operators have a lower priority than that of arithmetic operators. Python 
+first evaluates the expressions on either side of the comparison operator and then 
+performs the comparison:</p>
+
+<pre>
+&gt;&gt;&gt; 2 * 5 &lt; 6 / 2
+False
+</pre>
+
+<!--===============================-->
+<a name="2_2"></a>
+<h2>4.2.2 Boolean Operators</h2>
+
+<p><em>Boolean operators</em> operate on Boolean operands and result in Boolean values. 
+Table 2 lists the Python Boolean operators in increasing order of precedence (see 
+<a href="https://docs.python.org/3/library/stdtypes.html?highlight=boolean#boolean-operations-and-or-not">
+The Python Standard Library: Boolean Operations &mdash; and, or, not</a>).</p>
+
+<a name="table2"></a>
+<table>
+<caption>Table 2. Boolean operators.</caption>
+
+<thead><tr>
+<th>Operation</th>
+<th>Operator</th>
+<th>Result</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Logical <em>or</em></td>
+<td><tt>x or y</tt></td>
+<td><tt>True</tt> if either or both <tt>x</tt> and <tt>y</tt> are <tt>True</tt></td>
+</tr>
+
+<tr>
+<td>Logical <em>and</em></td>
+<td><tt>x and y</tt></td>
+<td><tt>True</tt> if both <tt>x</tt> and <tt>y</tt> are <tt>True</tt></td>
+</tr>
+
+<tr>
+<td>Logical <em>not</em></td>
+<td><tt>not x</tt></td>
+<td><tt>True</tt> if <tt>x</tt> is <tt>False</tt></td>
+</tr>
+</tbody>
+</table>
+
+<p>The syntax for using the <tt>not</tt> operator is: <em><tt>operand operator</tt></em></p>
+
+<p>For example:</p>
+
+<pre>
+&gt;&gt;&gt; not True
+False
+&gt;&gt;&gt; not False
+True
+</pre>
+
+<p>The syntax for using the other two Boolean operators is: 
+<em><tt>operand operator operand</tt></em></p>
+
+<p>For example:</p>
+
+<pre>
+&gt;&gt;&gt; True and False
+False
+&gt;&gt;&gt; True or False
+True
+</pre>
+
+<p>Usually, Boolean operators are used to combine the results of comparison operators 
+to build more complex conditions:</p>
+
+<pre>
+&gt;&gt;&gt; 3 > 2 and 1 > 2
+False
+</pre>
+
+<p>The <tt>and</tt> and <tt>or</tt> operators are <em>short-circuit operators</em>. Python starts evaluating the individual operands sequentially from left to right. It stops evaluating the right operand as soon as it can determine the answer. Python evaluates:</p>
+
+<ul>
+<li>The right operand of the <tt>and</tt> operator only if the left operand evaluates to 
+<tt>True</tt> (if the left operand is <tt>False</tt>, then the result is <tt>False</tt> irrespective 
+of the Boolean value of the right operand)</li>
+<li>The right operand of the <tt>or</tt> operator only if the left operand evaluates to <tt>False</tt> 
+(if the left operand is <tt>True</tt>, then the result is <tt>True</tt> irrespective of the Boolean 
+value of the right operand)</li>
+</ul>
+
+<p>Consider the following code:</p>
+
+<pre>
+&gt;&gt;&gt; x = 0 
+&gt;&gt;&gt; y = 5
+&gt;&gt;&gt; x != 0 and y / x 
+False
+</pre>
+
+<p>If Python were to evaluate both operands, then evaluating <tt>y / x</tt> would have 
+resulted in an error because of the division by zero. However, Python does not evaluate 
+the second operand since the result of the first operand is <tt>False</tt> and it can 
+determine the result (both <tt>False and True</tt> and <tt>False and False</tt> result 
+in <tt>False</tt>).</p>
+
+<!--===============================-->
+<a name="2_3"></a>
+<h2>4.2.3 Conditional Statements</h2>
+
+<p>The <tt>if</tt> statement is used for conditional execution of code blocks. As discussed in 
+<a href="http://composingprograms.com/pages/15-control.html#conditional-statements">
+Composing Programs: Conditional Statements</a>, the <tt>if</tt> statement has the following 
+general syntax:</p>
+
+<pre>
+if &lt;condition&gt;:
+    code block
+elif &lt;condition&gt;:
+    code block
+else:
+    code block
+</pre>
+
+<p>The <tt>if</tt> statement consists of a series of headers and code blocks. The <tt>if</tt> 
+clause is required. It is followed by an optional sequence of <tt>elif</tt> clauses, which 
+is followed by an optional <tt>else</tt> clause.</p>
+
+<p>As discussed in 
+<a href="https://docs.python.org/3/reference/compound_stmts.html#the-if-statement">
+The Python Language Reference: The <tt>if</tt> statement</a>, Python executes a conditional 
+statement by evaluating the conditions in order until one evaluates to <tt>True</tt>. It 
+then executes only that code block. If all conditions are <tt>False</tt>, then:</p>
+
+<ul>
+<li>If the <tt>else</tt> clause is present, then Python executes the code block of the 
+<tt>else</tt> clause.</li>
+<li>If the <tt>else</tt> clause is not present, then Python does not execute any of the 
+code blocks in the <tt>if</tt> statement.</li>
+</ul>
+
+<p>The <tt>if</tt> statement has two simpler forms. The most simple form has only the 
+<tt>if</tt> clause:</p>
+
+<pre>
+if &lt;condition&gt;:
+    code block
+</pre>
+
+<p>There is only one condition to test. Python executes the code block only if the 
+condition is <tt>True</tt>. For example, the following code determines whether a number 
+is positive:</p>
+
+<pre>
+# Script: if_demo.py
+value = 1
+if value > 0:
+   print('value is positive')
+
+print('End of if-statement')
+</pre>
+
+<pre>
+&gt; gpythonsh if_demo.py
+value is positive
+End of if-statement
+</pre>
+
+<p>The second form of the <tt>if</tt> statement does not contain the <tt>elif</tt> clause:</p>
+
+<pre>
+if &lt;condition&gt;:
+    code block
+else:
+    code block
+</pre>
+
+<p>Python executes the code block of the <tt>if</tt> clause if the condition is <tt>True</tt>. 
+Otherwise, it executes the code block of the <tt>else</tt> clause. For example, the following 
+code determines the sign of a number:</p>
+
+<pre>
+# Script: if_else.py
+value = -1
+if value > 0:
+   print('value is positive')
+else:
+   print('value is negative or zero')
+
+print('End of if-statement')
+</pre>
+
+<pre>
+&gt; gpythonsh if_else.py
+value is negative or zero
+End of if-statement
+</pre>
+
+<p>If the code blocks consist of a single statement, then the first two forms of the 
+<tt>if</tt> statement can be written more concisely:</p>
+
+<pre>
+# Script: if_concise.py
+value = 1
+if value > 0: print('value is positive')
+</pre>
+
+<pre>
+&gt; gpythonsh if_concise.py
+value is negative or zero
+value is positive
+</pre>
+
+<pre>
+# Script: if_else_concise.py
+value = -1
+if value > 0: print('value is positive')
+else: print('value is negative or zero')
+</pre>
+
+<pre>
+&gt; gpythonsh if_else_concise.py
+value is negative or zero
+</pre>
+
+<p>The most general form of the <tt>if</tt> statement consists of the <tt>if</tt> clause, 
+one or more <tt>elif</tt> clauses, and one <tt>else</tt> clause. The following code 
+determines whether a number is zero, positive, or negative:</p>
+
+<pre>
+# Script: if_elif_else.py
+value = -1
+if value == 0:
+    print('value is 0')
+elif value > 0:
+   print('value is positive')
+else:
+   print('value is negative')
+
+print('End of if-statement')
+
+&gt; gpythonsh if_elif_else.py
+value is negative
+End of if-statement
+</pre>
+
+<p>Here, Python first evaluates the condition <tt>value == 0</tt> in the <tt>if</tt> clause. 
+Since this condition is <tt>False</tt>, it evaluates the condition <tt>value &gt; 0</tt> 
+in the next clause, which is the <tt>elif</tt> clause. Even this condition evaluates to 
+<tt>False</tt>. Finally, Python executes the code block in the <tt>else</tt> clause.</p>
+
+<!--===============================-->
+<a name="2_4"></a>
+<h2>4.2.4 Chained Comparisons</h2>
+
+<p>The Python comparison operators can be chained. For example, <tt>x &lt; y &lt; z</tt> 
+is equivalent to <tt>x &lt; y</tt> and <tt>y &lt; z</tt>.</p>
+
+<p>The following code determines whether a value lies between 2 and 5:</p>
+
+<pre>
+# Script: comparison_chaining.py
+value = 4
+if 2 &lt; value &lt; 5:
+    print('value is between 2 and 5')
+else:
+    print('value is outside 2 and 5')
+</pre>
+
+<pre>
+&gt; gpythonsh comparison_chaining.py
+value is between 2 and 5
+</pre>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 More on Sequence Types</h1>
+
+<p>Sequences were introduced in <a href="py_02.html#2_5">Section 2.2.5 Introduction to Sequence Types</a>, 
+which discussed how to create sequences and some of the operations on them, such as:</p>
+
+<ul>
+<li>Indexing (see <a href="py_02.html#2_5_4">Section 2.2.5.4 Indexing Sequences</a>)</li>
+<li>Applying arithmetic operators to sequences (see <a href="py_02.html#3_2">
+Section 2.3.2 Using Arithmetic Operators With Sequence Types (Lists, Tuples, and Strings)</a> and 
+<a href="py_02.html#3_3">Section 2.3.3 NumPy Array Operations</a>)</li>
+</ul>
+
+<p>This section discusses how to create some special types of sequence as well as 
+additional operations on sequence types.</p>
+
+<!--===============================-->
+<a name="3_1"></a>
+<h2>4.3.1 Creating Special Sequences</h2>
+
+<p><em>Empty sequences</em> have no elements. When working with lists, it is common 
+to first create an empty list and then append elements to the list inside a <tt>for</tt> 
+statement (see <a href="py_03.html#1_4_2">Section 3.1.4.2 Scalar-Oriented Versus Vectorized Code</a>). 
+You can create an empty list, tuple, or string by not including any values inside brackets, 
+parentheses, or quotation marks. For example:</p>
+
+<pre>
+&gt;&gt;&gt; empty_list = []
+&gt;&gt;&gt; empty_list, len(empty_list)
+([], 0)
+</pre>
+
+<pre>
+&gt;&gt;&gt; empty_str = ''
+&gt;&gt;&gt; empty_str, len(empty_str)
+('', 0)
+</pre>
+
+<p>You can create <em>singleton sequences</em> (sequences with a single element) 
+by enclosing a single element:</p>
+  
+<pre>
+&gt;&gt;&gt; singleton_list = [1]
+&gt;&gt;&gt; singleton_list, len(singleton_list)
+([1], 1)
+</pre>
+
+<p>You cannot create a singleton tuple by enclosing a single element inside parentheses. 
+Since Python uses parentheses for grouping expressions, using a single element inside 
+parentheses results in a number:</p>
+
+<pre>
+&gt;&gt;&gt; (1)
+1
+</pre>
+
+<p>The expression <tt>(1)</tt> is the same as the number <tt>1</tt>, as can be verified 
+using the equality operator:</p>
+
+<pre>
+&gt;&gt;&gt; # Use equality operator to test whether two values are same
+&gt;&gt;&gt; (1) == 1 
+True
+</pre>
+
+<p>To create a singleton tuple, use a comma after the element:</p>
+
+<pre>
+&gt;&gt;&gt; singleton_tuple = (1, )
+&gt;&gt;&gt; type(singleton_tuple)
+&lt;class 'tuple'&gt;
+&gt;&gt;&gt; singleton_tuple 
+(1,)
+</pre>
+
+<p>Strings are not like integers, floats, and Booleans. A string is a sequence. It is 
+an ordered collection of other values, that is, characters. There is no separate character 
+type in Python; a character is simply a string of size one:</p>
+
+<pre>
+&gt;&gt;&gt; greeting = 'Hello, World!'
+&gt;&gt;&gt; letter = greeting[0]  # Extract single character
+&gt;&gt;&gt; letter, type(letter)
+('H', str)
+</pre>
+
+<!--==========================-->
+<a name="3_1_1"></a>
+<h3>4.3.1.1 Creating Special Arrays</h3>
+
+<p>You can create an empty 1D NumPy array by passing the argument <tt>0</tt> to the <a href="https://numpy.org/doc/stable/reference/generated/numpy.empty.html"><tt>numpy.empty</tt></a> function: </p>
+
+<pre>
+&gt;&gt;&gt; empty_arr = np.empty(0)
+&gt;&gt;&gt; empty_arr
+array([], dtype=float64)
+</pre>
+
+<p>You have already seen how to create arrays prefilled with specific values such as 0 or 1 
+in <a href="py_02.html#3_3">Section 2.3.3 NumPy Array Operations</a>. NumPy also has functions 
+for creating linearly spaced values (see 
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.linspace.html">numpy.linspace</a>) 
+or logarithmically spaced values (see 
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.logspace.html">numpy.logspace</a>).</p>
+
+<p>The function call <tt>numpy.linspace(start, stop, num)</tt> creates an array of 
+<tt>num</tt> evenly spaced numbers in the interval <tt>[start, stop]</tt>. By default, 
+the right endpoint is included. This is often useful for generating a domain of values 
+that can be used for evaluating a function using vectorized operations.</p>
+
+<p>In <a href="#1_2">Section 4.1.2 Range Object</a>, you saw how to use a <tt>for</tt> 
+loop to convert an arithmetic progression of temperature values <tt>0</tt>, <tt>20</tt>, 
+<tt>40</tt>, <tt>60</tt>, <tt>80</tt> from degree Fahrenheit to degree Celsius. Since 
+these values are linearly spaced, you can create an array containing these values using 
+<tt>numpy.linspace</tt>. Here is the the vectorized version of the same code:</p>
+
+<pre>
+# Script: tempf2c_vec.py
+import numpy as np
+
+# Set the precision for printing floating-point numbers in NumPy objects
+np.set_printoptions(precision=4)
+
+fahren = np.linspace(0, 80, 5)
+print(f'{fahren= }')
+celsius = (5 / 9) * (fahren - 32)
+print(f'{celsius= }')
+</pre>
+
+<pre>
+&gt; gpythonsh tempf2c_vec.py
+fahren= array([ 0., 20., 40., 60., 80.])
+celsius= array([-17.7778,  -6.6667,   4.4444,  15.5556,  26.6667])
+</pre>
+
+<p>Here, the 
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.set_printoptions.html">
+numpy.set_printoptions</a> function is used to set the precision to 4 for printing 
+floating-point numbers in NumPy objects.</p>
+
+<p>You can use the <tt>zip</tt> function to print the output of the above program in tabular 
+format (see <a href="#1_4">Section&nbsp;4.1.4 Iterating Over Two Sequences</a>):</p>
+
+<pre>
+# Script: tempf2c_vec_tab.py
+import numpy as np
+
+fahren = np.linspace(0, 80, 5)
+celsius = (5 / 9) * (fahren - 32)
+
+# Print temperatures in tabular format
+print(f'Fahren Celsius')
+for fahren, celsius in zip(fahren, celsius):
+    print(f'{fahren:6.0f} {celsius:7.1f}')
+</pre>
+
+<pre>
+&gt; gpythonsh tempf2c_vec_tab.py
+Fahren Celsius
+     0   -17.8
+    20    -6.7
+    40     4.4
+    60    15.6
+    80    26.7
+</pre>
+
+<p>The function call <tt>numpy.logspace(start, stop, num)</tt> creates an array of <tt>num</tt> logarithmically spaced numbers betweem decades \( 10^{start} \) and \( 10^{stop} \).</p>
+
+<pre>
+&gt;&gt;&gt; freq = np.logspace(1, 5, 5)
+&gt;&gt;&gt; freq
+array([1.e+01, 1.e+02, 1.e+03, 1.e+04, 1.e+05])
+</pre> 
+
+<p>The <a href="https://numpy.org/doc/stable/reference/generated/numpy.arange.html">numpy.arange</a> 
+function is roughly equivalent to the Python <tt>range</tt> function. Instead of returning 
+a <tt>range</tt> object, it returns a 1D NumPy array. Similar to the <tt>range</tt> function, 
+it takes the integer values <tt>start</tt>, <tt>stop</tt>, and <tt>step</tt> as arguments. Both 
+<tt>start</tt> and <tt>step</tt> are optional and have default values, and the given value 
+of <tt>stop</tt> is never part of the array. Like the <tt>range</tt> function, it can 
+generate an array of integers:</p>
+
+<pre>
+&gt;&gt;&gt; integer_arr = np.arange(1, 5)  # Creates an array of ints
+&gt;&gt;&gt; integer_arr
+array([1, 2, 3, 4])
+</pre>
+
+<p>However, unlike the <tt>range</tt> function, the <tt>numpy.arange</tt> function 
+can also generate an array of floating-point numbers if you set at least one 
+of its arguments to a floating-point value:</p>
+
+<pre>
+&gt;&gt;&gt; float_arr = np.arange(1, 5.0)  # Creates an array of floats
+&gt;&gt;&gt; float_arr
+array([1., 2., 3., 4.])
+</pre>
+
+<p>Since arrays are homogeneous, all numbers in an array are of the same data type. 
+You can check the data type of an array by using its <tt>dtype</tt> data attribute:</p>
+
+<pre>
+&gt;&gt;&gt; integer_arr.dtype, float_arr.dtype
+(dtype('int64'), dtype('float64'))
+</pre>
+
+<p>If you pass a list containing integers and floats to the <tt>numpy.array</tt> 
+function, then the integers are converted to floats:</p>
+
+<pre>
+&gt;&gt;&gt; numbers = np.array([1, 2.0, 3, 4])
+&gt;&gt;&gt; numbers, numbers.dtype
+(array([1., 2., 3., 4.]), dtype('float64'))
+</pre>
+
+<p>Similarly, passing a list of integers, floats, and complex numbers converts the 
+integers and floats to complex numbers:</p>
+
+<pre>
+&gt;&gt;&gt; numbers = np.array([1, 2.0, 3+4j, 4])
+&gt;&gt;&gt; numbers, numbers.dtype
+(array([1.+0.j, 2.+0.j, 3.+4.j, 4.+0.j]), dtype('complex128'))
+</pre>
+
+<p>When creating arrays using the <tt>np.array</tt> function, you can explicitly 
+specify the data type by using the <tt>dtype</tt> argument:</p>
+
+<pre>
+&gt;&gt;&gt; numbers = np.array([0, 1, 2], dtype='float64')  # Creates an array of floats
+&gt;&gt;&gt; numbers, numbers.dtype
+(array([0., 1., 2.]), dtype('float64'))
+</pre>
+
+<!--===============================-->
+<a name="3_2"></a>
+<h2>4.3.2 Slicing</h2>
+
+<p>As discussed in <a href="py_02.html#2_5_4">Section 2.2.5.4 Indexing Sequences</a>, 
+sequence indexing is used to extract individual elements of a sequence:</p>
+
+<pre>
+&gt;&gt;&gt; # Indexing
+&gt;&gt;&gt; [10, 20, 30, 40][0]  # first element or element in position 0
+10
+</pre>
+
+<p>Sequence slicing is used to extract a portion of the sequence. For example, 
+it can be used to create sublists or subarrays. The syntax is:</p>
+
+<pre>
+&lt;sequence&gt;[start:stop:step]
+</pre>
+
+<p>Here, <tt>start</tt> and <tt>stop</tt> are indices. Slicing returns a sequence 
+that includes the element with index <tt>start</tt>, but the element with index 
+<tt>stop</tt> is excluded. This behavior of slicing is similar to that of the 
+<tt>range</tt> function. You can optionally specify a step size using <tt>step</tt>. 
+The default values of these options are:</p>
+
+<ul>
+<li><tt>start</tt> = 0</li>
+<li><tt>stop</tt> = length of list (stop of list)</li>
+<li><tt>step</tt> = 1</li>
+</ul>
+
+<p>For example:</p>
+
+<pre>
+&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; my_lst = [0, 10, 20, 30, 40]
+&gt;&gt;&gt; my_arr = np.array(my_lst)  
+
+&gt;&gt;&gt; # Every other element from position 1 (included) to 4 (excluded)
+&gt;&gt;&gt; my_lst[0:4:2]  # Slicing a list  
+[0, 20]
+
+&gt;&gt;&gt; # Every other element from position 1 (included) to 4 (excluded)
+&gt;&gt;&gt; my_arr[0:4:2]  # Slicing an array
+array([ 0, 20])
+
+&gt;&gt;&gt; # Slicing using default value of step = 1
+&gt;&gt;&gt; my_arr[1:4]  # elements from position 1 (included) to 4 (excluded)
+array([10, 20, 30])
+</pre>
+
+<p>If the <tt>start</tt> index is omitted, then Python uses the default value of <tt>0</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; # Omitting start 
+&gt;&gt;&gt; my_arr[:4]  # elements from position 0 (included) to 4 (excluded)
+array([ 0, 10, 20, 30])
+</pre>
+
+<p>Omitting the <tt>stop</tt> index creates a slice starting with the element 
+at index <tt>start</tt> and includes all the remaining elements from the sequence:</p>
+
+<pre>
+&gt;&gt;&gt; # Omitting stop 
+&gt;&gt;&gt; my_arr[2:]  # elements from position 1 (included) to end of list
+array([20, 30, 40])
+</pre>
+
+<p>Omitting both <tt>start</tt> and <tt>stop</tt> returns a copy of the sequence:</p>
+
+<pre>
+&gt;&gt;&gt; # Create copy of list
+&gt;&gt;&gt; my_lst[:]  # elements from position 0 (included) to end of list
+[0, 10, 20, 30, 40]
+</pre>
+
+<p>If the <tt>step</tt> value is negative, then the defaults for <tt>start</tt> 
+and <tt>end</tt> are interchanged. A negative <tt>step</tt> value can be used to 
+reverse a sequence:</p>
+
+<pre>
+&gt;&gt;&gt; my_arr[::-1]  # Reverse array
+array([40, 30, 20, 10,  0])
+</pre>
+
+<p>Slicing always returns a sequence, even when the slice results in a single element:</p>
+
+<pre>
+&gt;&gt;&gt; my_lst[2:3]  # elements from position 1 (included) to 3 (excluded)
+[20]
+
+&gt;&gt;&gt; my_arr[2:3]  # elements from position 1 (included) to 3 (excluded)
+array([20])
+</pre>
+
+<p>A slice of a list is a new list; whereas, a slice of a NumPy array is a view of the original array. 
+A <em>view</em> of an array is another way of viewing the elements of an array. Slicing a list copies the data from the original list to the new list; whereas, slicing a NumPy array does not copy the data. It returns the elements stored at the memory location of the original array. For example:</p>
+
+<pre>
+&gt;&gt;&gt; my_arr = np.array([0, 10, 20, 30, 40])  
+&gt;&gt;&gt; # Create array slice and assign to my_arr_view
+&gt;&gt;&gt; my_arr_view = my_arr[:3]
+array([ 0, 10, 20])
+&gt;&gt;&gt; my_arr_view[0] = 10  # Update my_arr_view
+&gt;&gt;&gt; my_arr               # my_arr is also updated
+array([10, 10, 20, 30, 40])
+</pre>
+
+<p>As discussed in <a href="py_02.html#5_5_4">Section 2.5.5.4 Copying Objects</a>, 
+you must use the <tt>numpy.ndarray.copy()</tt> method to copy arrays. You can 
+also use this method to create a new 1D array containing a copy of a subarray:</p>
+
+<pre>
+&gt;&gt;&gt; my_arr = np.array([0, 10, 20, 30, 40])  
+&gt;&gt;&gt; # Create new array containing copy of subarray
+&gt;&gt;&gt; my_arr_copy = np.copy(my_arr[:3]) 
+&gt;&gt;&gt; my_arr_copy
+array([ 0, 10, 20])
+&gt;&gt;&gt; my_arr_copy[0] = 10   # Update my_arr_copy
+&gt;&gt;&gt; my_arr                # my_arr does not change
+array([0, 10, 20, 30, 40])
+</pre> 
+
+<!--===============================-->
+<a name="3_3"></a>
+<h2>4.3.3 Working With NumPy Arrays</h2>
+
+<p>It is common to compute a quantity as a function of values stored in arrays 
+and then to store the computed values in a new array (here, called the 
+<em>results array</em>). For example, consider the problem of numerically 
+computing the derivative of y-values with respect to x-values using the 
+forward difference approximation:</p>
+
+<p>\[ {Δy} / {Δx} = {y(x_{i} + Δx) - y(x_{i})} / {Δx} \]</p>
+
+<p>The x- and y-values are used to compute the derivative, which is then stored in the results array. You can compute the derivative using the following approaches:</p>
+
+<ul>
+<li>The <tt>numpy.append</tt> function creates an empty array using the <tt>numpy.empty</tt> function, computes the derivative, and uses the <tt>numpy.append</tt> function to append the derivative values.</li>
+<li>Array preallocation is used to preallocate the derivatives array using the 
+<tt>numpy.zeros</tt> function, to compute the derivative, and then to update the derivatives array.</li>
+<li>Vectorized code uses the <tt>numpy.diff</tt> function.</li>
+</ul>
+
+<!--==========================-->
+<a name="3_3_1"></a>
+<h3>4.3.3.1 numpy.append Function</h3>
+
+<p>The first approach utilizes two NumPy functions <tt>numpy.empty</tt> (see <a href="#3_1_1">Section 4.3.1.1 Creating Special Arrays</a>) and <a href="https://numpy.org/doc/stable/reference/generated/numpy.append.html"><tt>numpy.append</tt></a>. The <tt>numpy.append</tt> function appends a value to the end of an array.</p>
+
+<p>You first create an empty array <tt>dydx</tt> that will be used to store the computed derivatives. Next, you use a <tt>for</tt> loop to repeatedly compute the derivative and append  it to the <tt>dydx</tt> array. As a result, the variable <tt>dydx</tt> is reassigned repeatedly:</p>
+
+<pre>
+# Script: diff_append.py
+import numpy as np
+
+x = np.array([1.0, 2.0, 3.0, 4.0])
+y = 2 * x
+
+# Create empty derivatives array
+dydx = np.empty(0)    # memory allocation  
+print(f'{id(dydx)= }')
+for i in range(3):
+    der = (y[i+1] - y[i]) / (x[i+1] - x[i])
+    # Compute derivative and append to derivatives array
+    dydx = np.append(dydx, der)  # memory allocation 
+    print(f'{id(dydx)= }')
+
+print(f'{dydx= }')    
+
+&gt; gpythonsh diff_append.py
+id(dydx)= 46912901690832
+id(dydx)= 46912901691120
+id(dydx)= 46912901690928
+id(dydx)= 46912901690832
+dydx= array([2., 2., 2.])
+</pre>  
+
+<p>It is common to use this approach when working with lists (see 
+<a href="#3_4">Section 4.3.4 List Methods</a>) and also with NumPy arrays whenever 
+the length or size of the results array is unknown. However, this is not 
+the recommended approach because it is slower compared to the array 
+preallocation approach.</p>
+
+<p>NumPy arrays are stored in contiguous blocks of memory, 
+that is, in consecutive memory locations. Whenever the size of an array needs to be increased, 
+for example, as a result of reassignment, NumPy creates a new 
+array by allocating a contiguous block of memory at a new location, copies 
+the data from the old array to the new array, and deallocates the old array. 
+This is further verified by printing the memory address of the <tt>dydx</tt> 
+array in the script <tt>diff_append.py</tt>. The output shows that NumPy creates a 
+new array during each iteration.</p>
+
+<p>This approach is slow because NumPy is repeatedly extending the array 
+and the variable <tt>dydx</tt> is being reassigned to the new array.</p>
+
+<!--==========================-->
+<a name="3_3_2"></a>
+<h3>4.3.3.2 Array Preallocation</h3>
+
+<p>If the size of the results array is known in advance, then NumPy can be used 
+to allocate the required memory before filling it up with the computed values. 
+This approach of working with NumPy arrays is faster compared to the previous 
+approach. Reserving or allocating memory before it is actually needed is called 
+<em>preallocation</em>. Preallocation can be performed by using the special NumPy 
+function <tt>numpy.zeros</tt> (discussed in 
+<a href="py_02.html#3_3">Section 2.3.3 NumPy Array Operations</a>). For example, 
+in the following code, you preallocate the results array <tt>dydx</tt> by creating 
+an array with the expected size and filled with zeros. The array is later filled 
+with the computed derivatives during each iteration of the <tt>for</tt> loop:</p>
+
+<pre>
+# Script: diff_preallocate.py
+import numpy as np
+
+x = np.array([1.0, 2.0, 3.0, 4.0])
+y = 2 * x
+
+# Preallocate dydx: Create derivative array filled with zeros
+dydx = np.zeros(len(x)-1)  # preallocate memory
+print(f'{id(dydx)= }')
+for i in range(3):
+    # Compute derivative and update derivative array
+    dydx[i] = (y[i+1] - y[i]) / (x[i+1] - x[i])  # no memory allocation
+    print(f'{id(dydx)= }')
+    
+print(f'{dydx= }')     
+</pre> 
+
+<pre>
+&gt; gpythonsh diff_preallocate.py
+id(dydx)= 46913519231792
+id(dydx)= 46913519231792
+id(dydx)= 46913519231792
+id(dydx)= 46913519231792
+dydx= array([2., 2., 2.])
+</pre>
+
+<p>The output shows that, since the memory address of <tt>dydx</tt> does not change during each iteration, NumPy creates this array only once.</p>
+
+<!--==========================-->
+<a name="3_3_3"></a>
+<h3>4.3.3.3 Vectorized Code</h3>
+
+<p>The first two approaches use a <tt>for</tt> loop to compute the derivative. Wherever possible, it is recommended to create a vectorized version of the code (see <a href="py_03.html#1_4_2">Section 3.1.4.2 Scalar-Oriented Versus Vectorized Code</a> for the advantages) or to use a vectorized function already available in NumPy. For example, here is the vectorized version of the code that uses the <tt>numpy.diff</tt> function to compute the derivative using the forward difference approximation:</p>
+
+<pre>
+# Script: diff_vectorize.py
+import numpy as np
+
+x = np.array([1.0, 2.0, 3.0, 4.0])
+y = 2 * x
+
+dydx = np.diff(y)/np.diff(x)   
+print(f'{dydx= }') 
+</pre> 
+
+<pre>
+&gt; gpythonsh diff_vectorize.py
+dydx= array([2., 2., 2.])
+</pre>
+
+<!--===============================-->
+<a name="3_4"></a>
+<h2>4.3.4 List Methods</h2>
+
+<p>Python has several methods for processing lists. Since lists are mutable, most methods 
+for processing lists also modify the list argument. As a result, they change the state 
+of the object and, therefore, are called <em>mutators</em> or <em>mutator methods</em>. 
+The list methods <tt>append()</tt>, <tt>sort()</tt>, <tt>insert()</tt>, <tt>pop()</tt>, and 
+<tt>extend()</tt> are mutators (see 
+<a href="https://docs.python.org/3/tutorial/datastructures.html#more-on-lists">
+The Python Tutorial: More on Lists</a> and <a href="https://docs.python.org/3/library/stdtypes.html#lists">The Python Standard Library: Lists</a>). These methods return the value <tt>None</tt>.</p>
+
+<p>The <tt>list.append()</tt> method adds an element to the end of a list. You have 
+already seen an example of using this method in <a href="py_03.html#1_4_2">
+Section 3.1.4.2 Scalar-Oriented Versus Vectorized Code</a>.</p>
+
+<p>The following example computes the absolute value of a list of numbers using the 
+<tt>append()</tt> method:</p>
+
+<pre>
+# Script: list_abs.py
+numbers = [-4, 2, 6, -8.9]
+abs_numbers = []
+
+for num in numbers:
+    abs_numbers.append(abs(num))
+    
+print(f'{abs_numbers= }') 
+</pre>
+
+<pre>
+&gt; gpythonsh list_abs.py
+abs_numbers= [4, 2, 6, 8.9]
+</pre>
+
+<p><em>Sorting</em> is another common operation on lists and can be done by using 
+either the <a href="https://docs.python.org/3/library/stdtypes.html#list.sort"><tt>list.sort()</tt></a> method or the built-in 
+<a href="https://docs.python.org/3/library/functions.html#sorted"><tt>sorted</tt></a> function.</p>
+
+<p>The <tt>list.sort()</tt> method is a mutator method and modifies the list to be sorted:</p>
+
+<pre>
+# Script: list_sort.py
+numbers = [-4, 2, 6, -8.9]
+print(f'Before sorting: {numbers= }')
+numbers.sort()  # Mutates the numbers list
+print(f'After sorting : {numbers= }')
+
+&gt; gpythonsh list_sort.py
+Before sorting: numbers= [-4, 2, 6, -8.9]
+After sorting : numbers= [-8.9, -4, 2, 6]
+</pre>
+
+<p>Unlike the <tt>list.sort()</tt> method, the <tt>sorted</tt> function returns a new sorted list:</p>
+
+<pre>
+# Script: list_sorted.py
+numbers = [-4, 2, 6, -8.9]
+print(f'{numbers=        }')
+# Assign list returned by sorted to numbers_sorted 
+numbers_sorted = sorted(numbers)  
+print(f'{numbers_sorted= }')
+
+&gt; gpythonsh list_sorted.py
+numbers=        [-4, 2, 6, -8.9]
+numbers_sorted= [-8.9, -4, 2, 6]
+</pre>
+
+<!--===============================-->
+<a name="3_5"></a>
+<h2>4.3.5 String Methods</h2>
+
+<p>Python has several methods for processing strings. Python has string methods for creating 
+transformed strings, finding patterns in a string, and splitting and joining strings. For details about these methods, see 
+<a href="https://docs.python.org/3/library/stdtypes.html#string-methods">
+The Python Standard Library: String Methods</a>.</p>
+
+<p>Since strings are immutable, 
+methods for processing strings return a new string instead of modifying the string 
+argument. For example, the <tt>str.upper()</tt> method takes a string and returns a new string 
+with all uppercase letters:</p>
+
+<pre>
+&gt;&gt;&gt; 'Hello World'.upper()
+'HELLO WORLD'
+</pre>
+
+<pre>
+&gt;&gt;&gt; greeting = 'Hello World' 
+&gt;&gt;&gt; print(f'Before call to upper: {greeting= }')
+&gt;&gt;&gt; greeting.upper()
+&gt;&gt;&gt; print(f'After call to upper : {greeting= }')
+Before call to upper: greeting= &#39;Hello World&#39;
+After call to upper : greeting= &#39;Hello World&#39;
+</pre>
+
+<p>This output shows that calling the <tt>str.upper()</tt> method on the variable 
+<tt>greeting</tt> does not change its value. To change the value of the variable 
+<tt>greeting</tt>, you must assign the value returned by <tt>str.upper</tt> 
+back to <tt>greeting</tt>:</p>
+
+<pre>
+# Script: str_upper.py
+greeting = 'Hello World'
+print(f'Before call to upper: {greeting= }')
+greeting = greeting.upper()
+print(f'After call to upper : {greeting= }')
+
+&gt; gpythonsh str_upper.py
+Before call to upper: greeting= 'Hello World'
+After call to upper : greeting= 'HELLO WORLD'
+</pre>
+
+<p>You can use the Boolean operator <tt>in</tt> to determine whether a string contains 
+a substring (see <a href="#1_1">Section&nbsp;4.1.1 Membership Testing</a>):</p>
+
+<pre>
+&gt;&gt;&gt; greeting = 'Hello World' 
+&gt;&gt;&gt; 'ello' in greeting
+True
+&gt;&gt;&gt; 'hell' in greeting
+False
+</pre>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>4.4 More on scipy.constants Module</h1>
+
+<p>In addition to the constants discussed in <a href="py_03.html#1_4">
+Section 3.1.4 Physical Constants: scipy.constants Module</a>, the <tt>scipy.constants</tt> 
+module contains information (value, unit, and precision) on many more physical constants 
+recommended by <a href="https://physics.nist.gov/csuu/Constants/">CODATA</a>. This 
+information is available in the form of a dictionary of physical constants called 
+<tt>physical_constants</tt>, whose format is:</p>
+
+<pre>
+scipy.constants.physical_constants[key] = (value, unit, uncertainty)
+</pre>
+
+<p>You can access this information for each constant by using a unique key for the physical constant.</p>
+
+<p>You can either look up the key at 
+<a href="https://docs.scipy.org/doc/scipy/reference/constants.html#constants-database">
+Constants (scipy.constants) &ndash; Constants database</a>, or you can find the key for 
+a particular constant by using the <tt>scipy.constants.find</tt> function. To search 
+for the key, pass a substring containing part of the name of the physical constant. 
+For example, to find the key corresponding to the speed of light in vacuum, you can 
+use any substring that could be part of the key such as <tt>vacuum</tt> or even <tt>cuu</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; import scipy.constants as const 
+&gt;&gt;&gt; # Search for the key for speed of light using the string 'cuu'
+&gt;&gt;&gt; const.find('cuu')
+['speed of light in vacuum', 'vacuum electric permittivity', 
+'vacuum mag. permeability']
+</pre>
+
+<p>The function returns a list of all keys containing the string <tt>cuu</tt>. 
+Now, you can retrieve information about the speed of light using the key 
+<tt>'speed of light in vacuum'</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; const.physical_constants['speed of light in vacuum'] 
+(299792458.0, 'm s^-1', 0.0)
+</pre>
+
+<p>To retrieve the value, unit, and uncertainty individually, you can use either indexing 
+or the functions <tt>scipy.constants.value</tt>, <tt>scipy.constants.unit</tt>, and 
+<tt>scipy.constants.precision</tt>, respectively:</p>
+
+<pre>
+&gt;&gt;&gt; const.value('speed of light in vacuum')
+299792458.0
+
+&gt;&gt;&gt; const.unit('speed of light in vacuum')
+'m s^-1'
+</pre>
+
+<!--===============================-->
+<a name="4_1"></a>
+<h2>4.4.1 Miscellaneous Functions</h2>
+
+<p>The <tt>scipy.constants</tt> module also contains the following functions:</p>
+
+<ul>
+<li>Optics-related functions:<ul>
+<li><tt>lambda2nu</tt> converts wavelength to optical frequency.</li>
+<li><tt>nu2lambda</tt> converts optical frequency to wavelength.</li>
+</ul>
+</li>
+<li><tt>convert_temperature</tt> converts between various temperature scales.</li>
+</ul>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_03.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_05.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

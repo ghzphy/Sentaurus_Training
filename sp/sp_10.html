@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 10. Special Focus: Remeshing for Device Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_9.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_11.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />10. Special Focus: Remeshing for Device Simulation</h1>
+
+<p>
+ <a href="#1">10.1 Overview</a><br />
+ <a href="#2">10.2 Initialization</a><br />
+ <a href="#3">10.3 Remeshing Options</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To discuss mesh building strategies for device simulation.</li>
+ <li>To demonstrate available meshing options in Sentaurus Process.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>10.1 Overview</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus 
+Workbench project <tt>Remeshing_for_Device</tt>. The complete project can be 
+investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sprocess/Remeshing_for_Device</tt>.</p>
+
+<p>After performing a process simulation, the structure usually needs to be
+remeshed for device simulation because the requirements of the device simulator
+differ from those of the process simulator.</p>
+
+<p>This remeshing step is typically performed using Sentaurus Structure Editor 
+and Sentaurus Mesh, but it can also be done with Sentaurus Mesh integrated in 
+Sentaurus Process. Performing this step in Sentaurus Process has advantages such as:</p>
+
+<ul>
+<li>Familiarity with the meshing syntax of Sentaurus Process, eliminating the need 
+to learn the syntax of a different tool</li>
+<li>The same coordinate system</li>
+<li>Availability of variables defined in the flow</li>
+</ul>
+
+<p>For these reasons, often, you want to perform device meshing in Sentaurus Process 
+as an add-on to the process simulation flow. You can do this by using an additional 
+Sentaurus Process tool instance in the Sentaurus Workbench flow or a split in the 
+Sentaurus Process tool instance.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>10.2 Initialization</h1>
+
+<p>Before any remeshing operations are performed, it is recommended that the 
+previously defined mesh settings are cleared to avoid any surprises when 
+defining the device mesh:</p>
+
+<pre>
+refinebox clear
+line clear
+</pre>
+
+<p>In addition, the mesh delaunization type must be changed to <tt>boxmethod</tt>.
+The default conformal-type delaunization is not suitable for device simulation:</p>
+
+<pre>
+pdbSet Grid SnMesh DelaunayType boxmethod
+</pre>
+
+<p>After the mesh definitions are specified using the syntax shown in the next 
+subsection, the mesh must be regenerated:</p>
+
+<pre>
+grid remesh
+</pre>
+
+<p class="note">In Sentaurus Process, contact definitions must be performed 
+as the last step, after remeshing for device simulation.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>10.3 Remeshing Options</h1>
+
+<p>This section describes how different meshing criteria can be implemented in 
+Sentaurus Process. Even though the results of one criterion are shown at a time, 
+a typical device would require multiple criteria to be used for a proper device mesh.</p>
+
+<!--=================-->
+<h2>10.3.1 Simple Refinement Box</h2>
+
+<pre>
+refinebox min= {0 0.1} max= {0.2 0.4} xrefine= 0.010 yrefine= 0.020
+</pre>
+
+<p>This example shows how to generate a uniform refinement inside a rectangular box
+(cuboid in three dimensions).</p>
+
+<p><img src="images/sp_snremesh1.png" width="500" alt="Simple refinement box" /></p>
+<p class="caption">Figure 1. Simple refinement box.</p>
+
+<!--=================-->
+<h2>10.3.2 Refinement in a Particular Material</h2>
+
+<pre>
+refinebox PolySilicon xrefine= 0.010 yrefine= 0.020
+</pre>
+
+<p>This example shows how to generate a uniform refinement inside a particular material,
+PolySilicon in this case.</p>
+
+<p><img src="images/sp_snremesh2.png" width="500" alt="Refinement in a particular material" /></p>
+<p class="caption">Figure 2. Refinement in a particular material.</p>
+
+<!--=================-->
+<h2>10.3.3 Refinement in a Particular Region</h2>
+
+<pre>
+refinebox regions= {Oxide_1.1} xrefine= 0.010 yrefine= 0.020
+</pre>
+
+<p>This example shows how to generate a uniform refinement inside a particular region,
+Oxide_1.1 in this case.</p>
+
+<p><img src="images/sp_snremesh3.png" width="500" alt="Refinement in a particular region" /></p>
+<p class="caption">Figure 3. Refinement in a particular region.</p>
+
+<!--=================-->
+<h2>10.3.4 Refinement at Interface Between Two Materials</h2>
+
+<pre>
+refinebox interface.mat.pairs= {Silicon Oxide} \
+    min.normal.size= 0.002 normal.growth.ratio= 1.5
+</pre>
+
+<p>This example shows how to generate a refinement at the interface between two 
+materials. Refinement is performed on both sides of the interface.</p>
+
+<p><img src="images/sp_snremesh4.png" width="500" alt="Interface refinement" /></p>
+<p class="caption">Figure 4. Interface refinement.</p>
+
+<!--=================-->
+<h2>10.3.5 Offsetting at Interface Between Two Materials</h2>
+
+<pre>
+refinebox offsetting interface.materials= {Silicon} offsetting.maxlevel= 10 
+refinebox offsetting interface.mat.pairs= {Silicon Oxide} \
+    min.normal.size= 0.005 normal.growth.ratio= 1.5
+</pre>
+
+<p>At interfaces that are not axis-aligned or curved, interface refinement causes 
+many mesh points to be consumed. In such cases, it might be better to use interface 
+offsetting, which creates mesh lines that run parallel to the interface. The 
+number of mesh lines generated at each side of the interface can be controlled with 
+the <tt>offsetting.maxlevel</tt> argument.</p>
+
+<p><img src="images/sp_snremesh5.png" width="500" alt="Interface offsetting" /></p>
+<p class="caption">Figure 5. Interface offsetting.</p>
+
+<!--=================-->
+<h2>10.3.6 Offsetting at Interface Between Two Regions</h2>
+
+<pre>
+grid set.min.normal.size= 0
+refinebox offsetting interface.regions= {Silicon_1} offsetting.maxlevel= 10 
+refinebox offsetting interface.region.pairs= {Silicon_1 Oxide_1.1} \
+    min.normal.size= 0.003 normal.growth.ratio= 1.3
+</pre>
+
+<p>This is similar to the previous case, except that offsetting is performed 
+between two specific regions.</p>
+
+<p><img src="images/sp_snremesh6.png" width="500" alt="Interface offsetting between regions" /></p>
+<p class="caption">Figure 6. Interface offsetting between regions.</p>
+
+<!--=================-->
+<h2>10.3.7 Refinement on Net Doping</h2>
+
+<pre>
+refinebox Silicon refine.fields= {NetActive} max.asinhdiff= {NetActive=1.0} \
+    refine.min.edge= {0.004 0.004} refine.max.edge= {0.25 0.15}
+</pre>
+
+<p>To refine on doping, adaptive meshing must be switched on. Meshing is performed 
+adaptively on asinh(NetActive) with an asinh difference of 1.0 and a minimum mesh
+spacing of 4&nbsp;nm.</p>
+
+<p><img src="images/sp_snremesh7.png" width="500" alt="Refinement on net doping" /></p>
+<p class="caption">Figure 7. Refinement on net doping.</p>
+
+<!--=================-->
+<h2>10.3.8 Interface Refinement Restricted to a Window</h2>
+
+<pre>
+refinebox interface.mat.pairs= {Silicon Oxide} \
+          min= {0.4 0.3} max= {0.5 0.5} \
+          min.normal.size= 0.002 normal.growth.ratio= 1.5
+</pre>
+
+<p>Sometimes, you want to restrict interface refinement to only a part 
+of the interface. In such cases, simply add a refinement window to the  
+interface refinement command.</p>
+
+<p><img src="images/sp_snremesh8.png" width="500" alt="Interface refinement restricted to a window" /></p>
+<p class="caption">Figure 8. Interface refinement restricted to a window.</p>
+
+<!--=================-->
+<h2>10.3.9 Adding Manual Mesh Lines</h2>
+
+<pre>
+pdbSet Grid MGoals UseLines 1
+line x location= 0.1
+line x location= 0.2
+line x location= 0.4
+
+line y location= 0.1
+line y location= 0.2
+line y location= 0.3
+line y location= 0.4
+</pre>
+
+<p>In certain cases, you might want to add mesh lines at specific locations. 
+You can do this using the Sentaurus Process <tt>line</tt> command. Manual mesh 
+lines also partition the structure such that refinements defined on one side 
+of a mesh line do not propagate to the other side.</p>
+
+<p><img src="images/sp_snremesh9.png" width="500" alt="Adding manual mesh lines" /></p>
+<p class="caption">Figure 9. Adding manual mesh lines.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_9.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_11.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,618 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script> 
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 8. Input File Templates</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_7.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_9.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />8. Input File Templates</h1>
+
+<p>
+ <a href="#1">8.1 Using Different Simulation Modes</a><br />
+ <a href="#2">8.2 Using Different Sweep Types</a><br />
+ <a href="#3">8.3 Using Output Controls</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To provide input templates for device simulations 
+     using Sentaurus Device.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>8.1 Using Different Simulation Modes</h1>
+
+<p>This section describes different simulation modes and discusses the 
+following Sentaurus Device input templates:</p>
+
+<ul>
+<li>Single-device simulation: <a href="#SingleDevice">Section 8.1.1
+Single-Device Input Template</a></li>
+<li>Multiple-device simulation in mixed mode: 
+<a href="#MixedMode">Section 8.1.2 Mixed-Mode Input Template</a></li>
+<li>Small-signal AC analysis simulation: 
+<a href="#ACAnalysis">Section 8.1.3 AC Analysis Input File Template</a></li>
+</ul>
+
+<!--==================-->
+<a name="SingleDevice"></a>
+<h2>8.1.1 Single-Device Input Template</h2>
+      
+<p>The Sentaurus Device command file template for a single-device simulation is
+featured in a Sentaurus Workbench project located in the directory
+<tt>Applications_Library/GettingStarted/sdevice/SingleDevice</tt>.</p>
+
+<p>Click to view the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd">
+SingleDevice_des.cmd</a>.</p>
+
+<p>The <tt>File</tt>, <tt>Electrode</tt>, and <tt>Solve</tt> sections are
+mandatory.</p>
+
+<p>The <tt>Thermode</tt> section is mandatory only if lattice self-heating is
+simulated.</p>
+
+<p>The <tt>Physics</tt> section is optional but, for practical reasons, it is
+strongly recommended. Otherwise, a very limited set of default models is used.</p>
+
+<p>The <tt>Physics</tt> sections restricted to specific materials, regions, material
+interfaces, or region interfaces can be defined optionally.</p>
+
+<p>The <tt>Plot</tt> section is optional but is recommended. Otherwise, a very
+limited set of default datasets is written into the output TDR file (see 
+<a href="#PlotSection">Section&nbsp;8.3.1 Plot Section Template</a> for details).</p>
+
+<p>The <tt>Math</tt> section is optional, but the following set of options 
+is recommended:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="Math*" endExpr="}*" -->
+<pre>
+Math {
+  Extrapolate               * (not needed for transient sweeps)
+  #Avalderivatives          * (only if Avalanche models are active)
+  RelErrControl
+  Digits=5                  * (default)
+  ErrRef(electron)=1.e10    * (default)
+  ErrRef(hole)=1.e10        * (default)
+  Iterations=20
+  Notdamped=100
+}
+</pre>
+<!-- grep end -->
+
+<!--==================-->
+<a name="MixedMode"></a>
+<h2>8.1.2 Mixed-Mode Input Template</h2>
+
+<p>The Sentaurus Device command file template for a mixed-mode simulation is
+featured in a Sentaurus Workbench project located in the directory
+<tt>Applications_Library/GettingStarted/sdevice/MixedMode</tt>.</p>
+
+<p>Click to view the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/MixedMode/MixedMode_des.cmd">
+MixedMode_des.cmd</a>.</p>
+
+<p>The <tt>Device</tt> sections for each device, the <tt>System</tt> section, and
+the <tt>Solve</tt> section are mandatory.</p>
+
+<!--==========-->
+<h3>8.1.2.1 Specifics of Mixed-Mode Input</h3>
+
+<p>For mixed-mode input:</p>
+
+<ul>
+<li>All physical devices are defined within a <tt>Device</tt> section, which
+carries a device-type identifier, for example, <tt>Device SiGeBJT
+{...}</tt>.</li>
+
+<li>The <tt>File</tt> sections within the <tt>Device</tt> section 
+<em>must not contain</em> an <tt>Output</tt> statement.</li>
+
+<li>There is a global <tt>File</tt> section that contains the <tt>Output</tt>
+statement and possibly other statements.</li>
+
+<li>The <tt>Plot</tt> section can be global or can appear in any <tt>Device</tt>
+section.</li>
+
+<li>The <tt>Math</tt> section is global, that is, it can appear only once and
+can appear only outside any <tt>Device</tt> section.</li>
+
+<li>The <tt>System</tt> section is mandatory. It defines the netlist in which
+SPICE-type lumped elements, such as voltage and current sources, resistors,
+capacitors, and compact models, as well as physical device models can be
+combined to form a complex circuit.</li>
+
+<li>When using a physical device in a <tt>System</tt> section, besides the
+device-type identifier, an instance name must be specified. This allows for the
+use of the same physical device type more than once in the circuit, without the
+need for multiple <tt>Device</tt> sections. For details, see 
+<a href="./sd_3.html#Solve">Section 3.2.6 Solve Section</a>.</li>
+</ul>
+
+<!--==================-->
+<a name="ACAnalysis"></a>
+<h2>8.1.3 AC Analysis Input File Template</h2>
+
+<p>The Sentaurus Device command file template for an AC analysis is featured in
+a Sentaurus Workbench project located in the directory
+<tt>Applications_Library/GettingStarted/sdevice/AC</tt>.</p>
+
+<p>Click to view the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/AC/AC_des.cmd">AC_des.cmd</a>.</p>
+
+<p>The <tt>Device</tt> sections for each device, the <tt>System</tt> section, and
+the <tt>Solve</tt> section are mandatory.</p>
+
+<p>The <tt>File</tt> section contains the <tt>ACExtract</tt> keyword.</p>
+
+<!--================-->
+<h3>8.1.3.1 Specifics of AC Analysis Input</h3>
+
+<p>For AC analysis input:</p>
+
+<ul>
+<li>The basic setup is the same as the mixed-mode environment 
+(see <a href="#MixedMode">Section 8.1.2 Mixed-Mode Input Template</a>), that is, 
+the physical devices are defined within <tt>Device</tt> sections.</li>
+        
+<li>A global <tt>File</tt> section contains the additional <tt>ACExtract</tt>
+statement, which identifies the output file used to save the calculated
+capacitance and admittance matrix elements.</li>
+        
+<li>The <tt>System</tt> section is mandatory and defines the netlist in which
+SPICE-type lumped elements, such as voltage and current sources, resistors,
+capacitors, and compact models, as well as physical models can be combined to
+form a complex circuit.</li>
+
+<li>When using a physical device in a <tt>System</tt> section, besides the
+device-type identifier, an instance name must be specified. This allows for the
+use of the same physical device type more than once in the circuit, without the
+need for multiple <tt>Device</tt> sections. For details, see 
+<a href="./sd_3.html#4">Section 3.4 Small-Signal AC Analysis</a>.</li>
+</ul>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>8.2 Using Different Sweep Types</h1>
+
+<p>This section describes different sweep types and discusses the following 
+Sentaurus Device templates:</p>
+
+<ul>
+<li>Template for a boundary condition value sweep in steady state: 
+<a href="#DCsweep">Section 8.2.1 Quasistationary Sweep Template</a></li>
+<li>Template for a boundary condition value sweep in the time domain: 
+<a href="#Transientsweep">Section 8.2.2 Transient Sweep Template</a></li>
+</ul>
+
+<!--==================-->
+<a name="DCsweep"></a>
+<h2>8.2.1 Quasistationary Sweep Template</h2>
+
+<p>The first gate voltage <tt>Quasistationary</tt> sweep in the <tt>Solve</tt>
+section of the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd">SingleDevice_des.cmd</a>
+reads:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="*NewCurrentPrefix=*IdVgsLin_*" Lines=5 footer="     ...\n   } *end gate voltage sweep" startOffset=+1 -->
+<pre>
+  *- Gate voltage sweep
+  Quasistationary(
+    InitialStep=1e-3 Increment=1.3 Decrement=2 MaxStep=0.1 MinStep=1e-5
+    Goal{ Name=&quot;gate&quot; Voltage= 2.2 }
+  ) { Coupled { Poisson Electron Hole eQuantumPotential }
+     ...
+   } *end gate voltage sweep
+</pre>
+<!-- grep end -->
+
+<p>Sentaurus Device starts from the bias condition, as set in the
+<tt>Electrode</tt> section or a previously solved device state, and gradually
+changes the bias condition until the specified voltage or current goal is
+reached.</p>
+
+<p>Sentaurus Device uses an internal variable <tt>t</tt> with 
+0 &le; <tt>t</tt> &le; 1 for the bias sweeping. The applied bias is given by:</p>
+
+<p>\[ V(t) = V_{\text"initial"} + t · (V_{\text"goal"} - V_{\text"initial"}) \] </p>
+
+<p>The step sizes and other controls apply to the sweeping of the parameter
+<tt>t</tt>.</p>
+
+<p>The sweep starts with the <tt>InitialStep</tt>. If convergence 
+is good, the step size is increased by a factor whose value is based on 
+a given <tt>Increment</tt> until it reaches the value of <tt>MaxStep</tt>.</p>
+
+<p>If convergence cannot be achieved, the current step size is reduced 
+until it becomes smaller than the value of <tt>MinStep</tt>, in which case, 
+the sweep stops. The step reduction can be controlled by having a 
+<tt>Decrement</tt> value specified (2 by default) at the same place where 
+<tt>Increment</tt> is defined.</p>
+
+<p class="note">A <tt>Quasistationary</tt> section can have more than one 
+<tt>Goal</tt> statement.</p>
+
+<p>Besides contact biases, other parameters such as compact model parameters and
+parameters from physical models can be ramped. The following is an example of the
+syntax, showing how the lattice temperature can be ramped:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="*-*Example*" endExpr="*eQuantumPotential*}*}*" -->
+<pre>
+  *- Example of parameter (lattice temperature) sweep
+  #Quasistationary(
+  #InitialStep=1.e-3 Increment=1.5
+  #MaxStep=0.05 MinStep=1.e-7
+  #Goal { Model=&quot;DeviceTemperature&quot; Parameter=&quot;Temperature&quot; Value=400.} 
+  #) { Coupled { Poisson Electron Hole eQuantumPotential } }
+</pre>
+<!-- grep end -->
+
+<!--==================-->
+<a name="Transientsweep"></a>
+<h2>8.2.2 Transient Sweep Template</h2>
+
+<p>The <tt>Transient</tt> sweep in the <tt>Solve</tt> section of the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/MixedMode/MixedMode_des.cmd">MixedMode_des.cmd</a> reads:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MixedMode/MixedMode_des.cmd" startExpr="*Transient*(*" endExpr="*currentplot*" -->
+<pre>
+  Transient (
+    InitialTime=0 FinalTime=100e-11
+    InitialStep=1e-11 Increment=1.3
+    MaxStep=5e-11 MinStep=1e-15
+  ){ 
+    Coupled { nmos1.poisson nmos1.electron nmos1.hole nmos1.contact circuit }
+    CurrentPlot(Time = (Range = (0 100e-11)  Intervals = 40)) 
+</pre>
+<!-- grep end -->
+
+<p>Sentaurus Device starts from the current time, which defaults to 0, or as set
+in the previous <tt>Transient</tt> section. The step sizes refer to the time
+<tt>Increment</tt>.</p>
+
+<p>If convergence is good, the step size is increased by a factor given by the 
+<tt>Increment</tt> until it reaches the value of <tt>MaxStep</tt>.</p>
+
+<p>If convergence cannot be achieved, the current step size is reduced until it
+becomes smaller than the value of <tt>MinStep</tt>, in which case, the sweep
+stops. The step reduction can be controlled by having a <tt>Decrement</tt> value
+specified (2 by default) at the same place where <tt>Increment</tt> is
+defined.</p>
+
+<p class="note">It is recommended not to activate the <tt>Extrapolate</tt> option 
+in the <tt>Math</tt> section for transient sweeps.</p>
+      
+<!--================================================-->
+<a name="3"></a>
+<h1>8.3 Using Output Controls</h1>
+
+<p>This section describes different output controls and discusses the 
+following Sentaurus Device input templates:</p>
+
+<ul>
+<li>List of dataset names to be plotted: 
+<a href="#PlotSection">Section 8.3.1 Plot Section Template</a></li>
+
+<li>List of commands used to plot, save, and load a device state: 
+<a href="#PlotSave">Section 8.3.2 Plotting, Saving, and Reloading Template</a></li>
+
+<li>Commands used to store I&ndash;V data at predefined time points: 
+<a href="#EquidistIV">Section 8.3.3 Storing I&ndash;V Data at Defined Bias 
+Points Template</a></li>
+
+<li>Template showing how to monitor local and integrated quantities along a
+boundary condition sweep: <a href="#NonIVQuantity">Section 8.3.4 Monitoring
+Non-I&ndash;V Quantities During a Sweep Template</a></li>
+
+<li>Syntax construction to redirect I&ndash;V output to a file: 
+<a href="#IVRedirect">Section 8.3.5 Redirecting I&ndash;V Output Template</a></li>
+</ul>
+
+<!--=========================-->
+<a name="PlotSection"></a>
+<h2>8.3.1 Plot Section Template</h2>
+
+<p>The <tt>Plot</tt> section of the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd">SingleDevice_des.cmd</a> reads:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="Plot{" endExpr="}*" -->
+<pre>
+Plot{
+  *--Density and Currents, etc
+  eDensity hDensity
+  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+  eMobility/Element hMobility/Element
+  eVelocity hVelocity
+  eQuasiFermi hQuasiFermi
+  
+  *--Temperature 
+  eTemperature hTemperature Temperature
+  
+  *--Fields and charges
+  ElectricField/Vector Potential SpaceCharge
+  
+  *--Doping Profiles
+  Doping DonorConcentration AcceptorConcentration
+  
+  *--Generation/Recombination
+  SRH Band2Band Auger
+  ImpactIonization eImpactIonization hImpactIonization
+  
+  *--Driving forces
+  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  eEparallel hEparallel eENormal hENormal
+  
+  *--Band structure/Composition
+  BandGap 
+  BandGapNarrowing
+  Affinity
+  ConductionBand ValenceBand
+  eQuantumPotential hQuantumPotential
+}
+</pre>
+<!-- grep end -->
+
+<p>All datasets mentioned in the <tt>Plot</tt> section are saved
+into the <tt>Plot</tt> file (as set in the <tt>File</tt> section) at the end of
+the simulation or at instances specified by <tt>Plot</tt> statements in
+the <tt>Solve</tt> section (see <a href="#PlotSave">Section 8.3.2 Plotting,
+Saving, and Reloading Template</a>).</p>
+
+<p class="note">If unnecessary datasets are selected, the output file becomes
+unnecessarily large. To deselect a dataset, comment it out with a preceding
+hash character (#).</p>
+
+<p>By default, scalar data is plotted. To plot vector data, append
+<tt>/Vector</tt> to the corresponding dataset, for example, 
+<tt>ElectricField/Vector</tt>.</p>
+
+<p>Element-based scalar data can be plotted by appending <tt>/Element</tt> 
+to the corresponding dataset name, for example, <tt>eMobility/Element</tt>.</p>
+
+<p>Some quantities (solution variables) are put into the <tt>Plot</tt> file even
+when they are not listed in the <tt>Plot</tt> section. This might be troublesome
+if the grid size is huge and the disk space is small (usually in the case of 3D
+simulations). To suppress this behavior, use the keyword <tt>PlotExplicit</tt>
+in the global <tt>Math</tt> section.</p>
+
+<p>By default, the plot file also contains additional information required by
+the <tt>Load</tt> command to restart a simulation (see 
+<a href="#PlotSave">Section&nbsp;8.3.2 Plotting, Saving, and Reloading
+Template</a>). To suppress writing this additional information, specify
+<tt>-PlotLoadable</tt> in the global <tt>Math</tt> section.</p>
+
+<!--=========================-->
+<a name="PlotSave"></a>
+<h2>8.3.2 Plotting, Saving, and Reloading Template</h2>
+
+<p>To save, reload, and plot a solution in the <tt>Solve</tt> section of the
+Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd">
+SingleDevice_des.cmd</a>, the <tt>Save</tt>, <tt>Load</tt>, and 
+<tt>Plot</tt> commands are used, respectively. For example, to save a solution, 
+specify:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="*Save*(*FilePrefix*=**n@node@_init**)" lines=1 header="Solve { \n ..." footer=" ...\n}*end Solve" -->
+<pre>
+Solve { 
+ ...
+  Save ( FilePrefix = &quot;n@node@_init&quot; )
+ ...
+}*end Solve
+</pre>
+<!-- grep end -->
+
+<p>To plot or save a solution during a (DC or transient) sweep at a set of given
+values of the <tt>t</tt> variable, or at regular intervals, for example, 0%,
+ 20%, 40%, ... , 100% of the goal, use the <tt>Plot</tt> statement in the
+<tt>Quasistationary</tt> or <tt>Transient</tt> statement:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="*NewCurrentPrefix=*IdVgsLin_*" endExpr="*Plot*time*range*Intervals*" startOffset=+2 footer="    ...\n  } *end gate voltage sweep" -->
+<pre>
+  Quasistationary(
+    InitialStep=1e-3 Increment=1.3 Decrement=2 MaxStep=0.1 MinStep=1e-5
+    Goal{ Name=&quot;gate&quot; Voltage= 2.2 }
+  ) { Coupled { Poisson Electron Hole eQuantumPotential }
+    *Plot at a set of given values of the t variable
+    Plot( -Loadable Fileprefix=&quot;n@node@_inter&quot; NoOverWrite Time= (0.3; 0.6) )
+    *Plot at regular intervals
+    #Plot(Fileprefix=&quot;n@node@_inter&quot; NoOverWrite Time=(Range=(0 1) Intervals=6))
+    ...
+  } *end gate voltage sweep
+</pre>
+<!-- grep end -->
+
+<p>The keyword <tt>-Loadable</tt> here instructs Sentaurus Device not to 
+write additional information, which would be required only when loading the file
+with a subsequent <tt>Load</tt> command. This helps to save disk space,
+especially for 3D simulations.</p>
+
+<p>The keyword <tt>NoOverWrite</tt> in the examples instructs Sentaurus
+Device to create a unique <tt>Plot</tt> or <tt>Save</tt> file name for each
+plotted (or saved) time point. By default, the information is always written
+into the same file name.</p>
+
+<p>Here are some additional aspects of the <tt>Plot</tt>, <tt>Save</tt>, and 
+<tt>Load</tt> commands:</p>
+
+<ul>
+<li>A <tt>Plot</tt> file can be viewed using Sentaurus Visual and contains all
+datasets selected in the <tt>Plot</tt> section.</li>
+
+<li>A <tt>Save</tt> file contains all datasets needed to restart the simulation
+as well as other needed information such as bias conditions. It also can
+be visualized directly in Sentaurus Visual.</li>
+
+<li>After loading a solution with <tt>Load</tt>, all previous bias information
+is overwritten.</li>
+
+<li>To create a sequence of <tt>Save</tt> files, replace the <tt>Plot</tt>
+keyword with <tt>Save</tt>.</li>
+
+<li>Remove the <tt>NoOverWrite</tt> keyword if only the current file of the
+sequence is needed, for example, to restart a long-running simulation after a
+system failure without wasting disk space.</li>
+</ul>
+
+<!--=========================-->
+<a name="EquidistIV"></a>
+<h2>8.3.3 Storing I&ndash;V Data at Defined Bias Points Template</h2>
+
+<p>By default, Sentaurus Device stores the voltages and currents at the contacts
+in the <tt>Current</tt> file (<tt>.plt</tt> file) for each simulated step. However,
+sometimes, intermediate steps needed to achieve convergence are not required
+to be stored. Instead, the solutions are needed at a predefined set of points,
+for example, to compare with experimental data. Use the <tt>CurrentPlot</tt>
+statement to achieve this.</p>
+
+<p>In the <tt>Solve</tt> section of the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd">SingleDevice_des.cmd</a>,
+the I&ndash;V points are plotted explicitly at predefined time points, or
+distributed equidistantly within a given range, using the <tt>CurrentPlot</tt>
+statement in the <tt>Quasistationary</tt> statement:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="*NewCurrentPrefix=*IdVgsLin_*" endExpr="*Plot*(*FilePrefix*=**n@node@_Lin**)*" excludeLines=3 startOffset=+2 endOffset=-2 -->
+<pre>
+  Quasistationary(
+    InitialStep=1e-3 Increment=1.3 Decrement=2 MaxStep=0.1 MinStep=1e-5
+    Goal{ Name=&quot;gate&quot; Voltage= 2.2 }
+  ) { Coupled { Poisson Electron Hole eQuantumPotential }
+    *Plot at a set of given values of the t variable
+    Plot( -Loadable Fileprefix=&quot;n@node@_inter&quot; NoOverWrite Time= (0.3; 0.6) )
+    *Plot at regular intervals
+    #Plot(Fileprefix=&quot;n@node@_inter&quot; NoOverWrite Time=(Range=(0 1) Intervals=6))
+    *I-V calculated at given values of the t variable
+    #CurrentPlot(Time=(0.1; 0.5; 0.8))
+    *I-V calculated at regular intervals
+    CurrentPlot(Time=(Range=(0 1) Intervals=20))
+  } *end gate voltage sweep
+</pre>
+<!-- grep end -->
+
+<!--=========================-->
+<a name="NonIVQuantity"></a>
+<h2>8.3.4 Monitoring Non-I&ndash;V Quantities During a Sweep Template</h2>
+
+<p>The value of any quantity mentioned in the <tt>Plot</tt> section can be
+monitored during the sweeps using the <tt>CurrentPlot</tt> section. Do not
+confuse this feature with the <tt>CurrentPlot()</tt> statement in <a
+href="#EquidistIV">Section&nbsp;8.3.3 Storing I&ndash;V Data at Defined Bias
+Points Template</a>.</p>
+
+<p>For example, in the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd">
+SingleDevice_des.cmd</a>, to monitor the electric field at the drain junction:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="CurrentPlot*{*" endExpr="}*" -->
+<pre>
+CurrentPlot {
+  ElectricField/Vector( (0.01 0.025) )
+}
+</pre>
+<!-- grep end -->
+
+<p>This introduces the <tt>ElectricField/x</tt> and <tt>ElectricField/y</tt>
+datasets taken at the (0.01,0.025) position into the corresponding
+<tt>_des.plt</tt> file.</p>
+
+<p>Here are some additional aspects of the <tt>CurrentPlot</tt> section
+commands:</p>
+
+<ul>
+<li>A single coordinate point or a list of points can be specified.</li>
+
+<li>For 3D devices, specify the coordinate point as 
+<tt>([<em>X1</em>] [<em>Y1</em>] [<em>Z1</em>])</tt>.</li>
+
+<li>Besides coordinates, qualifiers such as <tt>Average(Region="Channel")</tt> or 
+<tt>Maximum(Material="Silicon")</tt> can be used. Refer to the 
+<cite>Sentaurus&trade; Device User Guide</cite> for details.</li>
+</ul>
+
+<!--=========================-->
+<a name="IVRedirect"></a>
+<h2>8.3.5 Redirecting I&ndash;V Output Template</h2>
+
+<p>To redirect the I&ndash;V output to a different <tt>_des.plt</tt> file, use
+<tt>NewCurrentPrefix</tt> in the <tt>Solve</tt> section.</p>
+
+<p>For example, in the <tt>Solve</tt> section of the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd">
+SingleDevice_des.cmd</a>, a high-drain bias I<sub>d</sub>&ndash;V<sub>g</sub> 
+simulation is performed. An initial <tt>Quasistationary</tt> sweep biases up 
+the drain, and then the gate sweep is performed. To ensure that the final dataset 
+(gate sweep) does not include the data from the initial sweep (drain sweep), use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SingleDevice/SingleDevice_des.cmd" startExpr="*Load*(*FilePrefix*=**n@node@_init**)*" endExpr="*Plot*(*FilePrefix*=**n@node@_Sat**)" startOffset=+2 endOffset=-2 -->
+<pre>
+  NewCurrentPrefix=&quot;&quot;
+  *- Bias drain to target bias
+  Quasistationary(
+    InitialStep=0.01 MinStep=1e-5 MaxStep=0.1
+    Goal{ Name=&quot;drain&quot; Voltage= 1.1  }
+  ) { Coupled { Poisson Electron Hole eQuantumPotential } }
+  
+  NewCurrentPrefix=&quot;IdVgsSat_&quot;
+  *- Gate voltage sweep
+  Quasistationary(
+    InitialStep=1e-3 Increment=1.3 Decrement=2 MaxStep=0.1 MinStep=1e-5
+    Goal{ Name=&quot;gate&quot; Voltage= 2.2 }
+  ) { Coupled { Poisson Electron Hole eQuantumPotential }
+    CurrentPlot(Time=(Range=(0 1) Intervals=20))
+  } *end gate voltage sweep   
+</pre>
+<!-- grep end -->
+
+<p>This writes the data for the first sweep into the default file 
+<tt>n@node@_des.plt</tt>, as indicated in the <tt>Current</tt> statement within
+the <tt>File</tt> section. For the second sweep, the data is written into 
+the <tt>IdVgsSat_n@node@_des.plt</tt> file.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_7.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_9.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

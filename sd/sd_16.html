@@ -1,0 +1,1665 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 16. Special Focus: Simulating AlGaN Devices With Sentaurus Device</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_15.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_17.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />16. Special Focus: Simulating AlGaN Devices With Sentaurus Device</h1>
+
+<p>
+ <a href="#1">16.1 Overview</a><br />
+ <a href="#2">16.2 AlGaN/GaN Parameter Files</a><br />
+ <a href="#3">16.3 Crystal and Device Orientation</a><br />
+ <a href="#4">16.4 III&ndash;Nitride-Specific Physical Models: Polarization Effects</a><br />
+ <a href="#5">16.5 Traps in III&ndash;Nitride Devices</a><br /> 
+ <a href="#6">16.6 AlGaN-Specific Numeric Parameters</a><br />
+ <a href="#7">16.7 Application Example: p-Gate AlGaN HFET</a><br />
+ <a href="#8">16.8 Application Example: GaN p-i-n Diode</a><br />
+ <a href="#9">16.9 Relevant Application Notes</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate the use of various polarization models implemented in Sentaurus Device.</li>
+ <li>To demonstrate an I<sub>d</sub>&ndash;V<sub>g</sub> simulation of a p-gate AlGaN HFET using Sentaurus Device.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>16.1 Overview</h1>
+
+<p>This example follows the description of the project process part in 
+<a href="../sp/sp_16.html">Section&nbsp;16. Special Focus: AlGaN Process Simulation</a> 
+and provides more insight into how to perform an AlGaN device simulation in conjunction 
+with the AlGaN process simulation.</p>
+
+<p>The complete project can be accessed from Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pGate_HFET</tt>.</p> 
+
+<!--================================================-->
+<a name="2"></a>
+<h1>16.2 AlGaN/GaN Parameter Files</h1>
+
+<p>Dedicated parameter files for GaN, AlN, and AlGaN are provided in the 
+<tt>$STROOT/tcad/$STRELEASE/lib/sdevice/MaterialDB/</tt> directory. In addition, 
+there are parameter files for the InGaN material family in the same location. 
+Sentaurus Workbench provides an easy way to access these files. See 
+<a href="../swb/swb_07.html#Key">Section&nbsp;7.2 Customizing Tool Input File</a>.
+For a general discussion on parameter specifications for ternary materials, see 
+<a href="../sd/sd_4.html#2">Section&nbsp;4.2 Model Parameter Definitions for Nonsilicon Material</a>.</p>
+
+<p>In this example, the default GaN, AlN, and Al<sub>x</sub>Ga<sub>1&ndash;x</sub>N files 
+from the <tt>MaterialDB</tt> folder are used together with the SiC parameters discussed in 
+<a href="../sd/sd_15.html#2">Section&nbsp;15.2 SiC Parameter Files</a>. As an example, 
+the band gap of Al<sub>x</sub>Ga<sub>1&ndash;x</sub>N is shown in Figure 1.</p>
+
+<p><a href="images/sd_algan_bandgap.png"><img src="images/sd_algan_bandgap.png" width="570" 
+alt="Mole fraction dependency of AlGaN band gap and affinity" /></a></p>
+
+<p class="caption">Figure 1. Band gap at 300 K (green line) and affinity (red line) 
+of Al<sub>x</sub>Ga<sub>1&ndash;x</sub>N as a function of mole fraction x. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>16.3 Crystal and Device Orientation</h1>
+
+<p>III&ndash;nitride materials in their wurtzite phase exhibit strong piezoelectric 
+and spontaneous polarization effects. The spontaneous polarization is aligned 
+parallel to the c-axis of the hexagonal crystal. Due to this intrinsic anisotropy, the orientation 
+of the simulation coordinate system relative to the crystal is important.</p>
+
+<p>This orientation is read from the TDR file and is used implicitly by Sentaurus Device
+if the device structure is computed by Sentaurus Process. Otherwise, the orientation 
+of the simulation coordinate system with respect to the crystal must be specified in 
+a <tt>LatticeParameters</tt> section in the parameter file of Sentaurus Device.</p>
+ 
+<p class="note">Any orientation read from a TDR file is overwritten by an explicit Sentaurus Device 
+setting of the <tt>LatticeParameters</tt> section. It is recommended to use a single 
+global <tt>LatticeParameters</tt> section for a given device simulation, if one is required.</p>
+
+<p><a href="images/sd_algan_lattice.png"><img src="images/sd_algan_lattice.png" width="570" 
+alt="GaN hexagonal lattice and coordinate system orientation" /></a></p>
+
+<p class="caption">Figure 2. Hexagonal lattice of wurtzite GaN. Green connections 
+indicate the primitive unit cell. The Ga&ndash;N bonds in the unit cell are orange. 
+The crystal fixed Cartesian coordinate system is indicated in red. The given 
+LatticeParameters setting orients the simulation x-axis of the UCS antiparallel 
+to the c-axis of the crystal. (Click image for full-size view.)</p>
+
+<p>The device coordinate system is oriented relative to the crystal coordinate 
+system in the <tt>LatticeParameters</tt> section of the parameter file. Sentaurus Device 
+assumes a Cartesian crystal coordinate system fixed to the semiconductor crystal. 
+In wurtzite crystals, the orientation of this crystal coordinate system is such that 
+the c-axis points along its z-axis. The x-axis and y-axis are oriented along 
+&lt;2<span style="text-decoration: overline">1</span><span style="text-decoration: overline">1</span>0&gt; 
+and &lt;01<span style="text-decoration: overline">1</span>0&gt;, respectively. 
+Figure 2 shows the hexagonal GaN lattice together with such coordinate axes.</p>
+
+<p>Typically, the c-axis of the crystal points vertically upwards in the simulation 
+coordinate system. In the unified coordinate system (UCS), the x-axis always points 
+downwards. The corresponding <tt>LatticeParameters</tt> section as shown in 
+Figure 2 reads:</p>
+
+<pre>
+LatticeParameters {
+  X = (0, 0,-1)
+  Y = (1, 0, 0)
+}
+</pre>
+
+<p>For the DF&ndash;ISE coordinate system in two dimensions, the y-axis 
+points downwards. The corresponding <tt>LatticeParameters</tt> setting with the 
+crystal c-axis pointing upwards reads:</p>
+
+<pre>
+LatticeParameters {
+  X = (1, 0, 0)
+  Y = (0, 0,-1)
+}
+</pre>
+
+<p>For the DF&ndash;ISE coordinate system in three dimensions:</p>
+
+<pre>
+LatticeParameters {
+  X = (0, -1, 0)
+  Y = (1,  0, 0)
+}
+</pre>
+
+
+<!--================================================-->
+<a name="4"></a>
+<h1>16.4 III&ndash;Nitride-Specific Physical Models: Polarization Effects</h1>
+
+<p>Sentaurus Device provides alternatives of different complexity to model polarization 
+effects, ranging from the placement of explicit interface charges to full-volume 
+polarization fields, computed from strain or stress distributions in the device.</p>
+
+<!--=========================-->
+<h2>16.4.1 Strain Model</h2>
+
+<p>The strain model is available in a general and a simplified version. Both versions 
+are activated in the <tt>Physics</tt> section, for example:</p>
+
+<pre>
+Physics {
+  Piezoelectric_Polarization (strain)
+}
+</pre>
+
+<!--=============-->
+<h3>16.4.1.1 Full Strain Model</h3>
+
+<p>With the full strain model, the piezoelectric polarization vector is expressed 
+as a function of the local strain tensor 
+\(ε↖{-}\):</p> 
+
+<p>\[ [\table P_{x}; P_{y}; P_{z}] = [\table P_{x}^{\text"sp"}; P_{y}^{\text"sp"}; P_{z}^{\text"sp"}] + 
+[\table e_{11}, e_{12}, e_{13}, e_{14}, e_{15}, e_{16}; e_{21}, e_{22}, e_{23}, e_{24}, e_{25}, e_{26}; e_{31}, e_{32}, e_{33}, e_{34}, e_{35}, e_{36} ] 
+   [\table ε_{xx}; ε_{yy}; ε_{zz}; ε_{yz}; ε_{xz}; ε_{xy} ] \]</p>
+
+<p>Here, \(P^{\text"sp"}\) is the spontaneous polarization vector, and the quantities
+\(e_{ij}\) denote the strain-charge piezoelectric coefficients. The quantities
+\(P^{\text"sp"}\) and \(e_{ij}\) are defined in the crystal system. The polarization
+vector is first computed in crystal coordinates and is converted to simulation
+coordinates afterwards.</p>
+
+<p>This general model is evaluated in either of the following circumstances:</p>
+
+<ul>
+<li>A constant strain tensor is specified in the <tt>Piezo</tt> section of the command file:<br />
+
+<pre>
+Physics {
+  Piezo( Strain= (xx yy zz yz xz xy) )
+}
+</pre></li>
+
+<li>The strain tensor is read from a TDR file. This requires the specification of:<br />
+
+<pre>
+Physics {
+  Piezo( Strain= LoadFromFile )
+}
+</pre>
+
+and the specification of the corresponding TDR file within the <tt>File</tt> section 
+of the command file:<br />
+
+<pre>
+File { Piezo= &lt;file&gt; }
+</pre>
+</li>
+</ul>
+
+<!--=============-->
+<a name="412"></a>
+<h3>16.4.1.2 Simplified Strain Model</h3>
+
+<p>The most popular III&ndash;nitride-based devices such as HFETs for RF and 
+power-switching applications are built from epitaxial structures formed by multiple 
+layers with the growth direction [0001] and constant mole fractions within each layer. 
+In such structures, the primary effect of polarization is an interface charge 
+(polarization charge) due to the abrupt divergence in the polarization at such 
+III&ndash;nitride heterointerfaces.</p>
+
+<p>The easiest way to model polarization in such epitaxial devices is to use the 
+simplified strain model that computes spontaneous and piezoelectric components based 
+on the local mole fraction and the strain resulting from the assumption of pseudomorphic 
+growth onto a reference layer with a certain lattice constant, <em>a</em><sub>0</sub>.
+For these simplifying assumptions, the strain model reduces to the simplified strain model, 
+in which the total polarization is given by:</p>
+
+<p>\[ [\table P_{x}; P_{y}; P_{z}] = [\table P_{x}^{\text"sp"}; P_{y}^{\text"sp"}; P_{z}^{\text"sp"} + P_{\text"strain"}] \]</p>
+
+<p>where:</p>
+
+<p> \(P_{\text"strain"} = 2d_{31} · \text"strain" ·(c_{11} + c_{12} - {2c_{13}^{2}} / {c_{33}}) \) , for Formula=1 </p>
+<p> \(P_{\text"strain"} = 2 · \text"strain" ·(e_{31} - e_{33} {c_{13}}/{c_{33}} )  \) , for Formula=2 </p>
+<p> \(\text"strain" = (1 - \text"relax") · ({a_{0} - a} / {a})  \) </p>
+
+<p>Two equivalent models can be selected for the simplified strain model by the 
+<tt>Formula</tt> keyword:</p>
+
+<ul>
+<li>For <tt>Formula=1</tt>, stress-charge piezoelectric coefficients \(d_{31}\) 
+are used.</li>
+<li>For <tt>Formula=2</tt>, strain-charge coefficients \(e_{31}\) are used.</li>
+</ul>
+
+<p>The <tt>Formula</tt> keyword is set in the <tt>Piezoelectric_Polarization</tt> 
+parameter section together with the strained and unstrained in-plane lattice constants 
+ \(a_{0}\) ( <tt>a0</tt>) and \(a\) (<tt>a</tt>).</p>
+
+<p>The simplified strain model provides a strain relaxation parameter <tt>relax</tt> 
+in the <tt>Piezoelectric_Polarization</tt> parameter set. It is used to scale the 
+piezoelectric polarization component due to stress relaxation as indicated in the 
+formula above.</p>
+
+<pre>
+Piezoelectric_Polarization { 
+  formula   = 1
+  
+  * strain parameters:  
+  * a0: strained lattice constant [Angstrom]
+  * a: unstrained lattice constant [Angstrom]
+
+  a0  = 3.189 # [Angstrom]
+  a = 3.179 # [Angstrom]
+  
+  * relax: relaxation parameter [1]
+  relax   =   0.0
+...
+}
+</pre>
+
+<p>The setting <tt>relax=1</tt> corresponds to a fully relaxed material and 
+<tt>relax=0</tt> specifies no stress relaxation.</p>
+
+<!--=========================-->
+<h2>16.4.2 Stress Model</h2>
+
+<p>The stress model computes the full polarization vector in tensor form, the general 
+stress tensor <span style="text-decoration: overline">&sigma;</span>, and the 
+piezoelectric stress-charge coefficients as:</p>
+
+<p>\[ [\table P_{x}; P_{y}; P_{z}] = [\table P_{x}^{\text"sp"}; P_{y}^{\text"sp"}; P_{z}^{\text"sp"}] + 
+[\table d_{11}, d_{12}, d_{13}, d_{14}, d_{15}, d_{16}; d_{21}, d_{22}, d_{23}, d_{24}, d_{25}, d_{26}; d_{31}, d_{32}, d_{33}, d_{34}, d_{35}, d_{36} ] 
+   [\table σ_{xx}; 	σ_{yy}; 	σ_{zz}; 	σ_{yz}; 	σ_{xz}; 	σ_{xy} ] \]</p>
+
+<p>The stress model is activated in the <tt>Physics</tt> section, for example:</p>
+
+<pre>
+Physics {
+  Piezoelectric_Polarization (stress)
+}
+</pre>
+
+<p>The stress tensor is read from the <tt>Piezo</tt> file specified in the <tt>File</tt> 
+section of the Sentaurus Device command file:</p>
+
+<pre>
+File { Piezo= &lt;file&gt; }
+</pre>
+
+<!--=========================-->
+<h2>16.4.3 Polarization Charge Scaling</h2>
+
+<p>The scaling factor <tt>activation</tt> allows you to scale the polarization 
+charge at interfaces resulting from an abrupt change of the polarization. For 
+example, the following region interface&ndash;specific <tt>Physics</tt> section 
+would effectively switch off any polarization effects at the interface between 
+regions <tt>relax1</tt> and <tt>nucleation</tt>:</p>
+
+<pre>
+Physics (RegionInterface="relax1/nucleation") {
+  Piezoelectric_Polarization(activation=0)
+}
+</pre>
+
+<!--=========================-->
+<h2>16.4.4 Polarization Parameter Set</h2>
+
+<p>Parameters to calculate the polarization fields in the device are given in 
+material-specific or region-specific <tt>Piezoelectric_Polarization</tt> sections. 
+The material-specific parameters for the AlGaN material system are included in the 
+material library of Sentaurus Device, located at <tt>$STROOT/tcad/$STRELEASE/lib/sdevice/MaterialDB/</tt>. 
+They are used by setting the 
+keyword <tt>DefaultParametersFromFile</tt> in the <tt>Physics</tt> section:</p>
+
+<pre>
+Physics { DefaultParametersFromFile ...}
+</pre>
+
+<p>For GaN, some of the settings are given here:</p>
+
+<pre>
+Piezoelectric_Polarization { 
+  formula   = 1
+  
+  * strain parameters:  
+  * a0: strained lattice constant [Angstrom]
+  * a: unstrained lattice constant [Angstrom]
+
+  a0  = 3.189 # [Angstrom]
+  a = 3.189 # [Angstrom]
+  
+  * relax: relaxation parameter [1]
+  relax   =   0.0
+  
+  * piezoelectric coefficients, defined in crystal system [cm/V]:
+  d15 =  3.1000e-10   # [cm/V]
+  d24 =  3.1000e-10   # [cm/V]
+  d31 =  ...
+    ...
+   
+  * spontaneous polarization:
+  psp_x =  0.0000e+00 # [C/cm^2]
+  psp_y =  0.0000e+00 # [C/cm^2]
+  psp_z = -3.4000e-06 # [C/cm^2]
+
+ 
+  * stiffness constants:
+  c11 = 3.9000e+11    # [Pa]
+  c12 = ...
+  ...
+  
+  * piezoelectric coefficients 
+  e31 = -5.2964e-05   #[C/cm^2]
+  e32 = ...
+  ...
+}
+</pre>
+
+<!--=========================-->
+<h2>16.4.5 Anisotropy</h2>
+
+<p>In addition to the intrinsic polarization anisotropy due to spontaneous 
+polarization, material properties such as impact ionization and dielectric 
+properties are expected to show some anisotropy. However, mainly for the lack of 
+reliable data, only the latter is included more often in simulations.</p>
+
+<p>In this example, only isotropic transport parameters are used. However, 
+electrostatic anisotropy due to anisotropic dielectric properties can be activated 
+optionally. For a thorough discussion of anisotropic model settings, see 
+<a href="../sd/sd_15.html#33">Section 15.3.3 Material Parameter Anisotropy</a>.</p>
+
+<p>To switch on a specific anisotropic model, the corresponding keyword must be placed 
+in the <tt>Aniso</tt> subsection of the global <tt>Physics</tt> section. For 
+anisotropic dielectric material parameters, the corresponding command is given by:</p>
+
+<pre>
+Physics {...
+  Aniso (
+    Poisson
+    direction(SimulationSystem)= xAxis
+  )
+}
+</pre>
+
+<p>This results in anisotropy of the dielectric properties entering the Poisson 
+equation, with the anisotropic axis along the x-axis of the simulation coordinate 
+system.</p>
+
+
+<!--================================================-->
+<a name="5"></a>
+<h1>16.5 Traps in III&ndash;Nitride Devices</h1>
+
+<p>Traps are present almost throughout AlGaN/GaN HFETs. Partially, they are 
+induced already during imperfect growth of nucleation and following relaxation 
+layers. Others are formed at the interfaces between semiconductor layers, at 
+the passivation interface, or at the channel interface of GaN MOS structures, 
+where they can cause non-idealities in C-V characteristics. All of these traps 
+can have a significant influence on device behavior. However, profiles, trap types, 
+and characteristics strongly depend on the details of the technology used.</p>
+
+<p>For a discussion of trap models in Sentaurus Device, see 
+<a href="../sd/sd_13.html">Section&nbsp;13. Special Focus: Traps</a>.</p>
+
+<!--======================-->
+<h2>16.5.1 Interface Traps</h2>
+
+<p>
+Interface traps in III&ndash;N device technology usually act as passivation centers, 
+which effectively compensate the interface charge induced by the polarization.
+For example, the polarization change at the interface from the top AlGaN barrier 
+layer to the passivation layer induces a large negative interface charge. The inclusion 
+of passivating donor trap levels at that interface results in the capture of holes, 
+which compensates the negative interface charge.</p>
+
+<p>For a similar effect, acceptor trap levels are introduced at the nucleation&ndash;wafer 
+interface. Such trap levels compensate the polarization-induced positive charge by 
+capturing electrons.</p>
+
+<p>An example of donor passivation traps at the barrier&ndash;nitride interface is:</p>
+
+<pre>
+Physics (RegionInterface= "alganbarrier/passivation_left") {
+ Traps (( Donor Level fromCondBand EnergyMid= 0.4 Conc= 3e13 
+          eXsection=1e-14  hXsection=1e-14 ))
+}
+Physics (RegionInterface= "alganbarrier/passivation_right") {
+ Traps (( Donor Level fromCondBand EnergyMid= 0.4 Conc= 3e13 
+          eXsection=1e-14  hXsection=1e-14 ))
+}
+</pre>
+
+<p>The values used here do not represent exactly the values observed in 
+experiments and might need to be adjusted to technology-specific or user-specific 
+settings.</p>
+
+<!--======================-->
+<h2>16.5.2 Bulk Traps</h2>
+
+<p>Throughout the different device layers, various bulk traps are present. 
+Typically, the material quality improves along the epitaxial growth direction. 
+However, nucleation, relaxation, and buffer layers can be full of imperfections at 
+different levels.</p>
+
+<p>By default, Sentaurus Device assumes constant trap distributions over given 
+regions or materials. As an alternative, spatial trap distributions can be 
+specified in Sentaurus Device. To consider such distributions, user-defined 
+<tt>PMIUserField</tt> profiles (<tt>PMIUserField0</tt>, <tt>PMIUserField1</tt>, 
+<tt>PMIUserField2</tt>, ...) can be declared in either a process simulation 
+(see <a href="../sp/sp_16.html#6">Section&nbsp;16.6 Application Example: AlGaN p-Gate HFET</a>) 
+or Sentaurus Structure Editor. These fields are then read as specified in the 
+<tt>File</tt> section of Sentaurus Device and are used with the <tt>SFactor</tt> 
+option in the trap specification.</p>
+
+<p>For details about the <tt>SFactor</tt> option, see 
+<a href="../sd/sd_13.html#4">Section 13.4 Trap Spatial Distribution</a>.</p>
+
+<!--================================================-->
+<a name="53"></a> 
+<h2>16.5.3 Example: GaN MOS C&ndash;V Characteristics With Interface Traps Effects</h2>
+
+<p>To build high-quality GaN MOSFETs, understanding the non-idealities in C&ndash;V 
+characteristics of a GaN MOS structure is an important step. The high-frequency and 
+low-frequency responses of gate capacitance with respect to gate voltage provide 
+information about the deep-level traps present in GaN devices. In general, the minority 
+carrier response is extremely slow in wide-bandgap materials, such as GaN and SiC. The 
+device simulation results with the quasistationary approach do not consider the time 
+taken by the minority carriers and might give incorrect results.</p>
+
+<p>In this project, the C&ndash;V characteristics of an n-type GaN MOS device are 
+simulated with transient and quasistationary methods for both high-frequency and 
+low-frequency conditions.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in
+the directory
+<tt>Applications_Library/GettingStarted/sdevice/GaN_MOSCAP_1D</tt>.</p>
+
+<!--========================-->
+<a name="531"></a> 
+<h3>16.5.3.1 Project Organization</h3>
+
+<p>Figure 3 shows the organization of the project in Sentaurus Workbench. The n-type 
+GaN MOS device structure is generated using Sentaurus Structure Editor. To generate 
+the C&ndash;V characteristics of the device, Sentaurus Device is used. The Sentaurus 
+Workbench parameter <tt>dt</tt> is used to vary the gate voltage ramp rate in the 
+transient simulation mode. Finally, the C&ndash;V characteristics are plotted using
+Sentaurus Visual.</p>
+
+<p><a href="images/sd_MOSCAP_SWB.png"><img src="images/sd_MOSCAP_SWB.png" width="500" 
+alt="Project organization in Sentaurus Workbench" /></a></p>
+
+<p class="caption">Figure 3. Project organization in Sentaurus Workbench, showing the 
+flow from Sentaurus Structure Editor to Sentaurus Device to Sentaurus Visual. 
+(Click image for full-size view.)</p>
+
+<p>The following Sentaurus Workbench parameters are varied in the project:</p>
+
+<ul>
+<li><tt>dt</tt>: Gate voltage ramp time from -5 V to +5 V, in transient method: 
+100, 10, and 1 [unit: s]</li>
+<li><tt>QS</tt>: Flag to select transient or quasistationary simulation method: 
+0&nbsp;=&nbsp;transient ; 1&nbsp;=&nbsp;quasistationary</li>
+</ul>
+
+<!--========================-->
+<a name="532"></a>
+<h3>16.5.3.2 Device Structure Generation</h3>
+
+<p>To generate the 1D structure of the n-type GaN MOS device, Sentaurus Structure 
+Editor is used. Two blocks of rectangles are defined: one for the Oxide region and 
+one for the GaN region, doped at 2&times;20<sup>17</sup> cm<sup>-3</sup>. The 
+thickness of the Oxide region is defined as 10 nm. Contacts are placed at the top 
+and bottom, and mesh refinements are specified.</p> 
+
+<p>Click to view the structure generation command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/GaN_MOSCAP_1D/sde_dvs.cmd">
+sde_dvs.cmd</a>.</p>
+
+<!--========================-->
+<a name="533"></a>
+<h3>16.5.3.3 Device Simulation: C&ndash;V Characteristics</h3>
+
+<p>This section presents simulation details about the gate capacitance versus gate 
+voltage characteristics of the device.</p>
+
+<p>Electrical boundary conditions are defined in the <tt>Electrode</tt> section. 
+Only the gate and source electrodes are present in the device. The gate metal contact 
+with a workfunction value of 5.0 eV is defined. The <tt>Electrode</tt> section of the 
+command file is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_MOSCAP_1D/sdevice_des.cmd" startExpr="*Electrode*" lines=4 -->
+<pre>
+  Electrode {
+    { Name=&quot;gate&quot;  Voltage= 0.0 Workfunction= 5.0}
+    { Name=&quot;subs&quot;  Voltage= 0.0 }
+  }
+</pre>
+<!-- grep end -->
+
+<p>In the <tt>File</tt> section, the input and output files required for the simulation 
+process are defined:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_MOSCAP_1D/sdevice_des.cmd" startExpr="*File*" lines=7 -->
+<pre>
+  File {
+    Grid= &quot;@tdr@&quot;
+    Parameter= &quot;@parameter@&quot;
+    
+    Current= &quot;@plot@&quot;
+    Plot= &quot;@tdrdat@&quot;
+  }
+</pre>
+<!-- grep end -->
+
+<p>To simulate the GaN MOS devices, the following models are used:
+Shockley&ndash;Read&ndash;Hall (SRH) recombination, Masetti mobility model to account for 
+doping-dependent mobility degradation, Fermi&ndash;Dirac carrier statistics, and acceptor 
+traps at the GaN&ndash;Oxide material interface.</p>
+
+<p>A simplified strain-based piezoelectric polarization model is defined with an 
+activation level of 5%, assuming that the majority of polarization charge is compensated 
+by fixed charges at the GaN&ndash;Oxide interface.</p>
+
+<p>The <tt>Physics</tt> section used in the command file is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_MOSCAP_1D/sdevice_des.cmd" startExpr="*Physics*" endExpr="*}*" -->
+<pre>
+  Physics {
+    AreaFactor= 5e8   * So capacitance given in F/cm^2
+    Fermi
+    Mobility(
+      DopingDependence
+    )
+    Recombination(
+      SRH
+    )
+    
+    DefaultParametersFromFile
+  }
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_MOSCAP_1D/sdevice_des.cmd" startExpr="*MaterialInterface*" endExpr="*}*" -->
+<pre>
+  Physics (MaterialInterface=&quot;GaN/Oxide&quot;) {
+    Traps (
+      Acceptor Level EnergyMid= 1.0 FromMidbandgap Conc= 5e11
+      eXSection= 1e-15 hXSection= 1e-15
+    )
+    
+    * Assume the majority of polarization charge is compensated by fixed charges
+    Piezoelectric_Polarization(strain Activation= 0.05)
+  }
+</pre>
+<!-- grep end -->
+
+<p> To simulate the C&ndash;V characteristics in quasistationary mode, very high precision 
+is required due to the extremely small values of carrier concentrations. To achieve accurate 
+results, <tt>ExtendedPrecision(256)</tt> is used.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_MOSCAP_1D/sdevice_des.cmd" startExpr="*Math*" endExpr="*}*" -->
+<pre>
+Math {
+  Extrapolate
+  Iterations= 12
+  
+  #if @QS@
+  ExtendedPrecision(256)
+  #else
+  ExtendedPrecision
+  #endif
+  Digits= 8
+  RHSMin= 1e-15
+  
+  Transient= BE
+}
+</pre>
+<!-- grep end -->
+
+<p>Click to view the device simulation command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/GaN_MOSCAP_1D/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<!--========================-->
+<a name="534"></a>
+<h3>16.5.3.4 Results and Discussion</h3>
+
+<p>The C&ndash;V characteristics of the MOS device are simulated at high-frequency (f=1 MHz) 
+for the gate bias from -5.0 V to +5.0 V, keeping the source contact at 0.0 V. The low-frequency 
+response of the gate capacitance is computed by taking the derivative of the gate charge with 
+respect to the gate voltage. The simulations are performed with the transient and quasistationary 
+methods. When using the transient method, the gate input voltage is varied with three different 
+ramp rates: 0.1 V/s, 1.0 V/s, and 10.0 V/s.</p>
+   
+<p><a href="images/sd_MOSCAP_CV_LF_HF1.png"><img src="images/sd_MOSCAP_CV_LF_HF1.png" width="570" 
+alt="C-V characteristics of the MOS device" /></a></p>
+
+<p class="caption">Figure 4. C&ndash;V characteristics of MOS device as obtained 
+with transient and quasistationary simulation methods: (a) 10.0 V/s, (b) 1.0 V/s, 
+(c) 0.1 V/s, and (d) quasistationary. (Click image for full-size view.)</p>
+
+<p>Figure 4 shows the C&ndash;V characteristics of the device as obtained with the transient 
+and quasistationary methods. There are two main aspects to consider from the characteristics:</p>
+
+<ol>
+<li>Deviation of low-frequency C&ndash;V (LF-CV) with respect to high-frequency C&ndash;V 
+(HF-CV) at around Vg=0.0 V</li>
+<li>LF-CV at large negative gate bias conditions</li>
+</ol>
+
+<p>
+For the first aspect, the deviation of LF-CV with respect to HF-CV increases as the ramp rate 
+of the gate input slows down and is maximum when the quasistationary method is used. The 
+deviation is mainly due to the partial response from the deep-level traps for different 
+ramp rates. Figure&nbsp;5 shows the electron trapped charge at the GaN&ndash;Oxide interface 
+as obtained with different ramp rates and the quasistationary method. As the ramping time of the input 
+gate signal increases, more electrons are de-trapped and the trapped electron density falls 
+to a very low value.</p>
+
+<p><a href="images/sd_MOSCAP_eTC.png"><img src="images/sd_MOSCAP_eTC.png" width="570" 
+alt="Electron trapped charge across the MOS device" /></a></p>
+
+<p class="caption">Figure 5. Electron trapped charge across the MOS device at Vg = -5 V 
+for the corresponding simulation conditions shown in Figure 4. (Click image for full-size view.)</p>
+
+<p>The second aspect is the accumulation of hole carriers at the GaN&ndash;Oxide interface 
+for high negative bias conditions, which is reflected in the LF-CV characteristics with 
+quasistationary simulations. Figure 6 shows the hole density at Vg= -5 V as obtained with 
+transient and quasistationary simulations. The hole carriers response is instantaneous to 
+the applied gate bias and shows up as a very high concentration at the GaN&ndash;Oxide interface. 
+In experimental conditions, this is not expected since holes would take a very long time 
+to be generated due to the wide bandgap of the GaN material.</p>
+ 
+<p><a href="images/sd_MOSCAP_hDensity.png"><img src="images/sd_MOSCAP_hDensity.png" width="570" 
+alt="Hole density across the MOS device" /></a></p>
+
+<p class="caption">Figure 6. Hole density across the MOS device at Vg= -5 V for the 
+corresponding simulation conditions shown in Figure 4. (Click image for full-size view.)</p>
+
+<!--========================-->
+<a name="535"></a>
+<h3>16.5.3.5 Summary</h3>
+
+<p>High-frequency and low-frequency C&ndash;V characteristics of an n-type GaN MOS device 
+have been presented. The response of minority carriers and deep-level traps have been 
+analyzed using the transient simulation method and compared against the quasistationary 
+simulation approach.</p>
+
+<p>Traps in wide-bandgap materials are very deep and do not respond to transients typically 
+used to ramp up biases in DC experimental measurements. Using the quasistationary simulation 
+method might not predict the correct device behavior in such conditions.</p>
+
+<!--========================================================-->
+<a name="6"></a>
+<h1>16.6 AlGaN-Specific Numeric Parameters</h1>
+
+<p>Simulations involving wide-bandgap materials are more prone to convergence 
+problems due to the numeric challenges in performing floating-point operations 
+with extremely large and extremely small numbers such as the concentrations of 
+majority and minority carriers in wide-bandgap semiconductors.</p>
+
+<p>Notably, III&ndash;nitride device simulations typically require a higher numeric 
+precision to resolve low intrinsic carrier densities, caused by the wide bandgap 
+of the materials. For this purpose, it is advisable to run III&ndash;nitride 
+device simulations always in the <tt>ExtendedPrecision</tt> mode and to tighten the 
+corresponding computation error controls moderately.</p>
+
+<p>A proposed numeric parameter set for AlGaN HFET device simulations is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="Math*" endExpr="*RefDens_hGradQuasiFermi_*" -->
+<pre>
+Math {
+  ExtendedPrecision
+  #if [string match -nocase @aniso@ yes]
+  TensorGridAniso(Aniso)
+  #endif
+  Method= Blocked
+  SubMethod = ILS(set=27)
+  ILSrc=&quot;
+  set(26){
+    iterative(gmres(100), tolrel=1e-16, tolunprec=1e-8, tolabs=0, maxit=200);
+    preconditioning(ilut(1.0e-15,-1),left);
+    ordering ( symmetric=nd, nonsymmetric=mpsilst );
+    options( compact=yes, linscale=0, refineresidual=60, verbose=0); 
+  };
+  set(27){  
+    iterative(gmres(100), tolrel=1e-10, tolunprec=1e-4, tolabs=0, maxit=200);
+    preconditioning(ilut(1.0e-9,-1), right);
+    ordering(symmetric=nd, nonsymmetric=mpsilst);
+    options(compact=yes, linscale=0, refineresidual=10, verbose=0);
+  };
+  &quot;
+  Number_of_Threads= 4
+  Digits=5
+  Iterations=20
+  Notdamped=30
+  Transient= BE
+  Traps(Damping=0)
+  DirectCurrent
+  ErrRef(electron) = 1e8
+  ErrRef(hole)   = 1e8
+  CDensityMin= 0
+  RefDens_eGradQuasiFermi_ElectricField= 1e8
+  RefDens_hGradQuasiFermi_ElectricField= 1e8
+</pre>
+<!-- grep end -->
+<pre>
+}
+</pre>
+
+<p>By default, <tt>ExtendedPrecision</tt> uses 80-bit accuracy for real numbers. 
+In most cases, this is sufficient. For special cases, even higher precision settings 
+are available. For details, refer to the <cite>Sentaurus&trade; Device User Guide</cite>.</p>
+
+<p>The <tt>TensorGridAniso(Aniso)</tt> is the most robust approximation for the 
+discretization of anisotropic tasks. It is an accurate approximation in the case 
+of axis-aligned meshes if the anisotropy orientation coincides with the mesh orientation. 
+For further discretization options of isotropic models such as mobility, see the 
+discussion for SiC in <a href="../sd/sd_15.html#33">Section 15.3.3 Material Parameter Anisotropy</a>. 
+For simulations with isotropic material properties, this <tt>Math</tt> setting can 
+be omitted.</p>
+
+<p><tt>Transient=BE</tt> activates the backward Euler transient method instead of 
+the default TRBDF method, which makes transient simulations run faster.</p>
+
+<p>For the linear solver, use <tt>SubMethod=Super</tt> or <tt>SubMethod=ILS(set=26)</tt> 
+with the dedicated solver parameter set, which is reliable and robust in 
+the case of III&ndash;nitride HFET device simulations. The SUPER solver is good for 
+small- or medium-sized 2D tasks. The ILS solver is more suitable for large 2D or 3D 
+tasks due to its better parallel performance and lower memory requirements. Relaxed 
+numeric settings for the ILS solver such as <tt>set(27)</tt> improves performance 
+in many cases, but convergence might suffer.</p>
+
+<p>For a detailed discussion about linear solvers and their various parameter settings, 
+see <a href="../sd/sd_9.html#4">Section 9.4 Linear Solvers</a>.</p>
+
+<p>Wide-bandgap device simulations usually require higher computational accuracy than 
+common silicon device simulations. This is achieved by tightening the reference error 
+control criteria from the default <tt>1E10</tt> to <tt>ErrRef(electron)=1E8</tt> and 
+<tt>ErrRef(hole)=1E8</tt>. In most cases, reducing these density references to even 
+smaller values does not improve convergence in AlGaN/GaN HFETs.</p>
+
+<p>For the Newton solver, typically, you should limit the number of nonlinear 
+iterations to a small enough value, such as <tt>Iterations=20</tt>, and also avoid 
+solution damping by specifying the number of nondamped iterations to be higher than 
+the number of allowed Newton iterations (<tt>NotDamped=30</tt>). For a general 
+discussion, see <a href="../sd/sd_6.html">Section 6. Nonlinear System Newton Solver</a>.</p>
+
+<p>The trap model sometimes leads to convergence problems, especially at the 
+beginning of a simulation when Sentaurus Device tries to find an initial solution. 
+Often, you can solve this problem by changing the numeric damping of the trap 
+charge in the nonlinear Poisson equation:</p>
+
+<pre>
+Math {
+  Traps(Damping=0)
+}
+</pre>
+
+<p>A value of 0 switches off damping. Large values increase damping (the default is 10). 
+Depending on the particular example, increasing damping can improve or degrade 
+convergence behavior. There are no guidelines regarding the optimal value of 
+<tt>Damping</tt>.</p>
+
+<p class="note">For AlGaN/GaN HFETs, switching off trap charge damping is recommended 
+if convergence is not an issue at the initial solution.</p>
+
+<p>Occasionally, convergence problems can be attributed to the <tt>GradQuasiFermi</tt> 
+driving force, particularly when the gradient of the quasi-Fermi level changes rapidly 
+for small changes in the electron density. This is typically the case for regions with 
+a small carrier density. In such cases, you can smoothly change the driving force from 
+<tt>GradQuasiFermi</tt> to <tt>ElectricField</tt> for densities around or below a given 
+carrier density. This transition density is set by <tt>RefDens_eGradQuasiFermi_ElectricField</tt>. 
+A value of approximately 10<sup>8</sup> cm<sup>&ndash;3</sup> is recommended for this 
+type of simulation.</p>
+
+<p>For details about this method, see <a href="../sd/sd_6.html#6">
+Section 6.6 Improving Convergence in Low-Density or Low-Current Regions</a>.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>16.7 Application Example: p-Gate AlGaN HFET</h1>
+
+<p>This example demonstrates the  I<sub>d</sub>&ndash;V<sub>g</sub> simulation of 
+a p-gate AlGaN/GaN HFET on a SiC substrate for various polarization models 
+available in Sentaurus Device.</p>
+
+<!--=========================-->
+<h2>16.7.1 Project Configuration</h2>
+
+<p>The simulations are organized as a Sentaurus Workbench project (see Figure&nbsp;7).</p>
+
+<p><a href="images/sd_algan_project.png"><img src="images/sd_algan_project.png" width="570" 
+alt="Project organization" /></a></p>
+
+<p class="caption">Figure 7. Organization of the p-gate AlGaN/GaN HFET project 
+in Sentaurus Workbench. (Click image for full-size view.)</p>
+
+<p>The project consists of Sentaurus Process and Sentaurus Device. The description of 
+the process simulation part is provided in the Sentaurus Process module, 
+<a href="../sp/sp_16.html">Section&nbsp;16. Special Focus: AlGaN Process Simulation</a>.</p>
+
+<p>This section focuses on the device simulation part.</p>
+
+<!--=========================-->
+<a name="72"></a>
+<h2>16.7.2 Mesh Construction for Device Simulation</h2>
+
+<p>Requirements for mesh construction for process and device simulations are different. 
+For device simulations, the mesh must be refined within the areas of spatial 
+nonuniformities, such as large net doping profile gradients, material interfaces, and 
+regions within the device, where some solution variables might experience large 
+perturbations (areas with a strong electric field and large carrier impact ionization).</p>
+
+<p>In this project, the mesh generation for the device simulation is performed within 
+Sentaurus Process as the last step of the process flow.</p>
+
+<p>HFETs typically do not contain doping profiles with strong gradients at locations 
+other than interfaces. Similarly, carrier profiles exhibit large gradients only at 
+heterointerfaces and in the space-charge region of Schottky contacts. Therefore, 
+dedicated refinements are based on interface refinements to resolve such gradients:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="refinebox*waf_nuc*" lines=9 -->
+<pre>
+refinebox name= waf_nuc                                 \
+  interface.mat.pairs= &quot;SiliconCarbide AlNnucleation&quot;   \
+  min.normal.size=&quot;1e-3&quot;&lt;um&gt; normal.growth.ratio= 2
+refinebox name= nuc_re1                                 \
+  interface.mat.pairs= &quot;AlNnucleation AlGaNrelax1&quot;      \
+  min.normal.size=&quot;1e-3&quot;&lt;um&gt; normal.growth.ratio= 2
+refinebox name= re1_re2                                 \
+  interface.mat.pairs= &quot;AlGaNrelax1    AlGaNrelax2&quot;     \
+  min.normal.size=&quot;1e-3&quot;&lt;um&gt; normal.growth.ratio= 2
+</pre>
+<!-- grep end -->
+
+<pre>...</pre>
+
+<p>Maximum sizes for the lateral and vertical mesh spacings of the active part of 
+the device are included in material-specific refinement boxes for the usual mesh 
+refinements on net doping:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd" startExpr="refinebox*GaN*adaptive*" lines=3 -->
+<pre>
+refinebox GaN adaptive refine.fields= {NetActive} \
+  max.asinhdiff= {NetActive= 1.0} \
+  refine.min.edge= {0.001 0.001} refine.max.edge= {0.25 0.15}
+</pre>
+<!-- grep end -->
+
+<pre>...</pre>
+
+<p>The device layer structure in a section under the gate is shown in Figure&nbsp;8. 
+Material layer interfaces are subject to mesh refinements to resolve abrupt 
+changes of physical quantities. A part of the structure around the gate corner 
+is magnified to demonstrate the accurate interface and junction mesh refinements 
+(see Figure&nbsp;9).</p>
+
+<p><a href="images/sd_algan_layer_sequence.png"><img src="images/sd_algan_layer_sequence.png" 
+width="500" alt="Layer sequence of AlGaN/GaN HFET" /></a></p>
+
+<p class="caption">Figure 8. Device layer sequence in a window under the gate 
+(layers are not shown to scale relative to each other). 
+(Click image for full-size view.)</p>
+
+<p><a href="images/sd_algan_msh.png"><img src="images/sd_algan_msh.png" width="570" 
+alt="Mesh details in the vicinity of the gate corner" /></a></p>
+
+<p class="caption">Figure 9. Mesh details in the vicinity of the gate corner, 
+showing refinements at material interfaces and Schottky contacts. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<!--=========================-->
+<h2>16.7.3 Input Files for Device Simulation</h2>
+
+<p>In addition to the meshed device geometry, other input files are required for 
+the stress/strain tensor if full polarization models will be used and 
+<tt>PMIUserField</tt> profiles will be used for trap profile definitions. The 
+stress distribution in the device is read from the <tt>Piezo</tt> file specified 
+in the <tt>File</tt> section together with the files for the <tt>PMIUserField</tt>s:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="file {*" endExpr="}*" -->
+<pre>
+File {
+  Grid            = &quot;@tdr@&quot;
+  Parameter       = &quot;@parameter@&quot;
+  #if [string match -nocase &quot;*@StrainFrom@*&quot; &quot;File_Stress&quot;]
+  Piezo           = &quot;@tdr@&quot;
+  #endif
+  PMIUserFields   = &quot;@tdr@&quot;
+  Current         = &quot;@plot@&quot;
+  Plot            = &quot;@tdrdat@&quot;
+  Output          = &quot;@log@&quot;
+}
+</pre>
+<!-- grep end -->
+
+<!--=========================-->
+<h2>16.7.4 Contacts</h2>
+
+<p>All contacts are implemented as Schottky contacts. For the source and drain 
+contacts, this avoids nonphysical bending due to the Ohmic charge neutrality 
+condition, where the contact crosses a heterointerface. To achieve Ohmic behavior, 
+carriers are allowed to tunnel into the device with a reduced effective mass. 
+For the p-gate contact, a standard Schottky contact is used and nonlocal tunneling 
+is implemented along a nonlocal mesh.</p>
+
+<p>The <tt>Electrode</tt> section reads:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="electrode*" endExpr="}*" -->
+<pre>
+Electrode {
+  { name= &quot;source&quot; voltage=0.0 Workfunction= 4.3 Schottky}
+  { name= &quot;drain&quot;  voltage=0.0 Workfunction= 4.3 Schottky}
+  { name= &quot;gate&quot;   voltage=0.0 Workfunction= 5.8 Schottky}
+}
+</pre>
+<!-- grep end -->
+
+<p>Tunneling at the source and drain is activated for electrons, while holes are allowed 
+to tunnel through the Schottky barrier into the highly p-doped gate GaN layer:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*eBarrierTunneling*sou*" endExpr="*hBarrierTunneling*ga*" -->
+<pre>
+  eBarrierTunneling &quot;sourceNLM&quot;
+  eBarrierTunneling &quot;drainNLM&quot;
+  hBarrierTunneling &quot;gateNLM&quot;
+</pre>
+<!-- grep end -->
+
+<p>The correspondingly named nonlocal meshes are defined in the <tt>Math</tt> section 
+of the Sentaurus Device command file. For the source and drain, only tunneling into 
+the channel is taken into account to mimic metal spikes contacting the channel directly:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*NonLocal*gateNLM*" endExpr="}*" endOffset=-1 -->
+<pre>
+  NonLocal &quot;gateNLM&quot; (
+    electrode=&quot;gate&quot;   Length= 20e-7  Digits= 4 EnergyResolution= 1e-3 
+  )
+  NonLocal &quot;sourceNLM&quot;(
+    electrode=&quot;source&quot; Length= 30e-7  Digits= 4 EnergyResolution= 1e-3 
+    Direction=(0 1 0) MaxAngle=1 -EndPoint(Material=&quot;AlGaN&quot;)
+  )
+  NonLocal &quot;drainNLM&quot; (
+    electrode=&quot;drain&quot;  Length= 30e-7  Digits= 4 EnergyResolution= 1e-3 
+    Direction=(0 1 0) MaxAngle=1 -EndPoint(Material=&quot;AlGaN&quot;)
+  )
+</pre>
+<!-- grep end -->
+
+<!--=========================-->
+<h2>16.7.5 Physics Settings</h2>
+
+<p>Currents and energy fluxes at an abrupt interface between two materials are 
+better defined by thermionic interface conditions at the heterojunction. To 
+activate such a thermionic current model for electrons and holes at all semiconductor 
+interfaces, use the keyword <tt>Thermionic</tt>.</p>
+
+<p>High carrier densities together with a moderate density-of-states require 
+all simulations to be performed with Fermi statistics, which is activated with 
+the <tt>Fermi</tt> keyword in the global <tt>Physics</tt> section.</p>
+
+<p>Thermionic interface conditions specific to Fermi statistics are selected 
+in the <tt>Thermionic</tt> parameter section of the parameter file by:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sdevice.par" startExpr="Thermionic*" lines=1 -->
+<pre>
+Thermionic { Formula= 1 }
+</pre>
+<!-- grep end -->
+
+<p>Dopants in III&ndash;nitride materials have a relatively high ionization energy, 
+especially magnesium, which acts as an acceptor and suffers from incomplete ionization. 
+Incomplete ionization is activated using the keyword <tt>IncompleteIonization</tt>. An 
+option is provided in this project to switch between complete and incomplete ionization:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*nocase @complete@ yes]*" endExpr="*#endif*" -->
+<pre>
+  #if [string match -nocase @complete@ yes]
+  IncompleteIonization
+  #endif
+</pre>
+<!-- grep end -->
+
+<p>Note that, in the parameter file, Si in AlGaN can form either a donor or an acceptor, 
+depending on whether it sits on a group III or group V lattice site:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/sdevice.par" startExpr="Material= *AlGaN* {" endExpr="}" -->
+<pre>
+Material= &quot;AlGaN&quot; {
+  Ionization {
+    Species (&quot;MagnesiumActiveConcentration&quot;) {
+      E_0           =       0.15
+      alpha         =       0
+      g             =       4.0
+      Xsec          =       1.0000e-12
+    }
+    Species (&quot;pSiliconActiveConcentration&quot;) {
+      E_0           =       0.1
+      alpha         =       0
+      g             =       4.0
+      Xsec          =       1.0000e-12
+    }
+    Species (&quot;nSiliconActiveConcentration&quot;) {
+      E_0           =       0.05
+      alpha         =       0
+      g             =       2.0
+      Xsec          =       1.0000e-12
+    }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>AlGaN must be added to the list of materials, for which magnesium acts as an acceptor. 
+For an updated list of materials, use a project-specific <tt>datexcodes.txt</tt> file. 
+The corresponding entry reads:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/datexcodes.txt" startExpr="*MagnesiumChemicalConcentration*" endExpr="*}" -->
+<pre>
+MagnesiumConcentration, MagnesiumChemicalConcentration {
+    label     = &quot;total (chemical) Magnesium concentration&quot;
+    symbol    = &quot;MgTotal&quot;
+    unit      = &quot;cm^-3&quot;
+    factor    = 1.0e+12
+    precision = 4
+    interpol  = log
+    material  = All
+    property(&quot;floops&quot;) = &quot;MgActive&quot;
+    doping    = acceptor (
+                     active = MagnesiumActiveConcentration
+                     ionized = MagnesiumMinusConcentration
+                     material = AlN, GaN, AlGaN, InGaAs, InGaAsP, InP
+                 )
+}
+</pre>
+<!-- grep end -->
+
+<p>For low-field mobilities, the Masetti doping-dependent mobility model is used. 
+It is activated by the <tt>mobility</tt> flag <tt>DopingDependence</tt>. The 
+corresponding GaN, AlN, and AlGaN parameters are provided in the default parameters 
+from the <tt>MaterialDB</tt> parameters set. For the high-field saturation model, 
+you use the standard Canali model for stability reasons.</p>
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*Mobility*" lines=4 -->
+<pre>
+  Mobility (
+    DopingDependence
+    HighFieldSaturation(GradQuasiFermi)
+  )
+</pre>
+<!-- grep end -->
+<p>
+As an alternative, a negative differential mobility is implemented, namely, 
+<tt>TransferredElectronEffect2</tt>. However, this is rarely used due to convergence 
+issues inherent in negative differential mobility models.</p>
+
+<p>The Sentaurus Workbench parameter <tt>aniso</tt> is provided for this project and 
+acts as a switch to treat the dielectric properties isotropically or anisotropically. 
+Anisotropic treatment of the permittivity for the Poisson equation is activated by:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*string*aniso*" endExpr="*endif*" -->
+<pre>
+  #if [string match -nocase @aniso@ yes]
+  Aniso (
+    Poisson
+    direction(SimulationSystem)= xAxis
+  )
+  #endif
+</pre>
+<!-- grep end -->
+
+<p>For III&ndash;nitride materials with direct band gap, radiative recombination will 
+contribute as a fast recombination mechanism. This is activated  by the option 
+<tt>Radiative</tt> in the list of recombination mechanisms in the global <tt>Physics</tt> 
+section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*ecombination*" endExpr="*)*" -->
+<pre>
+  Recombination (
+    SRH 
+    Radiative
+  )
+</pre>
+<!-- grep end -->
+
+<p>For the SiC wafer, radiative recombination is deactivated by:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*hysics (Region= *wafer* {*" endExpr="*}*" -->
+<pre>
+Physics (Region= &quot;wafer&quot;) {
+  Recombination (-Radiative)
+}
+</pre>
+<!-- grep end -->
+
+<p>The Sentaurus Workbench parameter <tt>StrainFrom</tt> is provided to switch between 
+the full and the simplified strain model as well as the full stress model. The 
+corresponding commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*StrainFrom*Model*" endExpr="*endif*" -->
+<pre>
+  #if [string match -nocase @StrainFrom@ Model]
+  Piezoelectric_Polarization(strain)
+  #elif [string match -nocase @StrainFrom@ File]
+  Piezo( Strain= LoadFromFile )
+  Piezoelectric_Polarization(strain)
+  #elif [string match -nocase @StrainFrom@ Stress]
+  Piezoelectric_Polarization(stress)
+  #endif
+</pre>
+<!-- grep end -->
+
+<p>Traps are implemented as passivating species at the GaN&ndash;nitride and 
+AlGaN&ndash;nitride interfaces. At interfaces deeper into the layer stack, 
+traps are assumed to form and they partially capture polarization-induced charges. 
+Bulk traps are used throughout the deeper layers, assuming that trap densities decrease 
+towards the channel layer. The corresponding interface and bulk trap settings are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*Physics*pgate/passivation_left*" endExpr="*Physics*relax2/buffer*" -->
+<pre>
+Physics (RegionInterface= &quot;pgate/passivation_left&quot;) {
+  Piezoelectric_Polarization(Activation=1.0)
+  Traps (( Donor Level fromCondBand EnergyMid= 0.4 
+    Conc= 3e13 eXsection=1e-14  hXsection=1e-14 )
+  )
+}
+
+Physics (RegionInterface= &quot;pgate/passivation_right&quot;) {
+  Piezoelectric_Polarization(Activation=1.0)
+  Traps (( Donor Level fromCondBand EnergyMid= 0.4 
+    Conc= 3e13 eXsection=1e-14 hXsection=1e-14 )
+  )
+}
+
+Physics (RegionInterface= &quot;alganbarrier/passivation_left&quot;) {
+  Traps (( Donor Level fromCondBand EnergyMid= 0.4 
+    Conc= 3e13 eXsection=1e-14 hXsection=1e-14)
+  )
+}
+
+Physics (RegionInterface= &quot;alganbarrier/passivation_right&quot;) {
+  Traps (( Donor Level fromCondBand EnergyMid= 0.4 
+    Conc= 3e13 eXsection=1e-14 hXsection=1e-14)
+  )
+}
+
+Physics (RegionInterface= &quot;buffer/channel&quot;) {
+  Traps (( Donor Level fromMidBandGap EnergyMid= 0 
+    Conc= 2e11 eXsection=1e-14 hXsection=1e-14)
+  )
+}
+
+Physics (RegionInterface= &quot;relax2/buffer&quot;) {
+</pre>
+<!-- grep end -->
+
+<pre>
+...
+</pre>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*Physics*nucleation*" endExpr="}*" -->
+<pre>
+Physics (RegionInterface= &quot;nucleation/relax1&quot;) {
+  Piezoelectric_Polarization(Activation=0.2)
+}
+</pre>
+<!-- grep end -->
+
+<p>All simulations are performed as slow transient simulations. This helps to achieve 
+convergence especially in the case of floating regions within the device. Polarization 
+charges at the interfaces of buried layers frequently induce such floating regions. 
+Therefore, transient solutions are recommended for most AlGaN/GaN devices with complex 
+layer structures. For the drain ramp given here, the default physical ramp time is 1&nbsp;s:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd" startExpr="*Transient*(" endExpr="*coupled*" -->
+<pre>
+  Transient (
+    InitialStep=0.01 MinStep=1.0e-4 maxstep=0.1
+    goal { name= drain voltage=@Vds@ }
+  ) { coupled { Poisson Electron Hole } }
+</pre>
+<!-- grep end -->
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pGate_HFET/IdVg_des.cmd">
+IdVg_des.cmd</a>.</p>
+
+<!--=========================-->
+<h2>16.7.6 Simulation Results</h2>
+
+<p>Figure 10 shows the transfer characteristics at two different drain voltages. All 
+three polarization models result in almost the same drain currents. The small 
+differences between the simplified model and the full models result from the 
+inhomogeneous stress distribution around the gate corner, induced by strain relaxation 
+after etching of the p-gate layer.</p>
+
+<p><a href="images/sd_algan_idvg.png"><img src="images/sd_algan_idvg.png" width="570" 
+alt="Transfer characteristics for the available stress models" /></a></p>
+
+<p class="caption">Figure 10. Transfer characteristics for the available stress models.
+(Click image for full-size view.)</p>
+
+<p>Figure 11 shows the StressZZ component of the stress tensor, focusing on the 
+gate corner. The simplified strain model assumes homogeneous strain throughout 
+the barrier layer.</p>
+
+<p><a href="images/sd_algan_stresszz.png"><img src="images/sd_algan_stresszz.png" width="570"
+alt="Inhomogeneous stress distribution in barrier layer around gate corner" /></a></p>
+
+<p class="caption">Figure 11. Inhomogeneous stress distribution showing the 
+zz component of the stress tensor, focusing on the gate corner. (Click image 
+for full-size view.)</p>
+
+<p>Figure 12 shows a comparison of the transfer characteristics for the device with 
+isotropic and anisotropic dielectric properties at two different drain voltages. 
+The primary effect of dielectric anisotropy is a threshold voltage shift.</p>
+
+<p><a href="images/sd_algan_idvg_aniso.png"><img src="images/sd_algan_idvg_aniso.png" width="570" 
+alt="Id-Vg comparison for isotropic and anisotropic dielectric models" /></a></p>
+
+<p class="caption">Figure 12. Transfer characteristics with and without 
+dielectric anisotropy. (Click image for full-size view.)</p>
+
+<p>This threshold voltage shift originates from the higher permittivity along the 
+c-axis of the crystal, compared to the isotropic value. Note that the isotropic 
+model uses the same parameter value as the value in the plane normal to the 
+anisotropic direction. If the higher permittivity of the anisotropy direction is 
+used for the isotropic model, the results are very close to each other as 
+expected (see Figure&nbsp;13).</p>
+
+<p><a href="images/sd_algan_idvg_aniso2.png"><img src="images/sd_algan_idvg_aniso2.png" width="570" 
+alt="Id-Vg comparison of isotropic and anisotropic dielectric models with adjusted isotropic values" /></a></p>
+
+<p class="caption">Figure 13. Transfer characteristics with and without dielectric 
+anisotropy. The isotropic permittivity model uses the value of the dielectric 
+constant along the c-axis in this comparison. (Click image for full-size view.)</p>
+
+
+<!--================================================-->
+<a name="8"></a>
+<h1>16.8 Application Example: GaN p-i-n Diode</h1>
+
+<p>This example demonstrates the simulation of a GaN material&ndash;based p-i-n diode under 
+forward and reverse bias conditions. The electrical characteristics of the p-i-n diode are 
+determined, accounting for the relevant GaN material physics, including piezoelectric 
+polarization, material anisotropy, interface charge trapping, incomplete dopant ionization, 
+and radiative recombination. The simulation is performed in slow transient.</p>
+
+<!--=========================-->
+<h2>16.8.1 Project Configuration</h2>
+
+<p>The simulations are organized as a Sentaurus Workbench project (see Figure 14).</p>
+
+<p><a href="images/sd_pin_diode_swb.png"><img src="images/sd_pin_diode_swb.png" width="570" 
+alt="Project organization" /></a></p>
+
+<p class="caption">Figure 14. Organization of GaN p-i-n diode project in Sentaurus Workbench. 
+(Click image for full-size view.)</p>
+
+<p>The GaN p-i-n model structure is built with Sentaurus Structure Editor. There are two tool 
+instances of Sentaurus Device: the first tool instance, <tt>sd_fdiv</tt>, simulates the forward 
+bias characteristics, and the second tool instance, <tt>sd_rviv</tt>, simulates the reverse bias 
+characteristics until breakdown.</p>
+
+<!--=========================-->
+<h2>16.8.2 Device Structure Generation</h2>
+
+<p>Sentaurus Structure Editor defines the model geometry, adds doping profiles to the model, 
+defines contact regions, and finally builds the mesh. Basic Scheme commands are used to create 
+the p, i, and n regions of the p-i-n diode. The corresponding regions are doped at constant 
+doping levels of 10<sup>19</sup>, 10<sup>15</sup>, and 10<sup>19</sup> cm<sup>&ndash;3</sup>.</p>
+
+<p>Click to view the Sentaurus Structure Editor primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/GaN_PiN_Diode/sde_dvs.cmd">
+sde_dvs.cmd</a>.</p>
+
+<p>For a detailed introduction to Sentaurus Structure Editor, see the 
+<a href="../sde/sde_menu.html">Sentaurus Structure Editor module</a>.</p>
+
+<p>Figure 15 shows the meshed device structure. A part of the structure at the GaN&ndash;Nitride 
+interface is magnified to demonstrate the accurate interface mesh refinements.</p>
+
+<p><a href="images/sd_GaN_Diode.png"><img src="images/sd_GaN_Diode.png" width="570" 
+alt="Diode structure with interface mesh details" /></a></p>
+
+<p class="caption">Figure 15. GaN diode geometry with mesh details at the beveled 
+isolation interface. (Click image for full-size view.)</p>
+
+<!--=========================-->
+<h2>16.8.3 Meshing Strategy</h2>
+
+<p>The meshing strategy follows the requirement of the proper resolution of areas with large 
+net doping profile gradients, material interfaces, and regions within the device, where some 
+solution variables might experience large perturbations. To that end, the following mesh 
+refinements are made:</p>
+
+<ul>
+<li>A global mesh for the entire structure</li>
+<li>An automatic doping refinement</li>
+<li>An extra refinement at the N-n transition</li>
+<li>Coarse axis-aligned mesh refinement at the GaN&ndash;Nitride interface</li>
+<li>Fine boundary-conforming mesh refinement at the GaN&ndash;Nitride interface</li>
+</ul>
+
+<p>The corresponding Sentaurus Structure Editor commands for Sentaurus Mesh are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_PiN_Diode/sde_dvs.cmd" startExpr="*meshing*" endExpr="*build-mesh*" -->
+<pre>
+;--- meshing ------------------------------------------------------------------;
+(define xmin (sde:min-x (get-body-list)))
+(define xmax (sde:max-x (get-body-list)))
+(define ymin (sde:min-y (get-body-list)))
+(define ymax (sde:max-y (get-body-list)))
+
+(sdedr:define-refeval-window       &quot;Ref.Win.Global&quot; 
+  &quot;Rectangle&quot; (position xmin ymin 0) (position xmax ymax 0))
+(sdedr:define-refinement-size      &quot;Ref.Def.Global&quot; 
+  0.05 0.1 0.005 0.005 )
+(sdedr:define-refinement-function  &quot;Ref.Def.Global&quot; 
+  &quot;DopingConcentration&quot; &quot;MaxTransDiff&quot; 1)
+(sdedr:define-refinement-function  &quot;Ref.Def.Global&quot; 
+  &quot;MaxLenInt&quot; &quot;GaN&quot; &quot;Nitride&quot; 0.015 1.2)
+(sdedr:define-refinement-placement &quot;Ref.Pla.Global&quot; 
+  &quot;Ref.Def.Global&quot; (list &quot;window&quot; &quot;Ref.Win.Global&quot; ) )
+
+(sdedr:define-refeval-window &quot;Ref.Win.ni&quot; 
+  &quot;Rectangle&quot;  (position (- xi 0.05) 0 0) (position (+ xi 0.01) radius_sub 0))
+(sdedr:define-refinement-size &quot;Ref.Def.ni&quot; 
+  0.01 0.1 1 0.001 0.001 1 )
+(sdedr:define-refinement-placement &quot;Ref.Pla.ni&quot; 
+  &quot;Ref.Def.ni&quot; (list &quot;window&quot; &quot;Ref.Win.ni&quot; ) )
+
+(sdedr:offset-interface &quot;material&quot; &quot;GaN&quot; &quot;Nitride&quot; &quot;hlocal&quot; 0.002 &quot;factor&quot; 1.2)
+(sdedr:offset-interface &quot;material&quot; &quot;Nitride&quot; &quot;GaN&quot; &quot;hlocal&quot; 0.005 &quot;factor&quot; 1.4)
+(sdedr:offset-block &quot;material&quot; &quot;GaN&quot; &quot;maxlevel&quot; 4)
+(sdedr:offset-block &quot;material&quot; &quot;Nitride&quot; &quot;maxlevel&quot; 2)
+
+(sde:build-mesh &quot;&quot; &quot;n@node@&quot;)
+</pre>
+<!-- grep end -->
+
+<!--=========================-->
+<h2>16.8.4 Device Simulation</h2>
+
+<p>Input files required for device simulation and output files to be saved after device simulation 
+are specified in the <tt>File</tt> section.</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_PiN_Diode/sd_rviv_des.cmd" startExpr="*File*{" endExpr="*}*" -->
+<pre>
+File {
+  * input files
+  Grid      = &quot;@tdr@&quot;
+  Parameters= &quot;@parameter@&quot;
+  
+  * output files
+  Plot      = &quot;@tdrdat@&quot;
+  Current   = &quot;@plot@&quot;
+  Output    = &quot;@log@&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>Electrical boundary conditions at predefined electrodes are specifed in the <tt>Electrode</tt> section. 
+The following code excerpt defines "anode" as a contact in series with a resistor of 1e12 &Omega;, with the 
+0&nbsp;V external voltage applied to the resistor. The "cathode" is defined as a contact set at 0&nbsp;V voltage.</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_PiN_Diode/sd_rviv_des.cmd" startExpr="Electrode*{*" endExpr="}*" -->
+<pre>
+Electrode {
+  { Name= &quot;anode&quot;   Voltage= 0 Resist=1e7 }
+  { Name= &quot;cathode&quot; Voltage= 0}
+}
+</pre>
+<!-- grep end -->
+
+<p>The device simulation for the p-i-n diode is performed invoking the following models in the 
+<tt>Physics</tt> sections:</p>
+
+<ul> 
+<li>Transport model: Drift-diffusion</li>
+<li>Carrier statistics: Fermi</li>
+<li>Bandgap model: Default, Bennett&ndash;Wilson model</li>
+<li>Bandgap narrowing: Off</li>
+<li>Generation&ndash;recombination: SRH, Auger, radiative, and avalanche generation</li>
+<li>Mobility: Doping dependence (Masetti model), high-field saturation (Caughey&ndash;Thomas model), 
+and transverse field mobility degradation (Lombardi model)</li>
+<li>Piezoelectric polarization model: Strain-based piezo model</li>
+<li>Anisotropy: On</li>
+<li>IncompleteIonization: On</li>
+<li>Traps: Donor type at GaN&ndash;Nitride interface</li>
+</ul>
+
+<p> The global <tt>Physics</tt> section reads:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_PiN_Diode/sd_rviv_des.cmd" startExpr="*Physics*{" endExpr="*}*" -->
+<pre>
+Physics {
+  
+  Temperature=  300.00
+  Fermi
+  Piezoelectric_Polarization(strain) * strain-based piezo model
+  DefaultParametersFromFile
+  EffectiveIntrinsicDensity(NoBandgapNarrowing)
+  
+  * bulk generation/recombination
+  Recombination (
+    SRH 
+    Auger
+    Radiative
+    * Avalanche generation model activation with driving force specification
+    Avalanche(vanOverstraeten)
+  )
+  
+  * Carrier mobility
+  Mobility (
+    DopingDependence(Masetti)
+    HighFieldSaturation(CaugheyThomas)
+    * Transverse field mobility degradation
+    Enormal(Lombardi) * Lombardi interface degradation mobility model
+  )
+  
+  IncompleteIonization
+  Aniso (
+    Poisson * Global aniso permittivity model activation
+    direction(SimulationSystem)= (1 0 0)
+  )
+}
+</pre>
+<!-- grep end -->
+
+<p>The interface-specific <tt>Physics</tt> section reads:</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_PiN_Diode/sd_rviv_des.cmd" startExpr="*MaterialInterface*Nitride*" endExpr="*}*" -->
+<pre>
+Physics (MaterialInterface= &quot;GaN/Nitride&quot;) {
+  * Interface trap specification
+  Traps (
+    (Donor           * trap type
+      Conc=3e13       * trap density, 1/cm^2
+      Level           * trap energetic distribution
+      FromMidBandGap  * reference energy position
+      EnergyMid=0.36  * central energy position of energetic distribution
+      eXsection=1e-30 * trap cross-section for electrons, cm^2
+      hXsection=1e-14 * trap cross-section for holes, cm^2
+    )
+  )
+}
+</pre>
+<!-- grep end -->
+
+<p>The simulation is performed in slow transient using the following commands. The "cathode" 
+is set to be ramped to -1e4 V and a current break criterion is defined. The simulation stops
+ when the "cathode" current exceeds 1e-5&nbsp;A.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/GaN_PiN_Diode/sd_rviv_des.cmd" startExpr="*Solve*{" endExpr="}*" -->
+<pre>
+Solve {
+  Coupled (Iterations=500) { Poisson }
+  Coupled (Iterations=100) { Poisson Hole }
+  Coupled (Iterations=100) { Poisson Electron Hole }
+  
+  Transient (
+    InitialStep= 1e-10 MinStep= 1e-15 MaxStep= 1e-2
+    Increment= 1.4
+    Goal{ Name= &quot;anode&quot; Voltage= -1e4 }
+    BreakCriteria { Current (Contact = &quot;cathode&quot; absval = 1e-5) }
+  ) { Coupled { Poisson Electron Hole } }
+}
+</pre>
+<!-- grep end -->
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/GaN_PiN_Diode/sd_rviv_des.cmd">
+sd_rviv_des.cmd</a>.</p>
+
+<!--=========================-->
+<h2>16.8.5 Visualization of Results</h2>
+
+<p>Figure 16 shows the forward bias and reverse bias current&ndash;voltage characteristics 
+of the GaN p-i-n diode.</p>
+
+<p><a href="images/sd_pin_diode_fdiv.png"><img src="images/sd_pin_diode_fdiv.png" width="570" 
+alt="Forward bias and reverse bias C-V characteristics of GaN p-i-n diode" /></a></p>
+
+<p class="caption">Figure 16. (Left) Forward bias and (right) reverse bias current&ndash;voltage 
+characteristics of GaN p-i-n diode. (Click image for full-size view.)</p>
+
+<p>The two Sentaurus Visual tool instances, <tt>plot_fdiv</tt> and <tt>plot_rviv</tt> next 
+to the Sentaurus Device tools, plot the forward bias and reverse bias characteristics. In 
+addition, <tt>plot_rviv</tt> estimates the breakdown voltage (Sentaurus Workbench parameter, 
+<tt>BV</tt>) and the simulation time (Sentaurus Workbench parameter, <tt>tBV</tt>) corresponding 
+to the breakdown. Figure 17 shows the impact ionization (contour bands) and the current potential 
+(contour lines) distributions at breakdown.</p>
+
+<p><a href="images/sd_pin_diode_II.png"><img src="images/sd_pin_diode_II.png" width="570" 
+alt="Impact ionization and current potential distributions in breakdown" /></a></p>
+
+<p class="caption">Figure 17. Impact ionization (contour bands) and the current potential 
+(contour lines) distributions in breakdown. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>16.9 Relevant Application Notes</h1>
+
+<dl class="ref">
+
+<dt>App. 1</dt>
+<dd><cite>Optimization of GaN MISFET and DC Boost Converter Circuit</cite>, 
+available from <tt>Applications_Library/Power/BoostConverter_GaN-SiC/ BoostConverter_MixedMode</tt>.</dd>
+
+<dt>App. 2</dt>
+<dd><cite>Simulation of Polarization-Induced Effects at AlGaN–GaN Heterointerfaces</cite>, 
+available from <tt>Applications_Library/Power/GaN/GaN_AlGaN_Polarization</tt>.</dd>
+
+<dt>App. 3</dt>
+<dd><cite>Simulation of Normally On GaN HEMT Device by Using Calculated Polarization Charges</cite>, 
+available from <tt>Applications_Library/Power/GaN/GaN_AlGaN_Polz_Calculated</tt>.</dd>
+
+<dt>App. 4</dt>
+<dd><cite>Simulation of Normally Off AlGaN/GaN HFET With p-Type GaN Gate and AlGaN Buffer</cite>, 
+available from <tt>Applications_Library/Power/GaN/HFET_pGate_GaN</tt>.</dd>
+
+<dt>App. 5</dt>
+<dd><cite>Process and Device Simulations of GaN HFET Devices</cite>, 
+available from <tt>Applications_Library/Power/GaN/GaN_Processing</tt>.</dd>
+
+<dt>App. 6</dt>
+<dd><cite>Simulation of Vertical GaN Devices: Trench-Gate MOSFET and Diodes</cite>, 
+available from <tt>Applications_Library/Power/GaN/GaN_Vertical_MOSFET_SW</tt>.</dd>
+
+<dt>App. 7</dt>
+<dd><cite>Using Carrier Statistics to Model 2D Electron Gas at AlGaN–GaN Interface</cite>, 
+available from <tt>Applications_Library/Power/GaN/GaN_HEMT_FermiStat</tt>.</dd>
+
+<dt>App. 8</dt>
+<dd><cite>Simulation of Leakage due to Tunneling in p-GaN Schottky Barriers</cite>, 
+available from <tt>Applications_Library/Power/GaN/pGate_Schottky_1D</tt>.</dd>
+
+<dt>App. 9</dt>
+<dd><cite>Simulation of Leakage due to Trap-Assisted Tunneling in p-GaN Schottky Barriers</cite>, 
+available from <tt>Applications_Library/Power/GaN/pGate_Schottky_TAT_1D</tt>.</dd>
+
+<dt>App. 10</dt>
+<dd><cite>Two-Dimensional Simulation of Corner-Rounding Effects in p-GaN Schottky Barriers</cite>, 
+available from <tt>Applications_Library/Power/GaN/pGate_Schottky_2D</tt>.</dd>
+
+<dt>App. 11</dt>
+<dd><cite>Simulation of Leakage Through AlGaN Barriers in Typical p-GaN Gate HEMT Layer Structures</cite>, 
+available from <tt>Applications_Library/Power/GaN/ pGate_Barrier_TAT_1D</tt>.</dd>
+
+<dt>App. 12</dt>
+<dd><cite>Two-Dimensional Simulation of Leakage in Source-Side Stack of p-GaN Gate HEMTs</cite>, 
+available from <tt>Applications_Library/Power/GaN/pGate_Leakage</tt>.</dd>
+
+<dt>App. 13</dt>
+<dd><cite>Two-Dimensional Device Simulation of p-GaN Gate HEMTs</cite>, 
+available from <tt>Applications_Library/Power/GaN/pGate_HEMT</tt>.</dd>
+
+<dt>App. 14</dt>
+<dd><cite>Modeling of Self-Heating Effects in GaN HFETs</cite>, 
+available from <tt>Applications_Library/Power/GaN/GaN_HFET_SH</tt>.</dd>
+
+<dt>App. 15</dt>
+<dd><cite>Modeling and Simulation of Trapping Effects in p-GaN Gate HEMT Gate Injection Transistor</cite>, 
+available from <tt>Applications_Library/Power/GaN/pGate_HEMT_CC</tt>.</dd>
+
+<dt>App. 16</dt>
+<dd><cite>Three-Dimensional Simulation of GaN Fin-HEMT</cite>, 
+available from <tt>Applications_Library/Power/GaN/GaN_Fin-HEMT</tt>.</dd>
+
+<dt>App. 17</dt>
+<dd><cite>Sentaurus Technology Template: Simulation of DC Characteristics of a GaN-Based HFET</cite>, 
+available from <tt>Applications_Library/Hetero/HFET_GaN_DC</tt>.</dd>
+
+</dl>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_15.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_17.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

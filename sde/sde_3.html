@@ -1,0 +1,669 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Structure Editor 3. Generating Doping Profiles</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Structure Editor<br />3. Generating Doping Profiles</h1>
+
+<p>
+ <a href="#1">3.1 Defining Constant Doping Levels in Materials</a><br />
+ <a href="#2">3.2 Defining Constant Doping Levels in Regions</a><br />
+ <a href="#3">3.3 Defining Analytic Doping Profiles</a><br />
+ <a href="#4">3.4 Saving the Model</a><br />
+ <a href="#5">3.5 Importing External Profiles</a><br />
+ <a href="#6">3.6 Assignment</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the most important 2D doping definitions 
+     of Sentaurus Structure Editor using an SOI MOSFET.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Defining Constant Doping Levels in Materials</h1>
+
+<p class="note">In this section, the SOI MOSFET built in 
+<a href="sde_2.html">Section 2. Generating 2D Boundaries</a> 
+will be used.</p>
+
+<p>This section introduces the most basic approach to defining a constant 
+background doping level within a material type.</p> 
+
+<p>To introduce a constant boron background doping of 1x10<sup>15</sup> cm<sup>-3</sup> 
+in the silicon material:</p>
+  
+<ol>
+<li>Choose <strong>Device</strong> &gt; <strong>Constant Profile Placement</strong>.<br />
+The Constant Profile Placement dialog box opens.
+
+<a name="ConsProPla"></a>
+<p><img src="images/se_d_constantprofile.png" width="520" height="592" 
+alt="Constant Profile Placement dialog box" /></p>
+
+<p class="caption">Figure 1. Constant Profile Placement dialog box.</p></li>
+
+<li>Enter <tt>PlaceCD.Silicon</tt> in the <strong>Placement Name</strong> field.</li>
+<li>Under Placement Type, select <strong>Material</strong>, and 
+select <strong>Silicon</strong> as the material name.</li>
+<li>Under Constant Profile Definition, enter <tt>Const.Silicon</tt> 
+in the <strong>Name</strong> field.</li>
+<li>Select <strong>BoronActiveConcentration</strong> from the <strong>Species</strong> list.</li>
+<li>Enter <tt>1e15</tt> in the <strong>Concentration</strong> field.</li>
+<li>Click <strong>Add Placement</strong> to add the doping to the silicon substrate region.</li>
+<li>Click <strong>Close</strong>.</li>
+</ol>
+
+<p>The assignment of a constant doping profile to a specific material type involves, 
+in general, two steps:</p> 
+
+<ul>
+<li>The first step defines a constant profile, which in this case requires all the fields 
+in the Constant Profile Definition group box to be completed.</li> 
+
+<li>The second step associates the defined profile with a material type, which is performed 
+by Sentaurus Structure Editor when you click the <strong>Add Placement</strong> button. 
+However, before this step, you must select both the placement type and the material type under 
+Placement Type.</li>
+</ul>
+     
+<p>The corresponding Scheme commands that reflect these two steps are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdedr:define-constant-profile*" lines=3 -->
+<pre>
+(sdedr:define-constant-profile &quot;Const.Silicon&quot; &quot;BoronActiveConcentration&quot; 1e+15)
+(sdedr:define-constant-profile-material &quot;PlaceCD.Silicon&quot; 
+  &quot;Const.Silicon&quot; &quot;Silicon&quot;) 
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Defining Constant Doping Levels in Regions</h1>
+
+<p>The placement of a constant doping profile in a material adds the profile 
+everywhere that the specified material resides. This can include more than one device region. 
+Alternatively, you can assign a doping profile only to selected device regions.</p> 
+
+<p>To dope the silicon epilayer with a uniform boron concentration of 
+1x10<sup>17</sup> cm<sup>-3</sup>:</p>
+
+<ol>
+<li>Choose <strong>Device</strong> &gt; <strong>Constant Profile Placement</strong>.<br />
+The Constant Profile Placement dialog box opens.<br />
+
+<p><img src="images/se_d_constantprofile2.png" width="519" height="591" 
+alt="Constant Profile Placement dialog box" /></p></li>
+
+<li>Enter <tt>PlaceCD.Epi</tt> in the <strong>Placement Name</strong> field.</li>
+<li>Under Placement Type, select <strong>Region</strong>, and select  
+<strong>R.Siliconepi</strong> as the region name.</li>
+<li>Under Constant Profile Definition, enter <tt>Const.Epi</tt> in the <strong>Name</strong> field.</li>
+<li>Select <strong>BoronActiveConcentration</strong> from the <strong>Species</strong> list.</li>
+<li>Enter <tt>1e17</tt> in the <strong>Concentration</strong> field.</li>
+<li>Click <strong>Add Placement</strong>.</li>
+<li>Click <strong>Close</strong>.</li>
+</ol>
+     
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdedr:define-constant-profile*" startoccurrence=3 lines=2-->
+<pre>
+(sdedr:define-constant-profile &quot;Const.Epi&quot; &quot;BoronActiveConcentration&quot; 1e17)
+(sdedr:define-constant-profile-region &quot;PlaceCD.Epi&quot; &quot;Const.Epi&quot; &quot;R.Siliconepi&quot;)
+</pre>
+<!-- grep end -->
+
+<p class="note">Constant doping profiles also can be applied to an evaluation 
+window by selecting <strong>Ref/Win</strong> in the Placement Type group box. 
+See <a href="sde_4.html#3">Section&nbsp;4.3 Defining Regional Refinements</a>
+for instructions to define an evaluation window.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Defining Analytic Doping Profiles</h1>
+      
+<p>In Sentaurus Structure Editor, you can define doping profiles characterized 
+by analytic functions, such as Gaussian and error functions. In addition, you 
+can define doping profiles of your own functions, which can be useful in some 
+applications.</p>
+
+<p>The placement of an analytic profile is performed usually in two steps. 
+The first step defines the baseline and the second step defines the shape 
+of the profile itself. The baseline determines the lateral extent of the 
+profile and also can serve as the reference point for the depth of the peak position.</p>
+
+<p>Two Gaussian doping profiles are to be added to the source/drain and their extension regions 
+of the example structure. For the source/drain region, the target is a Gaussian phosphorus profile 
+with a peak concentration of 5x10<sup>19</sup>&nbsp;cm<sup>-3</sup>, a junction depth of 
+0.12&nbsp;&mu;m, and a lateral straggle/diffusion factor of 0.8.</p> 
+
+<p>For the source/drain extensions, the goal is a Gaussian arsenic profile with a peak concentration 
+of 5x10<sup>18</sup>&nbsp;cm<sup>-3</sup> and a junction depth of 0.035 &mu;m.</p>
+
+<p><strong>Automatic Region-Naming Mode</strong>: By default, Sentaurus 
+Structure Editor automatically assigns names such as <tt>RefEvalWin_1</tt> 
+and <tt>RefEvalWin_1</tt> to newly created reference windows such as baselines. 
+This is useful in some applications but, in most cases, you might prefer 
+to use your own names, which are more descriptive and easier to remember.</p>
+
+<p>To switch off the automatic region-naming mode, choose <strong>Draw</strong> &gt; 
+<strong>Auto Region Naming</strong> (ensure there is no check mark next to this command).</p>
+
+<p>When the mode has been switched off, you will be prompted to 
+enter the name whenever a new baseline is created.</p>
+
+<p>To define the baseline:</p>
+
+<ol>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Define Ref/Eval Window</strong> &gt; <strong>Line</strong>.</li>
+<li>In the view window, click the first point and second point of the baseline.<br /> 
+The Exact Coordinates dialog box opens.</li>  
+<li>Enter <tt>(-0.8 0)</tt> for the start point and <tt>(-0.2 0)</tt> for the end point.</li>
+<li>In the displayed dialog box, enter the name <tt>BaseLine.Source</tt> for the baseline, 
+and click <strong>OK</strong>.</li>
+</ol>
+
+<p>Similar steps can be repeated to define the drain-side baseline and the baselines for the 
+source and drain extension junctions.</p> 
+
+<p>Use the following baseline names and the start and end locations.</p>
+
+<table width="500">
+<tr>
+ <th>Junction</th>
+ <th>Baseline name</th>
+ <th>Start point</th>
+ <th>End point</th>
+</tr>
+
+<tr>
+<td>Source</td>
+<td><tt>BaseLine.Source</tt></td>
+<td><tt>(-0.8 0)</tt></td>
+<td><tt>(-0.2 0)</tt></td>
+</tr>
+
+<tr>
+<td>Drain</td>
+<td><tt>BaseLine.Drain</tt></td>
+<td><tt>(0.2 0)</tt></td>
+<td><tt>(0.8 0)</tt></td>
+</tr>
+
+<tr>
+<td>Source extension</td>
+<td><tt>BaseLine.SourceExt</tt></td>
+<td><tt>(-0.8 0)</tt></td>
+<td><tt>(-0.1 0)</tt></td>
+</tr>
+
+<tr>
+<td>Drain extension</td>
+<td><tt>BaseLine.DrainExt</tt></td>
+<td><tt>(0.1 0)</tt></td>
+<td><tt>(0.8 0)</tt></td>
+</tr>
+</table>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdedr:define-refeval-window*" lines=8-->
+<pre>
+(sdedr:define-refeval-window &quot;BaseLine.Source&quot; 
+  &quot;Line&quot; (position -0.8 0.0 0.0) (position -0.2 0.0 0.0))
+(sdedr:define-refeval-window &quot;BaseLine.Drain&quot; 
+  &quot;Line&quot; (position  0.2 0.0 0.0) (position  0.8 0.0 0.0))
+(sdedr:define-refeval-window &quot;BaseLine.SourceExt&quot; 
+  &quot;Line&quot; (position -0.8 0.0 0.0) (position -0.1 0.0 0.0))
+(sdedr:define-refeval-window &quot;BaseLine.DrainExt&quot; 
+  &quot;Line&quot; (position  0.1 0.0 0.0) (position  0.8 0.0 0.0))
+</pre>
+<!-- grep end -->
+
+<p>To define and place an analytic doping profile:</p>
+
+<ol>
+<li>Choose <strong>Device</strong> &gt; <strong>Analytical Profile Placement</strong>.<br />
+The Analytical Profiles dialog box opens.<br />
+
+<p><img src="images/se_d_analytprofile.png" width="571" height="706" 
+alt="Analytical Profiles dialog box" /></p></li>
+
+<li>Enter <tt>PlaceAP.Source</tt> in the <strong>Placement Name</strong> field.</li>
+<li>Select the baseline <strong>BaseLine.Source</strong> from the <strong>Ref/Win</strong> list.</li>
+<li>Under Profile Definition, enter <tt>Gauss.SourceDrain</tt> in the <strong>Name</strong> 
+field.</li> 
+<li>Select <strong>Gaussian</strong> from the <strong>Profile Type</strong> list and 
+<strong>PhosphorusActiveConcentration</strong> from the <strong>Species</strong> list.</li>
+<li>Under Primary Direction Profile (Gauss), enter <tt>5e19</tt> in the 
+<strong>Peak Concentration</strong> field and <tt>0</tt> in the <strong>Peak Position</strong> 
+field.</li>
+<li>Enter <tt>1e17</tt> in the <strong>Junction</strong> field and <tt>0.12</tt> in the 
+<strong>Depth</strong> field.</li>
+<li>Under Lateral Direction Diffusion, enter <tt>0.8</tt> in the <strong>Factor</strong> field.</li>
+<li>Click <strong>Add Placement</strong>.</li>
+<li>Repeat all steps for the drain junction profile and the source/drain extensions.</li>
+</ol>
+
+<p>Similar steps can be executed to assign the drain junction profile and the profile for the 
+source/drain extension junctions. Use the following listed profiles accordingly.</p>
+
+<table width="500">
+<tr>
+ <th>Junction</th>
+  <th>Placement name</th>
+ <th>Baseline name</th>
+ <th>Profile name</th>
+</tr>
+
+<tr>
+<td>Source</td>
+<td><tt>PlaceAP.Source</tt></td>
+<td><tt>BaseLine.Source</tt></td>
+<td> <tt>Gaussian.SourceDrain</tt></td>
+</tr>
+
+<tr>
+<td>Drain</td>
+<td><tt>PlaceAP.Drain</tt></td>
+<td><tt>BaseLine.Drain</tt></td>
+<td><tt>Gaussian.SourceDrain</tt></td>
+</tr>
+
+<tr>
+<td>Source extension</td>
+<td><tt>PlaceAP.SourceExt</tt></td>
+<td><tt>BaseLine.SourceExt</tt></td>
+<td><tt>Gaussian.SourceDrainExt</tt></td>
+</tr>
+
+<tr>
+<td>Drain extension</td>
+<td><tt>PlaceAP.DrainExt</tt></td>
+<td><tt>BaseLine.DrainExt</tt></td>
+<td><tt>Gaussian.SourceDrainExt</tt></td>
+</tr>
+</table>
+
+<p>The Gaussian profiles are defined as follows.</p>
+
+<table width="500">
+<tr>
+ <th>Profile name</th>
+ <th>Peak concentration</th>
+ <th>Peak position</th>
+ <th>Junction concentration</th>
+ <th>Junction depth</th>
+ <th>Lateral factor</th>
+</tr>
+
+<tr>
+<td><tt>Gaussian.SourceDrain</tt></td>
+<td>5x10<sup>19</sup> cm<sup>-3</sup></td>
+<td>0 &mu;m</td>
+<td>10<sup>17</sup> cm<sup>-3</sup></td>
+<td>0.12 &mu;m</td>
+<td>0.8</td>
+</tr>
+
+<tr>
+<td><tt>Gaussian.SourceDrainExt</tt></td>
+<td>5x10<sup>18</sup> cm<sup>-3</sup></td>
+<td>0 &mu;m</td>
+<td>10<sup>17</sup> cm<sup>-3</sup></td>
+<td>0.035 &mu;m</td>
+<td>0.8</td>
+</tr>
+</table>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdedr:define-analytical*" endExpr="*BaseLine.DrainExt*"-->
+<pre>
+(sdedr:define-analytical-profile-placement &quot;PlaceAP.Source&quot;
+  &quot;Gauss.SourceDrain&quot; &quot;BaseLine.Source&quot; &quot;Positive&quot; &quot;NoReplace&quot; &quot;Eval&quot;)
+
+(sdedr:define-gaussian-profile &quot;Gauss.SourceDrain&quot;
+  &quot;ArsenicActiveConcentration&quot; &quot;PeakPos&quot; 0.0 &quot;PeakVal&quot; 5e19
+  &quot;ValueAtDepth&quot; 1e17 &quot;Depth&quot; 0.12 &quot;Gauss&quot; &quot;Factor&quot; 0.8)
+
+(sdedr:define-analytical-profile-placement &quot;PlaceAP.Drain&quot;
+  &quot;Gauss.SourceDrain&quot; &quot;BaseLine.Drain&quot; &quot;Positive&quot; &quot;NoReplace&quot; &quot;Eval&quot;)
+
+(sdedr:define-analytical-profile-placement &quot;PlaceAP.SourceExt&quot;
+  &quot;Gauss.SourceDrainExt&quot; &quot;BaseLine.SourceExt&quot; &quot;Positive&quot; &quot;NoReplace&quot; &quot;Eval&quot;)
+
+(sdedr:define-gaussian-profile &quot;Gauss.SourceDrainExt&quot;
+  &quot;ArsenicActiveConcentration&quot; &quot;PeakPos&quot; 0.0 &quot;PeakVal&quot; 5e18
+  &quot;ValueAtDepth&quot; 1e17 &quot;Depth&quot; 0.035 &quot;Gauss&quot; &quot;Factor&quot; 0.8)
+
+(sdedr:define-analytical-profile-placement &quot;PlaceAP.DrainExt&quot;
+  &quot;Gauss.SourceDrainExt&quot; &quot;BaseLine.DrainExt&quot; &quot;Positive&quot; &quot;NoReplace&quot; &quot;Eval&quot;)
+</pre>
+<!-- grep end -->
+
+<p class="note">The profile definition for the contact and extension profiles can be
+used for both the source and drain implantations.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>3.4 Saving the Model</h1>
+
+<p>To save the model, follow the instructions in 
+<a href="sde_2.html#12">Section 2.12 Saving the Model</a>.</p>
+
+<p><a href="images/se_d_doping.png"><img src="images/se_d_doping.png" width="570" 
+alt="Device with doping conditions" /></a></p>
+
+<p class="caption">Figure 2. Device with its latest doping conditions 
+after meshing viewed in Sentaurus Visual. (Click image for full-size view.)</p>
+
+<p>Click to view all the commands discussed in this section in the command file 
+<a href="../../Applications_Library/GettingStarted/sde/soifet/doping_dvs.cmd">
+doping_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/soifet</tt>.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>3.5 Importing External Profiles</h1>
+
+<p>This section introduces several ways of loading external doping (or any fields)
+profiles in the structure. The imported profiles can be one, two, or three dimensional.</p>
+ 
+<p>Examples of the features discussed in this section are all contained in the 
+Sentaurus Workbench project <tt>Applications_Library/GettingStarted/sde/ExternalProfiles</tt>. 
+To work with the project, copy it to a local directory within your Sentaurus Workbench 
+working directory.</p>
+
+<!--=======================-->
+<h2>3.5.1 External 1D Profiles</h2>
+
+<p>The following example demonstrates how to incorporate an external 1D profile into 
+a 2D structure.</p>
+
+<p>To set up the 1D profile import, choose <strong>Device</strong> &gt; 
+<strong>Analytical Profile Placement</strong>.</p>
+
+<p>Figure 3 shows the Analytical Profiles dialog box with the 
+<strong>Profile Type</strong> field set to <strong>1D Profile</strong> and the external 
+profile (<strong>1d_As.plx</strong>) entered as the <strong>File Name</strong>.</p>
+
+<p><img src="images/sde_submesh_window.png" width="572" height="708"
+alt="Analytical Profiles dialog box" /></p>
+
+<p class="caption">Figure 3. Analytical Profiles dialog box showing Profile Type as 
+1D Profile and File Name as 1d_As.plx.</p>
+
+<p>The external profile will be placed according to the position of the Ref/Eval 
+window (line in two dimensions and surface in three dimensions), similar to the 
+positioning of an analytic profile (see 
+<a href="#3">Section&nbsp;3.3 Defining Analytic Doping Profiles</a>).</p>
+
+<p>Figure 4 shows the external profile and the corresponding profile in the 2D structure created 
+by the tool &quot;rectangle&quot;.</p>
+
+<p><a href="images/sde_submesh_1D_Asprofile_2Dfinal.png"><img src="images/sde_submesh_1D_Asprofile_2Dfinal.png" 
+width="570" alt="External profile used and resulting 2D distribution" /></a></p>
+
+<p class="caption">Figure 4. (Left) External profile used and (right) resulting 
+2D distribution. (Click image for full-size view.)</p>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/ExternalProfiles/rectangle_dvs.cmd" startExpr="(sdedr:define-refeval*" endExpr="*1d_As.plx*"-->
+<pre>
+(sdedr:define-refeval-window &quot;RefEvalWin_1&quot; &quot;Line&quot;  
+  (position 0.0 0.5 0) (position 0.0 1.5 0))
+(sdedr:define-analytical-profile-placement &quot;AnalyticalProfilePlacement_1&quot; 
+  &quot;AnalyticalProfileDefinition_1&quot; &quot;RefEvalWin_1&quot; &quot;Both&quot; &quot;NoReplace&quot; &quot;Eval&quot;)
+(sdedr:define-1d-external-profile &quot;AnalyticalProfileDefinition_1&quot; 
+  &quot;1d_As.plx&quot; &quot;Scale&quot; 1.0   &quot;Gauss&quot;  &quot;Factor&quot; 0.2)
+</pre>
+<!-- grep end -->
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sde/ExternalProfiles/rectangle_dvs.cmd">
+rectangle_dvs.cmd</a>.</p>
+
+<!--======================-->
+<h2>3.5.2 External 2D Profiles in 3D Structures</h2>
+
+<p>The following example demonstrates how to incorporate an external 2D profile
+into a 3D structure and how the 2D profile is evaluated in the third dimension.</p>
+
+<p>To set up the 2D (or 3D) profile import, choose <strong>Device</strong> &gt; 
+<strong>External Profile Placement</strong>.</p>
+
+<p>Figure 5 shows the External Profile Placement dialog box with the 
+<strong>Geometry File</strong> field set to the corresponding TDR file containing 
+the data to be imported, here <strong>n1_Ext1D_2D_msh.tdr</strong>, and where the 
+data will be evaluated as a Ref/Eval window, named <strong>RefEvalWin_2</strong>, 
+as selected in the Evaluation Window Type group box.</p>
+
+<p><a href="images/sde_external2D3D_window.png"><img src="images/sde_external2D3D_window.png" 
+width="570" alt="External Profile Placement dialog box" /></a></p>
+
+<p class="caption">Figure 5. External Profile Placement dialog box showing Geometry 
+File as n1_Ext1D_2D_msh.tdr and Evaluation Window Type as RefEvalWin_2. 
+(Click image for full-size view.)</p>
+
+<p>Additional options:</p>
+
+<ul>
+<li><strong>Shift/Reflect/Rotate</strong>: The external 2D or 3D TDR profile is spatially located 
+(size and position). Therefore, the TDR profile must be placed at the correct position in 
+the targeted structure. You can apply several operations such as shift, reflect, and rotate 
+to achieve this.</li>
+<li><strong>Field Restriction</strong>: Select this option to specify which data is loaded. 
+By default, all data is loaded (option is not selected).</li>
+<li><strong>Lateral Decay</strong>: Select how the data is evaluated outside of the 
+evaluation window. Options are:<br />
+  <ul>
+  <li><strong>Decay Length</strong> describes an error function.</li>
+  <li><strong>Gaussian Decay Length</strong> is a Gaussian function.</li>
+  </ul>
+  <br />
+Using a value of <tt>0</tt> cuts of the profile outside of the window sharply.</li>
+<li><strong>Replace</strong>: Select how the data should interact with already existing 
+data. Options are <strong>NoReplace</strong> (add data), <strong>Replace</strong> 
+(replace all data), or <strong>LocalReplace</strong> (replace all defined data).</li>
+</ul>
+
+<p>For details about external profile (submesh) placements or evaluation options, 
+refer to the <cite>Sentaurus&trade; Mesh User Guide</cite>.</p>
+
+<p>The tool &quot;evaluation&quot; uses the 2D profile from Figure&nbsp;4 and loads 
+it into a 3D structure (simple cuboid of silicon) (see Figure&nbsp;6).</p>
+
+<p><a href="images/sde_external2D3D_single_refeval.png"><img src="images/sde_external2D3D_single_refeval.png" 
+width="570" alt="External 2D profile in 3D cuboid" /></a></p>
+
+<p class="caption">Figure 6. (Left) Ref/Eval window, (middle) profile evaluated 
+in the Ref/Eval window, and (right) profile evaluated in the region. (Click image 
+for full-size view.)</p>
+
+<p>In Figure 6, the first generated structure (middle) uses the profile 
+<tt>n1_Ext1D_2D_msh.tdr</tt> and evaluates it in the Ref/Eval window (green box on 
+the left). The 2D data is extruded automatically in the third dimension, according 
+to the Ref/Eval window. As no decay length is defined, the profile drops sharply to 
+zero outside of the evaluation window.The corresponding commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/ExternalProfiles/evaluation_dvs.cmd" startExpr="#if @case@==0*" endExpr="*n@node|rectangle@_Ext1D_2D_msh.tdr*" excludeLines="*#*" format="excludeEmpty" -->
+<pre>
+(sdedr:define-refeval-window &quot;RefEvalWin_1&quot; &quot;Cuboid&quot;  
+  (position 0 0 0) (position 1 2.0 2.0))
+(sdedr:define-submesh-placement &quot;ExternalProfilePlacement_1&quot; 
+  &quot;ExternalProfileDefinition_1&quot; &quot;RefEvalWin_1&quot; &quot;NoReplace&quot;)
+(sdedr:define-submesh &quot;ExternalProfileDefinition_1&quot; 
+  &quot;n@node|rectangle@_Ext1D_2D_msh.tdr&quot;)
+</pre>
+<!-- grep end -->
+
+<p>When the profile is evaluated in the region instead, the data is extended automatically 
+to the entire region, resulting in the data profile shown in Figure&nbsp;6 (<em>right</em>). 
+The corresponding commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/ExternalProfiles/evaluation_dvs.cmd" startExpr="#if @case@==1*" endExpr="*n@node|rectangle@_Ext1D_2D_msh.tdr*" excludeLines="*#*" excludeLines="*#*" format="excludeEmpty" -->
+<pre>
+(sdedr:define-submesh-placement &quot;ExternalProfilePlacement_1&quot; 
+  &quot;ExternalProfileDefinition_1&quot; &quot;bulk&quot; &quot;PlacementType&quot; &quot;Region&quot; &quot;NoReplace&quot;)
+(sdedr:define-submesh &quot;ExternalProfileDefinition_1&quot; 
+  &quot;n@node|rectangle@_Ext1D_2D_msh.tdr&quot;)
+</pre>
+<!-- grep end -->
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sde/ExternalProfiles/evaluation_dvs.cmd">
+evaluation_dvs.cmd</a>.</p>
+
+<p>In the case of a 3D submesh in a 3D evaluation window (or 2D submesh in a 2D evaluation 
+window), the behavior regarding the evaluation option and how the evaluation is processed 
+are the same.</p>
+
+<!--======================-->
+<h2>3.5.3 Complex Sweeps of 2D Profiles</h2>
+
+<p>More complex sweeps, than a simple extrusion, can be applied to submeshes within 
+the Ref/Eval window. The first case of the tool &quot;sweeping&quot; uses the 2D profile 
+from Figure&nbsp;6 and applies a circular sweep around the x-axis to create a 3D Ref/Eval 
+window out of the 2D one (see Figure&nbsp;7).</p>
+
+<p><a href="images/sde_external2D3D_advanced_sweep1.png"><img src="images/sde_external2D3D_advanced_sweep1.png" 
+width="570" alt="External 2D sweep around an axis" /></a></p>
+
+<p class="caption">Figure 7. (Left) A 2D Ref/Eval window is rotated around the 
+x-axis to create a 3D Ref/Eval window, and (right) the 2D TDR profile is translated 
+along the x-axis and then applied to the 3D Ref/Eval window. (Click image for 
+full-size view.)</p>
+
+<p>To create the 3D pie structure, a rectangular silicon sheet is rotated around the 
+(1 0 0) axis at position (0 0 0) with a sweep angle of 270&deg;. The same is performed 
+for the 2D Ref/Eval window:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/ExternalProfiles/sweeping_dvs.cmd" startExpr="(sdegeo:sweep*" endExpr="#*" excludeLines="#*" format="excludeEmpty" -->
+<pre>
+(sdegeo:sweep (find-material-id &quot;Silicon&quot;) (position 0 0 0) (gvector 1 0 0) 
+  (sweep:options &quot;solid&quot; #t &quot;sweep_angle&quot; 270 &quot;rigid&quot; #f &quot;miter_type&quot; 
+    &quot;default&quot;))
+(sdegeo:sweep (find-drs-id &quot;RefEvalWin_1&quot;) (position 0 0 0) (gvector 1 0 0) 
+  (sweep:options &quot;solid&quot; #t &quot;sweep_angle&quot; 270 &quot;rigid&quot; #f &quot;miter_type&quot; 
+    &quot;default&quot;))
+</pre>
+<!-- grep end -->
+
+<p>Note that the sweep information of the Ref/Eval window is translated into 
+Sentaurus Mesh commands upon saving.</p>
+
+<p>In Figure 8, the 2D Ref/Eval window is swept along a polygonal path.</p> 
+
+<p><a href="images/sde_external2D3D_advanced_sweep2.png"><img src="images/sde_external2D3D_advanced_sweep2.png" 
+width="570" alt="External 2D sweep in 3D cuboid" /></a></p>
+
+<p class="caption">Figure 8. (Left) A 2D Ref/Eval window is swept along a path 
+(the wire line) to create a 3D Ref/Eval window and (right) the 2D TDR profile is 
+translated along the x-axis and then applied to the 3D Ref/Eval window. 
+(Click image for full-size view.)</p>
+
+<p>First, you create a polyline wire:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/ExternalProfiles/sweeping_dvs.cmd" startExpr="(define path2*" endExpr="*))*" -->
+<pre>
+(define path2 (sdegeo:create-polyline-wire (list 
+  (position 0.0 2.5 0.0)
+  (position 0.0 2.5 -2.0) 
+  (position 0.0 2.4 -3.0)  
+  (position 0.0 1.0 -4.0)
+  (position 0.0 1.0 -5.0)
+  (position 0.0 2.0 -6.0)
+  (position 0.0 4.0 -7.0) 
+  (position 0.0 7.0 -8.0) 
+  )))
+</pre>
+<!-- grep end -->
+
+<p>Second, the rectangular silicon sheet and the 2D Ref/Eval window are swept along this path:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/ExternalProfiles/sweeping_dvs.cmd" startExpr="(sdegeo:sweep*material*" startOccurrence=2 endExpr="#*"  excludeLines="#*" format="excludeEmpty" -->
+<pre>
+(sdegeo:sweep (entity:faces (find-material-id &quot;Silicon&quot;)) path2  
+  (sweep:options &quot;solid&quot; #t &quot;rigid&quot; #f &quot;miter_type&quot; &quot;default&quot;  ))
+(map bool:regularise (get-body-list))
+(sdegeo:sweep (find-drs-id &quot;RefEvalWin_1&quot;) path2  
+  (sweep:options &quot;solid&quot; #t &quot;rigid&quot; #f &quot;miter_type&quot; &quot;default&quot;  ))
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sde/ExternalProfiles/sweeping_dvs.cmd">
+sweeping_dvs.cmd</a>.</p>
+
+<p>The <tt>(bool:regularise)</tt> command is applied to all bodies in the structure using the 
+<tt>(map)</tt> function. The purpose here is to remove unnecessary edges in the silicon body.</p>
+
+<p>For details about specifying sweep options, see the 
+<cite>Sentaurus&trade; Structure Editor User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>3.6 Assignment</h1>
+
+<p>Create the doping profile definitions for the SiGe HBT from 
+<a href="sde_2.html#13">Section 2.13 Assignment</a>.</p>
+
+<p><img src="images/se_d_assignhbt.png" width="512" height="190" alt="SiGe HBT with doping conditions" /></p>
+
+<p class="caption">Figure 9. SiGe HBT with its latest doping conditions.</p>
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sde/sigehbt/sigehbt_dvs.cmd">
+sigehbt_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/sigehbt</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

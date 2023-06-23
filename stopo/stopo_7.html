@@ -1,0 +1,402 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 7. Create and Use Masks From Layout Files</title>
+</head>
+
+<body>
+<div id="all">
+
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_6.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_8.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />7. Create and Use Masks From Layout Files</h1>
+
+<p>
+ <a href="#1">7.1 Overview</a><br />
+ <a href="#2">7.2 Importing a Layout File (GDSII or OASIS)</a><br />
+ <a href="#3">7.3 Creating a Mask From a Layer</a><br />
+ <a href="#4">7.4 Mask Operations</a><br />
+ <a href="#5">7.5 Sidewall Profiles</a><br /> 
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To import a layout file (GDSII or OASIS) into Sentaurus Topography 3D.</li>
+ <li>To create masks from imported layout layers and to pattern materials with them.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>7.1 Overview</h1>
+
+<p>This section presents the standard steps needed to import a layout file, in GDSII or 
+OASIS format, and to use this file to create masks for patterning materials in Sentaurus 
+Topography 3D.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sptopo3d/layout</tt>. If you are not familiar 
+with Sentaurus Workbench projects, the preprocessed script file <tt>layout_t3d.cmd</tt> 
+can be found in this directory.</p>
+
+<p>To download the preprocessed script file, right-click the following link and choose 
+<strong>Save Target As</strong>: 
+<a href="../../Applications_Library/GettingStarted/sptopo3d/layout/layout_t3d.cmd">
+layout_t3d.cmd</a>.</p>
+
+<p>To execute the file in Sentaurus Topography 3D on the command line, enter:</p>
+
+<pre>
+&gt; sptopo3d layout_t3d.cmd
+</pre>
+
+<p>After the command file is executed, the generated TDR file is <tt>layout_t3d.tdr</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>7.2 Importing a Layout File (GDSII or OASIS)</h1>
+
+<p>This section shows how to import a specific cell from a layout file (GDSII or OASIS), 
+how to define a domain (clip) of the layout to be used, and how to specify the layers of 
+the layout that need to be available for the creation of masks in Sentaurus Topography 3D.</p> 
+
+<p>The command <tt>define_layout</tt> is used to import a GDSII file (file name with suffix 
+<tt>.gds</tt>) or an OASIS file (file name with suffix <tt>.oas</tt>). The file name is 
+selected with the <tt>layout_file</tt> parameter:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/layout/sptopo3d_t3d.cmd" startExpr="##start - import the layout" endExpr="##end - import the layout" excludelines="##*" -->
+<pre>
+define_layout name= $layout_name layout_file= &quot;layout.oas&quot; \
+  layer_numbers= {41:0 46:0 47:0 48:0 50:0 52:0 54:0}\
+  layer_names= {layer1 layer2 layer3 layer4 layer5 layer6 layer7}\
+  cell= $cell\
+  domain= $domain domain_min= {-2.300 -1.500} domain_max= {2.200 2.000} \
+  scale= 1.0 shift_to_origin= @shift_to_origin@ 
+</pre>
+<!-- grep end -->
+
+<p>The following keywords are mandatory for the complete definition of the layout:</p>
+
+<ul>
+  <li><tt>name</tt> sets the name of the defined layout to be used within Sentaurus Topography 3D.</li>
+  <li><tt>layout_file</tt> sets the name of a GDSII or an OASIS file from which the layout is read.</li>
+  <li><tt>layer_numbers</tt> sets a list of layer numbers that are read from a GDSII or an OASIS layout file.</li> 
+  <li><tt>layer_names</tt> sets a list of layer names to be used instead of the layer numbers specified in the
+      <tt>layer_numbers</tt> parameter. The number of entries in both lists must be the same.</li>
+  <li><tt>cell</tt> sets the name of the layout cell from which a domain is extracted.</li>
+  <li><tt>domain</tt> sets the name to be given to the domain that is extracted from a GDSII or an OASIS layout file.</li>
+  <li><tt>domain_max</tt> sets the coordinate of the maximum point of the layout domain in the layout coordinate system.</li>
+  <li><tt>domain_min</tt> sets the coordinate of the minimum point of the layout domain in the layout coordinate system.</li>
+</ul>
+
+<p>The imported layout can also be scaled with the parameter <tt>scale</tt> (default: 1.0).</p>
+
+<p>The parameter <tt>shift_to_origin</tt> helps to align the defined layout domain (see Clip1 in 
+Figure&nbsp;1) to the actual simulation domain. By default, it is set to <tt>true</tt>, which means 
+that the lower-left corner of the layout domain will coincide with the origin (0,0) of the xy plane 
+of the simulation domain (see Figure&nbsp;2).</p>
+
+<p><a href="images/tp_layout_domain_plan_view.png"><img src="images/tp_layout_domain_plan_view.png" 
+width="570" alt="Plan view of layout domain" /></a></p>
+
+<p class="caption">Figure 1. Plane view of the defined layout domain (highlighted with white box, 
+named Clip1). The origin of the layout and the lower-left corner point of the layout domain are 
+indicated. (Click image for full-size view.)</p>
+
+<p><a href="images/tp_shift_to_origin_true_overlay.png"><img src="images/tp_shift_to_origin_true_overlay.png" 
+width="570" alt="Overlay of layout and simulation domains" /></a></p>
+
+<p class="caption">Figure 2. Overlay view of layout and simulation domains when shift_to_origin=true 
+(default). In that case, the lower-left corner of the layout and the origin of the simulation domain 
+(0,0,0) coincide. (Click image for full-size view.)</p>
+
+<p>If <tt>shift_to_origin=false</tt>, then the origin (0,0) of the layout domain will coincide with 
+the origin (0,0) of the xy plane of the simulation domain (see Figure&nbsp;3). In the latter case, 
+if the layout domain (clip) is defined far from the origin of the layout, then the result of the 
+patterning with the masks defined from the layout might contain only some features (see 
+Figure&nbsp;4), or even none of them, if the clip lies completely outside of the simulation domain.</p>
+
+<p><a href="images/tp_shift_to_origin_false_overlay.png"><img src="images/tp_shift_to_origin_false_overlay.png" 
+width="570" alt="Overlay of layout and simulation domains" /></a></p>
+
+<p class="caption">Figure 3. Overlay view of layout and simulation domains when shift_to_origin=false. 
+In that case, the origin (0,0) of the layout and the origin of the simulation domain (0,0,0) coincide. 
+(Click image for full-size view.)</p>
+
+<p><a href="images/tp_shift_to_origin_patterned_PR.png"><img src="images/tp_shift_to_origin_patterned_PR.png" 
+width="570" alt="Patterned photoresist" /></a></p>
+
+<p class="caption">Figure 4. Top view of patterned photoresist when (left) shift_to_origin=false and 
+(right) shift_to_origin=true. For shift_to_origin=false, the features available in the layout 
+domain partially cover the simulation domain. No features are available for patterning outside the 
+defined layout domain, Clip1. If shift_to_origin=true, then all features in the defined layout domain 
+are available for patterning in the simulation space. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>7.3 Creating a Mask From a Layer</h1>
+
+<p>This section presents how to define a mask from a layer that is imported from a layout in the 
+previous step. The command <tt>define_mask</tt> is used for this purpose with parameters for the 
+complete definition of the mask:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/layout/sptopo3d_t3d.cmd" startExpr="##start - define first mask" endExpr="##end - define first mask" excludelines="##*" -->
+<pre>
+define_mask name= mask_${layer1}_${domain} \
+  layout= $layout_name domain= $domain layer= $layer1
+</pre>
+<!-- grep end -->
+
+<p>The name of the mask defined with the parameter <tt>name</tt> must be unique. The parameters 
+<tt>layout</tt>, <tt>domain</tt>, and <tt>layer</tt> refer to the already defined layout, the 
+layout domain, and the layer, respectively, with the <tt>define_layout</tt> command.</p>
+
+<!--=======================-->
+<a name="3.1"></a>
+<h2>7.3.1 About Masks, Reticles, and Photoresist Types</h2>
+
+<p>The masks that are created in Sentaurus Topography 3D are sets of geometric shapes (polygons) 
+that can be used to pattern materials in the structure,  and they do not have a polarity. The 
+types of reticle (based on the defined mask) and types of photoresist assumed are defined 
+at the patterning phase with the <tt>pattern</tt> or  <tt>etch</tt> command, and there are four 
+combinations of reticle and photoresist types: <tt>light_positive</tt>, <tt>light_negative</tt>, 
+<tt>dark_positive</tt>, and <tt>dark_negative</tt>.</p>
+
+<p>A reticle has one of two types depending on whether the mask areas covered by polygons transmit 
+or block light:</p>
+
+<ul>
+  <li>When exposing a reticle of type <tt>dark</tt> field, light is transmitted in areas that lie inside 
+      of the layout polygons, and light is blocked in areas that lie outside of the layout polygons.</li>
+  <li>When exposing a reticle of type <tt>light</tt> field, light is transmitted in areas that lie outside 
+      of the layout polygons, and light is blocked in areas that lie inside of the layout polygons.</li>
+</ul>
+
+<p>Similar to reticles, there are different types of photoresist:</p>
+
+<ul>
+  <li>When exposed and developed, a <tt>negative</tt> photoresist is removed from areas that were not 
+      exposed to light, and it remains in areas that were exposed to light.</li>
+  <li>When exposed and developed, a <tt>positive</tt> photoresist is removed from areas that were exposed 
+      to light, and it remains in areas that were not exposed to light.</li>
+</ul>
+
+<p>Although there are four different combinations of reticle and photoresist types, there are only 
+two possibilities for how material is deposited, as follows:</p>
+
+<ul>
+<li>Material is deposited in areas where the polygons are located in the logical mask 
+    (<tt>dark_negative</tt> and <tt>light_positive</tt>).</li>
+<li>Material is deposited in areas that are not covered by polygons in the logical mask 
+    (<tt>dark_positive</tt> and <tt>light_negative</tt>).</li>
+</ul>
+
+<p>When considering the resulting region from a patterning operation, it is redundant to provide 
+all four combinations. Nevertheless, providing all combinations makes it possible to specify 
+the intended process explicitly.</p>
+
+<!--=======================-->
+<a name="3.2"></a>
+<h2>7.3.2 Patterning Materials Using Masks</h2>
+
+<p>The defined masks can be used to pattern materials by using either an additive approach with the 
+<tt>pattern</tt> command or a subtractive approach with the <tt>etch</tt> command. For example, 
+the mask in Figure&nbsp;2 could be used to pattern directly an aluminum layer (see Figure&nbsp;5) 
+as follows:</p>
+
+<pre>
+pattern material=Aluminium thickness=0.5 mask= mask_layer1_Clip1 \
+  type= light_positive 
+</pre>
+
+<p>The reticle type is defined in the <tt>pattern</tt> command and can be one of the types discussed 
+in <a href="./stopo_7.html#3.1">Section&nbsp;7.3.1 About Masks, Reticles, and Photoresist Types</a>. 
+The sidewall profile from this etch is vertical, corresponding to a perfectly anisotropic etching.</p>
+
+<p>It would have been possible to use the <tt>etch</tt> command instead of the <tt>pattern</tt> 
+command to produce the plot in Figure&nbsp;5. An additional step would also be needed to deposit 
+the aluminum layer first by using the <tt>fill</tt> command as follows:</p>
+
+<pre>
+fill material=Aluminum thickness=0.5
+etch thickness=0.5 mask= mask_layer1_Clip1 type= light_positive
+</pre>
+
+<p><a href="images/tp_patterning_aluminum.png"><img src="images/tp_patterning_aluminum.png" 
+width="500" alt="Patterned aluminum" /></a></p>
+
+<p class="caption">Figure 5. Patterned aluminum using the mask configuration shown in Figure&nbsp;2. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>7.4 Mask Operations</h1>
+
+<p>Previously defined masks can be combined in pairs with binary operations.</p>
+
+<p>This section presents the different ways that two masks can be combined to generate 
+new masks. Masks that are derived from binary operations can themselves be used in new 
+operations with other masks.</p>
+
+<p>The binary operations that are used to form a new mask can be interpreted as set operations 
+(<tt>difference</tt>, <tt>intersection</tt>, <tt>symmetric_difference</tt>, or <tt>union</tt>) 
+on the polygons in the masks. Except for <tt>difference</tt>, these operations can also be 
+interpreted as simple Boolean operations (<tt>not</tt>, <tt>and</tt>, <tt>xor</tt>, or <tt>or</tt>) 
+where areas covered by polygons have the value <tt>true</tt>, and areas that are not covered by polygons 
+have the value <tt>false</tt>.</p>
+
+<p>To combine two masks with an operation, the command <tt>define_mask</tt> is used as follows:</p>
+
+<pre>
+define_mask name= Mask_Operation operation= @operation@  \
+  mask1= &quot;Mask_1&quot; mask2= &quot;Mask_2&quot;
+</pre>
+
+<p>The Sentaurus Workbench parameter <tt>@operation@</tt>, for the mask operation between 
+<tt>Mask_1</tt> and <tt>Mask_2</tt>, can take one of the following values:</p>
+
+<ul>
+  <li><tt>difference</tt></li>
+  <li><tt>intersection</tt></li>
+  <li><tt>symmetric_difference</tt></li>
+  <li><tt>union</tt></li>
+</ul>
+
+<p>It is important to note that, for the <tt>difference</tt> and <tt>symmetric_difference</tt> operations, 
+the order in which  masks are defined with the parameters <tt>mask1</tt> and <tt>mask2</tt> plays a role 
+in the final result as the <tt>difference</tt> operation is <tt>mask1</tt> &ndash; <tt>mask2</tt>.</p>
+
+<p>Figure&nbsp;6 shows the result of the mask operations with the help of the top views of patterned 
+materials. The result of patterning aluminum with <tt>Mask_1</tt> is the upper-left plot. Copper 
+is patterned only with <tt>Mask_2</tt>. The other plots show the patterning of tungsten with the four 
+different combinations of <tt>Mask_1</tt> with <tt>Mask_2</tt> by using the <tt>difference</tt>, 
+<tt>intersection</tt>, <tt>symmetric_difference</tt>, and <tt>union</tt> mask operations.</p>
+
+<p><a href="images/tp_mask_ops.png"><img src="images/tp_mask_ops.png" width="570" 
+alt="Mask operations" /></a></p>
+
+<p class="caption">Figure 6. Mask operations between two masks, Mask 1 and Mask 2. Plots 
+are top views of patterned materials. Patterning an aluminum layer with Mask 1 produces 
+the upper-left plot (gray-colored material). Copper is patterned with Mask 2. Tungsten 
+(blue-colored material) is patterned with various combinations of Mask1 and Mask 2 using 
+the difference, intersection, symmetric_difference, and union mask operations. 
+(Click image for full-size view.)</p>
+
+<p>The operation <tt>complement</tt> is reserved for a single mask. As its name suggests, 
+this operation generates a new mask where the polygon area coverage is inverted, that is, 
+areas that were previously not covered by polygons are now covered, and vice versa. The syntax 
+to create the complement of an existing mask is as follows:</p>
+
+<pre>
+define_mask name= CMask operation= complement mask1= Mask
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>7.5 Sidewall Profiles</h1>
+
+<p>Often when a layer needs to be patterned, it is critical to accurately reproduce 
+the shape of the layer's sidewalls after this patterning step, as it could affect the 
+geometry of the generated features in subsequent steps. In Sentaurus Topography 3D, you 
+can create patterned layers as shapes that have a particular sidewall profile.</p>
+
+<p>This functionality is demonstrated on the geometry of structure <tt>S4</tt> in the 
+Sentaurus Workbench project mentioned in <a href="./stopo_7.html#1">Section&nbsp;7.1 Overview</a>. 
+The <tt>define_shape</tt> command with the <tt>deposit</tt> command generate a 
+patterned shape with a mask with a specific sidewall profile as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/layout/sptopo3d_t3d.cmd" startExpr="##start - patterning with single mask with layer1 and sidewall profile in structure S4" endExpr="##end - patterning with single mask with layer1 and sidewall profile in structure S4" excludelines="##*" -->
+<pre>
+define_shape name=shape1 type=mask reticle_resist_type=@reticle_type@  \
+  profile= {0.0 2.5 -0.02 2.25 +0.01 2.1 -0.01 2.0} \
+  mask=mask_${layer1}_${domain} 
+
+deposit material=Photoresist shape=shape1 structure= S4
+</pre>
+<!-- grep end -->
+
+<p>The parameter <tt>reticle_resist_type</tt> can take the following values defined by the 
+Sentaurus Workbench parameter <tt>@reticle_type@</tt>: <tt>light_positive</tt>, 
+<tt>light_negative</tt>, <tt>dark_positive</tt>, and <tt>dark_negative</tt>.</p>
+
+<p>The sidewall profile is defined with the parameter <tt>profile</tt> and a list of values in pairs.
+The first value in the pair is the offset length in micrometers of the sidewall at the specified 
+z-coordinate, which is the second value in the pair. The offset length is the distance of the sidewall 
+surface point at the specified z-coordinate from the plane formed by a virtual perfectly vertical 
+sidewall at the mask edge.</p>
+
+<p>If the offset length is negative, then the sidewall is retracted with respect to the vertical 
+sidewall plane. The opposite occurs when the offset length is positive, creating an overhang of 
+the sidewall at that point. A linear interpolation is used to define the sidewall profile between 
+two z-coordinate points in the profile list.</p>
+
+<p>At the top of the photoresist (z-coordinate is 2.5&nbsp;&mu;m), the offset length is 0.0. 
+At Z=2.25&nbsp;&mu;m, the sidewalls are retracted by 20&nbsp;nm and, at Z=2.1&nbsp;&mu;m, 
+the sidewalls have an overhang of 10&nbsp;nm. Finally, at the bottom of the photoresist, the 
+sidewalls are again retracted by 10&nbsp;nm.</p>
+
+<p>Figure 7 shows the cross section of the patterned photoresist profile with the corresponding 
+profile pairs. Figure&nbsp;8 shows the resulting photoresist structure.</p>
+
+<p><a href="images/tp_profile_points.png"><img src="images/tp_profile_points.png" width="400" 
+alt="Profile points" /></a></p>
+
+<p class="caption">Figure 7. Cross section of patterned photoresist showing sidewall profile 
+and corresponding values of the list defined with the profile parameter. 
+(Click image for full-size view.)</p>
+
+<p><a href="images/tp_sidewall_profile.png"><img src="images/tp_sidewall_profile.png" width="500" 
+alt="Sidewall profile" /></a></p>
+
+<p class="caption">Figure 8. Patterning of a photoresist layer with a specific sidewall 
+profile. The defined profile is applied to all sidewalls. (Click image for full-size view.)</p>
+
+<p>The sidewall profile can also be defined by using the slope of the sidewalls between 
+two specific z-coordinates using the <tt>taper_angles</tt> parameter. For example:</p>
+
+<pre>
+define_shape name=shape2 type=mask mask=mask2 \
+  z_coordinates={3.0 2.5 2.0 1.5 1.0} taper_angles={ -10  15  0  -5 }
+</pre>
+
+<p>Here, the slope is &ndash;10&deg; (retracting sidewall) between Z=3.0&nbsp;&mu;m and Z=2.5&nbsp;&mu;m, 
+then 15&deg; between Z=2.5&nbsp;&mu;m and Z=2.0&nbsp;&mu;m, and so on for the other values of 
+<tt>z_coordinates</tt> and <tt>taper_angles</tt>. Note that the length of the <tt>taper_angles</tt> list 
+is <em>N</em> &ndash; 1, where <em>N</em> is the length of the <tt>z_coordinates</tt> list.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_6.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_8.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

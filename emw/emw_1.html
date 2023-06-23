@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device EMW 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device Electromagnetic Wave Solver<br />1. Getting Started</h1>
+
+<p>
+<a href="#1">1.1 Starting EMW</a><br />
+<a href="#2">1.2 Input and Output File Types</a><br />
+<a href="#3">1.3 Accessing Help on Syntax</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To learn how to start EMW.</li>
+<li>To explain which file types are used in EMW simulations.</li>
+<li>To demonstrate how to access help on syntax.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Starting EMW</h1> 
+
+<p>Sentaurus Device Electromagnetic Wave Solver (EMW) is 
+an electromagnetic solver based on the finite-difference time-domain 
+(FDTD) method. It can numerically solve the temporal evolution of 
+electromagnetic waves in a device structure defined on a tensor grid. 
+The main result is the absorbed photon density distribution, which 
+is typically used in subsequent electrical simulations.</p> 
+
+<p>To start EMW from the command line, use:</p>
+
+<pre>
+&gt; emw [command_file_name]
+</pre>
+
+<p>where the optional <tt>command_file_name</tt> is a valid command 
+file of EMW, for example:</p>
+
+<pre>
+&gt; emw pp1_eml.cmd
+</pre>
+
+<p>To list the command-line options, use:</p>
+
+<pre>
+&gt; emw -h
+</pre>
+
+<p>To list all of the installed EMW releases, use:</p>
+
+<pre>
+&gt; emw -releases
+</pre>
+
+<p>To check the default version number, use:</p>
+
+<pre>
+&gt; emw -v
+</pre>
+
+<p>To run a particular release version, use:</p>
+
+<pre>
+&gt; emw -rel T-2022.03
+</pre>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>1.2 Input and Output File Types</h1>
+
+<p>Figure 1 shows the main input and output file types used in EMW simulations. 
+The file names can be specified in the EMW command file (for details, see 
+<a href="emw_2.html#2">Section 2.2 General Notes on the Command File</a>).</p>
+
+<p><a href="images/emw_io_files.png"><img src="images/emw_io_files.png" width="500"
+ alt="Input and output files for EMW" /></a></p>
+
+<p class="caption">Figure 1. Overview of input and output files 
+for EMW. (Click image for full-size view.)</p>
+
+<!--========================-->
+<a name="2_commandfile"></a>
+<h2>1.2.1 Command File (*_eml.cmd)</h2>
+
+<p>The command file is the main input file for EMW. It contains 
+all the model settings and file specifications, and can be edited. This 
+file is referred to as the <em>command file</em> or <em>input file</em>.</p>
+
+<!--========================-->
+<a name="2_tensorgridfile"></a>
+<h2>1.2.2 Tensor-Grid File (*_msh.tdr)</h2>
+
+<p>EMW needs a tensor grid to run FDTD simulations. A typical example of 
+a tensor grid is shown in Figure&nbsp;2. To generate a suitable tensor-grid 
+file with Sentaurus Mesh, refer to the Sentaurus Mesh module, 
+<a href="../smesh/smesh_07.html">Section 7. Using the Tensor-Product Mesh Generator</a>.</p> 
+
+<p><a href="images/emw_grid_cis.png"> <img src="images/emw_grid_cis.png" width="500" 
+alt="Tensor grid of CIS" /></a></p> 
+                                                               
+<p class="caption">Figure 2. Example of a tensor grid of a CMOS image sensor; 
+oxide is removed for visualization. (Click image for full-size view.)</p>
+
+<!--========================-->
+<a name="2_parameterfile"></a>
+<h2>1.2.3 Parameter File (*_eml.par)</h2>
+
+<p>EMW allows you to define the optical parameters as a complex 
+refractive index (CRI) in the material parameter file. It uses the 
+same CRI library as Sentaurus Device. Therefore, the same parameter 
+file as for Sentaurus Device can be used (refer to the 
+Sentaurus Device module, 
+<a href="../sd/sd_1.html#3">Section&nbsp;1.3 Parameter File</a> and 
+<a href="../sd/sd_4.html#2">Section&nbsp;4.2 Model Parameter Definitions for Nonsilicon Material</a>).</p>
+
+<p>Then, the optical parameters are read from the corresponding 
+<tt>ComplexRefractiveIndex</tt> section, for example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/pp3_msh.par" startExpr="Material*Silicon*{*" Lines=7 footer="    ...\n  )\n}"-->
+<pre>
+Material = &quot;Silicon&quot; {   
+  ComplexRefractiveIndex {
+  Formula = 1
+  NumericalTable (
+    * WAVELEN(um)	n	k
+    0.250	1.694	3.6606E+00;
+    0.260	1.800	4.0760E+00;
+    ...
+  )
+}
+</pre>
+<!-- grep end -->
+
+<!--========================-->
+<a name="2_plotexfile"></a>
+<h2>1.2.4 Plot, Extractor, and Save Files (*_eml.tdr)</h2>
+
+<p>As multiple <tt>Plot</tt>, <tt>Extractor</tt>, and <tt>Save</tt> sections 
+are allowed, the file names are defined in the corresponding sections.</p>
+
+<!--========================-->
+<a name="2_resultfile"></a>
+<h2>1.2.5 Result File (*_eml.plt)</h2>
+
+<p>A result file is used when global values must be stored, such as 
+the integrated absorbed photon density in a certain volume or the photon 
+flux through a surface. You can use Sentaurus Visual to view these results 
+as well as the results for discrete Fourier transform (DFT) simulations 
+(see the <a href="../sv/sv_menu.html">Sentaurus Visual module</a>).</p>
+
+<!--========================-->
+<a name="2_logfile"></a>
+<h2>1.2.6 Log Files (*_eml.log, *_eml.out)</h2>
+ 
+<p>EMW generates the log file during a simulation run. It contains information 
+about input parameters, and the models and values of physical parameters 
+used in the simulation. The log file contains more details than the information 
+written to the standard output (<tt>.out</tt>) during the simulation.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Accessing Help on Syntax</h1>
+
+<p>Help for the syntax of each keyword can be obtained using the EMW 
+binary with the <tt>-P</tt> command-line option. For example, to view all 
+of the allowed options for the keyword <tt>Quantity</tt> in the <tt>Plot</tt> 
+section, type in a shell prompt:</p>
+
+<pre>
+&gt; emw -P:plot:quantity
+************************************************************************
+***                     Sentaurus Device EMW                         ***
+...
+Quantity = { &lt;identifier&gt;, ... }  
+  Default value: { AbsElectricField }
+  Exclusive options are: AbsElectricDisplacement
+                         AbsElectricField
+...
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+
+</body>
+</html>

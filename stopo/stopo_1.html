@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />1. Getting Started</h1>
+
+<p>
+ <a href="#1">1.1 Overview</a><br />
+ <a href="#2">1.2 Working With This Module</a><br />
+ <a href="#3">1.3 File Types</a><br />
+ <a href="#4">1.4 Starting Sentaurus Topography 3D</a><br />
+ <a href="#5">1.5 Parallelization</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the features of Sentaurus Topography 3D.</li>
+ <li>To demonstrate how to run Sentaurus Topography 3D.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Overview</h1>
+
+<p>Sentaurus Topography 3D is a three-dimensional simulator for evaluating 
+and optimizing critical topography-processing steps such as etching and deposition. 
+Structures composed of an arbitrary number of different materials can be handled.</p>
+
+<p>Sentaurus Topography 3D simulates process steps on 3D structures. Nevertheless, the 
+two-dimensional (2D) mode (<strong>for the level-set engine only</strong>) of 
+Sentaurus Topography 3D makes the physical models available also for 2D structures. 
+Therefore, both 2D and 3D structures can be simulated with the same physical models, 
+with consistent results. This feature allows you to calibrate models efficiently and 
+to save considerable simulation time when a 3D structure is invariant along one direction 
+and, therefore, it can be represented by a 2D cut of the 3D structure. Simulations 
+with the <strong>particle Monte Carlo (PMC) engine</strong> are always run in three 
+dimensions. For the same model and similar accuracy, the PMC engine is, in general, 
+significantly faster than the level-set engine, up to factors of 100 and more.</p>
+
+<p>The Sentaurus Process and Sentaurus Interconnect tools support a subset of 
+Sentaurus Topography 3D functionality for advanced physical etching and deposition 
+modeling (with both the level-set and PMC engines). This integration enables users of 
+Sentaurus Process and Sentaurus Interconnect to easily incorporate one or more etching 
+and deposition process steps into their simulation flow without having to create a 
+separate command file and simulation node for Sentaurus Topography 3D.</p>
+
+<p>Moreover, advanced lithography processes can be simulated with Sentaurus Topography 3D 
+by invoking Sentaurus Lithography commands from within Sentaurus Topography 3D.</p>
+
+<!--===========================-->
+<a name="2"></a>
+<h1>1.2 Working With This Module</h1>
+
+<p>This module presents the following examples:</p>
+
+<ul>
+<li>Setting up a basic simulation with built-in level-set etching and deposition models</li>
+<li>Setting up simulations using the rate formula module (level-set engine)</li>
+<li>Setting up simulations with the PMC engine for etching and deposition</li>
+</ul>
+
+<p>In the context of these examples, the most widely used Sentaurus Topography 3D commands 
+are introduced for generating the initial structure, defining models, 
+setting model parameters, performing the simulation, saving the final structure, 
+and analyzing the simulation results.</p>
+
+<p>This module discusses only the parameters and options used in the examples. 
+For comprehensive model descriptions, refer to the <cite>Sentaurus&trade; Topography 3D User Guide</cite>.</p>
+
+<p>A link to Sentaurus Topography 3D command files is given in each section. You are encouraged 
+to create a local copy of the command file (choose <strong>File</strong> &gt; <strong>Save As</strong>) 
+and to run it. Some examples are given as packaged Sentaurus  Workbench projects. After 
+creating a local copy, the files can be opened with Sentaurus Workbench.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 File Types</h1>
+
+<p>The main file types used in Sentaurus Topography 3D are:</p>
+
+<ul>
+<li>Command file (<tt>*.cmd</tt>)<br />
+This is the main input file for Sentaurus Topography 3D, containing all the simulation 
+commands. It also can contain Tcl commands and is referred to as the <em>command file</em> or 
+<em>input file</em>.<br /></li>
+  
+<li>Log file (<tt>*.log</tt>)<br />
+Sentaurus Topography 3D generates this file during a run. It contains information about the 
+initial structure definition, processing steps, computation mode, and the boundary conditions 
+used in them, as well as information about the final structure saved. The amount of information 
+written to the log file is controlled by the <tt>log_level</tt> parameter, which can be set 
+globally with the <tt>let</tt> command. Possible values for <tt>log_level</tt> are <tt>info</tt> 
+(default), <tt>all</tt> (more information is logged), and <tt>error</tt> (only error information 
+is logged).<br /></li>
+
+<li>TDR boundary file (<tt>*.tdr</tt>)<br />
+This file stores the boundaries of the structure and surface plots, and can be loaded into 
+Sentaurus Visual for visualization. The initial structure can be read from 
+a TDR boundary file. Its name can be specified with the <tt>file</tt> parameter of the 
+<tt>define_structure</tt> command of Sentaurus Topography 3D. The final structure is saved in 
+the TDR boundary file format as well and can be used for further processing, for example, 
+in Sentaurus Process or Sentaurus Structure Editor.</li> 
+</ul>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>1.4 Starting Sentaurus Topography 3D</h1>
+
+<p>Sentaurus Topography 3D can be run either from within Sentaurus Workbench or on the 
+command line. The command file, which contains the command sequence for the simulation, 
+can be specified on the command line when starting Sentaurus Topography 3D, for example:</p>
+
+<pre>
+&gt; sptopo3d input.cmd
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>1.5 Parallelization</h1>
+
+<p>In Sentaurus Topography 3D, the source of reactants (in most cases, a plasma) consists 
+of two kinds of particle: neutrals and ions. Neutral and ion fluxes can interact with the 
+surface according to different physical effects. Neutrals can react with or can be reemitted 
+from the surface. Ions can react with the surface, or can be reflected from the surface, 
+or can sputter away the surface material itself.</p>
+
+<p>Sentaurus Topography 3D offers different numeric methods to compute the distribution 
+of neutral and ion particles over the surface, taking into account the modeled physical 
+effects: the radiosity method (used by default) and the Monte Carlo method. For detailed 
+information about physical and numeric modeling, refer to the 
+<cite>Sentaurus&trade; Topography 3D User Guide</cite>.</p>
+
+<p>The Monte Carlo method can use multiple CPU cores or CPUs to accelerate simulations 
+on shared-memory computers. To activate multithreaded computation, use the command:</p>
+
+<pre>
+let parallel=true
+</pre>
+
+<p>You also need to specify explicitly the number of threads to be used with the command:</p>
+
+<pre>
+let num_threads=&lt;n&gt;
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

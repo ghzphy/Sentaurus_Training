@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 11. Special Focus: Three-Dimensional Examples</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_10.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_12.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />11. Special Focus: Three-Dimensional Examples</h1>
+
+<p>
+ <a href="#1">11.1 Overview</a><br />
+ <a href="#2">11.2 Three-Dimensional Setup Without Implantation and Diffusion</a><br />
+ <a href="#3">11.3 Three-Dimensional Setup With Implantation and Diffusion</a><br />
+ <a href="#4">11.4 Switching From Two Dimensions to Three Dimensions</a><br />
+ <a href="#5">11.5 Linear Solvers</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To show 3D operations in Sentaurus Process using the MGOALS module.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>11.1 Overview</h1>
+
+<p>Sentaurus Process can perform all process steps, except for oxidation, 
+in three dimensions as well. Implantation and diffusion steps do not 
+require any special considerations in three dimensions, except for the 
+fact that each of these steps takes significantly longer to complete when 
+performed in three dimensions compared to two dimensions. As such, using 
+a coarser mesh in three dimensions is recommended.</p>
+
+<p>For process steps that change the structure, however, special care must 
+be taken. These steps include etching, deposition, photo, strip, reflection, 
+and cut. While the syntax in three dimensions is equivalent to two dimensions, 
+the operations are more complicated and can require simplifications.</p>
+
+<p class="note">Before starting any 3D project, it is a good idea to build the project 
+in two dimensions and ensure it runs. Since simulations take longer in three 
+dimensions, this can save a lot of time if the input is incorrect or does 
+not produce the required results.</p>
+
+<p>After the project runs in two dimensions, 3D input can be created by 
+adding <tt>line z</tt> commands, which will make the initial structure 3D. 
+It is recommended that you initially switch off the implantation and diffusion 
+steps, so that only structure-modifying steps remain. These run relatively fast 
+and, therefore, can be used to check whether the final structure is correct.</p> 
+
+<!--================================================-->
+<a name="2"></a>
+<h1>11.2 Three-Dimensional Setup Without Implantation and Diffusion</h1>
+
+<p>A few points are worth noting when setting up the initial flow without 
+implantation and diffusion steps. The structure-modifying steps (etching, 
+deposition, photo, and transform) take very little time, but mesh 
+generation in three dimensions can be slow. The following suggestions will 
+minimize the number of times Sentaurus Process needs to generate the 3D mesh 
+and, therefore, will make the simulations run faster:</p>
+
+<ul>
+<li>Use <tt>pdbSet Mechanics EtchDepoRelax 0</tt>. This switches off stress relaxation 
+after etching and deposition steps and, therefore, switches off mesh generation after 
+every step.</li>
+
+<li>Use <tt>struct tdr.bnd=&lt;c&gt;</tt> to save the structure at intermediate steps 
+rather than <tt>struct tdr=&lt;c&gt;</tt>. This avoids mesh generation when saving the 
+structure and, therefore, speeds up the simulation. It is recommended that the 
+structure is saved after each etching, deposition, and photo step to observe its evolution.</li>
+
+<li>When inserting <tt>#split</tt> commands to split the process flow in
+Sentaurus Workbench, try to put them either immediately before or immediately after
+an implantation or a diffusion step. If <tt>#split</tt> is inserted between two
+structure-modifying steps such as etching or deposition, it will force an unnecessary 
+mesh generation.</li>
+</ul>
+
+<p>An example of a 3D setup without implantation and diffusion steps can be found 
+in the project <tt>Applications_Library/GettingStarted/sprocess/SmallMOS_NoDiff</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/SmallMOS_NoDiff/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>The simulation generates a TDR boundary file at every structure-modifying step. 
+Figure&nbsp;1 shows an animation of the evolution of the structure.</p>
+
+<p><a href="images/sp3d_nodiff.gif"><img src="images/sp3d_nodiff.gif" width="550"
+alt="Animation of 3D MOS flow without implantation and diffusion" /></a></p>
+                                                                                
+<p class="caption">Figure 1. Animation of 3D MOS flow without implantation 
+and diffusion.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>11.3 Three-Dimensional Setup With Implantation and Diffusion</h1>
+
+<p>After satisfactory results are obtained for the structure-modifying steps, 
+implantation and diffusion steps can be switched on again. At this point, saving 
+the structure with <tt>struct tdr.bnd=&lt;c&gt;</tt> is no longer necessary, but the 
+other recommendations should be followed.</p> 
+
+<p>The example 3D project with the implantation and diffusion steps can be found 
+in the directory <tt>Applications_Library/GettingStarted/sprocess/SmallMOS_Full</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/SmallMOS_Full/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>The project also includes remeshing for device simulation with Sentaurus Process, 
+as well as device simulation with Sentaurus Device. The results of the 3D 
+Sentaurus Process simulation are shown in Figure&nbsp;2.</p>
+
+<p><a href="images/sp3d_full.png"><img src="images/sp3d_full.png" width="570"
+alt="Sample 3D MOS flow with implantation and diffusion" /></a></p>
+                                                                                
+<p class="caption">Figure 2. Sample 3D MOS flow with implantation and diffusion. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>11.4 Switching From Two Dimensions to Three Dimensions</h1>
+
+<p>As in 2D simulations, Sentaurus Process keeps the initial structure 
+in 1D mode before an etch with a mask is encountered. As soon as the 
+first 3D mask is encountered, the structure is extended to three 
+dimensions according to the size specified by the <tt>line y</tt> and 
+<tt>line z</tt> commands. Even in cases where the first mask is only 
+one-directional (for example, a strip that extends beyond the simulation 
+domain), the structure does not become 2D. Sentaurus Process does not 
+differentiate between masks that would keep the structure 2D or masks 
+that would make the structure 3D.</p>
+
+<p>However, it can sometimes be useful to keep the structure in two 
+dimensions as long as possible, so that oxidation can be performed. In 
+such cases, you must explicitly state when to switch to 3D simulation.</p>
+
+<p>This is achieved by initializing the simulation in two dimensions, 
+that is, by specifying only <tt>line x</tt> and <tt>line y</tt> commands. 
+After the 2D simulations are performed as usual, <tt>line z</tt> commands 
+are used to extend the structure to three dimensions. After that point, 
+the simulation becomes 3D.</p>
+
+<p>The example 3D project where the switch from two dimensions to three 
+dimensions is performed manually can be found in the directory 
+<tt>Applications_Library/GettingStarted/sprocess/SmallMOS_2D3D</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/SmallMOS_2D3D/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>Figure&nbsp;3 shows the results of Sentaurus Process. In contrast to 
+Figure&nbsp;2, the initial plot is 2D since it is before the switch to 
+three dimensions occurred.</p>
+
+<p><a href="images/sp3d_2d3d.png"><img src="images/sp3d_2d3d.png" width="570"
+alt="Switching from 2D structure to 3D structure" /></a></p>
+                                                                                
+<p class="caption">Figure 3. Sample MOS flow where the structure is switched from 
+two dimensions to three dimensions manually. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="5"></a> 
+<h1>11.5 Linear Solvers</h1>
+
+<p>The default linear solver for 1D and 2D simulations in Sentaurus Process is 
+the direct solver PARDISO. For 2D diffusion and all types of 3D simulation, the 
+iterative solver ILS is used by default.</p>
+
+<p>To activate PARDISO for diffusion (<tt>diffuse</tt>) and mechanics (<tt>Flow</tt>) 
+simulations, use:</p>
+
+<pre>
+math diffuse dim=2 pardiso
+math diffuse dim=3 pardiso
+math Flow    dim=3 pardiso
+</pre>
+
+<p>Similar syntax is used to activate ILS for 2D simulations:</p>
+
+<pre>
+math diffuse dim=2 ils
+math Flow    dim=2 ils
+</pre>
+
+<p>In the case of poor convergence, you can improve the quality of the ILS preconditioning 
+of the matrices by reducing the <tt>ILS.ilut.tau</tt> parameter, for example, from 
+2x10<sup>-3</sup> (the default value for 3D diffusion) to 1x10<sup>-5</sup>, or even a 
+smaller value.</p>
+
+<p>The iterative solver GMRES stores a given number <em>m</em> of backvectors. If the solution 
+does not converge within <em>m</em> iterations, GMRES restarts. Higher values of <em>m</em> 
+improve convergence but increase memory use. You can set <em>m</em> in Sentaurus Process by 
+changing the parameter <tt>ILS.gmres.restart</tt>.</p>
+
+<p>Recommended values are between the default value of 60 to 100 for 3D diffusion:</p>
+
+<pre>
+pdbSet Math diffuse 3D ILS.ilut.tau 5e-5
+pdbSet Math diffuse 3D ILS.gmres.restart 80
+pdbSet Math diffuse 3D ILS.maxit 200
+pdbSet Math diffuse 3D ILS.tolrel 1e-6
+pdbSet Math diffuse 3D ILS.refine.residual 5
+</pre>
+
+<p>To activate parallel computation for each solver on four threads, for example, use:</p>
+
+<pre>
+math numThreadsILS=4
+math numThreadsPardiso=4
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_10.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_12.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

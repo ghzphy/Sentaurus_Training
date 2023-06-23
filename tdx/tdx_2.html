@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Data Explorer 2. Working With Tcl/Tk Scripts</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tdx_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tdx_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Data Explorer<br />2. Working With Tcl/Tk Scripts</h1>
+
+<p>
+ <a href="#1">2.1 Overview</a><br />
+ <a href="#2">2.2 Examples</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To explain how to use Sentaurus Data Explorer with 
+scripts in the Tcl/Tk programming language.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Overview</h1>
+
+<p>In addition to using Sentaurus Data Explorer from the 
+command line with some options as explained in 
+<a href="tdx_1.html">Section 1. Command-Line Functionality</a>, 
+Sentaurus Data Explorer can be used in batch mode together with a
+script in the Tcl/Tk programming language. This allows more complex 
+operations than the command-line options.</p>
+
+<p>The file name of the script must be specified with the option 
+<tt>-tcl &lt;filename&gt;</tt>, while the <tt>-b</tt> option specifies 
+that Sentaurus Data Explorer will be executed in batch mode.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Examples</h1>
+
+<p>The example <tt>Applications_Library/GettingStarted/tdx/modify_field</tt>
+reads a structure (<tt>start.tdr</tt>) and replaces the arsenic doping 
+in polysilicon by a constant value.</p>
+
+<p>Several loops through the structure geometries and regions are 
+performed to find regions that belong to polysilicon material. When 
+a polysilicon region is found, a loop over all datasets is performed 
+for that region, and the data values for the arsenic dataset are replaced 
+with the 5*10<sup>20</sup>&nbsp;cm<sup>&ndash;3</sup> value.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/tdx/modify_field/tdx_tdx.tcl">
+tdx_tdx.tcl</a>.</p>
+
+<p>In certain situations, you must rename fields in TDR files. 
+This can be performed with a script such as the following:</p>
+
+<pre>
+set f_in infile_des.tdr
+set f_out outfile_tdx.tdr
+TdrFileOpen $f_in
+
+TdrDatasetRename $f_in &quot;eTrappedCharge&quot; &quot;PMIUserField0&quot;
+TdrDatasetRenameQuantity $f_in &quot;eTrappedCharge&quot; &quot;PMIUserField0&quot;
+
+TdrFileSave $f_in $f_out
+TdrFileClose $f_in
+</pre>
+
+<p>The first two lines define the input and output file names. 
+The third line opens the input file. With the next two lines, the field 
+<tt>eTrappedCharge</tt> is renamed to <tt>PMIUserField0</tt>. Then, a 
+file with the new dataset name is saved.</p>
+
+<p>Data fields can be deleted by either specifying the exact name or 
+specifying a pattern.</p>
+
+<p>With the following line, the field <tt>StressXX</tt> is deleted:</p>
+
+<pre>
+TdrDatasetDeleteByName $f_in &quot;StressXX&quot;
+</pre>
+
+<p>With the following lines, all fields starting with the 
+string <tt>Stress</tt> are deleted:</p>
+
+<pre>
+set pattern {Stress.*}
+TdrDatasetDeleteByName $f_in $pattern
+</pre>
+
+<p>For a full list of commands, see the 
+<cite>Sentaurus&trade; Data Explorer User Guide</cite>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tdx_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tdx_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

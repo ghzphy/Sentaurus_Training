@@ -1,0 +1,727 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Mesh 2. Axis-Aligned Mesh Refinement</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_01.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_03.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Mesh<br />2. Axis-Aligned Mesh Refinement</h1>
+
+<p>
+ <a href="#1">2.1 Basics</a><br />
+ <a href="#2">2.2 Refinement Regions</a><br />
+ <a href="#3">2.3 Refinement Controls</a><br />
+ <a href="#4">2.4 Multiboxes</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the axis-aligned mesh generation capabilities 
+     of Sentaurus Mesh.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Basics</h1>
+
+<p>In Sentaurus Mesh, the main mesh generation algorithm is the binary-tree decomposition 
+to a device domain according to the command file specifications, followed by delaunization. 
+The quadtree (2D) or octree (3D) recursive space decomposition technique used in Sentaurus Mesh 
+discretizes a device domain that is combined with mesh delaunization 
+(see <a href="smesh_05.html#2">Section 5.2 Mesh Delaunization</a>).</p>
+
+<p>Figure 1 illustrates the concept of quadtree space decomposition for a 2D device:</p>
+
+<ul>
+<li>First, the quadrant (called root) is defined, which surrounds the entire device domain 
+(in this case, it exactly matches the device boundary).</li>
+<li>Second, the recursive split process starts when an entire domain is split into two 
+subdomains in each direction, then each subdomain is again split into two subdomains, and 
+so on, until the mesh spacing becomes less than or equal to the required mesh spacing.</li>
+<li>Third, the entire domain is represented as a union of all leaf elements of the tree, 
+from where it derives its name &ndash; the <em>binary tree</em> method.</li>
+</ul>
+
+<p><a href="images/sm_aa_quadtree.png"><img src="images/sm_aa_quadtree.png" 
+width="570" alt="Concept of quadtree space decomposition" /></a></p>
+
+<p class="caption">Figure 1. Illustration of the concept of quadtree space decomposition. 
+(Click image for full-size view.)</p>
+
+<p>Sentaurus Mesh requires that you supply a device <em>boundary file</em>. Furthermore, you must
+also create a <em>command file</em> where general mesh controls and optional doping specifications 
+are defined. A command file can be created either manually (in a text editor) or using the 
+corresponding Sentaurus Structure Editor functionality 
+(see <a href="../sde/sde_4.html">Section 4. Generating Meshes</a> of the Sentaurus 
+Structure Editor module).</p>
+
+<p>The Sentaurus Mesh command files featured in this section are all contained 
+in the Sentaurus Workbench project <tt>Applications_Library/GettingStarted/snmesh/Basics</tt>. 
+Within this project, the preferences are selected such that Sentaurus Mesh will take the boundary 
+file from the preceding Sentaurus Structure Editor tool instance, while the command file 
+is created by a text editor (see 
+<a href="smesh_01.html#6">Section&nbsp;1.6 Sentaurus Mesh Integration in Sentaurus Workbench</a>).</p>
+
+<p>To work with the project, start Sentaurus Workbench and copy the project <tt>Basics</tt> 
+to a local directory within your Sentaurus Workbench working directory to which 
+the environment variable <tt>$STDB</tt> points. For details about this environment 
+variable, see <a href="../swb/swb_01.html#2">Section 1.2 Starting Sentaurus Workbench</a>.</p>
+
+<p>The features discussed in this section are demonstrated in the Sentaurus Mesh tool instance 
+labeled <tt>test2d</tt> in this Sentaurus Workbench project.</p>
+
+<p>A command file must include at least two independent sections. In the 
+<tt>Definitions</tt> section, you specify mesh spacing controls (<tt>Refinement</tt>) 
+and doping profiles, which then can be referenced in the <tt>Placements</tt> section.</p>
+
+<p>First, you will mesh a piece of silicon material (2 &mu;m x 2 &mu;m).</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Basics/test2d_msh.cmd">
+test2d_msh.cmd</a>.</p>
+
+<p>In this command file, only a single <tt>Refinement</tt> statement called 
+<tt>&quot;global&quot;</tt> is declared, which specifies the maximum-allowed mesh 
+element size as 0.5 &mu;m in each of the spatial directions of the device. 
+The <tt>&quot;global&quot;</tt> refinement is referenced  in the <tt>Placements</tt> 
+section under the same name without any position specification, indicating that the entire 
+device will be meshed using the refinement specification in the <tt>Definitions</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Basics/test2d_msh.cmd" startExpr="Definitions*" endExpr="}*" endOccurrence=2 -->
+<pre>
+Definitions {
+  Refinement &quot;global&quot; {
+    MaxElementSize = (0.5 0.5)
+  }
+}
+Placements {
+  Refinement &quot;global&quot; {
+    Reference=&quot;global&quot;
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>where the two values in the <tt>MaxElementSize</tt> specification indicate the maximal 
+mesh step in the x- and y-direction.</p>
+
+<p class="note">For 2D device meshing, the value that corresponds to the third device 
+dimension (usually, the z-coordinate) can be omitted.</p>
+
+<p>Figure&nbsp;2 shows the mesh generated by Sentaurus Mesh. Run the corresponding project 
+node and view the generated mesh with Sentaurus Visual.</p>
+
+<p><a href="images/sm_aa_mesh.png"><img src="images/sm_aa_mesh.png" 
+width="500" alt="Mesh generated by Sentaurus Mesh" /></a></p>
+
+<p class="caption">Figure 2. Mesh generated by Sentaurus Mesh. 
+(Click image for full-size view.)</p>
+
+<p>In Figure 2, you can see that the entire device first is decomposed into 16 rectangles
+(four in each direction), which then are triangulated. In this case, the edge length of each 
+rectangle is 0.5 &mu;m exactly, as specified in the refinement definition. The final 
+mesh consists of 25 vertices and 32 elements.</p>
+
+<p>For a similar (2&nbsp;&mu;m x 2&nbsp;&mu;m x 2&nbsp;&mu;m) 3D device structure and the 
+command file <tt>test3d_msh.cmd</tt>, the final mesh consists of 125&nbsp;vertices and 
+384&nbsp;elements as shown in&nbsp;Figure 3.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Basics/test3d_msh.cmd">
+test3d_msh.cmd</a>.</p>
+
+<p>Run the project node of Sentaurus Mesh labeled <tt>test3d</tt> and view the generated 
+mesh with Sentaurus Visual.</p>
+
+<p><a href="images/sm_aa_3d.png"><img src="images/sm_aa_3d.png" 
+width="500" alt="3D device with 125 vertices and 384 elements" /></a></p>
+
+<p class="caption">Figure 3. Three-dimensional device with 125 vertices and 384 elements. 
+(Click image for full-size view.)</p>
+
+<p>Having <tt>MaxElementSize</tt> control values not strictly proportional to the
+entire device dimensions results in a smaller element size than specified. For the above 2D 
+device structure, the 0.4&nbsp;&mu;m maximal step value is specified in each direction:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Basics/finerMesh_msh.cmd" startExpr="Definitions*" endExpr="}*" -->
+<pre>
+Definitions {
+  Refinement &quot;global&quot; {
+    MaxElementSize = (0.4 0.4)
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>With this setting, you might expect 2&nbsp;&mu;m/0.4&nbsp;&mu;m = 5&nbsp;mesh steps in
+each direction. However, the binary-tree decomposition algorithm can produce only 2<sup>n</sup> mesh
+steps. So, you would have eight (8) steps in each direction (see Figure 4), which results in 128&nbsp;mesh 
+elements and 81 mesh vertices. This example makes it clear that, in most cases, the resulting mesh 
+step will be lower than specified due to the restrictions of the binary-tree decomposition algorithm.</p>
+
+<p>This behavior is exemplified in the project <tt>Basics</tt> at 
+the Sentaurus Mesh tool instance labeled <tt>finerMesh</tt>. Run the 
+corresponding project node and view the generated mesh with Sentaurus Visual.</p>
+
+<p><a href="images/sm_aa_smallstep.png"><img src="images/sm_aa_smallstep.png" 
+width="500" alt="2D mesh with smaller mesh steps" /></a></p>
+
+<p class="caption">Figure 4. Two-dimensional mesh with smaller mesh steps. 
+(Click image for full-size view.)</p>
+
+<p>Now, you will see what happens with a nonaxis-aligned device. In this example, the 
+device boundary used in the previous example is rotated 45&deg;, and the same 
+command settings as in the command file of the first example (<tt>rot2d_msh.cmd</tt>) 
+are applied.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Basics/rot2d_msh.cmd">
+rot2d_msh.cmd</a>.</p> 
+
+<p><a href="images/sm_aa_smallstep_rot.png"><img src="images/sm_aa_smallstep_rot.png" 
+width="500" alt="2D mesh with smaller mesh steps, rotated 45 degrees" /></a></p>
+
+<p class="caption">Figure 5. Two-dimensional mesh with smaller mesh steps, which is rotated 
+45&deg;. (Click image for full-size view.)</p>
+
+<p>As can be seen in Figure 5, for a rotated (nonaxis-aligned) structure, the 
+binary-tree decomposition is applied to a larger domain, resulting in a larger 
+number of mesh nodes. The final mesh consists of 78 elements and 55 vertices.</p>
+
+<p>This behavior is exemplified in the project <tt>Basics</tt> at the 
+Sentaurus Mesh tool instance labeled <tt>rot2d</tt>. Run the corresponding 
+project node and view the generated mesh with Sentaurus Visual.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Refinement Regions</h1>
+
+<p>The Sentaurus Mesh command files featured in this section are all 
+contained in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/Refinements</tt>.</p>
+
+<p>To work with the project, start Sentaurus Workbench and copy the project 
+<tt>Refinements</tt> to a local directory within the Sentaurus Workbench 
+working directory to which the environment variable <tt>$STDB</tt> points. 
+For details about this environment variable, see 
+<a href="../swb/swb_01.html#2">Section 1.2 Starting Sentaurus Workbench</a>.</p>
+
+<p>As mentioned in <a href="#1">Section 2.1 Basics</a>, the refinement region 
+is a geometric object, placed inside a device, which allows flexible control over 
+a mesh step. The refinement region is represented by a geometric element, such as 
+a rectangle, polygon, or complex polygon in the case of two dimensions, or a cuboid 
+or polyhedron (the closed volume surrounded by multiple polygons) in the case of 
+three dimensions. It also can refer to an entire material or region.</p>
+
+<p>The syntax to define a refinement region in the <tt>Definitions</tt> section 
+of the command file is:</p>
+
+<pre>
+Refinement &quot;reference name&quot; {
+  MaxElementSize = (&lt;xmax&gt; &lt;ymax&gt; &lt;zmax&gt;)
+  MinElementSize = (&lt;xmin&gt; &lt;ymin&gt; &lt;zmin&gt;)
+  RefineFunction = MaxGradient(parameters) | MaxInterval(parameters) | 
+                   MaxTransDifference(parameters) | 
+                   MaxLengthInterface(parameters)
+}
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>MaxElementSize</tt> and <tt>MinElementSize</tt> indicate the maximum-allowed and 
+minimum-allowed mesh step values inside a refinement region along a particular axis.</li>
+<li><tt>RefineFunction</tt> specifies the mesh refinement controls 
+(see <a href="#3">Section 2.3 Refinement Controls</a>).</li>
+<li><tt>MaxLengthInterface</tt> activates mesh refinement at interfaces 
+(see <a href="smesh_03.html#2">Section 3.2 Interface Refinement</a>).</li>
+</ul>
+
+<p>The corresponding refinement instance definition in the <tt>Placements</tt> section is:</p>
+
+<pre>
+Placements {
+  Refinement &quot;instance name&quot; {
+    Reference = &quot;string&quot;
+    RefineWindow = geometric element | material | region
+  }
+}
+</pre>
+
+<p>For multiple refinement specifications, the refinement regions can overlap. If this is the case, 
+a refinement region with the smallest step definition "wins".</p>
+
+<p>The following example demonstrates this, with the rectangular refinement region inside the 
+test device structure with smaller step definitions compared to the global ones:</p>
+
+<a name="rec-ref"></a>
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Refinements/rectangle_msh.cmd" startExpr="Definitions*" endExpr="}*" endOccurrence=2-->
+<pre>
+Definitions {
+  Refinement &quot;global&quot; {
+    MaxElementSize = (0.5 0.5 0.5)
+  }
+  Refinement &quot;rectangle&quot; {
+    MaxElementSize = (0.125 0.125 0.125)
+  }
+}
+
+Placements {
+  Refinement &quot;global&quot; {
+    Reference=&quot;global&quot;
+  }
+  Refinement &quot;rectangle&quot; {
+    Reference = &quot;rectangle&quot;
+    RefineWindow = Rectangle [(0.75 0.75) (1.25 1.25)]
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>The resulting mesh is shown in Figure 6, where the contour of the rectangular 
+refinement region is highlighted. The transition from the finer mesh inside the 
+rectangular refinement to the coarser mesh outside the region, due to mesh smoothing, 
+is clearly seen (see <a href="smesh_05.html#1">Section 5.1 Mesh Smoothing</a>).</p>
+
+<p>This behavior is exemplified in the project <tt>Refinements</tt> at the Sentaurus Mesh 
+tool instance labeled <tt>rectangle</tt>. Run the corresponding project node and view 
+the generated mesh with Sentaurus Visual.</p>
+
+<p><a href="images/sm_aa_smooth.png"><img src="images/sm_aa_smooth.png" 
+width="500" alt="Rectangular 2D refinement" /></a></p>
+
+<p class="caption">Figure 6. Rectangular 2D refinement. (Click image for full-size view.)</p>
+
+<p>The next example demonstrates the regionwise refinement approach, where the polygonal 
+region called <tt>PolygonR</tt> is introduced inside the device test structure.</p>
+
+<p><a href="images/sm_aa_polygon.png"><img src="images/sm_aa_polygon.png" width="570" 
+alt="Polygonal region inside device structure" /></a></p>
+
+<p class="caption">Figure 7. Polygonal region inside device structure shown in Sentaurus 
+Structure Editor. (Click image for full-size view.)</p>
+
+<p>Different refinement criteria are used inside and outside the polygonal region refinement. 
+Inside the polygonal region, a smaller mesh step is specified, compared to the global step 
+definition:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Refinements/polygon_msh.cmd" startExpr="Definitions*" endExpr="}*" -->
+<pre>
+Definitions {
+  Refinement &quot;global&quot; {
+    MaxElementSize = (0.5 0.5 0.5)
+  }
+  Refinement &quot;polygon&quot; {
+    MaxElementSize = (0.25 0.25 0.25)
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>To confine the mesh refinement inside the polygonal region, the regionwise 
+refinement placement is defined using the <tt>RefineWindow</tt> specification:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Refinements/polygon_msh.cmd" startExpr="Placements*" endExpr="}*" -->
+<pre>
+Placements {
+  Refinement &quot;global&quot; {
+    Reference=&quot;global&quot;
+  }
+  Refinement &quot;polygon&quot; {
+    Reference = &quot;polygon&quot;
+    RefineWindow = region [&quot;PolygonR&quot;]
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sm_aa_regionwise.png"><img src="images/sm_aa_regionwise.png" width="500" 
+alt="Polygonal mesh refinement" /></a></p>
+
+<p class="caption">Figure 8. Polygonal mesh refinement. (Click image for full-size view.)</p>
+
+<p>This behavior is exemplified in the project <tt>Refinements</tt> 
+at the Sentaurus Mesh tool instance labeled <tt>polygon</tt>. Run the 
+corresponding project node and view the generated mesh with Sentaurus Visual.</p>
+
+<p>Different mesh colors help to visualize the transition from denser to coarser mesh areas.</p>
+
+<p>The next example demonstrates how materialwise mesh refinement is performed. In this 
+example, two adjacent materials, silicon and oxide, are meshed with different mesh steps 
+(0.5&nbsp;&mu;m in silicon and 0.125&nbsp;&mu;m in oxide):</p>
+
+<a name="matwise"></a>
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Refinements/materials_msh.cmd" startExpr="Definitions*" endExpr="}*" endOccurrence=2 -->
+<pre>
+Definitions {
+  Refinement &quot;Si&quot; {
+    MaxElementSize = (0.5 0.5 0.5)
+  }
+  Refinement &quot;Ox&quot; {
+    MaxElementSize = (0.125 0.125 0.125)
+  }
+}
+
+Placements {
+  Refinement &quot;Si&quot; {
+    Reference = &quot;Si&quot;
+    RefineWindow = material [&quot;Silicon&quot;]
+  }
+  Refinement &quot;Ox&quot; {
+    Reference = &quot;Ox&quot;
+    RefineWindow = material [&quot;Oxide&quot;]
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Figure 9 shows the resulting mesh. The smaller mesh step propagates from the 
+silicon&ndash;oxide material interface towards silicon because of the applied 
+mesh smoothing (see <a href="smesh_05.html#1">Section&nbsp;5.1 Mesh Smoothing</a>).</p>
+
+<p><a href="images/sm_aa_matwise.png"><img src="images/sm_aa_matwise.png" width="400" 
+alt="Materialwise mesh refinement" /></a></p>
+
+<p class="caption">Figure 9. Materialwise mesh refinement. (Click image for full-size view.)</p>
+
+<p>This behavior is exemplified in the project <tt>Refinements</tt> 
+at the Sentaurus Mesh tool instance labeled <tt>materials</tt>. Run the corresponding 
+project node and view the generated mesh with Sentaurus Visual.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 Refinement Controls</h1>
+
+<p>One of the major features of Sentaurus Mesh is automatic mesh refinement, which 
+allows you to accurately resolve areas with geometry or profile spatial nonuniformities. 
+This section discusses the mesh refinement of a nonuniform doping distribution.</p>
+
+<p>The Sentaurus Mesh command files featured in this section are all contained 
+in the Sentaurus Workbench project <tt>Applications_Library/GettingStarted/snmesh/RefineControls</tt>.</p>
+
+<p>To work with the project, start Sentaurus Workbench and copy the project 
+<tt>RefineControls</tt> to a local directory. The target directory must reside 
+under the Sentaurus Workbench working directory to which the environment variable 
+<tt>$STDB</tt> points. For details about this environment variable, see 
+<a href="../swb/swb_01.html#2">Section&nbsp;1.2 Starting Sentaurus Workbench</a>.</p>
+
+<p>The following example demonstrates automatic mesh refinement on doping for a 2D p-n 
+junction device structure. The automatic refinement procedure uses the <tt>RefineFunction</tt> 
+specification inside a <tt>Refinement</tt> section. The resulting doping profile is a combination 
+of the uniformly distributed boron doping and nonuniformly distributed phosphorus doping 
+(see Figure 10).</p>
+
+<p><a href="images/sm_aa_2dphos.png"><img src="images/sm_aa_2dphos.png" width="500" 
+alt="2D phosphorus distribution" /></a></p>
+
+<p class="caption">Figure 10. Two-dimensional phosphorus distribution. 
+(Click image for full-size view.)</p>
+
+<p>Various settings discussed in this section are selected in the project 
+<tt>RefineControls</tt> by the Sentaurus Workbench parameters 
+<tt>@DopRefType@</tt> and <tt>@Value@</tt>.</p>
+
+<p>For <tt>@DopRefType@</tt> set to <tt>None</tt>, the mesh is generated without 
+having a <tt>RefinementFunction</tt> specification included in the global 
+<tt>Refinement</tt> section of the command file (the doping definition used in 
+the command file is discussed in <a href="smesh_04.html">Section 4. Doping Definition</a>):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineControls/Doping_msh.cmd" startExpr="*Refinement*" lines=3 header="Definitions { ..." footer="  }\n}" -->
+<pre>
+Definitions { ...
+  Refinement &quot;global&quot; {
+    MaxElementSize = ( 0.2 0.2 0.2 )
+    MinElementSize = ( 0.01 0.01 0.01 )
+  }
+}
+</pre>
+<!-- grep end -->
+...
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineControls/Doping_msh.cmd" startExpr="*Refinement*" startoccurrence=2 endExpr="*}*" header="Placements { ..." footer="}"-->
+<pre>
+Placements { ...
+  Refinement &quot;global&quot; {
+    Reference = &quot;global&quot;
+    RefineWindow = material [&quot;Silicon&quot;]
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sm_aa_2duniform.png"><img src="images/sm_aa_2duniform.png" width="570" 
+alt="2D uniform mesh and resulting doping profile on a uniform mesh, cut at x=1" /></a></p>
+
+<p class="caption">Figure 11. (Left) Two-dimensional uniform mesh and resulting doping profile 
+distribution and (right) resulting doping profile on a uniform mesh, cut at x=1 coordinate 
+across the p-n junction. (Click image for full-size view.)</p>
+
+<p>As can be seen, the nonuniform part of the resulting doping profile is covered 
+by only nine mesh steps in the vertical direction, which is not sufficient to accurately 
+resolve the profile spatial nonuniformity. In the end, such a coarse mesh will cause 
+inaccurate results from the device electrical simulation perspective and can lead to 
+simulator failure.</p>
+
+<p>For <tt>@DopRefType@</tt> set to <tt>MaxTransDiff</tt> and <tt>@Value@</tt> 
+set to <tt>1</tt>, the mesh is generated with an additional <tt>RefinementFunction</tt> 
+statement in the <tt>Refinement</tt> description:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineControls/Doping_msh.cmd" startExpr="*Refinement*global*" endExpr="*)*" endoccurrence=2 header="Definitions { ..." -->
+<pre>
+Definitions { ...
+  Refinement &quot;global&quot; {
+    MaxElementSize = ( 0.2 0.2 0.2 )
+    MinElementSize = ( 0.01 0.01 0.01 )
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineControls/Doping_msh.cmd" startExpr="*RefineFunction*MaxTrans*" lines=1" -->
+<pre>
+    RefineFunction = MaxTransDiff(Variable=&quot;DopingConcentration&quot;, Value=@Value@)
+</pre>
+<!-- grep end -->
+<pre>
+  }
+}
+</pre>
+
+<p>The <tt>MinElementSize</tt> parameter specifies the lower bound for the edge size of the mesh element in 
+each spatial direction. These values are used for automatic mesh refinement on the doping. 
+The <tt>RefineFunction</tt> statement activates the automatic mesh refinement based on the provided
+specification. In this particular case, the automatic refinement is based on the value difference 
+of the resulting doping concentration. The keyword <tt>MaxTransDiff</tt> indicates that the 
+hyperbolic arcsine function (asinh) should be used for the mesh refinement on doping.</p>
+
+<p>The mesh refinement algorithm checks whether a function value difference between two neighboring 
+mesh points is greater than a specified value (<tt>Value=1</tt> in this case) and then refines the 
+mesh accordingly.</p>
+
+<p>Figure 12 shows the resulting mesh doping refinement, which was obtained with the above 
+specification.</p>
+
+<p><a href="images/sm_aa_2drefine.png"><img src="images/sm_aa_2drefine.png" width="570" 
+alt="2D mesh refinement on doping and resulting doping profile cut at x=1 coordinate" /></a></p>
+
+<p class="caption">Figure 12. (Left) Two-dimensional mesh refinement on doping, showing the
+fine mesh resolution within the p-n junction area and (right) resulting doping profile cut at x=1 
+coordinate across the p-n junction, and the steep doping gradient is now much better resolved. 
+(Click image for full-size view.)</p>
+
+<p>Run the <tt>RefineControls</tt> project and view the generated mesh at the 
+corresponding node with Sentaurus Visual.</p>
+
+<p>As an alternative to the asinh (<tt>MaxTransDiff</tt>) function, the gradient 
+of the function can be used as a refinement function. In this project, this is 
+done for <tt>@DopRefType@</tt> set to <tt>MaxGradient</tt> and <tt>@Value@</tt> 
+set to <tt>1</tt> (or <tt>10</tt>). In this case, the mesh is generated with an 
+additional <tt>RefinementFunction</tt> statement in the <tt>Refinement</tt> description:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineControls/Doping_msh.cmd" startExpr="*Refinement*global*" endExpr="*)*" endoccurrence=2 header="Definitions { ..." -->
+<pre>
+Definitions { ...
+  Refinement &quot;global&quot; {
+    MaxElementSize = ( 0.2 0.2 0.2 )
+    MinElementSize = ( 0.01 0.01 0.01 )
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineControls/Doping_msh.cmd" startExpr="*RefineFunction*MaxGradient*" lines=1" -->
+<pre>
+    RefineFunction = MaxGradient(Variable=&quot;DopingConcentration&quot;, Value=@Value@)
+</pre>
+<!-- grep end -->
+<pre>
+  }
+}
+</pre>
+
+<p>If the gradient is greater than a specified value and the edge length is large enough, 
+the element is refined. Figure&nbsp;13 compares two meshes that were constructed with the 
+<tt>MaxGradient</tt> doping refinement option using two different gradient values, 
+namely, <tt>1</tt> and <tt>10</tt>.</p>
+
+<p><a href="images/sm_aa_refine.png"><img src="images/sm_aa_refine.png" width="570" 
+alt="Refinement with (left) Value=1 and (right) Value=10" /></a></p>
+
+<p class="caption">Figure 13. Refinement with (left) Value=1 and (right) Value=10. 
+(Click image for full-size view.)</p>
+
+<p>Another available option is to restrict the refinement to a certain range
+of values of a specific variable. In this project, this is 
+done for <tt>@DopRefType@</tt> set to <tt>MaxInterval</tt>. 
+In this case, the mesh is generated with a different 
+<tt>RefinementFunction</tt> statement in the <tt>Refinement</tt> description:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineControls/Doping_msh.cmd" startExpr="*RefineFunction*MaxInterval*" lines=3" -->
+<pre>
+    RefineFunction = MaxInterval(Variable = &quot;DopingConcentration&quot;, 
+    	cmin = 1e16, cmax = 1e17, targetLength = 0.01
+    ) 
+</pre>
+<!-- grep end -->
+
+<p>The <tt>MaxInterval</tt> function analyzes each edge in a refinement tree cell and refines the
+edge if the data values are within the interval defined by <tt>cmin</tt> and
+<tt>cmax</tt> and the edge is longer than the <tt>targetLength</tt>.</p>
+
+<p><a href="images/sm_aa_refineinterval.png"><img src="images/sm_aa_refineinterval.png" 
+width="500" alt="Interval refinement" /></a></p>
+
+<p class="caption">Figure 14. Interval refinement. (Click image for full-size view.)</p>
+
+<p class="note">The refinement method used in Sentaurus Mesh is based on the binary tree, 
+where each edge is split in two along a given direction until either a 
+<tt>MinElementSize</tt> is fulfilled or required element aspect ratio criteria are 
+fulfilled.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>2.4 Multiboxes</h1>
+
+<p>Another method to define mesh refinement is a multibox, which is a special 
+refinement box that is used to specify an isotropically graded refinement along 
+one of the x-direction, y-direction, or z-direction.</p>
+
+<p class="note">Using multiboxes is not recommended. In general, interface 
+refinement (see <a href="smesh_03.html#2">Section&nbsp;3.2 Interface Refinement</a>) 
+or offsetting (see <a href="smesh_03.html#3">Section&nbsp;3.3 Offsetting</a>) is easier 
+than defining multibox refinement.</p>
+
+<p>The syntax to define a multibox refinement in the <tt>Definitions</tt> section 
+of the command file is:</p>
+
+<pre>
+Multibox &quot;multibox reference name&quot; {
+  MaxElementSize = (&lt;xmax&gt; &lt;ymax&gt; &lt;zmax&gt;)
+  MinElementSize = (&lt;xmin&gt; &lt;ymin&gt; &lt;zmin&gt;)
+  Ratio = (ratio_x ratio_y ratio_z)
+}
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>MaxElementSize</tt> and <tt>MinElementSize</tt> are the same step 
+definitions as for the refinement region.</li>
+<li><tt>Ratio</tt> controls the grading of the element size along each axis direction.</li>
+</ul>
+
+<p>A simple example that demonstrates the use of a multibox to generate a gradual 
+mesh is given in the project <tt>Refinements</tt> (see 
+<a href="#2">Section&nbsp;2.2 Refinement Regions</a>) at the Sentaurus Mesh tool 
+instance labeled <tt>multibox1</tt>. It uses the same 2&nbsp;&mu;m x 2&nbsp;&mu;m 
+silicon block device boundary as in the previous examples. Run the corresponding 
+project node and view the generated mesh with Sentaurus Visual.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Refinements/multibox1_msh.cmd" startExpr="Definitions*" endExpr="}*" endOccurrence=2 -->
+<pre>
+Definitions {
+  Multibox &quot;mb&quot; {
+    MaxElementSize = (1 1)
+    MinElementSize = (0.1 0.1)
+    Ratio = (2 1)
+  }
+}
+Placements {
+  Multibox &quot;mb&quot; {
+    Reference = &quot;mb&quot;
+    RefineWindow = rectangle[(0 0) (2 2)]
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Grading factors specified in the <tt>Ratio</tt> parameter control the gradual meshing 
+in the corresponding direction. Having a grading factor higher than 1 (or lower than &ndash;1) 
+means that the initial mesh step value, which is defined as <tt>MinElementSize</tt>, is used 
+in the corresponding direction (in the above example, it is the y-direction). Each subsequent 
+mesh step calculation is based on the formula <tt>step(i)=step(i-1)*ratio_factor</tt>.</p>
+
+<p>If a ratio factor equals 1 exactly, grading is not produced, but the 
+<tt>MaxElementSize</tt> step value is used instead. If a ratio factor equals 0 exactly, the 
+corresponding specification is ignored. The mesh produced with the above specification is 
+shown in Figure 15.</p>
+
+<p><a href="images/sm_aa_grade.png"><img src="images/sm_aa_grade.png" 
+width="500" alt="Mesh produced with multibox specification" /></a></p>
+
+<p class="caption">Figure 15. Mesh produced with multibox specification. 
+(Click image for full-size view.)</p>
+
+<p>As you can see, the mesh grading is produced along the y-direction from the
+top to the bottom, following the multibox <tt>Ratio</tt> specification. The initial 
+step value produced in this example differs from the specified one 
+(it is smaller than 0.1&nbsp;&mu;m). This is again a result of the specifications of the binary-tree 
+decomposition algorithm (see <a href="#2">Section 2.2 Refinement Regions</a>).</p>
+
+<p>The next example demonstrates how you can use a negative grading ratio value 
+to control the grading direction. The following changes were made to the multibox definition in the 
+command file:</p>
+
+<a name="multi"></a>
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Refinements/multibox2_msh.cmd" startExpr="Definitions*" endExpr="}*" -->
+<pre>
+Definitions {
+  Multibox &quot;mb&quot; {
+    MaxElementSize = (1 1)
+    MinElementSize = (0.1 0.1)
+    Ratio = (2 -2)
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Having a y-axis ratio factor equal to &ndash;2 means that Sentaurus Mesh will change the
+grading direction from downwards to upwards. In addition, note how gradings in different 
+directions can be combined. Arrows indicate the corresponding multibox grading directions 
+(see Figure 16).</p>
+
+<p><a href="images/sm_aa_multibox.png"><img src="images/sm_aa_multibox.png" 
+width="500" alt="Multibox direction controls" /></a></p>
+
+<p class="caption">Figure 16. Multibox direction controls. (Click image for full-size view.)</p>
+
+<p>A demonstration of the use of multiboxes to generate gradings in different 
+directions is given in the project <tt>Refinements</tt> 
+(see <a href="#2">Section&nbsp;2.2 Refinement Regions</a>) at the 
+Sentaurus Mesh tool instance labeled <tt>multibox2</tt>. Run the corresponding 
+project node and view the generated mesh with Sentaurus Visual.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_01.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_03.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

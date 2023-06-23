@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Interconnect 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Interconnect<br />1. Getting Started</h1>
+
+<p>
+ <a href="#1">1.1 Overview</a><br />
+ <a href="#2">1.2 Working With This Module</a><br />
+ <a href="#3">1.3 File Types</a><br />
+ <a href="#4">1.4 Linear Solvers</a><br />
+ <a href="#5">1.5 Starting Sentaurus Interconnect</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the features of Sentaurus Interconnect.</li>
+ <li>To demonstrate how to run Sentaurus Interconnect.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Overview</h1>
+
+<p>Sentaurus Interconnect is an advanced 1D, 2D, and 3D simulator suitable for IC interconnect
+reliability analysis. It features modern software architecture and state-of-the-art models to
+address current and future interconnect technologies, and it is capable of mechanical, thermal, 
+and electrical analyses.</p>
+
+<p>Sentaurus Interconnect shares with Sentaurus Process capabilities for process simulation 
+such as etching and deposition, and an interface to Sentaurus Structure Editor. Meshing is 
+performed by default with Sentaurus Mesh. Sentaurus Interconnect also uses the Alagator 
+scripting language that allows you to implement and solve your own nonmechanics partial 
+differential equations.</p>
+
+<!--===========================-->
+<a name="2"></a>
+<h1>1.2 Working With This Module</h1>
+
+<p>In this module, you are guided through several examples that showcase different modes 
+in which Sentaurus Interconnect can be used.</p>
+
+<p>In the context of these examples, the most widely used Sentaurus Interconnect commands 
+are introduced for creating a model, defining the material properties, setting the boundary 
+conditions, and solving the problems.</p>
+
+<p>This module discusses only keywords and options used in the given examples. 
+As Sentaurus Interconnect shares a common &quot;foundation&quot; with Sentaurus Process, 
+refer to the <a href="../sp/sp_menu.html">Sentaurus Process module</a> for more information 
+about meshing, process simulation, Advanced Calibration, and the Alagator scripting 
+language. See the <cite>Sentaurus&trade; Interconnect User Guide</cite>.</p>
+
+<p>All the examples are given as packaged Sentaurus Workbench projects. After creating 
+a local copy, the files can be opened with Sentaurus Workbench.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 File Types</h1>
+
+<p>The main file types used in Sentaurus Interconnect are:</p>
+
+<ul>
+<li>Command file (<tt>*.cmd</tt>)<br />
+This is the main input file for Sentaurus Interconnect. It contains all the 
+process steps and can be edited. It is referred to as the <em>command file</em> or 
+<em>input file</em>.<br /></li>
+  
+<li>Log file (<tt>*.log</tt> and <tt>*.out</tt>)<br />
+Sentaurus Interconnect generates a <tt>.log</tt> file when it is run from the command 
+line and an <tt>.out</tt> file when it is run from Sentaurus Workbench. Both files contain 
+information about each processing step, and the models and values of physical 
+parameters used in it. The amount of information written to the log file is controlled by 
+the <tt>info</tt> argument, which is available in nearly all commands. The global default 
+information level (0) can be changed with <tt>pdbSet InfoDefault &lt;n&gt;</tt>. Allowed 
+values of <tt>InfoDefault</tt> are 0, 1, and 2 with higher values indicating more verbose 
+output. Any value higher than 2 will be interpreted as 2.<br /></li>
+
+<li>TDR boundary file (<tt>*_bnd.tdr</tt>)<br />
+This file stores the boundaries of the structure without the bulk mesh or fields. It can 
+be used as the structure file for the meshing engine Sentaurus Mesh and can be loaded 
+into Sentaurus Visual for viewing. The name of a TDR boundary file can be specified 
+with the <tt>tdr</tt> argument of the <tt>init</tt> command of Sentaurus Interconnect, 
+and then the loaded boundary will be meshed.<br /></li>
+
+<li>TDR grid and doping file (<tt>*_sis.tdr</tt>)<br />
+TDR files can be used to split and restart a simulation. Such restart files are saved using the 
+<tt>struct tdr=&lt;c&gt;</tt> command because restarting requires interface data, parameter and 
+command settings, mesh ordering information, as well as the bulk grid and data. If either 
+<tt>!pdb</tt> or <tt>!interfaces</tt> is specified in the <tt>struct</tt> command, the TDR file 
+will not be suitable for restarting. The TDR file can be loaded into Sentaurus Interconnect using 
+the <tt>init</tt> command, but the results of the subsequent simulation steps might differ in a 
+simulation with splits and a restart, compared to a simulation of the entire flow in one attempt. 
+TDR files store the following types of information:<br />
+
+<ul>
+<li>Geometry of the device and the grid.</li>
+<li>Distribution of doping and other datasets in the device.</li>
+<li>The internal structure of the mesh in Sentaurus Interconnect required to restore the 
+simulation mesh to the same state in memory that is present at the time of saving the file. 
+Restart files store coordinates and field values without scaling to prevent round-off errors.</li>
+<li>By default, Sentaurus Interconnect stores all changes to the parameter database 
+made after the initial loading of the database and all commands that create objects later referenced, 
+such as refinement boxes and masks in the TDR file. A TDR file can be either reloaded into 
+Sentaurus Interconnect to continue the simulation or loaded into Sentaurus Visual 
+for viewing.<br />
+The parameter settings stored in a TDR file can be viewed using <br />
+<tt>pdbBrowser -nopdb -tdr &lt;tdrfile&gt;</tt> 
+(see <cite>Sentaurus&trade; Interconnect User Guide</cite>, 
+&quot;Viewing Parameters Stored in TDR Files&quot; for details).</li>
+</ul>
+</li> 
+  
+<li>XGRAPH file (<tt>*.plx</tt>)<br /> 
+This file saves the 1D distributions of the doping concentration or other fields 
+in a specified 1D cross section. This file can be viewed by loading it into Sentaurus Visual.</li>
+</ul>
+
+<!--===========================-->
+<a name="4"></a>
+<h1>1.4 Linear Solvers</h1>
+
+<p>The Parallel Direct Solver (PARDISO) is the default solver for 1D simulations 
+in Sentaurus Interconnect.</p>
+
+<p>To activate PARDISO for 3D simulations for thermal and electrical equations 
+(<tt>compute</tt>) and mechanics (<tt>Flow</tt>), use:</p>
+
+<pre>
+math compute dim=3 pardiso
+math Flow    dim=3 pardiso
+</pre>
+
+<p>To activate PARDISO multithreading with, for example, four threads, use:</p>
+
+<pre>
+math numThreadsPardiso=4
+</pre>
+
+<p>The Iterative Linear Solver (ILS) is the default solver for 3D simulations 
+in Sentaurus Interconnect as well as for cases that involve diffusion of species 
+in two dimensions.</p>
+
+<p>To activate ILS for 2D simulations for thermal and electrical equations 
+(<tt>compute</tt>) and mechanics (<tt>Flow</tt>), use:</p>
+
+<pre>
+math compute dim=2 ils
+math Flow    dim=2 ils
+</pre>
+
+<p>In the case of poor convergence, you can improve the quality of the preconditioning 
+of the matrices by reducing the <tt>ILS.ilut.tau</tt> parameter, for example, from 
+2x10<sup>&ndash;3</sup> (the default value for the 3D <tt>compute</tt> command) to 
+2x10<sup>&ndash;4</sup>, or even a smaller value.</p>
+
+<p>The generalized minimal residual (GMRES) iterative solver stores a given number 
+<em>m</em> of backvectors. If the solution does not converge within <em>m</em> 
+iterations, GMRES restarts. Higher values of <em>m</em> improve convergence but 
+increase memory use. You set <em>m</em> in Sentaurus Interconnect by changing the 
+parameter <tt>ILS.gmres.restart</tt>.</p>
+
+<p>Recommended values are between the default value of 100 to 150 for the 3D 
+<tt>compute</tt> command:</p>
+
+<pre>
+pdbSet Math compute 3D ILS.ilut.tau 5e-5
+pdbSet Math compute 3D ILS.gmres.restart 150
+pdbSet Math compute 3D ILS.maxit 300
+pdbSet Math compute 3D ILS.tolrel 1e-9
+pdbSet Math compute 3D ILS.refine.residual 10
+</pre>
+
+<p>To run ILS in parallel on multiple threads, use:</p>
+
+<pre>
+math numThreadsILS=4
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>1.5 Starting Sentaurus Interconnect</h1>
+
+<p>You can run Sentaurus Interconnect in either interactive mode or batch mode. 
+In interactive mode, an entire process flow can be simulated by entering commands 
+line-by-line as standard input. To start Sentaurus Interconnect in 
+interactive mode, type the following on the command line:</p>
+
+<pre>
+&gt; sinterconnect
+</pre>
+  
+<p>Sentaurus Interconnect displays version and host information, followed by 
+the Sentaurus Interconnect command prompt:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/Inverter/n1_sis.out" startLine=1 endExpr="*Done." format="wrap" -->
+<pre>
+****************************************************************************
+***                        Sentaurus Interconnect                        ***
+***                          Version U-2022.12                           ***
+***                      (2.7039201, x86_64, Linux)                      ***
+***                                                                      ***
+***                       Copyright (C) 1993-2002                        ***
+***          The board of regents of the University of Florida           ***
+***                       Copyright (C) 1994-2022                        ***
+***                            Synopsys, Inc.                            ***
+***                                                                      ***
+***  This software and the associated documentation are confidential     ***
+***  and proprietary to Synopsys, Inc.  Your use or disclosure of this   ***
+***  software is subject to the terms and conditions of a written        ***
+***  license agreement between you, or your company, and Synopsys, Inc.  ***
+****************************************************************************
+
+Compiled Thu Jun  9 18:47:03 PDT 2022 on tcadbld12
+
+      Started at: Fri Jun 10 10:34:35 2022 (CEST)
+       User name: letay
+       Host name: tesla-dell-lnx
+             PID: 9019
+    Architecture: x86_64
+Operating system: Linux rel. 3.10.0-1127.10.1.el7.x86_64 ver. #1 SMP Wed Jan 5 \
+  14:28:03 UTC 2022
+
+------------------------------------------------------------------------------
+Checking syntax of n1_sis.cmd:
+
+Syntax check complete.
+------------------------------------------------------------------------------
+
+Starting Tcl interpreter with inputfile: n1_sis.cmd
+       sinterconnect: Checking out 1 license at Fri Jun 10 10:34:44 2022
+                      Checked out 1 license at Fri Jun 10 10:34:46 2022
+
+Loading models file: \
+  /slowfs/ch10tcadbld1/tcadprod/ci2builds/tcad/U-2022.12-L1/lib/sinterconnect/\
+TclLib/SINTERCONNECT.models... done.
+</pre>
+<!-- grep end -->
+
+<p>You now can enter Sentaurus Interconnect commands at the prompt:</p> 
+
+<pre>
+sinterconnect&gt;
+</pre>
+
+<p>This is a flexible way of working with Sentaurus Interconnect to test individual 
+process steps or short sequences, but it is inconvenient for long process flows. 
+It is more useful to compile the command sequence in a command file, which can be 
+run in batch mode or inside Sentaurus Workbench.</p>
+
+<p>To run Sentaurus Interconnect in batch mode, load a command file when starting 
+Sentaurus Interconnect, for example:</p>
+
+<pre>
+&gt; sinterconnect input.cmd
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

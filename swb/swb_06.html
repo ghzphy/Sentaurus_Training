@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Workbench 6. Managing Projects</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_05.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_07.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Workbench<br />6. Managing Projects</h1>
+
+<p>
+ <a href="#CleanUp">6.1 Cleaning Up Project Directories</a><br />
+ <a href="#Archive">6.2 Packaging Projects</a><br />
+ <a href="#Delete">6.3 Deleting Projects</a><br />
+ <a href="#UNIX">6.4 Opening a UNIX Terminal Window</a><br />
+ <a href="#Command">6.5 Using the Command Line</a><br />
+ <a href="#ExIm">6.6 Exporting and Importing Scenarios</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To become familiar with features to manage projects in Sentaurus Workbench.</li> 
+</ul>
+
+<!--================================================-->
+<a name="CleanUp"></a>
+<h1>6.1 Cleaning Up Project Directories</h1>
+
+<p>To clean up a project:</p>
+
+<ol>
+<li>Choose <strong>Project</strong> &gt; <strong>Operations</strong> &gt; <strong>Clean Up</strong>, 
+or press Ctrl+L.<br />
+The Cleanup Options dialog box opens.</li>
+<li>Select the items to be removed.<br />
+<p><img src="images/swb_cleanup.png" width="454" height="189" alt="Cleanup Options dialog box" /></p></li>
+<li>Click <strong>Cleanup</strong>.</li>
+</ol>
+
+<p>Sentaurus Workbench deletes all files associated with the previous run, 
+and the project is now ready to be rerun. This is indicated by a change 
+in the color of the nodes from yellow (done) to white (none).</p>
+
+<p class="note">In the case of traditional project organization, if you select only
+<strong>Renumber the Tree</strong>, then all the simulation results will be 
+deleted during node renumbering.</p>
+
+<!--================================================-->
+<a name="Archive"></a>
+<h1>6.2 Packaging Projects</h1>
+
+<p>Sentaurus Workbench projects can be packaged, that is, they can be copied and compressed 
+for later use. For example, project packages can be easily exchanged and sent by email.</p>
+
+<p>To package the project <tt>SimpleMOS</tt>:</p>
+
+<ol>
+<li>Choose <strong>Project</strong> &gt; <strong>Export</strong>.<br />
+The Export to Package dialog box opens.</li>
+<li>Select the options as shown here.<br />
+<p><img src="images/swb_exportpackage.png" width="390" height="247" 
+alt="Export to Package dialog box" /></p></li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>The project is first cleaned up 
+(see <a href="swb_06.html#CleanUp">Section&nbsp;6.1 Cleaning Up Project Directories</a>), 
+and all files are copied and compressed into the <tt>SimpleMOS.gzp</tt> file. Moreover, 
+the <tt>.gzp</tt> file is encrypted so that it can go through email filters.</p>
+
+<p>To import a project package:</p>
+
+<ol>
+<li>Choose <strong>Project</strong> &gt; <strong>Import</strong>.<br />
+The Unpacking dialog box opens.</li>
+<li>Click <strong>Extract All</strong>.<br />
+<p><img src="images/swb_unpacking.png" width="497" height="559" alt="Unpacking dialog box" /></p></li>
+<li>Select the folder where to import the project.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>If an encryption key different from the default one (<tt>swb</tt>) is used when 
+exporting a project, then you will be required to enter this key when importing the project.</p>
+
+<p>In addition, projects can be saved by choosing <strong>Project</strong> &gt; 
+<strong>Save As</strong> &gt; <strong>Clean Project</strong>, which cleans up the 
+project before it is saved in an uncompressed format.</p>
+
+<!--================================================-->
+<a name="Delete"></a>
+<h1>6.3 Deleting Projects</h1>
+
+<p>To delete a project:</p> 
+
+<ol>
+<li>Select the project in the projects browser.</li>
+<li>Right-click and choose <strong>Delete</strong>.</li>
+<li>In the confirmation dialog box, click <strong>Yes</strong>.</li>
+</ol>
+
+<!--================================================-->
+<a name="UNIX"></a>
+<h1>6.4 Opening a UNIX Terminal Window</h1>
+
+<p>It can be convenient to access the contents of the current project directory 
+from the command line. In Sentaurus Workbench, you can open an Xterm, which can 
+be used like any other UNIX terminal window.</p> 
+
+<p>To open a UNIX terminal, choose <strong>Extensions</strong> &gt; <strong>Command Prompt Here</strong> 
+or click the <img class="imgline" src="images/icons/command.png" width="16" height="16" 
+alt="Quick visualize toolbar button" /> toolbar button. A new UNIX terminal window opens 
+in the project directory. If a node was selected, then the terminal window opens in the output 
+directory of the node.</p>
+
+<!--================================================-->
+<a name="Command"></a>
+<h1>6.5 Using the Command Line</h1>
+
+<p>All interactive operations associated with running a project can be accomplished 
+using the command line. The following commands are available for:</p>
+
+<ul>
+<li>Submitting jobs: <tt>gsub</tt> and <tt>gjob</tt></li>
+<li>Preprocessing: <tt>spp</tt></li>
+<li>Cleaning up project directories: <tt>gcleanup</tt></li>
+</ul>
+
+<p>For more information about the commands that can be executed from the command line, 
+see the <cite>Sentaurus&trade; Workbench User Guide</cite> or use the command:</p>
+
+<pre>
+&gt; &lt;command&gt; -h[elp]
+</pre> 
+
+<p>For example:</p>
+
+<pre>
+&gt; gsub -verbose -e all -q local:priority &lt;full_path_to_project&gt;
+</pre> 
+
+<!--================================================-->
+<a name="ExIm"></a>
+<h1>6.6 Exporting and Importing Scenarios</h1>
+
+<p>Scenarios are sets of parameters and variables visible on the <strong>Project</strong> 
+tab. They can be exported to a file for use with spreadsheet applications or external editors. 
+In addition, scenarios defined in a text editor can be imported into Sentaurus Workbench.</p>
+
+<p>For example, to export a scenario from the project <tt>SimpleMOS</tt>:</p>
+ 
+<ol>
+<li>Choose <strong>Experiments</strong> &gt; <strong>Export</strong> &gt; <strong>Text File</strong>.<br />
+The Export View dialog box opens.</li>
+<li>Select <strong>Tab</strong> as the column delimiter.<br />
+<p><img src="images/swb_exportview.png" width="217" height="212" alt="Export View dialog box" /></p></li>
+<li>Click <strong>OK</strong>.</li>
+<li>In the Export As dialog box, select <strong>Tab delimited (*.tdf)</strong> for 
+<strong>Files of type</strong>, and type a file name (for example, <tt>test.tdf</tt>).
+The scenario is exported to a file.</li>
+</ol>
+
+<p>To read from this file:</p>
+
+<ol>
+<li>Choose <strong>Experiments</strong> &gt; <strong>Import From File</strong>.<br />
+The Import Text File dialog box opens.</li>
+<li>Select <strong>Tab delimited (*.tdf)</strong> for <strong>Files of type</strong>, select the file <tt>test.tdf</tt>, and click <strong>Open</strong>.<br />
+The Import Experiments dialog box opens.</li>
+<li>Since the column count starts from 0, <tt>NWell</tt> and <tt>GOxTime</tt> form columns 2 and 3, respectively.<br />
+Make the changes as shown here, and set <strong>Skip First Lines</strong> to 3 to omit the text 
+and header information.<br />
+<p><img src="images/swb_importexp.png" width="442" height="773" alt="Import Experiments dialog box" /></p>
+</li>
+<li>Click <strong>Preview</strong> to access all the information about the experiments.<br />
+The Preview of Experiments dialog box opens.<br />
+<p><img src="images/swb_preview.png" width="259" height="381" alt="Preview of Experiments dialog box" /></p>
+</li>
+</ol>
+
+<p>Now, you will read the first eight experiments as follows:</p>
+
+<ol>
+<li>In the Import Experiments dialog box, set <strong>Read Experiments</strong> to 8, 
+and type the name of a new scenario called <tt>test1</tt> in the <strong>Add to Scenario</strong> field.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>The eight experiments are read into the new scenario <tt>test1</tt> and are displayed 
+on the <strong>Project</strong> tab.</p>
+
+<p>To create a scenario using an external text editor and to import it into 
+Sentaurus Workbench:</p>
+ 
+<ol>
+<li>Create a table as shown here.<br />
+<p><img src="images/swb_tablexp.png" width="339" height="66" alt="Table of experiments" /></p></li>
+<li>Save it in comma-delimited or tab-delimited format.</li>
+<li>Import the file.</li>
+</ol>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_05.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_07.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

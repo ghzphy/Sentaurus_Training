@@ -1,0 +1,600 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 6. Nonlinear System Newton Solver</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_7.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />6. Nonlinear System Newton Solver</h1>
+
+<p>
+<a href="#1">6.1 Solving Nonlinear Equation System With Newton Solver</a><br />
+<a href="#2">6.2 Achieving a Good Initial Guess</a><br />
+<a href="#3">6.3 Optimizing the Nonlinear Solver Performance</a><br />
+<a href="#4">6.4 Using the Extrapolate Option</a><br />
+<a href="#5">6.5 Determining the Convergence of the Newton Solver</a><br />
+<a href="#6">6.6 Improving Convergence in Low-Density or Low-Current Regions</a><br />
+<a href="#7">6.7 Debugging Newton Solver&ndash;Related Convergence Issues</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To provide guidelines for selecting the most appropriate Newton 
+solver settings in Sentaurus Device.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>6.1 Solving Nonlinear Equation System With Newton Solver</h1>
+
+<p>Specifying the <tt>Coupled</tt> command in the <tt>Solve</tt> section of 
+a Sentaurus Device tool input file activates the Newton-like solver over a set of equations. 
+Available equations include the Poisson and continuity equations, as well as the heat 
+and the energy transport equations:</p>
+
+<pre>
+Coupled ( &lt;optional parameter&gt; ){ &lt;set of equations&gt; }
+</pre>
+
+<p>To solve the transport model equations self-consistently, Sentaurus Device 
+uses the iterative algorithm, where solutions are updated on each iteration as 
+shown in Figure 1.</p>
+
+<a name="NewtonSolution"></a>
+<p><img src="images/sd_newton.png" width="400"  
+alt="Schematics of the Newton solution method" /></p>
+
+<p class="caption">Figure 1. Schematics of the Newton solution method, where 
+z represents the vector of solution variables and f(z) represents the solution 
+function.</p>
+
+<p>Several options of the <tt>Coupled</tt> command can be used explicitly to 
+determine:</p>
+
+<ul>
+<li>The maximum number of iterations allowed:<br />
+
+<pre>
+Coupled (Iterations=15){ &lt;set of equations&gt; }
+</pre>
+</li>
+
+<li>The precision of the solution:<br />
+
+<pre>
+Coupled (Digits=4){ &lt;set of equations&gt; }
+</pre>
+</li>
+
+<li>The linear solver that must be used:<br />
+
+<pre>
+Coupled (Method=ParDiSo){ &lt;set of equations&gt; }
+</pre>
+</li>
+
+<li>Whether the solution is allowed to be damped over a number of iterations:<br />
+
+<pre>
+Coupled (LineSearchDamping=0.01){ &lt;set of equations&gt; }
+</pre>
+</li>
+</ul>
+
+<p>For more details about the Newton solver controls, see 
+<a href="./sd_9.html#nonlin">Section 9.3.2 Nonlinear Solver Controls</a>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>6.2 Achieving a Good Initial Guess</h1>
+
+<p>For the Newton scheme, it is crucial to have a good initial guess. Without 
+a good initial solution, your subsequent <tt>Quasistationary</tt> or <tt>Transient</tt> 
+sweep might fail from the beginning.</p>
+
+<p>For most applications, it is best to start by first solving the Poisson equation 
+alone, followed by the <tt>Coupled</tt> statement, which solves the transport 
+equations all together self-consistently:</p>
+
+<pre>
+Solve {
+  Poisson
+  Coupled { Poisson Electron Hole }
+  ...
+}
+</pre>
+
+<p>There are situations where solving the initial Poisson equation might require 
+more iterations and also solution damping. You might need to apply extra options if 
+the density gradient or trap models are activated. To ensure that the initial 
+solution converges, specify <tt>LineSearchDamping</tt> and also allow for a large 
+number of iterations.</p>
+
+<p>The value assigned to <tt>LineSearchDamping</tt> determines the factor by which 
+updates applied to the solution variables can be damped. The factor varies between 
+0 and 1. By default, no damping is performed (<tt>LineSearchDamping=1</tt>). The 
+smaller the <tt>LineSearchDamping</tt> value, the smoother the convergence 
+obtained, but more iterations are required to obtain the solution. Therefore, you
+should typically use it with an increased value for <tt>Iterations</tt>:</p>
+
+<pre>
+Solve {
+  Coupled(
+    LineSearchDamping= 1e-4
+    Iterations= 100 
+  ) { Poisson eQuantumPotential }
+  Coupled { Poisson Electron Hole }
+  ...
+}
+</pre>
+
+<p>In some (rare) cases where converging the initial guess is difficult to achieve, 
+requesting extra Gummel iterations for the system of equations with the larger 
+relative error (a smaller value of <tt>Digits</tt>) helps to converge the entire 
+system of equations. To activate the Gummel iterations, use the <tt>Plugin</tt> 
+command. For example:</p>
+
+<pre>
+Solve {
+  Coupled(
+    Iterations= 100 
+    LineSearchDamping= 1e-4
+  ) { Poisson eQuantumPotential }
+  
+  Plugin(Iterations=10 Digits=3) { Poisson Electron Hole }
+  
+  Coupled { Poisson Electron Hole }
+  ...
+}
+</pre>
+
+<!--================================================-->
+<a name="3"></a> 
+<h1>6.3 Optimizing the Nonlinear Solver Performance</h1>
+
+<p>While running <tt>Quasistationary</tt> or <tt> Transient</tt> device simulations, 
+the keyword <tt>Iterations</tt> sets the maximum number of Newton iterations per step 
+(20 by default). Due to the Newton method quadratic convergence, usually 3&ndash;6 iterations 
+are sufficient to obtain the next solution. If a solution is not found after 15&ndash;20 
+iterations, it becomes increasingly unlikely that a solution will be found for a given 
+step size. Therefore, it is often faster to limit the number of iterations, and to let 
+the current Newton step fail, and restart it with a smaller time step, as shown in Figure 2.</p>
+
+<p><a href="images/sd_increment.png"><img src="images/sd_increment.png" width="520" 
+alt="Schematics of the time-step incremental strategy" /></a></p>
+
+<p class="caption">Figure 2. Schematics of the time-step incremental strategy. 
+(Click image for full-size view.)</p>
+
+<p>Two scaling factors are used for this &ndash; <tt>Increment</tt> and <tt>Decrement</tt>. 
+For <tt>Transient</tt> simulations, <tt>Increment</tt> and <tt>Decrement</tt> 
+values are used exactly as specified in the <tt>Transient</tt> section:</p>
+
+<pre>
+Transient (
+  InitialTime=0 FinalTime=100e-11
+  InitialStep=1e-11 Increment= 1.4 Decrement= 2
+  MaxStep=5e-11 MinStep=1e-15
+){ Coupled{ Poisson Electron Hole } }
+</pre>
+
+<p>For steady-state simulations, the <tt>Increment</tt> value also depends on the 
+number of iterations in a previous step, according to the following formula:</p>
+
+<p>\[ \text"Increment"(t_{i}) = 1 + \text"max"(0,(\text"Increment" - 1) (1 - {x}/{0.75})) \html"&nbsp;," \]
+\[ x= {\text"iterations"(\text"step"_{i-1}) -1} / {\text"Iterations"} \]</p>
+
+<p class="note">By default, the same value (2) is used for both <tt>Increment</tt> 
+and <tt>Decrement</tt>. It is recommended to apply a smaller value for <tt>Increment</tt> 
+than used for <tt>Decrement</tt> to avoid back and forth time-step jumping in the 
+case of nonconvergence.</p>
+
+<p>For more details about the Newton solver controls for 3D device simulations, see 
+<a href="./sd_9.html#nonlin">Section 9.3.2 Nonlinear Solver Controls</a>.</p>
+
+<p>For transient simulations, you can use abrupt piecewise linear voltage or current 
+drives. To resolve the steep gradients of the input signal, you can use the 
+<tt>TurningPoints</tt> statement as a parameter in the <tt>Transient</tt> section, 
+which instructs the solver about the maximum time steps to be used at specific time 
+points or within specific intervals of time. An example of using 
+<tt>TurningPoints</tt> is contained in the command file <tt>sdevice1_des.cmd</tt> 
+of the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/sdevice/CMOSInverter</tt> discussed in 
+<a href="sd_3.html#3">Section&nbsp;3.3 Transient Sweep</a>.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>6.4 Using the Extrapolate Option</h1>
+
+<p>By default, at each bias step for a <tt>Quasistationary</tt> sweep or at each 
+time step for a <tt>Transient</tt> sweep, the initial guess for the next Newton 
+iterations is taken as the solution from the previous step.</p> 
+
+<p>For <tt>Quasistationary</tt> sweeps, you must <em>always</em> use the 
+<tt>Extrapolate</tt> option:</p>
+
+<pre>
+Math { ...
+  Extrapolate
+}
+</pre>
+
+<p>In this case, the initial guess for the next Newton iterations is taken as a linear 
+extrapolation from the last two solutions (see Figure 3). Usually, this option 
+significantly improves convergence, which also helps Sentaurus Device to make larger 
+bias steps.</p>
+
+<p><img src="images/sd_extrapol.png" width="582" height="328" 
+alt="Schematics of the Newton solution method" /></p>
+
+<p class="caption">Figure 3. Schematics of the solution extrapolation method.</p>
+
+<p>In some situations such as fast transient ramps, activating extrapolation can
+lead to convergence difficulties. In such cases, you can give second order
+extrapolation a try <tt>Extrapolate(Order=2)</tt></p>
+
+<pre>
+Quasistationary (
+  Goal { ... }
+  Extrapolate(Order=2)
+) { Coupled {Poisson Electron Hole} }
+</pre>
+
+<p>By default, Sentaurus Device uses extrapolation for all equations from a <tt>Coupled</tt> 
+command, but you can exclude some equations from this list by specifying equations to be 
+excluded as parameters of the <tt>Exclude</tt> option:</p>
+
+<pre>
+Quasistationary (
+  Goal { ... }
+  Extrapolate(Exclude(Poisson Hole))
+) { Coupled { Poisson Electron Hole } }
+</pre>
+
+<p>If <tt>Extrapolate</tt> is switched on globally in the <tt>Math</tt> section, then 
+you can switch it off locally inside a corresponding <tt>Quasistationary</tt> or
+<tt>Transient</tt> command using <tt>-Extrapolate</tt>:</p>
+
+<pre>
+Transient ( ...
+  -Extrapolate
+) { Coupled { Poisson Electron Hole } }
+</pre>
+
+<!--================================================-->
+<a name="5"></a> 
+<h1>6.5 Determining the Convergence of the Newton Solver</h1>
+
+<p>When you run <tt>Quasistationary</tt> or <tt>Transient</tt> tasks with the 
+Newton method, the solver convergence is checked against two criteria:</p>
+
+<ul>
+<li>Global error criterion: 
+\(\text"error"\; = 1/ε_R 1/N ∑↙{e,i}{|z(e,i,j)-z(e,i,j-1)|} / {|z(e,i,j)|+z_{\text"ref"}(e)} &lt; 1\)</li>
+
+<li>RHS norm criterion: \(\text"RHS"\; = ||A ⋅ x - b|| &lt;\) <tt>RHSmin</tt></li>
+</ul>
+
+<p>The Newton solver quits the iterations if either criterion is met. Here,
+\(z\) indicates the corresponding solution variable, \(e\) refers to the
+equation, \(i\) denotes the node number, \(j\) corresponds to the iteration,
+and \(N\) corresponds to the total number of unknowns (number of nodes
+multiplied by the number of solution variables). The relative error \(ε_R\)
+corresponds to 10<sup>-<tt>Digits</tt></sup>. The reference error parameter
+\(z_{\text"ref"}(e)\) can be set through <tt>ErrRef(&lt;equation&gt;)</tt>.</p>
+
+<p>For a well-converging Newton step, you can see in the log file that the error 
+decreases (quadratically) and the RHS also reduces from iteration to iteration:</p>
+
+<pre>
+Iteration   |Rhs|      factor     |step|     error   #inner  #iterative  time
+------------------------------------------------------------------------------
+    0      2.93e+04                                                      0.54
+    1      1.43e+06   1.00e+00   8.91e-02   1.25e+03    0         1      3.22
+    2      2.46e+00   1.00e+00   1.30e-02   4.95e+02    0         1      5.96
+    3      1.38e-02   1.00e+00   1.37e-03   5.65e+01    0         1      8.73
+    4      1.01e-05   1.00e+00   2.57e-05   8.21e-01    0         1     11.43
+Finished, because...
+Error smaller than 1 ( 0.820967 ).
+</pre>
+
+<p>For a nonconverging Newton step, the error and the &quot;right hand side&quot; 
+no longer decrease and fluctuate:</p>
+
+<pre>
+Iteration   |Rhs|      factor     |step|     error   #inner  #iterative  time
+------------------------------------------------------------------------------
+    0      2.69e+03                                                     0.61
+    1      4.99e+06   1.00e+00   2.09e-01   3.81e+03    0         1     4.82
+    2      6.34e+02   1.00e+00   2.55e-01   2.51e+03    0         1     9.13
+...    
+   14      2.05e+01   1.00e+00   3.83e-02   2.12e+03    0         1     59.43
+   15      2.84e+01   1.00e+00   1.40e-02   3.31e+02    0         1     63.52
+Finished, because...
+#iterations larger than 15.
+</pre>
+
+<p>In addition to <tt>|RHS|</tt> and <tt>error</tt>, other different 
+quantities are reported, including:</p>
+
+<ul>
+<li><tt>factor</tt>: Represents the damping factor used by the solver. It can be 
+less than 1 if either line search damping or Bank&ndash;Rose damping is active.</li>
+<li><tt>|step|</tt>: Represents the norm of the update vector.</li>
+<li><tt>#inner</tt>: Represents the number of iterations in the damping.</li>
+<li><tt>#iterative</tt>: Prints the number of iterations for the ILS solver. In the 
+case of direct solver usage, it either prints 1 or the number of right-hand sides, 
+if multiple right-hand sides are solved simultaneously.</li>
+</ul>
+
+<p>Often, tightening up the Newton error controls helps to converge the simulation. 
+The most relevant parameters here are <tt>Digits</tt> and <tt>ErrRef</tt>. In addition, 
+running a simulation in <tt>ExtendedPrecision</tt> mode helps to resolve such solution 
+fluctuations, which increases the chances of the simulation converging:</p>
+
+<pre>
+Math{ ...
+  Digits= 5
+  ErrRef(Electron) = 1e8
+  ErrRef(Hole)     = 1e8
+  ExtendedPrecision
+}
+</pre>
+
+<p>For more details about the convergence of the Newton solver in the case of 
+3D device simulations, see <a href="./sd_9.html#nonlin">
+Section&nbsp;9.3.2 Nonlinear Solver Controls</a>.</p>
+
+<!--================================================-->
+<a name="6"></a> 
+<h1>6.6 Improving Convergence in Low-Density or Low-Current Regions</h1>
+
+<p>This section describes how to improve convergence in low-density or low-current
+regions.</p>
+
+<!--========================-->
+<a name="61"></a> 
+<h2>6.6.1 High-Field Saturation and Avalanche Generation</h2>
+
+<p>If the gradient of the quasi-Fermi level rapidly changes but the density does not, 
+convergence can be unstable in regions with small densities. This can be circumvented 
+by introducing a correction density \(n_{0}\) in the equation for the quasi-Fermi potential:</p>
+
+<p> \[ Φ↖{~}_{n} = φ - φ_{\text"ref"} + {χ}/{q} - {kT}/{q} log({n_{0} +n}/{N_{C}}) \] </p>
+<p> \[ ∇Φ↖{~}_{n} = ∇φ + {∇χ}/{q} - {k∇T}/{q} log({n_{0} +n}/{N_{C}}) - {kT}/{q} {∇n}/{n_{0}+n} +{kT}/{q}{∇N_{C}}/{N_{C}} \] </p>
+
+<p>The nonzero \(n_{0}\) value stabilizes convergence within regions 
+with small densities but large \(∇Φ\) values. In this case, smoothing is 
+applied to both models that use <tt>gradQuasiFermi</tt> as a driving force: high-field 
+saturation and avalanche generation. The corresponding reference smoothing 
+densities are provided in the <tt>Math</tt> section as shown here:</p>
+
+<pre>
+Math {
+  RefDens_eGradQuasiFermi_ElectricField= 1e8
+  RefDens_hGradQuasiFermi_ElectricField= 1e8
+}
+</pre>
+
+<p>These commands activate the smoothing of the driving forces for both the high-field 
+saturation and avalanche generation models. To activate  driving force smoothing 
+exclusively for the high-field saturation model, use the following commands:</p>
+
+<pre>
+Math {
+  RefDens_eGradQuasiFermi_ElectricField_HFS= 1e8
+  RefDens_hGradQuasiFermi_ElectricField_HFS= 1e8
+}
+</pre>
+
+<p>Alternatively, you can use another smoothing option that activates the interpolation 
+between the gradient of the quasi-Fermi potential and the electric field parallel to the 
+interface, which is applied to the driving force of the high-field saturation model:</p>
+
+<p>\[ F_{\text"HFS",n} = {n}/{n+n_{0}} |∇Φ_{n}|\; +\; {n_{0}}/{n+n_{0}} |(I - n↖{\^} \: n↖{\^}^{T})F↖{→}| \]  </p>
+
+<p>where \(n↖{\^}\) is a unit vector pointing to the closest
+semiconductor&ndash;insulator interface. To activate this alternative smoothing
+option, specify the following commands:</p>
+
+<pre>
+Math {
+  RefDens_eGradQuasiFermi_EParallelToInterface= 1e8
+  RefDens_hGradQuasiFermi_EParallelToInterface= 1e8
+}
+</pre>
+
+<p>If you notice that a convergence issue seems to be related to the electron 
+or hole equations, specifically in areas of low carrier densities, then you can consider 
+the <tt>RefDens_eGradQuasiFermi_Zero</tt> and <tt>RefDens_hGradQuasiFermi_Zero</tt> 
+parameters, which will effectively damp the driving force of the high-field 
+saturation model within the regions with strong generation&ndash;recombination 
+and a low carrier density:</p>
+
+<p><a href="images/sd_damping.png"><img src="images/sd_damping.png" width="520" 
+alt="Damping the driving force of the velocity high-field saturation model " /></a></p>
+
+<p class="note">Driving force smoothing is preferred over driving force damping. 
+Try to use it first to circumvent any device simulation convergence issues.</p>
+
+<p>See <a href="./sd_11.html#10">Section 11.10 Driving Force for Avalanche Generation 
+and High-Field Saturation Models</a> for more details about available model driving
+forces and drivng force interpolation controls.</p>
+
+<!--========================-->
+<h2>6.6.2 Hydrodynamic Transport</h2>
+
+<p>If you encounter unrealistically high carrier temperatures in regions with 
+a low-carrier density, then consider limiting the energy relaxation time as a function 
+of the carrier density with:</p>
+
+<pre>
+Math { ...
+  RelTermMinDensity= 1e4
+  RelTermMinDensityZero= 1e8
+}
+</pre>
+
+<!--================================================-->
+<a name="7"></a> 
+<h1>6.7 Debugging Newton Solver&ndash;Related Convergence Issues</h1>
+
+<p>This section provides information about how to debug convergence issues 
+related to the Newton solver.</p>
+
+<!--========================-->
+<h2>6.7.1 CNormPrint</h2>
+
+<p>To have a sense of which equation might be causing poor convergence, activate 
+the printing of the largest error for each equation after each Newton iteration 
+with <tt>CNormPrint</tt>:</p>
+
+<pre>
+Math { ...
+  CNormPrint 
+}
+</pre>
+
+<p>You will find the information about the vertex where the largest error occurs, 
+its coordinates, and the value of the solution variable being printed after each 
+Newton iteration. For example:</p>
+
+<pre>
+Iteration   |Rhs|      factor     |step|     error   #inner  #iterative  time
+------------------------------------------------------------------------------
+    0      2.91e+08                                                      0.77
+C-norm_equation  max_error vertex      coordinate [um]      value 
+ poisson:      3.688e-03 5303  (1.831e-02, -1.390e-02) -7.705e-04 
+ eQuantumPot:  1.595e-03 5380  (1.831e-02, -3.824e-02) -9.692e-03 
+ electron:     1.152e-02 5512  (1.464e-02, -2.433e-02)  2.478e+15 
+ hole:         2.710e-03 1665  (2.197e-02,  0.000e+00)  5.720e+11 
+ eTemperature: 1.808e-03 5295  (2.380e-02, -3.128e-02)  1.242e+03 
+ lTemperature: 3.684e-05 1776  (2.288e-03,  4.867e-02)  3.181e+02 
+...
+</pre>
+
+<p>To identify a problem, look at this output only when the Newton steps start to fail. 
+Look for entries where the <tt>max_error</tt> is of the order of 1 or larger. This 
+shows for which equation the solver is struggling. In addition, if you see that a large 
+error occurs repeatedly at the same <tt>vertex</tt> or in the same area (see 
+<tt>coordinate</tt>), look carefully at the mesh in that area; it might be inappropriate.</p>
+
+<!--========================-->
+<h2>6.7.2 NewtonPlot</h2>
+
+<p>Sentaurus Device can write the spatial values of solution variables, errors, 
+the RHS, and the solution updates to a so-called <tt>NewtonPlot</tt> file. The 
+<tt>NewtonPlot</tt> files then can be read into Sentaurus Visual for examination.</p>
+
+<p>Sentaurus Device writes information to a <tt>NewtonPlot</tt> file during execution 
+of a <tt>Quasistationary</tt> or <tt>Transient</tt> command when the step size 
+decreases below a certain value. Use the <tt>NewtonPlot</tt> keyword in the 
+<tt>File</tt> section to specify a file root name for the generated plots.
+This name can contain up to two C-style integer format specifiers (for example, <tt>%d</tt>). 
+If present, for the file name generation, the first one is replaced by the 
+iteration number in the current Newton step and the second is replaced by the number of 
+Newton steps in the simulation:</p>
+
+<pre>
+File {
+  ...
+  NewtonPlot= "n@node@_NP_%d_%d_des.tdr"
+}
+</pre>
+
+<p>Specify the <tt>NewtonPlot</tt> statement in the <tt>Math</tt> section to 
+explicitly activate file-writing:</p>
+
+<pre>
+Math {
+  ...
+  NewtonPlot(&lt;options&gt;)
+}
+</pre>
+
+<p>Refer to the <cite>Sentaurus&trade; Device User Guide</cite> for the corresponding 
+set of <tt>NewtonPlot</tt> options.</p>
+
+<p>Figure 4 shows an example of what can be plotted after the <tt>NewtonPlot</tt> 
+command is executed. You can see the distribution of the relative error of the hole 
+density inside the device and other datasets that can be plotted.</p>
+
+<p><a href="images/sd_newtonplot.png"><img src="images/sd_newtonplot.png" width="570" 
+alt="Visualization of dataset after NewtonPlot command in Sentaurus Visual" /></a></p>
+
+<p class="caption">Figure 4. Typical visualization in Sentaurus Visual of dataset 
+after NewtonPlot command is executed. (Click image for full-size view.)</p>
+
+<!--========================-->
+<h2>6.7.3 AutoCNPMinStepFactor and AutoNPMinStepFactor</h2>
+
+<p>In the case of nonconvergence, Sentaurus Device automatically activates the 
+<tt>CNormPrint</tt> and <tt>NewtonPlot</tt> commands, if the following criteria are met:</p>
+
+<ul>
+<li>For <tt>CNormPrint</tt>: step size &lt; <tt>AutoCNPMinStepFactor * MinStep</tt></li>
+<li>For <tt>NewtonPlot</tt>: step size &lt; <tt>AutoNPMinStepFactor * MinStep</tt></li>
+</ul>
+
+<p>By default, this will print additional information about the last successful Newton 
+iteration and also will generate a <tt>*_des_min.tdr</tt> file for further debugging. 
+The <tt>AutoCNPMinStepFactor</tt> and <tt>AutoNPMinStepFactor</tt> values 
+can be specified in the <tt>Math</tt> section of the command file:</p>
+
+<pre>
+Math {
+  AutoCNPMinStepFactor = &lt;float&gt; #default = 2.0
+  AutoNPMinStepFactor  = &lt;float&gt; #default = 2.0
+}
+</pre>
+
+<p>For 3D device simulations, such files can use significant disk space. 
+To deactivate file-writing, assign zero values to the corresponding step factor.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_7.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

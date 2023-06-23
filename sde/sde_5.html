@@ -1,0 +1,830 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Structure Editor 5. Scripting and Parameterization</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Structure Editor<br />5. Scripting and Parameterization</h1>
+
+<p>
+ <a href="#1">5.1 Overview</a><br />
+ <a href="#2">5.2 Scheme Basics</a><br />
+ <a href="#3">5.3 Defining Simple Variables and Data Types</a><br />
+ <a href="#4">5.4 Printing Text to Standard Output</a><br />
+ <a href="#5">5.5 Arithmetic Operators</a><br />
+ <a href="#6">5.6 Arithmetic Expressions</a><br />
+ <a href="#7">5.7 Example 1: Creating a Parameterized Device</a><br />
+ <a href="#8">5.8 Boolean Operations</a><br />
+ <a href="#9">5.9 If Blocks</a><br />
+ <a href="#10">5.10 String Operations</a><br />
+ <a href="#11">5.11 Simple Do Loops</a><br />
+ <a href="#12">5.12 Lists</a><br />
+ <a href="#13">5.13 For Each Loops</a><br />
+ <a href="#14">5.14 Example 2: Creating a Parameterized Layer Structure Using Lists</a><br />
+ <a href="#15">5.15 Procedures</a><br />
+ <a href="#16">5.16 Assignment</a><br />
+ <a href="#17">5.17 Further Reading</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To use Scheme scripting in input files of Sentaurus Structure Editor.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Overview</h1>
+
+<p>The scripting language of Sentaurus Structure Editor is based on Scheme, 
+which is a LISP-like programming language that differs significantly from 
+most widely used programming languages. A working knowledge of Scheme is 
+needed to create Sentaurus Structure Editor scripts for parameterized devices.</p>
+
+<p>This section introduces the most useful Scheme commands. For more information, 
+see <a href="#17">Section 5.17 Further Reading</a>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Scheme Basics</h1>
+
+<p>To execute a Scheme command, type or copy it into the command-line window, 
+or load a Scheme script using:</p>
+
+<ol>
+<li>Choose <strong>File</strong> &gt; <strong>Import</strong>.</li>
+<li>In the dialog box, in the <strong>Files of type</strong> field, select 
+<strong>Scheme Script Files</strong>.</li>
+<li>Select a script file.</li> 
+<li>Click <strong>Open</strong>.</li> 
+</ol>
+
+<p>A Scheme command is enclosed in parentheses:</p>
+
+<pre>
+(<em>Scheme command</em>)
+</pre>
+
+<p>All text in a line after a semicolon is treated as a comment:</p>
+
+<pre>
+; This is a comment
+
+(<em>Scheme command</em>) ; This is also a comment
+</pre>
+
+<p>A Scheme command can extend over several lines:</p>
+
+<pre>
+(<em>beginning of Scheme command
+ continuation of the same Scheme command
+ end of the Scheme command</em>)
+</pre>
+
+<p>Several Scheme commands can be on a single line:</p>
+
+<pre>
+(<em>first Scheme command</em>) (<em>second Scheme command</em>) (...)
+</pre>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>5.3 Defining Simple Variables and Data Types</h1>
+
+<p>Integers and floating-point numbers are treated as numbers. Declare and define a 
+numeric variable with:</p>
+
+<pre>
+(define i  3)
+(define pi 3.141593)
+</pre>
+
+<p>Strings are enclosed in double quotation marks. Declare and define a string with:</p>
+
+<pre>
+(define W &quot;Hello World&quot;)
+</pre>
+
+<p>Characters are preceded by #\. Declare and define a character with:</p>
+
+<pre>
+(define CHAR #\a)
+</pre>
+
+<p>Use the variable name to reference a variable:</p>
+
+<pre>
+i
+pi
+W 
+CHAR
+</pre>
+
+<p>When you type the variable name (without parentheses) in the command-line 
+window, you will be prompted for the value to which the variable evaluates. 
+Alternatively, use the general method described in 
+<a href="#4">Section&nbsp;5.4 Printing Text to Standard Output</a>.</p>
+
+<p> Update an existing variable with:</p>
+
+<pre>
+(define j 1)
+(set! j (+ j 1))
+j ;-> 2
+</pre>
+
+<p class="note">Use <tt>define</tt> when a variable is introduced for the first 
+time. Use <tt>set!</tt> to alter an existing variable.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>5.4 Printing Text to Standard Output</h1>
+
+<p>Use the <tt>display</tt> command to write to standard output. Use <tt>newline</tt> to 
+create a line break. Use <tt>(begin ...)</tt> to group several <tt>display</tt> commands:</p>
+
+<pre>
+(begin (display &quot;The value of i is &quot;)  (display i) (newline))        
+(begin (display &quot;The value of pi is &quot;) (display pi) (newline))
+(begin (display &quot;The string W contains &gt;&quot;) 
+       (display W) (display &quot;&lt;&quot;) (newline))
+</pre>
+
+<p>Output:</p> 
+
+<pre>
+The value of i is 3
+The value of pi is 3.141593
+The string W contains &gt;Hello World&lt;      
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>5.5 Arithmetic Operators</h1>
+
+<p>Some of the most useful arithmetic operators are:</p>
+
+<ul>
+ <li>Addition, subtraction, multiplication, and division: <tt>+ - * /</tt></li>
+ <li>Trigonometric and related functions: <tt>sin z, cos z, tan z, asin z, acos z,<br /> 
+     atan z</tt></li>
+ <li>Exponential and related functions: <tt> exp z, log z, sqrt z</tt></li>
+ <li>Raising <tt>z1</tt> to the power of <tt>z2</tt>: <tt>expt z1 z2</tt></li>
+ <li>Rounding: <tt>floor z, ceiling z, truncate z, round z</tt></li>
+ <li>Maximum and minimum: <tt>max z1 z2 ..., min z1 z2 ...</tt></li>
+</ul>
+
+<p>To check for the complete name of a Scheme command, 
+you can view all the Scheme commands that contain a given 
+substring using:</p>
+
+<pre>(apropos 'substring)</pre>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>5.6 Arithmetic Expressions</h1>
+
+<p>Scheme uses reverse Polish notation for arithmetic expressions:</p>
+
+<ul>
+<li>To set the variable <tt>j</tt> to <tt>i+5</tt>, type:
+
+<pre>
+ (define j (+ i 5)) 
+ j ;-> 8
+</pre>
+</li>
+
+<li>To set the variable <tt>myangle</tt> to <tt>sin(PI/2)</tt>, type:
+
+<pre>
+ (define myangle (sin (/ PI 2)))
+ myangle ;-> 1.0   
+</pre>
+</li>
+    
+<li>To set the variable <tt>x</tt> to <tt>xo + R*cos(2*PI*fi/360)</tt>, type:
+
+<pre>
+ (define xo 1)
+ (define R  0.2)
+ (define fi 30)
+ (define x (+ xo (* R (cos (/ (* 2 PI fi) 360 )))))
+ x ;-> 1.17320508075689
+</pre>
+</li> 
+</ul>    
+
+<!--================================================-->
+<a name="7"></a>
+<h1>5.7 Example 1: Creating a Parameterized Device</h1>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_parameterized_dvs.cmd" startExpr="; Setting parameters*" startOffset=-1 endExpr=";*other*" endOffset=-1 -->
+<pre>
+;----------------------------------------------------------------------
+; Setting parameters
+; - lateral
+(define Ltot 1.0)   ; [um] Lateral extend total 
+(define Lg   0.2)   ; [um] Gate length
+(define Lsp  0.1)   ; [um] Spacer length
+
+; - layers
+(define Hsub 0.8)   ; [um] Substrate thickness
+(define Hbox 0.1)   ; [um] Buried oxide thickness
+(define Hepi 0.1)   ; [um] EPI thickness
+(define Tox  @Tox@) ; [um] Gate oxide thickness
+(define Hpol 0.2)   ; [um] Poly gate thickness
+
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_parameterized_dvs.cmd" startExpr="; Derived quantities*" startOffset=-1 endExpr="*define*Ypol*" -->
+<pre>
+;----------------------------------------------------------------------
+; Derived quantities
+(define Xmax (/ Ltot 2.0))
+(define Xg   (/ Lg   2.0))
+(define Xsp  (+ Xg   Lsp))
+
+(define Yepi Hepi)
+(define Ybox (+ Yepi Hbox))
+(define Ysub (+ Ybox Hsub))
+
+(define Ygox (* Tox -1.0))
+(define Ypol (- Ygox Hpol))
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_parameterized_dvs.cmd" startExpr="; Creating substrate*" startoffset=-1 endExpr="*Creating*Oxide*" endOffset=-1 -->
+<pre>
+;----------------------------------------------------------------------
+; Creating substrate region
+(sdegeo:create-rectangle 
+  (position (* Xmax -1.0) Ybox 0.0 ) 
+  (position    Xmax       Ysub 0.0 ) 
+  &quot;Silicon&quot; &quot;R.Substrate&quot; 
+)
+
+</pre>
+<!-- grep end -->
+
+<p>Click to view the entire parameterized command file 
+<a href="../../Applications_Library/GettingStarted/sde/soifet/soifet_parameterized_dvs.cmd">
+soifet_parameterized_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/soifet</tt>. 
+Refer to the Sentaurus Structure Editor tool instance labeled 
+<tt>soifet_parameterized</tt>.</p>
+
+<p>To work with the example, copy the project into your Sentaurus Workbench 
+working directory. In the above commands, the Sentaurus Workbench parameter 
+<tt>@Tox@</tt> is used. The Sentaurus Workbench preprocessor replaces this 
+parameter by the value specified in the Sentaurus Workbench project (1e-4). 
+The resulting preprocessed file will be finally used by Sentaurus Structure Editor.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>5.8 Boolean Operations</h1>
+
+<p>True and false constants are denoted by <tt>#t</tt> and <tt>#f</tt>, respectively.</p>
+
+<p>Use <tt>not</tt> to invert a Boolean:</p>
+
+<pre>
+(not #t) ;-> #f
+</pre>
+
+<p>Numeric comparators are <tt>=, &gt;, &gt;=, &lt;, &lt;=</tt>, for example:</p>
+
+<pre>
+(=  1 2)
+(&gt;  1 2)
+(=&gt; 1 2)
+(&lt;  1 2)
+(&lt;= 1 2)
+</pre>
+
+<p>Use the <tt>equal?</tt> operator to test if two entities are equal:</p> 
+
+<pre>
+(define a 1)
+(define b &quot;hello&quot;)
+(equal? a b)
+</pre>
+
+<p>Result: <tt>#f</tt></p>
+
+<pre>
+(set! b 1)
+(equal? a b)
+</pre>
+
+<p>Result: <tt>#t</tt></p>
+
+<p>The <tt>equal?</tt> operator also can be used to test ACIS entities:</p>
+
+<pre>
+(define a (position 0 0 0))
+(define b (position 0 0 0))
+(equal? a b)
+</pre>
+
+<p>Result: <tt>#t</tt></p>
+
+<pre>
+(set! b (position 1 0 0))
+(equal? a b) 
+</pre>
+
+<p>Result: <tt>#f</tt></p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>5.9 If Blocks</h1>
+
+<p>A simple If block is:</p>
+
+<pre>
+(define val 0)
+(if (= val 0) 
+ (begin 
+  (display &quot;val is zero&quot;)
+  (newline)  
+ )
+)
+</pre>
+
+<p>Output: <tt>&quot;val is zero&quot;</tt></p>
+    
+<p>An If-else block is:</p>
+
+<pre>
+(define val -1)
+(if (&lt; val 0)        ; Test
+ (begin              ; Execute if condition is true
+  (display &quot;val is negative&quot;)
+  (newline)    
+ )
+ (begin              ; Execute if condition is false
+  (display &quot;val is positive&quot;)
+  (newline)       
+ )
+)
+</pre>
+
+<p>Output: <tt>&quot;val is negative&quot;</tt></p>
+
+<p>An If-elseif block is:</p>
+
+<pre>
+(define val -1)
+(cond 
+  ((= val 0)     ; First test
+   (begin        ; Execute if first condition is true
+     (display &quot;val is zero&quot;)
+     (newline)       
+   )
+  )   
+  ((&gt; val 0)     ; Else-if test
+   (begin        ; Execute second condition is true
+     (display &quot;val is positive&quot;)
+     (newline)       
+   )
+  )   
+  (else 
+   (begin        ; Execute if none of the conditions is true
+     (display &quot;val is negative&quot;)
+     (newline)       
+   )
+  )
+)   
+</pre>
+
+<p>Output: <tt>&quot;val is negative&quot;</tt></p>
+
+<p class="note">To <em>comment out</em> a large block of comments 
+in a script, enclose the block in a trivial If block:<br />
+
+<tt>(if #f (begin<br />
+&nbsp;&nbsp;<em>commands to be &quot;commented out&quot;</em><br />
+))</tt>
+</p>
+
+<!--================================================-->
+<a name="10"></a>
+<h1>5.10 String Operations</h1>
+
+<p>To automatically generate identifiers, for example, region names, certain string 
+operations are useful.</p>
+
+<ul>
+<li>To define a string, use:<br />
+
+<pre>
+(define TEXTSTRING &quot;This is a string&quot;)
+</pre></li>
+
+<li>To determine the length of a string, use:<br />
+
+<pre>
+(define STRINGLENGTH (string-length TEXTSTRING))     
+</pre>
+
+Result: <tt>STRINGLENGTH -&gt; 16</tt><br /><br /></li>    
+
+<li>To retrieve the k-th character of a string, use (index count starts from 0):<br />
+
+<pre>
+(define k 5)
+(define kthCHARACTER (string-ref TEXTSTRING k))
+</pre>
+
+Result: <tt>kthCHARACTER -&gt; i</tt><br /><br/></li>     
+
+<li>To retrieve substrings, use (index count starts from 0):<br />
+    
+<pre>
+(define iStart 10)
+(define iEnd   16)     
+(define SUBSTRING (substring TEXTSTRING iStart iEnd))
+</pre>
+
+Result: <tt>SUBSTRING -&gt; &quot;string&quot;</tt><br /><br /></li>     
+
+<li>To concatenate two strings, use:
+   
+<pre>
+(define RNAME &quot;Region.&quot;)
+(define QUALIFIER &quot;Substrate&quot;)       
+(define REGIONNAME (string-append RNAME QUALIFIER))
+</pre>
+
+Result: <tt>REGIONNAME -&gt; &quot;Region.Substrate&quot;</tt><br /><br /></li>       
+       
+<li>To convert a number (index) to a string, use:<br />
+     
+<pre>
+(define RNAME &quot;Region.&quot;)
+(define INDEX 3)       
+(define REGIONNAME (string-append RNAME (number-&gt;string INDEX)))
+</pre>
+
+Result: <tt>REGIONNAME -&gt; &quot;Region.3&quot;</tt></li>
+</ul>
+       
+<!--================================================-->
+<a name="11"></a>
+<h1>5.11 Simple Do Loops</h1>
+
+<p>In this example, a simple Do loop is used to create a stack of five silicon squares:</p>
+
+<pre>
+(define L 1)          ; Side length of first square
+(define Y 0)          ; Bottom Y coordinate of current square
+(do ( (i 0 (+ i 1)) ) ; i: Counter name; 0: initial value; (+ i 1): incrementer 
+    ( (= i 5) )       ; End Tester
+    (begin            ; Body of loop
+      (define REGION (string-append &quot;region.&quot; (number-&gt;string i)))
+      (sdegeo:create-rectangle
+        (position (* -0.5 L)    Y    0.0)
+        (position (*  0.5 L) (+ Y L) 0.0) &quot;Silicon&quot; REGION)
+      (set! Y (+ Y L))
+      (set! L (* 0.75 L))
+    )
+)
+</pre>
+
+<p class="note">Scheme Do loops are more flexible than Do loops in most other 
+languages. This example illustrates a basic setup. For more elaborate Do loop 
+options, see <a href="#17">Section 5.17 Further Reading</a>.</p>
+
+<!--================================================-->
+<a name="12"></a>
+<h1>5.12 Lists</h1>
+
+<p>Some Sentaurus Structure Editor commands accept lists as arguments. Lists 
+also can be useful in device parameterization.</p>
+
+<ul>
+<li>To define a list, use:<br />
+
+<pre>
+(define ABCList   (list #\a #\b #\c #\d #\e))  ; List of characters
+(define NUMList   (list 1 2 3 4 5 6))          ; List of numbers
+(define MIXList   (list #\a 2 3.1415 &quot;TCL&quot;))   ; Mixed list
+(define EMPTYList (list ))                     ; Empty list
+</pre>
+
+<p class="note">Declare an empty list first if you want to append to it 
+in a Do loop, for example.</p></li>
+      
+<li>To reference a list as a whole, use the list name:<br />
+
+<pre>
+ABCList
+NUMList
+MIXList
+EMPTYList     
+</pre></li>      
+      
+<li>To determine the number of elements in a list, use:<br />
+
+<pre>
+(define NumberOfElements (length ABCList))
+</pre>
+     
+Result: <tt>NumberOfElements -&gt; 5</tt><br /><br /></li>      
+
+<li>To append an element to a list, use:<br />
+
+<pre>
+(define NewElement #\f)      
+(define ABCPlusList (append ABCList NewElement))
+</pre>
+      
+Result: <tt>ABCPlusList -&gt; (#\a #\b #\c #\d #\e #\f)</tt><br /><br /></li>      
+
+<li>To concatenate two lists, use:<br />
+
+<pre>
+(define CombinedList (append ABCList NUMList))
+</pre>
+
+Result: <tt>CombinedList -&gt; (#\a #\b #\c #\d #\e 1 2 3 4 5 6)</tt><br /><br /></li>    
+      
+<li>To reverse a list, use:<br />
+
+<pre>
+(define ReverseList (reverse NUMList))
+</pre>
+
+Result: <tt>ReverseList -&gt; (6 5 4 3 2 1)</tt><br /><br /></li>       
+     
+<li>To reference the first element of a list, use:<br />
+
+<pre>
+(define FirstElement (car ABCList))     
+</pre>
+
+Result: <tt>FirstElement -&gt; #\a</tt><br /><br /></li>     
+
+<li>To reference all but the first element of a list, use:<br />
+
+<pre>
+(define RestOfList (cdr ABCList) )
+</pre>
+      
+Result: <tt>RestOfList -&gt; (#\b #\c #\d #\e)</tt><br /><br /></li>      
+
+<li>To reference the k-th element in a list, use:<br />
+
+<pre>
+(define k 3)
+(define kthElement (list-ref ABCList k) )
+</pre>
+      
+Result: <tt>kthElement -&gt; #\d</tt><br /><br />
+      
+<p class="note">The numbering of list elements starts at zero.</p></li> 
+
+<li>To reference a sublist containing all but the first k elements, use:<br />
+
+<pre>
+(define k 3)
+(define kRestOfList (list-tail ABCList k))
+</pre>
+
+Result: <tt> kRestOfList -&gt; (#\d #\e)</tt></li>
+</ul>
+
+<!--================================================-->
+<a name="13"></a>
+<h1>5.13 For Each Loops</h1>
+
+<p>In a For Each loop, an action is taken for each element in a list. In the following 
+example, the For Each loop steps through the lists <tt>NUMList</tt> and <tt>ABCList</tt>, 
+and prints a sentence for each element:</p>
+
+<pre>
+(for-each
+  (lambda (NUM CHAR)
+    (begin
+      (display &quot;The &quot;) (display NUM) 
+      (display &quot; letter of the alphabet is &quot;) (display CHAR) 
+      (newline)
+    )
+  ) NUMList ABCList
+)
+</pre>
+
+<p>Result:</p>
+
+<pre>
+The 1 letter of the alphabet is a
+The 2 letter of the alphabet is b
+The 3 letter of the alphabet is c
+The 4 letter of the alphabet is d
+The 5 letter of the alphabet is e
+</pre>
+
+<!--================================================-->
+<a name="14"></a>
+<h1>5.14 Example 2: Creating a Parameterized Layer Structure Using Lists</h1>
+
+<pre>
+(sde:clear)
+(define MATERIALS (list &quot;GaAs&quot; &quot;AlGaAs&quot; &quot;AlAs&quot; &quot;InAlAs&quot; &quot;InAs&quot; &quot;InAsP&quot; &quot;InP&quot;))
+(define WIDTHS    (list  2.0    1.7      1.5    1.3      1.1    1.0     0.5))
+(define HEIGHTS   (list  1.0    0.25     0.1    0.25     0.3    0.45    1.0))
+(define Y 0)
+
+(for-each
+  (lambda (MATERIAL WIDTH HEIGHT)  ; Names of local variables
+    (begin                         ; Body of the loop
+      (define REGION (string-append &quot;region.&quot; MATERIAL))
+      (sdegeo:create-rectangle
+        (position  0         Y         0.0)
+        (position  WIDTH  (+ Y HEIGHT) 0.0) MATERIAL REGION)
+      (set! Y (+ Y HEIGHT))
+    )
+  ) MATERIALS WIDTHS HEIGHTS       ; Lists
+)
+</pre>
+
+<p><img src="images/se_s_listlayer.png" width="379" height="622" 
+alt="Parameterized layer structure created using lists" /></p>
+
+<p class="caption">Figure 1. Parameterized layer structure 
+created using lists.</p>
+
+<p class="note">For setting up layered structures (for example, multijunction 
+solar-cell or multiple quantum-well devices), dedicated functions have been 
+developed. See the <tt>(sdeepi:create-layerstack)</tt> Scheme extension in 
+<cite>Sentaurus&trade; Structure Editor User Guide</cite>, Chapter&nbsp;8. 
+A complete solar cell project using this function 
+can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/Solar/SolarCell_DualJunct_GaAs</tt>.</p>
+
+<!--================================================-->
+<a name="15"></a>
+<h1>5.15 Procedures</h1>
+
+<p>Procedures or macros can be implemented to reuse common code sections:</p>
+
+<pre>
+(sde:clear)
+(define CreateUnitCell   ; Name of procedure
+  (lambda (Xo Yo)        ; Argument list
+    (begin               ; Body of procedure
+      (sdegeo:set-default-boolean &quot;ABA&quot;)
+      (define SiREGION (string-append &quot;R.Silicon.&quot;
+        (number-&gt;string Xo) &quot;.&quot; (number-&gt;string Yo)))
+      (define OxREGION (string-append &quot;R.Oxide.&quot;
+        (number-&gt;string Xo) &quot;.&quot; (number-&gt;string Yo)))
+      (sdegeo:create-rectangle
+        (position  Xo Yo 0.0)
+        (position  (+ Xo 1.0)  (+ Yo 1.0) 0.0) &quot;Silicon&quot; SiREGION)
+      (sdegeo:create-rectangle
+        (position  Xo Yo 0.0)
+        (position  (+ Xo 0.25) (+ Yo 0.75) 0.0) &quot;Oxide&quot; OxREGION)
+    )
+  )
+)
+
+(CreateUnitCell 1 1) ; Procedure calls
+(CreateUnitCell 2 1)
+(CreateUnitCell 3 1)
+</pre>
+
+<p><a href="images/se_s_unitcell.png">
+<img src="images/se_s_unitcell.png" width="570" alt="Unit cells created using procedures" /></a></p>
+
+<p class="caption">Figure 2. Unit cells created using procedures. 
+(Click image for full-size view.)</p>
+
+<p class="note">Scheme procedures, or any other code 
+segments, can be saved in a library file, for example, 
+<tt>util.scm</tt> and loaded into a Scheme script with:<br />
+
+<tt>(load &quot;util.scm&quot;)</tt>
+</p>
+
+<!--================================================-->
+<a name="16"></a>
+<h1>5.16 Assignment</h1>
+
+<p> Write a Sentaurus Structure Editor Scheme script that creates the geometry, doping, 
+and meshing definitions for the simple diode structure shown in Figure&nbsp;3.</p>
+
+<p>The diode consists of two regions: a silicon substrate and a partially recessed 
+polysilicon region. All coordinates of the geometric structure should be specified as 
+Scheme variables. The contact <tt>Top</tt> sits on the top edge of the polysilicon 
+region, and the contact <tt>Bot</tt> sits on the bottom edge of the silicon region.</p>
+
+<p>The polysilicon region is uniformly n-doped, and the silicon region is uniformly p-doped. 
+The doping levels should be specified as Scheme variables.</p>
+
+<p>Define separate meshing strategies for the polysilicon and silicon regions. The number 
+of nodes along the x-direction and y-direction should be specified as Scheme variables.
+Use interface refinement on the polysilicon side of the silicon&ndash;polysilicon interface in 
+your refinement strategy.</p>
+
+<p><a href="images/se_s_assign1.png">
+<img src="images/se_s_assign1.png" width="300" alt="Simple diode structure" /></a></p>
+
+<p class="caption">Figure 3. Simple diode structure. 
+(Click image for full-size view.)</p>
+
+<p>
+<a href="images/se_s_assign2.png"><img src="images/se_s_assign2.png" width="500" 
+alt="Simple diode structure with doping conditions and mesh conditions" /></a></p>
+
+<p class="caption">Figure 4. Simple diode structure with its (left) doping 
+conditions and (right) mesh conditions. (Click image for full-size view.)</p>
+
+<p><strong>HINT</strong> After launching Sentaurus Structure Editor:</p>
+
+<ol>
+<li>Start the journal mode by choosing <strong>File</strong> &gt; <strong>Journal</strong> 
+&gt; <strong>On</strong>.</li>
+<li>In the dialog box, in the <strong>File name</strong> field, enter <tt>m3d.jrl</tt>.</li>
+<li>Create the structure interactively.</li>
+<li>Save the journal by choosing <strong>File</strong> &gt; <strong>Journal</strong> &gt; 
+<strong>Off</strong>.</li>
+<li>Open the journal file with a text editor and parameterize it.</li>
+</ol>
+
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sde/SimpleDiode/parameterized_diode_dvs.cmd">
+parameterized_diode_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/SimpleDiode</tt>.</p>
+
+<!--================================================-->
+<a name="17"></a>
+<h1>5.17 Further Reading</h1>
+
+<p>Some recommended publications and websites are:</p>
+
+<ul>
+<li><cite>Sentaurus&trade; Structure Editor User Guide</cite>, Chapter 9.</li>
+
+<li><cite>Revised<sup>5</sup> Report on the Algorithmic Language Scheme</cite><br />
+This report can be found at 
+<a href="https://www.schemers.org/Documents/Standards/R5RS/r5rs.pdf">
+https://www.schemers.org/Documents/Standards/R5RS/r5rs.pdf</a>.</li>
+
+<li>R. Kent Dybvig, <cite>The Scheme Programming Language: ANSI Scheme</cite>, Prentice Hall, 1996.</li>
+      
+<li>D. P. Friedman and M. Felleisen, <cite>The Little Schemer</cite>, MIT Press, 4th ed., 1996.</li>
+      
+<li>D. P. Friedman and M. Felleisen, <cite>The Seasoned Schemer</cite>, MIT Press, 1996.</li>
+
+<li><a href="https://www.scheme.com">https://www.scheme.com</a> 
+(website of a Scheme dialect, Chez Scheme).</li>
+      
+<li><a href="https://www.schemers.org">https://www.schemers.org</a> 
+(website of Scheme-related topics).</li>
+</ul>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

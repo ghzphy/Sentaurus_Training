@@ -1,0 +1,380 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tips &amp; Tricks 4. Device Simulation of Stress Effects in Front-End-of-Line Structures</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tips &amp; Tricks<br />4. Device Simulation of Stress Effects in Front-End-of-Line Structures</h1>
+
+<p>
+<a href="#1">4.1 Loading Stress</a><br />
+<a href="#2">4.2 Coordinate System for Stress</a><br />
+<a href="#3">4.3 Impact of Stress on Band Structure</a><br />
+<a href="#4">4.4 Impact of Stress on Quantization Models</a><br />
+<a href="#5">4.5 Stress-Dependent Mobility Models</a><br />
+<a href="#6">4.6 Impact of Stress on Saturation Velocity</a><br />
+<a href="#7">4.7 Discretization Options for Tensor Mobility Models</a><br />
+<a href="#8">4.8 Plotting Stress-Dependent Mobility and Factors</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To address common questions and issues related to modeling the 
+impact of stress in device simulations.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Loading Stress</h1>
+
+<p>In a typical TCAD flow, the stress tensor throughout a device is computed during 
+the process simulation and is saved to a TDR file along with the device mesh and other 
+quantities such as the doping. Then, Sentaurus Device loads the mesh and doping profile 
+by specifying this TDR file for the <tt>Grid</tt> file within the 
+<tt>File</tt> section, while the stress tensor is loaded by specifying the 
+<tt>Piezo</tt> file within the <tt>File</tt> section:</p>
+
+<pre>
+File {
+  Grid = device.tdr
+  Piezo = device.tdr
+}
+</pre>
+
+<p>If the <tt>Piezo</tt> file is not specified, no stress is loaded. 
+As shown in this example, the <tt>Grid</tt> file and the <tt>Piezo</tt> file 
+are often the same.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Coordinate System for Stress</h1>
+
+<p>The stress tensor is a 3x3 symmetric tensor and is defined by default 
+within the simulation coordinate system. In a typical TCAD flow, the stress 
+tensor is computed during the process simulation for a device with 
+a particular orientation with respect to the crystallographic coordinate system. 
+In Sentaurus  Device, this simulation coordinate system must be specified using 
+the <tt>LatticeParameters</tt> section of the parameter file. Typically, this 
+section specifies the directions of the x- and y-axes of the simulation 
+coordinate system relative to the crystallographic axes. Then, the direction of the 
+z-axis is computed automatically. Some common examples are:</p>
+
+<ul>
+<li>FinFET with a (110) sidewall and &lt;110&gt; channel in which the x-axis is 
+  along the channel direction, the y-axis is perpendicular to the sidewalls, and 
+  the z-axis is along the height of the fin:<br />
+<pre>
+LatticeParameters {
+  X = ( 1,1,0)   #[1]
+  Y = (-1,1,0)   #[1]
+}
+</pre></li>
+
+<li>FinFET with a (100) sidewall and &lt;100&gt; channel in which the x-axis is 
+  along the channel direction, the y-axis is perpendicular to the sidewalls, and 
+  the z-axis is along the height of the fin:<br />
+<pre>
+LatticeParameters {
+  X = (1,0,0)   #[1]
+  Y = (0,1,0)   #[1]
+}
+</pre></li>
+</ul>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 Impact of Stress on Band Structure</h1>
+
+<p>Stress modifies the band structure of silicon by splitting the edges of the 
+valleys and bands that make up the conduction and valence bands. Stress also can 
+modify the shape, or dispersion, of the bands resulting in a change in the 
+density-of-states (DOS). Together, these effects modify the threshold voltage in a MOSFET.</p>
+
+<p>Options are available for considering the impact of stress on band structure. The 
+most physical of these options treats the impact of stress on both the band edges 
+and the dispersion, and is selected using the following syntax in the <tt>Physics</tt> 
+section:</p>
+
+<pre>
+Physics {
+  Piezo (
+    Model (
+      DeformationPotential(ekp hkp minimum)
+      DOS(eMass hMass)
+    )
+  )
+}
+</pre>
+
+<p>This set of models computes the level shifts to the conduction valleys and valence 
+bands using the k&middot;p models, taking the bottom-most conduction valley and the 
+topmost valence band to define the band gap. The stress dependency of the 
+DOS mass is considered as well.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>4.4 Impact of Stress on Quantization Models</h1>
+
+<p>Quantization models, such as density gradient, consider the impact of stress 
+primarily through changes in the band edges as specified by the 
+<tt>DeformationPotential</tt> model. Some models have options for considering 
+additional impacts of stress on quantization. Specifically for the density gradient 
+model, there is an option to use the strained DOS mass in the 
+density-gradient equation. However, it is recommended to use the default setting 
+for this option in which only the relaxed DOS mass is used. Comparisons 
+to detailed solutions of the Schr&ouml;dinger equation show this setting produces 
+better agreement for the threshold voltage.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>4.5 Stress-Dependent Mobility Models</h1>
+
+<p>The mobility gain due to stress in a MOSFET channel depends strongly on 
+the surface and channel orientations. In a FinFET device with multiple surface 
+orientations for the top and sidewalls, it is convenient to use models that treat 
+this orientation dependency automatically. This section provides comments and 
+recommendations for these types of mobility model.</p>
+
+<!--=======================-->
+<a name="51"></a>
+<h2>4.5.1 Subband Stress-Mobility Models for Electrons and Holes</h2>
+
+<p>The subband stress-mobility models work as corrections to the relaxed 
+low-field mobility, including automatically accounting for different surface 
+orientations. In particular, if in a FinFET, the Lombardi or IAL mobility model 
+is selected to compute the relaxed low-field mobility with the 
+<tt>AutoOrientation</tt> option, the subband stress-mobility models will, by 
+default, automatically compute the stress-induced mobility gain for the different 
+surface orientations in the fin.</p>
+
+<p>For some surface orientations, most notably (110), the relaxed mobility is 
+anisotropic and depends on the channel direction. It is necessary, therefore, 
+to indicate to the subband models which channel direction to use. To select the 
+required channel direction, specify either <tt>RelChDir110</tt> for a &lt;110&gt; 
+channel, or <tt>-RelChDir110</tt> for a &lt;100&gt; channel, in 
+the <tt>(e|h)Subband</tt> option list. <tt>RelChDir110</tt> is selected by default.</p>
+
+<p>To enable the subband stress-mobility models to work correctly for a MOSFET channel 
+(not only for the bulk), the statement <tt>MultiValley(MLDA kpDOS)</tt> must be specified 
+in the <tt>Physics</tt> section. This specification also activates the 
+multivalley MLDA quantization model. If you want to use density gradient as the 
+quantization model, the keyword <tt>-Density</tt> also must be specified to limit 
+the use of the multivalley MLDA model to only the calculation of mobility.</p>
+
+<p>Below are recommended models and options (which are verified and calibrated for 
+multiple orientations and stress cases) to specify in the <tt>Physics</tt> section 
+to activate the electron and hole subband stress-mobility models with density gradient 
+as the quantization model and for a &lt;110&gt; channel direction:</p>
+
+<pre>
+Physics {
+  MultiValley(MLDA kpDOS -Density)
+  Piezo (
+    Model (
+      Mobility (
+        eSubband(Fermi EffectiveMass Scattering)
+        hSubband(Doping EffectiveMass Scattering(MLDA))
+      )
+    )
+  )
+}
+</pre>
+
+<p class="note">The calculation of the <tt>hSubband</tt> model can be time 
+consuming because it treats the strained valence band structure in great detail 
+for each mesh vertex. To speed up the model, it is recommended to use the 
+<tt>Doping</tt> option (compared to <tt>eSubband</tt>), which still gives good accuracy.</p>
+
+<p>In addition, the <tt>hSubband</tt> model can require a long initial 
+precomputation step before the start of any bias ramp. In this precomputation step, 
+all the needed energy-dependent band- and mobility-related data is computed for 
+each mesh vertex. Fortunately, this precomputation step lends itself well to 
+parallelization and can be accelerated using a large number of threads.</p>
+
+<p>The cost of this precalculation step can be spread over multiple 
+runs of Sentaurus Device on the same device structure using the <tt>MVMLDAcontrols</tt> 
+save/load feature. In this approach, the precomputation step is performed in a separate Sentaurus 
+Device run with a large number of threads by doing only one Poisson solution and then 
+saving the computed band-related data to a file using:</p>
+
+<pre>
+Math { MVMLDAcontrols(save= &quot;file_name&quot;) }
+</pre>
+
+<p>In subsequent Sentaurus Device runs, the initial <tt>hSubband</tt> precomputation 
+step can be avoided by loading this file using:</p>
+
+<pre>
+Math { MVMLDAcontrols(load= &quot;file_name&quot;) }
+</pre>
+
+<!--=======================-->
+<a name="52"></a>
+<h2>4.5.2 Piezoresistance Model for Electrons and Holes</h2>
+
+<p>The piezoresistance model is a straightforward model in which the mobility 
+gain is computed as either a linear or quadratic function of the stress, depending 
+on whether the first-order or second-order option is selected. The appropriate 
+piezoresistance coefficients are specified in the crystallographic coordinate system 
+and are transformed by the tool to the simulation coordinate system.</p>
+
+<p>When this model is applied to a FinFET channel, the surface orientation dependency of the 
+stress-induced mobility gain and, therefore, the piezoresistance coefficients, should 
+be considered. These coefficients can be specified for different surface orientations 
+and used in conjunction with the <tt>AutoOrientation</tt> framework. When using the 
+piezoresistance model in a FinFET channel, you must consider the following as well:</p>
+
+<ul>
+<li>Unlike in a highly doped source/drain region in which the stress-induced mobility 
+gain is suppressed due to high doping, the mobility gain (or reduction) in a MOSFET 
+channel can become relatively large. At large stress, this gain typically saturates at 
+a value that depends on the carrier type and surface/channel orientation. To 
+accurately model this behavior, the <tt>MinStressFactor</tt> and <tt>MaxStressFactor</tt> 
+parameters in the <tt>Piezoresistance</tt> section of the parameter file must be used.</li>
+
+<li>The piezoresistance model is based on a bulk model, which for silicon means the 
+resulting mobility reflects the cubic symmetry of relaxed silicon, that is, some 
+surface/channel orientations in a MOSFET cannot be completely characterized 
+by this model. In particular, for a (100)/&lt;100&gt; channel, you cannot model the 
+mobility gain due to both transverse stress and vertical stress with this model.</li>
+</ul>
+
+<!--=======================-->
+<a name="53"></a>
+<h2>4.5.3 MCmob Model for Electrons and Holes</h2>
+
+<p>MCmob is a nonlinear piezoresistance model that considers the impact of the 
+main types of uniaxial stress on mobility: longitudinal, transverse, 
+and vertical stress. This model is calibrated against reference data generated either 
+by Sentaurus Device Monte Carlo or by the mobility calculation feature of Sentaurus 
+Band Structure for a select set of surface/channel orientations. This model is compatible 
+with the <tt>AutoOrientation</tt> framework.</p>
+
+<p>For details and recommendations for the MCmob model, refer to the 
+<cite>Advanced Calibration for Device Simulation User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>4.6 Impact of Stress on Saturation Velocity</h1>
+
+<p>In general, stress can impact both low-field and high-field mobility. 
+The impact of stress on high-field mobility is primarily through the effective 
+saturation velocity. Detailed device Monte Carlo studies of bulk silicon have shown 
+that the stress dependency of the saturation velocity is rather weak. Therefore, 
+for long-channel devices, it is recommended to suppress any change in saturation velocity due 
+to stress. This can be achieved by setting the <tt>SaturationFactor</tt> parameters in 
+the <tt>Piezo</tt> statement of the <tt>Physics</tt> section to 0.0 (by default, they are 
+set to 1.0):</p>
+
+<pre>
+Piezo (
+  Model (
+    Mobility (
+      eSaturationFactor=0.0
+      hSaturationFactor=0.0
+    )
+  )
+)
+</pre>
+
+<p>For short-channel devices, quasiballistic transport is expected to play a larger role 
+in device behavior. Device Monte Carlo studies have shown that quasiballistic transport 
+is affected by stress. While drift-diffusion simulations cannot physically model 
+quasiballistic transport, the effect of quasiballistic transport on device behavior can 
+be approximated by changing the saturation velocity.</p>
+
+<p>The effect of stress on quasiballistic transport can, therefore, be modeled as a stress 
+dependency of the saturation velocity. For strained short-channel devices, the 
+<tt>SaturationFactor</tt> parameter then becomes a fitting parameter, and a value larger than 0 
+might be more appropriate. Alternatively, the saturation velocity itself can be tuned to account 
+for the combined impact of gate length and stress on quasiballistic transport.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>4.7 Discretization Options for Tensor Mobility Models</h1>
+
+<p>Some of the stress-dependent mobility models produce a tensor mobility. There are 
+several options for selecting how such models should be treated numerically and, 
+in particular, how they are discretized onto the device mesh. For 3D devices, it is 
+recommended to use the <tt>TensorFactor</tt> option in the <tt>Math</tt> section to 
+improve stability and speed. This can be activated using:</p>
+
+<pre>
+Math { StressMobilityDependence=TensorFactor }
+</pre>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>4.8 Plotting Stress-Dependent Mobility and Factors</h1>
+
+<p>With <tt>StressMobilityDependence=TensorFactor</tt> specified in the 
+<tt>Math</tt> section, several field quantities related to stress-dependent 
+mobility can be saved in the plot file as follows.</p>
+
+<table width="570">
+<tr>
+<th>Plot name</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>(e|h)MobilityStressFactorXX</tt> and so on</td>
+<td>Low-field mobility gain due to stress.</td>
+</tr>
+
+<tr>
+<td><tt>(e|h)TensorMobilityFactorXX</tt> and so on</td>
+<td>High-field mobility gain due to stress.</td>
+</tr>
+
+<tr>
+<td><tt>(e|h)TensorMobilityXX</tt> and so on</td>
+<td>High-field mobility due to stress.</td>
+</tr>
+</table>
+
+<p class="note">When <tt>StressMobilityDependence=TensorFactor</tt> is specified 
+in the <tt>Math</tt> section, only the diagonal components of these field 
+quantities are relevant.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

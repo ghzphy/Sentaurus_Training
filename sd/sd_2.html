@@ -1,0 +1,1014 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 2. Carrier Transport Models</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />2. Carrier Transport Models</h1>
+
+<p>
+ <a href="#1">2.1 Overview</a><br />
+ <a href="#2">2.2 MOSFET Device Simulation With Different Carrier Transport Models</a><br />
+ <a href="#3">2.3 Monte Carlo Transport</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To present various carrier transport models and their applications.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Overview</h1>
+
+<p>This section introduces various carrier transport models, namely, drift-diffusion, 
+thermodynamic, hydrodynamic, and Monte Carlo transport, as well as quantum transport, 
+based on the density gradient model. These models are applied in different situations 
+depending on the requirement of the application.</p>
+
+<p>All Sentaurus Device command files are featured in a complete Sentaurus 
+Workbench project in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/TransportModels</tt>.</p>
+
+<p>In this project, three typical MOSFET device characteristics &ndash; transfer 
+(I<sub>d</sub>&ndash;V<sub>gs</sub>), output (I<sub>d</sub>&ndash;V<sub>ds</sub>), and
+off-state breakdown &ndash; are simulated with different carrier transport models. 
+In addition, the effect of carrier quantization in the transistor channel is demonstrated.</p>
+
+<p>To run the project, copy it into a directory that resides under the Sentaurus Workbench 
+working directory to which the environment variable <tt>$STDB</tt> points. For details 
+about this environment variable, see 
+<a href="../swb/swb_01.html#2">Section&nbsp;1.2 Starting Sentaurus Workbench</a>.</p>
+
+<p>After copying the project, open it in Sentaurus Workbench by choosing 
+<strong>Project</strong> &gt; <strong>Open</strong> or double-clicking the project icon.</p>
+
+<p>The project uses Sentaurus Workbench features discussed in the 
+<a href="../swb/swb_menu.html">Sentaurus Workbench module</a> as well as in 
+<a href="../sd/sd_10.html">Section&nbsp;10. Running Sentaurus Device in Sentaurus Workbench</a>.
+To view the preprocessed command file for each individual transport model, highlight the 
+corresponding node and choose <strong>Extensions</strong> &gt; 
+<strong>Compare Command Files of Selected Nodes</strong>.</p>
+
+<p>The FinFET device simulation using the Monte Carlo approach is discussed in
+<a href="#3">Section&nbsp;2.3 Monte Carlo Transport</a>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 MOSFET Device Simulation With Different Carrier Transport Models</h1>
+
+<p>A MOSFET electrical device simulation with three different carrier transport models 
+is considered in the <tt>Applications_Library/GettingStarted/sdevice/TransportModels</tt> 
+project:</p>
+
+<ul>
+<li>The <em>drift-diffusion model</em> (DD) solves self-consistently the Poisson and 
+the carrier continuity equations in the designated device regions with specified boundary 
+conditions.</li>
+<li>The <em>thermodynamic model</em> (Thermo) extends the drift-diffusion approach to 
+account for electrothermal effects under the assumption that charge carriers are 
+in thermal equilibrium with the lattice. In practice, it solves the lattice temperature 
+(heat flow) equation in addition to the Poisson equation and the carrier continuity equations.</li>
+<li>The <em>hydrodynamic model</em> (HD) solves the carrier temperature and the heat flow 
+equations in addition to the Poisson and the carrier continuity equations.</li>
+</ul>
+
+<p>In the Sentaurus Workbench project shown in Figure 1, to activate a particular 
+transport model, the parameter <tt>tmodel</tt> is introduced, whose value decides which 
+model to use. In addition, carrier quantization can be switched on or off for each 
+transport model in use, by setting the corresponding value of the project parameter <tt>QC</tt>.</p>
+
+<p><img src="images/sd_tmodels.png" width="591" height="220" 
+alt="MOSFET device simulation with different transport models" /></p>
+
+<p class="caption">Figure 1. MOSFET device simulation with different transport models 
+organized within Sentaurus Workbench project.</p>
+
+<!--========================-->
+<a name="DD"></a>
+<h2>2.2.1 Drift-Diffusion Transport Model</h2>
+
+<p>The drift-diffusion transport model is the default in Sentaurus Device. Therefore, 
+no special keyword is needed to activate the model, which can be applied to arbitrary 
+device simulations, such as MOSFETs and BJTs.</p>
+
+<p>The typical <tt>Physics</tt> section for MOSFET device simulations with 
+the drift-diffusion model is:</p>
+
+<pre>
+Physics {
+   Fermi
+   EffectiveIntrinsicDensity( OldSlotboom )     
+   Mobility(
+      DopingDep
+      eHighFieldsaturation( GradQuasiFermi )
+      hHighFieldsaturation( GradQuasiFermi )
+      Enormal
+   )
+   Recombination(
+      SRH( DopingDep TempDependence )
+   )           
+}
+</pre>
+
+<p>Here, the <tt> Fermi</tt> keyword activates the carrier Fermi statistics.</p>
+
+<p>The <tt>EffectiveIntrinsicDensity</tt> statement triggers the bandgap 
+narrowing effect in highly doped regions using the <tt>OldSlotboom</tt> model, 
+which directly affects the calculation of the intrinsic carrier density in silicon.</p>
+
+<p>The <tt>Mobility</tt> statement defines the carrier mobility models, which include 
+electron or hole mobility degradation due to high doping (<tt>DopingDep</tt>), 
+carrier velocity saturation for regions with a high electric field 
+(<tt>eHighFieldsaturation</tt> or <tt>hHighFieldsaturation</tt>), 
+and mobility degradation at semiconductor&ndash;insulator interfaces (<tt>Enormal</tt>). 
+The <tt>GradQuasiFermi</tt> driving force for the high-field saturation (HFS) 
+model is used for both carrier velocities.</p>
+
+<p>In addition, doping- and temperature-dependent Shockley&ndash;Read&ndash;Hall 
+(SRH) recombination is activated within the <tt>Recombination</tt> statement.</p> 
+
+<p>The set of drift-diffusion model equations to be solved includes the Poisson 
+equation and the carrier continuity equations for electrons and holes. Typically, these 
+equations are solved self-consistently using the <tt>Coupled</tt> statement inside 
+the <tt>Solve</tt> section:</p>
+
+<pre>
+Solve {
+  ...
+  Coupled {Poisson Electron Hole}
+  ...
+}
+</pre>
+
+<!--========================-->
+<a name="Thermo"></a>
+<h2>2.2.2 Thermodynamic Transport Model</h2>
+
+<p>The thermodynamic transport model is required in case considerable self-heating 
+occurs. This includes device operations under high current condition, such as on-state 
+MOSFET or open bipolar device operations. In these regimes, within high-current 
+regions, considerable Joule heat is produced, which leads to a significant rise in the 
+lattice temperature.</p>
+
+<p>Most transport model coefficients, such as carrier mobility and 
+generation&ndash;recombination, are functions of the lattice temperature. Therefore, 
+having the correct lattice temperature distribution is necessary to correctly predict 
+the electrical device behavior.</p>
+
+<p>To activate the model, you must specify <tt>Thermodynamic</tt> in the 
+<tt>Physics</tt> section:</p>
+
+<pre>
+Physics {
+  Thermodynamic
+  ...
+  Recombination(
+      SRH( DopingDep TempDependence )
+  )           
+}
+</pre>
+
+<p>For most of the models (such as carrier mobility), the lattice temperature dependency
+is taken into account by default. For others such as temperature dependency of SRH lifetimes,
+it should be activated explicitly.</p>
+
+<p>The heat transport simulations require the heat boundary conditions to be specified 
+in the command file, which is done in the <tt>Thermode</tt> section where thermodes
+(thermal electrodes) are defined with the temperature boundary condition assigned to them:</p>
+
+<pre>
+Thermode{ 
+  { Name=&quot;top_thermode&quot; Temperature=300 } 
+  { Name=&quot;substrate&quot; Temperature=300 SurfaceResistance=5e-4 } 
+}
+</pre>
+
+<p>A thermal contact can coincide with an electrode or can be defined as a separate contact. 
+For each thermal contact, a temperature must be declared. The contact can be attached to a material 
+by a thermal resistor, whose value is specified by the <tt>SurfaceResistance</tt> keyword.
+This often helps to emulate the realistic layer thermal resistivity without having the full layer
+included in the simulated device structure. The unit of such a resistor is cm<sup>2</sup>K/W.</p>
+
+<p>Without a thermal resistor, the contact is kept always at the declared temperature. 
+Note that, at the external device boundaries without a thermode, the reflective boundary 
+condition (zero heat flow) is applied by default.</p>
+
+<p>The keyword <tt>Temperature</tt> inside the <tt>Coupled</tt> statement specifies 
+that the lattice heat equation should be solved self-consistently with the drift-diffusion 
+transport equations. As a result, the nonuniformly distributed lattice temperature 
+profile can be seen inside the device:</p>
+
+<pre>
+Solve {
+   Coupled{ Poisson Electron Hole Temperature }
+}
+</pre>
+
+<p>To plot the resulting heat-related quantities, corresponding dataset names must 
+be placed in the <tt>Plot</tt> section:</p>
+
+<pre>
+Plot {
+...
+*--Heat quantities 
+   Temperature TotalHeat eJouleHeat hJouleHeat
+}
+</pre>
+
+<!--========================-->
+<a name="HD"></a>
+<h2>2.2.3 Hydrodynamic Transport Model</h2>
+
+<p>The hydrodynamic transport model solves the carrier temperature and the lattice heat
+equations in addition to the Poisson and the carrier continuity equations.</p>
+
+<p>The essentials of the hydrodynamic transport model are:</p>
+
+<ul>
+<li>The model is especially useful in simulating deep-submicron and heterostructure
+devices. It allows nonlocal effects to be included in the simulation, such as 
+velocity overshoot, which can drastically alter device performance.</li>
+
+<li>For a device breakdown simulation, the use of the hydrodynamic transport 
+model avoids the onset of premature breakdowns  due to the local field, assumed 
+in the drift-diffusion model.</li>
+
+<li>Hydrodynamic carrier transport is used typically for heterostructure device 
+simulations where the energy transport across heterointerfaces plays an important role.</li>
+</ul>
+
+<p>To activate the model, you must specify <tt>Hydrodynamic</tt> in the 
+<tt>Physics</tt> section:</p>
+
+<pre>
+Physics {
+  Hydrodynamic
+  ...
+   Mobility(
+      DopingDep
+      HighFieldsaturation( CarrierTempDrive )
+      Enormal
+   )
+}
+</pre>
+
+<p class="note">If you use <tt>HighFieldSaturation</tt>, avalanche, or the classical 
+lucky electron model, then you should activate carrier temperature as the driving 
+force for self-consistency.</p>
+
+<p>To solve the electron or hole carrier energy and lattice heat equations self-consistently 
+with carrier transport, the keywords <tt>eTemperature</tt>, <tt>hTemperature</tt>, 
+and <tt>Temperature</tt> must be added to the solved equation set in the <tt>Coupled</tt> 
+statement:</p>
+
+<pre>
+Solve {
+   Coupled{ Poisson Electron Hole eTemperature hTemperature Temperature }
+}
+</pre>
+
+<p>If only one carrier temperature equation must be solved, <tt>Hydrodynamic</tt> 
+must be specified with the appropriate parameter, either <tt>Hydrodynamic(eTemperature)</tt> 
+or <tt>Hydrodynamic(hTemperature)</tt>:</p>
+
+<pre>
+Physics {
+  Hydrodynamic(eTemperature)
+  ...
+   Mobility(
+      DopingDep
+      eHighFieldsaturation( CarrierTempDrive )
+      hHighFieldsaturation( GradQuasiFermi )
+      Enormal
+   )
+}
+</pre>
+
+<p>With the above definitions, only the electron carrier transport is simulated 
+using the hydrodynamic transport model, while the hole transport is simulated 
+using the drift-diffusion transport model.</p>
+
+<p>The qualifier <tt>CarrierTempDrive</tt> in the <tt>eHighFieldsaturation</tt> 
+statement activates the carrier temperature as a driving force for electrons in 
+the high-field saturation model. For holes, the <tt>GradQuasiFermi</tt> 
+driving force is used.</p>
+
+<p>If only single-carrier energy transport is considered, such as in the previous 
+<tt>Physics</tt> section, one of the keywords (<tt>hTemperature</tt> in this case) 
+can be omitted. In addition, to deactivate the effect of lattice heating, the 
+lattice heat equation, activated with the <tt>Temperature</tt> keyword, must not 
+be included in the equation set inside the <tt>Coupled</tt> statement:</p>
+
+<pre>
+Solve {
+   Coupled{ Poisson Electron Hole eTemperature }
+}
+</pre>
+
+<p>To plot the resulting quantities, corresponding dataset names must be placed 
+in the <tt>Plot</tt> section:</p>
+
+<pre>
+Plot {
+   ...
+   Temperature eTemperature hTemperature
+}
+</pre>
+
+<!--========================-->
+<a name="QC"></a>
+<h2>2.2.4 Carrier Quantization With Density Gradient Model</h2>
+
+<p>The density gradient (DG) model, in addition to the Schr&ouml;dinger carrier 
+quantization model, provides the most physically accurate solution and can be 
+recommended as the model of choice to account for carrier quantization effects 
+in transistor channels and at heterointerfaces.</p>
+
+<p>In the DG approximation, the quantum potential is a function of the carrier 
+densities and their gradients, which requires the self-consistent quantum 
+potential and the carrier transport equations solution. The DG model can be 
+applied to 2D and 3D device simulations.</p>
+
+<p>The keywords <tt>eQuantumPotential</tt> and <tt>hQuantumPotential</tt> activate
+the DG model for electrons and holes, respectively. If a transistor operates under 
+a channel inversion regime, only quantum correction for minority carriers (electrons) 
+can be considered to reduce the task complexity:</p>
+
+<pre>
+Physics{
+   eQuantumPotential 
+   ...
+}
+</pre>
+
+<p>To solve the electron quantum-potential equation, you must include the 
+<tt>eQuantumPotential</tt> keyword in the corresponding <tt>Coupled</tt> 
+statements:</p>
+
+<pre>
+Solve {
+  ...
+  Coupled{ Poisson Electron Hole eQuantumPotential }
+  ...
+}
+</pre>
+
+<p>To plot the quantum-potential profile and related quantum-corrected 
+quantities, you must specify them in the <tt>Plot</tt> section:</p>
+
+<pre>
+Plot{
+   eDensity 
+   BandGap BandGapNarrowing Affinity ConductionBand ValenceBand
+   eQuantumPotential
+}
+</pre>
+
+<!--========================-->
+<a name="IdVgs"></a>
+<h2>2.2.5 Transfer (I<sub>d</sub>&ndash;V<sub>gs</sub>) MOSFET Device Simulation</h2>
+
+<p>The I<sub>d</sub>&ndash;V<sub>gs</sub> transfer characteristic is the first 
+MOSFET device characteristic simulated in the 
+<tt>Applications_Library/GettingStarted/sdevice/TransportModels</tt> project.</p>
+
+<p>Click to view the corresponding command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVgs_des.cmd">
+IdVgs_des.cmd</a>.</p>
+
+<p>In this file, the model selector, the set of transport equations, and the 
+driving force for the velocity saturation in the high electric field model are 
+decided according to a value of the project parameter <tt>tmodel</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVgs_des.cmd" startExpr="#if*" endExpr="#endif" -->
+<pre>
+#if &quot;@tmodel@&quot; == &quot;DD&quot;
+#define _Tmodel_     * DriftDiffusion
+#define _DF_       GradQuasiFermi
+#define _EQUATIONSET_  Poisson Electron Hole
+#elif &quot;@tmodel@&quot; == &quot;HD&quot;
+#define _Tmodel_     Hydrodynamic(eTemperature)
+#define _DF_       CarrierTempDrive
+#define _EQUATIONSET_  Poisson Electron Hole eTemperature Temperature
+#elif &quot;@tmodel@&quot; == &quot;Thermo&quot;
+#define _Tmodel_     Thermodynamic 
+#define _DF_       GradQuasiFermi
+#define _EQUATIONSET_  Poisson Electron Hole Temperature
+#endif
+</pre>
+<!-- grep end -->
+
+<p>To switch on the DG model to account for carrier quantization in the channel, 
+the value of the <tt>QC</tt> project parameter is checked out:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVgs_des.cmd" startExpr="#-* quantum*" endExpr="#endif" -->
+<pre>
+#-- quantum correction
+#if &quot;@QC@&quot; == &quot;DG&quot;
+#define _QC_ eQuantumPotential
+#else
+#define _QC_
+#endif
+</pre>
+<!-- grep end -->
+
+<p>The applied drain bias and the initial gate bias conditions are defined explicitly
+using the Sentaurus Workbench <tt>#define</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVgs_des.cmd" startExpr="#define _Vdd_*" endExpr="#define _Vginit_*" -->
+<pre>
+#define _Vdd_     1.1
+#define _Vginit_  -1.
+</pre>
+<!-- grep end -->
+
+<p>For simulations with the thermodynamic and hydrodynamic transport models, 
+at least one thermal contact must be specified in the <tt>Thermode</tt> section, 
+where a thermal boundary condition is defined:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVgs_des.cmd" startExpr="Thermode*" endExpr="*}*" footer="  ...\n}" -->
+<pre>
+Thermode{ 
+  { Name=&quot;substrate&quot; Temperature=300 SurfaceResistance=5e-4 } 
+  ...
+}
+</pre>
+<!-- grep end -->
+
+<p>There are two <tt>Quasistationary</tt> statements in the <tt>Solve</tt> section. 
+The first statement ramps the <tt>drain</tt> voltage from 0&nbsp;V (as defined in the 
+<tt>Electrode</tt> section) to a value given by the <tt>_Vdd_</tt> macro definition. 
+Similarly, the second statement sweeps the <tt>gate</tt> bias from the initial value 
+<tt>_Vginit_</tt> to the value given by the expression <tt>@&lt;2.*_Vdd_&gt;@</tt> (2.2 V):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVgs_des.cmd" startExpr="Solve*" endExpr="}*" -->
+<pre>
+Solve {
+   *- Build-up of initial solution:
+   NewCurrentPrefix=&quot;init_&quot;
+   Coupled(Iterations=100){ Poisson _QC_ }
+   Coupled{ _EQUATIONSET_ _QC_ }
+   
+   *- Bias drain to target bias
+   Quasistationary(
+      InitialStep=0.01 MinStep=1e-5 MaxStep=1
+      Goal{ Name=&quot;drain&quot; Voltage= _Vdd_  }
+   ) { Coupled { _EQUATIONSET_ _QC_ } }
+  
+   *-  gate voltage sweep
+   NewCurrentPrefix=&quot;IdVgs_&quot;
+   Quasistationary(
+      InitialStep=1e-3 MinStep=1e-5 MaxStep=1
+      Goal{ Name=&quot;gate&quot; Voltage= @&lt;2.*_Vdd_&gt;@ }
+   ) { Coupled { _EQUATIONSET_ _QC_ }
+       CurrentPlot(Time=(Range=(0 1) Intervals=20))
+     }
+   System(&quot;rm init_n@node@_des.plt&quot;)
+}
+</pre>
+<!-- grep end -->
+
+<p>Two <tt>NewCurrentPrefix</tt> statements are used to separate the voltage and 
+current output files (<tt>*_des.plt</tt>) generated by two quasistationary sweeps.
+Each statement produces one file with a unique name and the <tt>.plt</tt> file 
+extension, which can be loaded into Sentaurus Visual for visualization.
+The given name is extended by a construction, which includes the corresponding project
+node number, such that Sentaurus Workbench can distinguish the resulting file if 
+it needs to be cleaned up.</p>
+
+<p>At the end of the simulation, one of these files is removed using the <tt>System</tt> 
+command call.</p>
+
+<p>The <tt>CurrentPlot</tt> statement ensures that the resulting I&ndash;V curve is 
+equidistantly resolved by a given number of intervals, provided in the <tt>Intervals</tt> 
+statement. However, internally, Sentaurus Device can compute intermediate steps to 
+achieve convergence.</p>
+
+<p>The carrier distributions across the channel, with and without carrier quantization, 
+are shown in Figure&nbsp;2 at strong inversion conditions.</p>
+
+<p><a href="images/sd_equantum.png"><img src="images/sd_equantum.png" width="400" 
+alt="Electron density profile at center of channel" /></a></p>
+
+<p class="caption">Figure 2. Electron density profile in the center of the channel, 
+taken under strong inversion gate bias conditions. Quantum-mechanical size 
+quantization, applied under QC=DG condition, leads to an electron concentration peak 
+shifted away from the silicon&ndash;oxide interface by a distance of approximately 
+0.8&nbsp;nm. (Click image for full-size view.)</p>
+
+<p>In Figure 3, I<sub>d</sub>&ndash;V<sub>gs</sub> curves computed with different 
+transport models are compared, having carrier quantization switched on or off.
+The effect of the current decrease in the device on-state mode is clearly seen in 
+the case of the thermodynamic or hydrodynamic transport models, where the electron 
+mobility is affected by the lattice heat. For all models taking into account the carrier 
+quantization in the channel, a smaller on-state current can be observed due to the 
+reduced carrier concentration in the channel.</p>
+
+<p><a href="images/sd_idvg.png"><img src="images/sd_idvg.png" width="500" 
+alt="Drain current as a function of gate voltage" /></a></p>
+
+<p class="caption">Figure 3. I<sub>d</sub>&ndash;V<sub>gs</sub> curves computed 
+with different carrier transport models. Solid lines: without carrier quantization. 
+Markers: with carrier quantization. (Click image for full-size view.)</p>
+
+<!--========================-->
+<a name="IdVds"></a>
+<h2>2.2.6 Output (I<sub>d</sub>&ndash;V<sub>ds</sub>) MOSFET Device Simulation</h2>
+
+<p>The I<sub>d</sub>&ndash;V<sub>ds</sub> output characteristic is the second 
+MOSFET device characteristic simulated in the 
+<tt>Applications_Library/GettingStarted/sdevice/TransportModels</tt> project.</p>
+
+<p>Click to view the corresponding command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVds_des.cmd">
+IdVds_des.cmd</a>.</p>
+
+<p>Similar settings are used here to simulate the MOSFET I<sub>d</sub>&ndash;V<sub>ds</sub> 
+output characteristic for a given gate bias. The fixed gate bias and the target
+drain bias (up to which the drain voltage is swept) are defined explicitly 
+using the Sentaurus Workbench <tt>#define</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVds_des.cmd" startExpr="#define _Vdd_*" endExpr="#define _Vginit_*" -->
+<pre>
+#define _Vdd_     2.
+#define _Vginit_  1.
+</pre>
+<!-- grep end -->
+
+<p>After obtaining the initial guess solution, the drain bias is ramped within the
+<tt>Quasistationary</tt> statement from 0 V (as defined in the 
+<tt>Electrode</tt> section) up to the <tt>_Vdd_</tt> bias value:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/IdVds_des.cmd" startExpr="Solve*" endExpr="}*" -->
+<pre>
+Solve {
+   *- Build-up of initial solution:
+   NewCurrentPrefix=&quot;init_&quot;
+   Coupled(Iterations=100){ Poisson _QC_ }
+   Coupled{ _EQUATIONSET_ _QC_ }
+   
+   *-  drain bias sweep
+   NewCurrentPrefix=&quot;IdVds_&quot;
+   Quasistationary(
+      InitialStep=1e-3 MinStep=1e-5 MaxStep=1
+      Goal{ Name=&quot;drain&quot; Voltage= _Vdd_ }
+   ) { Coupled { _EQUATIONSET_ _QC_ }
+       CurrentPlot(Time=(Range=(0 1) Intervals=20))
+     }
+   
+   System(&quot;rm init_n@node@_des.plt&quot;)
+}
+</pre>
+<!-- grep end -->
+
+<p>The points on the resulting I&ndash;V curve are distributed equidistantly 
+using the <tt>CurrentPlot</tt> statement within the <tt>Quasistationary</tt> command.</p>
+
+<p>In Figure 4, I<sub>d</sub>&ndash;V<sub>ds</sub> curves computed with different 
+transport models are compared, having carrier quantization switched on or off.
+The negative differential resistance effect can be seen for the I&ndash;V curves, computed
+with the thermodynamic and hydrodynamic transport models, due to the electron mobility
+affected by the lattice heat.</p>
+
+<p><a href="images/sd_idvd.png"><img src="images/sd_idvd.png" width="500" 
+alt="Drain current as a function of drain voltage" /></a></p>
+
+<p class="caption">Figure 4. I<sub>d</sub>&ndash;V<sub>ds</sub> curves computed 
+with different carrier transport models. Solid lines: without carrier quantization. 
+Markers: with carrier quantization. (Click image for full-size view.)</p>
+
+<p>Figure 5 shows the resulting lattice temperature distribution, obtained with the 
+thermodynamic carrier transport model.</p>
+
+<p><a href="images/sd_temp.png"><img src="images/sd_temp.png" width="400"
+alt="Temperature distribution in MOSFET" /></a></p>
+
+<p class="caption">Figure 5. Temperature distribution in MOSFET at 
+V<sub>gs</sub> = 1 V and V<sub>ds</sub> = 2 V bias conditions, obtained after
+thermodynamic transport model simulation. (Click image for full-size view.)</p>
+
+<p>Figure 6 shows the resulting lattice and electron temperature distributions, 
+obtained with the hydrodynamic carrier transport model.</p>
+
+<p><a href="images/sd_hd_temp.png"><img src="images/sd_hd_temp.png" width="500"
+alt="Temperature distribution in MOSFET" /></a></p>
+
+<p class="caption">Figure 6. (Left) Lattice temperature and (right) electron 
+temperature distributions in MOSFET at V<sub>gs</sub> = 1 V and V<sub>ds</sub> = 2 V 
+bias conditions, obtained after hydrodynamic transport model simulation. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<h2>2.2.7 MOSFET Off-State Breakdown Simulation</h2>
+
+<p>The off-state breakdown is the third MOSFET device characteristic simulated 
+in the <tt>Applications_Library/GettingStarted/sdevice/TransportModels</tt> project.</p>
+
+<p>Click to view the corresponding command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/TransportModels/BV_des.cmd">
+BV_des.cmd</a>.</p>
+
+<p>In this file, the same settings are applied to the set of transport equations, 
+according to a model selector <tt>tmodel</tt>. In addition, the corresponding 
+driving force for the avalanche model is assigned according to the <tt>_AvaDF_</tt> 
+macro variable:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/BV_des.cmd" startExpr="#if*" endExpr="#endif" -->
+<pre>
+#if &quot;@tmodel@&quot; == &quot;DD&quot;
+#define _Tmodel_     * DriftDiffusion
+#define _DF_           GradQuasiFermi
+#define _AvaDF_        GradQuasiFermi
+#define _EQUATIONSET_  Poisson Electron Hole
+#elif &quot;@tmodel@&quot; == &quot;HD&quot;
+#define _Tmodel_       Hydrodynamic(eTemperature)
+#define _DF_           CarrierTempDrive
+#define _AvaDF_        CarrierTempDrive
+#define _EQUATIONSET_  Poisson Electron Hole eTemperature Temperature
+#elif &quot;@tmodel@&quot; == &quot;Thermo&quot;
+#define _Tmodel_       Thermodynamic 
+#define _DF_           GradQuasiFermi
+#define _AvaDF_        GradQuasiFermi
+#define _EQUATIONSET_  Poisson Electron Hole Temperature
+#endif
+</pre>
+<!-- grep end -->
+
+<p>For the drift-diffusion and thermodynamic carrier transport models, the gradient 
+of the quasi-Fermi level is used as a driving force for both the 
+high-field saturation (HFS) model and the avalanche model.</p>
+
+<p>In the case of the hydrodynamic transport model, the electron carrier energy 
+(solution variable) is used to compute the effective field, used as a driving force 
+for the HFS and avalanche models (keyword <tt>CarrierTempDrive</tt>). For holes, 
+which are assumed to be in thermal equilibrium with the lattice, the gradient of 
+the quasi-Fermi level is used as a driving force.</p>
+
+<p>Several numeric parameters, relevant to the off-state breakdown simulation, 
+are used in this project, including:</p>
+
+<ul>
+<li>A parameter that controls the driving-force smoothing between the gradient 
+of the quasi-Fermi and the electric field (<tt>RefDens_e/hGradQuasiFermi_ElectricField</tt>).</li>
+<li>A break criterion that determines at which current level to stop the simulation <br />
+(<tt>BreakCriteria{ Current(Contact=&quot;drain&quot; AbsVal=1e-3)</tt>).</li>
+<li><tt>DirectQuantumCorrection</tt> specifies to apply the quantum potential correction 
+directly to the electrostatic potential as a quantum-mechanical band edge.</li>
+<li><tt>RefDens_QuantumPotential=1e12</tt> limits the quantum potential correction 
+to densities, higher than the specified reference value. This is helpful for the 
+breakdown regime convergence.</li>
+</ul>
+
+<p>Here is the full list of numeric controls:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/TransportModels/BV_des.cmd" startExpr="Math*" endExpr="}" -->
+<pre>
+Math {
+   Extrapolate
+   Avalderivatives
+   Iterations= 20
+   Notdamped= 100
+   Method= Blocked
+   SubMethod= Pardiso
+   ErRef(Electron)=1e8
+   ErRef(Hole)=1e8
+   Transient= BE
+   RefDens_eGradQuasiFermi_ElectricField= 1e16
+   RefDens_hGradQuasiFermi_ElectricField= 1e16
+   BreakCriteria{ Current(Contact=&quot;drain&quot; AbsVal=1e-3) } 
+   -PlotLoadable 
+   RefDens_QuantumPotential= 1e12
+   DirectQuantumCorrection
+}
+</pre>
+<!-- grep end -->
+
+<p>To compute the device off-state breakdown I&ndash;V characteristic, the resistor 
+method is used (see <a href="../sd/sd_11.html#5">Section&nbsp;11.5 External Resistor Method</a>). 
+Before the breakdown, the device enters the punch-through mode, which is characterized 
+by the snapback curve.</p>
+
+<p>Simulations including heat transport (thermodynamic, hydrodynamic) show that 
+the device breakdown and postbreakdown behavior are largely affected by the heat. 
+Taking into account the carrier quantization in the channel moves the breakdown 
+point towards smaller values.</p>
+
+<p>The resulting MOSFET off-state I<sub>d</sub>&ndash;V<sub>ds</sub> curves 
+are compared in Figure&nbsp;7.</p>
+
+<p><a href="images/sd_bv.png"><img src="images/sd_bv.png" width="500" 
+alt="MOSFET off-state breakdown Id-Vds curves" /></a></p>
+
+<p class="caption">Figure 7. MOSFET off-state breakdown I<sub>d</sub>&ndash;V<sub>ds</sub> 
+curves obtained with the drift-diffusion (black curves), thermodynamic (red curves), 
+and hydrodynamic (blue curves) transport models, with carrier quantization in the 
+channel switched on (dots) or switched off (solid lines). (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 Monte Carlo Transport</h1>
+ 
+<p>This section discusses Monte Carlo transport in detail.</p>
+ 
+<!--======================-->
+<h2>2.3.1 Surface and Channel Orientation Dependency in PFinFETs</h2>
+ 
+<p>Using the single-particle device Monte Carlo engine in Sentaurus Device, 
+a Monte Carlo simulation has two main parts. First, a drift-diffusion 
+simulation is run. Second, based on this, a Monte Carlo simulation is 
+performed. The drift-diffusion simulation yields an electric field that 
+is used in the initial frozen-field simulation of the iteration between 
+a Monte Carlo transport simulation and the solution of the Poisson equation.</p>
+ 
+<p>The Monte Carlo simulator integrates these density distributions over 
+the entire Monte Carlo window and simulates only the carrier type with 
+the greater integral of the density. Furthermore, the single-particle 
+device Monte Carlo approach assumes that the integrated density of the
+ predominant carrier type is predicted correctly by the drift-diffusion 
+simulation. Consequently, compared to a drift-diffusion simulation, a Monte 
+Carlo simulation changes only the shape of the electrostatic potential 
+and the density distribution, but not the total charge in the Monte Carlo 
+window.</p>
+ 
+<p>The simulated 2D geometry is a p-type FinFET device. Figure&nbsp;8 shows 
+the top view of the wafer and the doping profile of the structure. The 
+channel is undoped. The source and drain regions are p-doped to 
+1e20&nbsp;cm<sup>-3</sup>. The doping drops into the active channel part 
+on a Gaussian length scale of 9&nbsp;nm. The gate length is 50&nbsp;nm and 
+the fin width is 34.4&nbsp;nm.</p>
+ 
+<p><a href="images/sd_finfet1.png"><img src="images/sd_finfet1.png" width="550" 
+alt="Top view and doping of FinFET" /></a></p>
+
+<p class="caption">Figure 8. Top view and doping profile of FinFET. 
+(Click image for full-size view.)</p>
+ 
+<p>Because of the undoped channel, the quantum-mechanical threshold-voltage 
+shift is negligibly small. Therefore, quantum corrections are not considered 
+in this project.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sdevice/MCpFinFET</tt>.</p>
+ 
+<p>As a first step, the device simulation using the drift-diffusion approach is performed
+to obtain the electrostatic potential distribution under initial bias conditions.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/MCpFinFET/DD_des.cmd">
+DD_des.cmd</a>.</p>
+ 
+<p>After this step, the device state is saved. The obtained solution is used 
+to start a Monte Carlo simulation, which is performed in the second Sentaurus 
+Device tool instance called <tt>SPMC</tt>.</p>
+
+<p>Click to view the command file for the Sentaurus Device tool instance <tt>SPMC</tt> 
+<a href="../../Applications_Library/GettingStarted/sdevice/MCpFinFET/SPMC_des.cmd">
+SPMC_des.cmd</a>.</p>
+
+<p>The following sections describe parts of this command file.</p>
+      
+<!--======================-->
+<a name="MCFile"></a>
+<h2>2.3.2 File Section</h2>
+      
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MCpFinFET/SPMC_des.cmd" startExpr="File*" endExpr="*}*" -->
+<pre>
+File {
+  Grid=     &quot;@tdr@&quot;
+  Output=   &quot;@log@&quot;
+  Parameter=&quot;@parameter@&quot; 
+  Load=  &quot;@[relpath n@node|-2@_des.sav]@&quot;
+  MonteCarloOut = &quot;n@node@_mc&quot;
+}
+</pre>
+<!-- grep end -->
+ 
+<p>The file <tt>n@node|-2@_des.sav</tt> is specified to be loaded 
+at the beginning of the simulation and is used as the initial 
+condition for the simulation. The keyword <tt>MonteCarloOut</tt> 
+determines the prefix of the Monte Carlo output files with the results 
+for the currents.</p>
+      
+<!--======================-->
+<a name="MCMonteCarlo"></a>
+<h2>2.3.3 Monte Carlo Section</h2>
+ 
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MCpFinFET/SPMC_des.cmd" startExpr="MonteCarlo*" endExpr="}*" -->
+<pre>
+MonteCarlo {
+  Normal2OxideDirection = (@surface@)
+  ChannelDirection = (@channel@)
+  SurfScattRatio = 0.85
+  CurrentErrorBar = 2.0
+  MinCurrentComput = 10
+  DrainContact = &quot;Drain&quot; # Name or No. of Drain contact in .tdr 
+  # (count from 0, view with TDX)
+  SelfConsistent(FrozenQF)
+  Window = Rectangle[ (-0.5,-0.1)
+  (0.5, 0.1) ]
+  FinalTime = 1.5e-06
+  Plot { Range=(0,50e-06) intervals = 500 }
+}
+</pre>
+<!-- grep end -->
+
+<p>The <tt>Normal2OxideDirection = (@surface@)</tt> statement specifies 
+that the surface orientation of the PFinFET is parameterized. In this 
+project, two orientations are defined for the simulations: (0 1 1) and (0 0 1).</p>
+ 
+<p>The <tt>ChannelDirection = (@channel@)</tt> statement specifies that 
+the channel direction of the PFinFET is parameterized. In the (0 1 1) surface 
+orientation, three channel directions are defined: <tt>&lt;0 1 -1&gt;</tt>, 
+<tt>&lt;1 0 0&gt;</tt>, <tt>&lt;2 1 -1&gt;</tt>. For the (0 0 1) surface 
+orientation, two channel directions are defined: <tt>&lt;1 0 0&gt;</tt> 
+and <tt>&lt;-1 1 0&gt;</tt>.</p>
+      
+<p>Surface roughness scattering is modeled by a combination of 
+specular and diffusive scattering. The keyword <tt>SurfScattRatio = 0.85</tt> 
+refers to the percentage of specular scattering.</p>
+ 
+<p>The keyword <tt>CurrentErrorBar = 2.0</tt> refers to the 
+<em>relative error</em> (in percent) of the drain current, below 
+which the simulation stops.</p>
+      
+<p>The <tt>MinCurrentComput = 10</tt> keyword specifies the minimum 
+number of iterations after steady state that are performed irrespective 
+of whether the relative error of the drain current is less than 
+<tt>CurrentErrorBar</tt>.</p>
+      
+<p>The keyword <tt>SelfConsistent(FrozenQF)</tt> defines the Monte Carlo 
+simulation as self-consistent. <tt>FrozenQF</tt> defines the parameters 
+that are frozen during the Poisson solve. For stability reasons, these 
+must be the quasi-Fermi potentials (<tt>QF</tt>).</p>
+ 
+<p>The <tt>Window = Rectangle[(-0.5, -0.1) (0.5, 0.1)]</tt> keyword 
+specifies that the Monte Carlo simulation is performed in all elements 
+that lie completely inside the defined rectangle (where 
+<tt>(-0.5, -0.1) (0.5, 0.1)</tt> specify the corners of the rectangle).</p>
+ 
+<p>The keyword <tt>FinalTime = 1.5e-06</tt> is the simulation time after 
+which the steady state is assumed to be reached. The gathering of 
+cumulative averages begins only after <tt>FinalTime</tt>.</p>
+ 
+<p><tt>Plot {Range=(0,50e-06) intervals = 500}</tt> specifies the times 
+after which the Poisson equation is solved. <tt>Range=(0,50e-06)</tt> 
+refers to <tt>Range</tt>, where <tt>start</tt> and <tt>end</tt> are 
+floating-point values that denote the start time and the maximum simulation 
+time, respectively. <tt>start</tt> must be zero here.</p>
+ 
+<!--======================-->
+<a name="MCMath"></a>
+<h2>2.3.4 Math Section</h2>
+ 
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MCpFinFET/SPMC_des.cmd" startExpr="Math*" endExpr="}*" -->
+<pre>
+Math {
+	Number_of_Threads = 8
+	Method=blocked
+	Submethod=pardiso
+	Digits=6
+	Extrapolate
+	Derivatives
+	Iterations=20
+	Notdamped=50
+}
+</pre>
+<!-- grep end -->
+
+<p>The keyword <tt>Number_of_Threads = 1</tt> specifies the number of threads 
+to be used in parallel. Performance can improve considerably by increasing 
+the number of threads.</p>
+
+<!--======================-->
+<a name="MCSolve"></a>
+<h2>2.3.5 Solve Section</h2>
+ 
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MCpFinFET/SPMC_des.cmd" startExpr="Solve*" endExpr="}*" -->
+<pre>
+solve {
+	coupled {poisson hole }
+	montecarlo
+}
+</pre>
+<!-- grep end -->
+ 
+<p>The keyword <tt>montecarlo</tt> can be specified at any point in 
+the <tt>Solve</tt> section like a partial differential equation. It 
+cannot be coupled to any of the partial differential equations, but it 
+can be used in quasistationary simulations.</p>
+ 
+<p>Figure 9 shows the Monte Carlo simulation results. The on-state current 
+is plotted as a function of the channel direction and the surface orientation. 
+It highlights that a (0 1 1) surface orientation coupled with a &lt;1 0 0&gt; 
+channel direction is advantageous for PFinFET devices.</p>
+
+<p>This is the consequence of two physical effects:</p>
+ 
+<ul>
+<li>Specular scattering is determined by the conservation of 
+energy and a parallel wavevector. The orientation of the band structure, 
+relative to the interface with a (0 1 1) direction, involves a higher 
+low-field mobility.</li>
+<li>However, high-field transport of holes is enhanced 
+for a driving field in the &lt;1 0 0&gt; direction.</li>
+</ul>
+      
+<p><a href="images/sd_onstate.png"><img src="images/sd_onstate.png" width="500" 
+alt="On-state current as function of channel direction and surface orientation" /></a></p>
+
+<p class="caption">Figure 9. On-state current as a function of channel 
+direction and surface orientation. (Click for full-size view.)</p>
+      
+<p>The files with the simulation results of the currents are 
+<tt>n@node@_mc_time.plt</tt> and <tt>n@node@_mc_average.plt</tt>. They 
+contain estimates of the current at the contact that was specified by the 
+<tt>DrainContact</tt> keyword (called <tt>MCdrain</tt> in the <tt>.plt</tt> 
+file) as well as the integral of the impact ionization rate over the 
+entire Monte Carlo window (called <tt>MCsubstrate</tt>). In 
+<tt>n@node@_mc_time.plt</tt>, the current estimates, which correspond 
+only to one iteration interval, are stored as a function of the simulation time.</p>
+
+<p><a href="images/sd_draincurrent.png"><img src="images/sd_draincurrent.png" width="500" 
+alt="Drain-current estimations as function of simulation time" /></a></p>
+
+<p class="caption">Figure 10. Drain-current estimations as a function 
+of simulation time for the two defined surface orientations (0 0 1) 
+and (0 1 1), and the same channel direction &lt;1 0 0&gt;. The stationary 
+state and the current begin to fluctuate around its average value. 
+(Click image for full-size view.)</p>
+ 
+<p>In contrast, the file <tt>n@node@_mc_average.plt</tt> contains 
+the cumulative averages over the current values stored in the 
+<tt>n@node@_mc_time.plt</tt> file. They are plotted as a function of 
+the number of iterations after reaching the stationary state.</p>
+      
+<p><a href="images/sd_cumulative.png"><img src="images/sd_cumulative.png" width="500" 
+alt="Cumulative average over drain-current estimations" /></a></p>
+
+<p class="caption">Figure 11. Cumulative average over the drain-current 
+estimations as a function of the number of iterations for the two 
+defined surface orientations (0 0 1) and (0 1 1), and the same channel 
+direction &lt;1 0 0&gt;. (Click image for full-size view.)</p>
+ 
+<p>In addition, the <em>relative errors</em> of these averages 
+can be extracted from <tt>n@node@_mc_average.plt</tt>.</p>
+
+<p><a href="images/sd_error.png"><img src="images/sd_error.png" width="500" 
+alt="Error of averages" /></a></p>
+
+<p class="caption">Figure 12. Error of these averages as a function 
+of the number of iterations. (Click image for full-size view.)</p>
+ 
+<p>These errors represent reasonable criteria for stopping 
+the simulation when the gathering of statistics begins after 
+reaching the stationary state.</p>
+ 
+<p class="note">The results contained in <tt>n@node@_mc_time.plt</tt> 
+and <tt>n@node@_mc_average.plt</tt> can be viewed using Sentaurus Visual.</p>
+ 
+<p>For more information about the surface direction and channel 
+direction dependencies, refer to the 
+<cite>Sentaurus&trade; Device Monte Carlo User Guide</cite>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

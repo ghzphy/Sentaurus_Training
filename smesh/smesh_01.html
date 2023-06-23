@@ -1,0 +1,367 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Mesh 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_02.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Mesh<br />1. Getting Started</h1>
+
+<p>
+ <a href="#1">1.1 Overview</a><br />
+ <a href="#2">1.2 Starting Sentaurus Mesh</a><br />
+ <a href="#3">1.3 Inputs</a><br />
+ <a href="#4">1.4 Outputs</a><br />
+ <a href="#5">1.5 Sections of the Command File</a><br />
+ <a href="#6">1.6 Sentaurus Mesh Integration in Sentaurus Workbench</a><br />
+ <a href="#7">1.7 Sentaurus Mesh and Sentaurus Structure Editor</a><br />
+ <a href="#8">1.8 Mesh Visualization</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the mesh generator Sentaurus Mesh.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Overview</h1>
+
+<p>Sentaurus Mesh is a modular Delaunay 2D and 3D mesh generator that can create 
+both axis-aligned and tensor meshes to be used in simulators that use the box 
+discretization or finite-difference time-domain (FDTD) methods for spatial device 
+discretization.</p>
+
+<p>In addition, Sentaurus Mesh serves as a doping profile generator,
+which allows you to compile 2D and 3D doping profiles using both analytic profile 
+descriptions and numerically simulated doping profiles.</p>
+
+<p>The axis-aligned mesh generator of Sentaurus Mesh produces triangles in the case 
+of 2D devices and tetrahedra in the case of 3D devices. Generated grids can be loaded 
+into Sentaurus Device, Sentaurus Process, and Sentaurus Interconnect.</p>
+
+<p>The tensor-product mesh generator of Sentaurus Mesh produces rectangular elements 
+in two dimensions and cuboidal elements in three dimensions. Such grids are used in 
+Sentaurus Device Electromagnetic Wave Solver and the TCAD to SPICE device simulators 
+(Garand, Garand&nbsp;VE, and Garand&nbsp;MC).</p>
+
+<p>Depending on the mesh generator used, Sentaurus Mesh produces different output
+formats. The axis-aligned mesh generator always produces a TDR unstructured mesh, and the
+tensor-product mesh generator selects the type of mesh depending on the target 
+application.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>1.2 Starting Sentaurus Mesh</h1>
+
+<p>To start Sentaurus Mesh on the command line, enter:</p>
+
+<pre>
+&gt; snmesh &lt;filename&gt;
+</pre>
+
+<p>where <tt>&lt;filename&gt;</tt> indicates the name of a command file 
+for mesh generation.</p>
+
+<p>By default, Sentaurus Mesh runs in axis-aligned mode.</p>
+
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Inputs</h1>
+
+<p>In general, Sentaurus Mesh needs two files as input: a command file (<tt>.cmd</tt>) 
+and a device geometry (boundary) file (<tt>_bnd.tdr</tt>).
+The command file must be an ASCII file, while the boundary file is
+a binary file in TDR format.</p>
+
+<p>Sentaurus Mesh first locates the command file using the file name specified 
+on the command line. If the file name does not have the <tt>.cmd</tt> extension,
+it is added automatically.</p>
+
+<p>Sentaurus Mesh then looks at the <tt>inputFile</tt> parameter in the <tt>IOControls</tt>
+section of the command file  (see <a href="#5">Section&nbsp;1.5 Sections of the Command File</a>) 
+to locate the input boundary file. If this parameter is not present, Sentaurus Mesh 
+tries to guess the name of the boundary file according to the following rules:</p>
+
+<ol>
+<li>Check whether <tt>&lt;filename&gt;</tt>, entered on the command line,
+matches the pattern <tt>&lt;string&gt;_msh</tt>. If yes, check whether
+<tt>&lt;string&gt;_bnd.tdr</tt> exists.</li> 
+<li>If it does not exist, check whether <tt>&lt;filename&gt;_bnd.tdr</tt>
+exists.</li> 
+<li>If it does not exist, check whether <tt>&lt;filename&gt;.tdr</tt>
+exists.</li>
+</ol>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>1.4 Outputs</h1>
+
+<p>Sentaurus Mesh produces two output files:</p>
+
+<ul>
+<li>The output TDR file contains mesh, geometry, and doping information in TDR format.
+The file name can be specified with the <tt>outputFile</tt> parameter in the <tt>IOControls</tt>
+section, or it defaults to <tt>&lt;filename&gt;_msh.tdr</tt> when this parameter is 
+not specified.</li>
+<li>A log file <tt>&lt;filename&gt;_msh.log</tt> contains the Sentaurus Mesh
+output protocol, which includes some information about meshing steps
+and mesh statistics.</li>
+</ul>
+
+<p class="note">Sentaurus Mesh can produce mesh files only in TDR format.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>1.5 Sections of the Command File</h1>
+
+<p>You can specify several different types of information in the command file, 
+for example, refinement information, doping profile information, and control 
+parameters for the different mesh generators and tools.</p>
+
+<p>The command file has different sections (see Table 1).</p>
+
+<p>Examples of most sections are presented in this module.</p>
+
+<table>
+<caption>Table 1. Sections of a command file.</caption>
+
+<tr>
+<th>Section</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>Title</tt></td>
+<td>The command file can start with an optional title statement. The keyword 
+<tt>Title</tt> followed by a string in double quotation marks constitutes the 
+title statement. For example: <tt>Title &quot;Project X&quot;</tt></td>
+</tr>
+
+<tr>
+<td><tt>IOControls</tt></td>
+<td>Specifies an explicit input file containing the structure and an output 
+file to which the generated mesh will be saved.</td>
+</tr>
+
+<tr>
+<td><tt>Definitions</tt></td>
+<td>Defines the sets of refinement parameters and profile definitions 
+to be used in the <tt>Placements</tt> section. These sets are referred to using 
+their unique reference names.</td>
+</tr>
+
+<tr>
+<td><tt>Placements</tt></td>
+<td>Defines the placement of instances of the definitions given in the 
+<tt>Definitions</tt> section with respect to the current device.</td>
+</tr>
+
+<tr>
+<td><tt>Interpolate</tt></td>
+<td>Controls data interpolation.</td>
+</tr>
+
+<tr>
+<td><tt>AxisAligned</tt></td>
+<td>Controls the parameters for the axis-aligned mesh generator.</td>
+</tr>
+
+<tr>
+<td><tt>Offsetting</tt></td>
+<td>Defines the mesh lines obtained by layering from interfaces.</td>
+</tr>
+
+<tr>
+<td><tt>Delaunizer</tt></td>
+<td>Controls the behavior of the mesh delaunizer.</td>
+</tr>
+
+<tr>
+<td><tt>Tensor</tt></td>
+<td>Controls the tensor-product mesh generator.</td>
+</tr>
+
+<tr>
+<td><tt>Boundary</tt></td>
+<td>Controls the parameters related to boundary algorithms.</td>
+</tr>
+
+<tr>
+<td><tt>Tools</tt></td>
+<td>Specifies additional utilities available in Sentaurus Mesh.</td>
+</tr>
+
+<tr>
+<td><tt>QualityReport</tt></td>
+<td>Specifies the mesh quality statistics to be reported and the limits 
+for the mesh quality criteria.</td>
+</tr>
+
+<tr>
+<td><tt>Structured</tt></td>
+<td>Specifies the parameters required to define a Josephson junction mesh.</td>
+</tr>
+
+</table>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>1.6 Sentaurus Mesh Integration in Sentaurus Workbench</h1>
+
+<p>There are two ways to run Sentaurus Mesh:</p>
+
+<ul>
+<li>From the command line (see <a href="#2">Section 1.2 Starting Sentaurus Mesh</a>).</li>
+<li>Having it as a tool within a Sentaurus Workbench project. Then, Sentaurus Workbench will 
+launch Sentaurus Mesh automatically when a project is executed.</li>
+</ul>
+
+<p>To add Sentaurus Mesh to a Sentaurus Workbench project:</p>
+
+<ol>
+<li>Choose <strong>Tool</strong> &gt; <strong>Add</strong>.</li>
+<li>In the Add Tool dialog box, click <strong>Tools</strong>.</li>
+<li>In the Select DB Tool dialog box, select the Sentaurus Mesh icon and click <strong>OK</strong>.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>Then, the Sentaurus Mesh icon appears in the tool flow 
+of the Sentaurus Workbench project (see Figure&nbsp;1).</p>
+
+<p><img src="images/sm_gs_project.png" width="222" height="137" 
+alt="Sentaurus Mesh as part of Sentaurus Workbench project" /></p>
+
+<p class="caption">Figure 1. Sentaurus Mesh as part of a Sentaurus Workbench project.</p>
+
+<p>A typical simulation scenario is where the command file for meshing is created by a 
+preceding tool in the tool flow, such as Sentaurus Structure Editor. 
+In such a case, you must indicate this in the tool properties (choose 
+<strong>Tool</strong> &gt; <strong>Properties</strong>). Otherwise, you must 
+create the command file like any other tool in Sentaurus Workbench.</p>
+
+<p>In Figure 2, the properties are selected such that Sentaurus Mesh will take 
+a command file from the preceding Sentaurus Structure Editor tool.</p>
+
+<p><a href="images/sm_gs_editpref.png"><img src="images/sm_gs_editpref.png" 
+width="570" alt="Tool Properties dialog box for setting Sentaurus Mesh preferences" /></a></p>
+
+<p class="caption">Figure 2. Tool Properties dialog box for setting 
+Sentaurus Mesh preferences. (Click image for full-size view.)</p>
+
+<p>Typically, mesh generation is followed by a device simulation, which uses grid and doping 
+profiles as input (see Figure&nbsp;3).</p>
+
+<p><img src="images/sm_gs_toolflow.png" width="463" height="186" 
+alt="Typical Sentaurus Workbench tool flow with mesh generation" /></p>
+
+<p class="caption">Figure 3. Typical Sentaurus Workbench tool flow with mesh generation 
+followed by device simulation.</p>
+
+<p>In Sentaurus Workbench, you can easily refer to a preceding mesh generation result 
+in subsequent device simulation inputs. To specify an input file, insert the following 
+statement in the command file:</p>
+
+<pre>
+File {
+  Grid= &quot;@tdr@&quot;
+  ...
+}
+</pre>
+
+<p>Then during preprocessing, Sentaurus Workbench automatically replaces <tt>@tdr@</tt> 
+with the actual file name:</p>
+
+<pre>
+File {
+  Grid= &quot;n2_msh.tdr&quot;
+  ...
+}
+</pre>
+
+<p>For details about setting up a tool flow and running a project, see the 
+<a href="../swb/swb_menu.html">Sentaurus Workbench module</a>.</p>
+      
+<!--================================================-->
+<a name="7"></a>
+<h1>1.7 Sentaurus Mesh and Sentaurus Structure Editor</h1>
+
+<p>Sentaurus Structure Editor is the main tool for generating a device 
+boundary file and command files used by Sentaurus Mesh. For detailed information 
+about doping profile generation and meshing strategy definition, see the 
+<a href="../sde/sde_menu.html">Sentaurus Structure Editor module</a>.</p>
+
+<p>You can invoke Sentaurus Mesh from Sentaurus Structure Editor by choosing 
+<strong>Mesh</strong> &gt; <strong>Build Mesh</strong>, which displays the 
+Build Mesh dialog box (see Figure&nbsp;4).</p>
+
+<p><a href="images/sm_gs_buildmesh.png"><img src="images/sm_gs_buildmesh.png" width="570" 
+alt="Sentaurus Structure Editor with Build Mesh dialog box" /></a></p>
+
+<p class="caption">Figure 4. Sentaurus Structure Editor with Build Mesh dialog box. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>1.8 Mesh Visualization</h1>
+
+<p>The results of meshing can be visualized in Sentaurus Visual.</p>
+
+<p>To load a TDR file in Sentaurus Visual, use the command:</p>
+
+<pre>
+&gt; svisual &lt;filename&gt;_msh.tdr
+</pre>
+
+<p>To visualize a grid in Sentaurus Visual, click the <strong>Mesh</strong> 
+button as indicated by the red arrow in Figure&nbsp;5.</p>
+
+<p><a href="images/sm_gs_svmesh.png"><img src="images/sm_gs_svmesh.png" width="570" 
+alt="Mesh visualization in Sentaurus Visual" /></a></p>
+
+<p class="caption">Figure 5. Mesh visualization in Sentaurus Visual. 
+(Click image for full-size view.)</p>
+
+<p>For more details, see the <a href="../sv/sv_menu.html">Sentaurus Visual module</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_02.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

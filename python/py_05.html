@@ -1,0 +1,467 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />  
+
+ <!-- for equation support -->
+ <link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+ <script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+ <script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+ <script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+ <title>TCAD Sentaurus Tutorial &ndash; Python 5. Examples</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_04.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Python Language<br />5. Examples</h1>
+
+<p> 
+ <a href="#1">5.1 Sentaurus Visual: Extracting Breakdown Voltage</a><br />
+ <a href="#2">5.2 Sentaurus Visual: Plotting Band Diagram</a><br />
+ <a href="#3">5.3 Sentaurus Visual: Loading CSV File Using pandas</a><br /> 
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2> 
+
+<ul>
+ <li>To present Python examples that are specific to TCAD Sentaurus.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Sentaurus Visual: Extracting Breakdown Voltage</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus
+Workbench project <tt>bv_extract</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/python/bv_extract</tt>.</p> 
+
+<p>This example shows how Python commands and Sentaurus Visual Python commands are mixed 
+in a Sentaurus Visual command file to extract the open-base breakdown voltages from 
+a bipolar junction transistor (BJT) simulation result.</p>
+
+<p>The following breakdown voltages are extracted:</p>
+
+<ul>
+<li><tt>BV_vmax</tt> is defined as the maximum collector 
+voltage achieved during the sweep.</li>
+<li><tt>BV_Ilevel</tt> is defined as the collector voltage at
+which the collector current exceeds a certain value.</li>
+</ul>
+
+<p>If the Sentaurus Visual tool node does not have a &quot;done&quot; status, that is, 
+it is not yellow, then first run the node to extract the breakdown voltages. Then, click the 
+<strong>Run Selected Visualizer Nodes Together</strong> toolbar button to create the plot.</p>
+
+<p><img src="images/py_break.png" width="450" height="420" 
+alt="Breakdown voltage extraction" /></p>
+
+<p class="caption">Figure 1. BJT breakdown voltage extraction.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/python/bv_extract/BV_SV_vis.py">
+BV_SV_vis.py</a>.</p>
+
+<p>The file consists of two sections, which are executed depending on whether the 
+Sentaurus Visual node is run by clicking <strong>Run Selected Visualizer Nodes Together</strong> 
+or by pressing Ctrl+R. The mode is determined by checking whether the Python 
+variable <tt>runVisualizerNodesTogether</tt> is defined (see 
+<a href="../swb/swb_02.html#VisTogether">Section 2.7 Visualizing Selected Nodes Together</a>), 
+by using the <tt>if</tt> statement:</p>
+
+<pre>
+if 'runVisualizerNodesTogether' in globals():
+    # Run Sentaurus Visual interactively using "Run Visualizer Nodes Together"
+    # Plot collector current versus collector voltage curve
+    ...
+else
+    # Run Sentaurus Visual in batch mode
+    # Extract breakdown voltages
+    ...
+</pre>
+
+<p>When Sentaurus Visual is executed using the <strong>Run Selected Visualizer Nodes Together</strong> button, <tt>runVisualizerNodesTogether</tt> is defined, the condition 
+<tt>'runVisualizerNodesTogether' in globals()</tt> is <tt>True</tt>, and the code block 
+of the <tt>if</tt> clause is executed. In this case, the collector current versus 
+collector voltage curve is plotted.</p>
+
+<p>For this purpose, first the <tt>.plt</tt> file is loaded, an empty 1D plot is created, 
+and the parameters for this plot, such as axes and legend, are adjusted:</p>
+ 
+<pre>
+sv.load_file(fname, name=dataset)
+sv.create_plot(name='Plot_1D', xy=True)
+sv.select_plots('Plot_1D')
+sv.link_plots(sv.list_plots(), unlink=True)
+sv.set_plot_prop(hide_title=True, show_legend=True)
+sv.set_axis_prop(
+    axis='x', title='Collector Voltage (V)', 
+    title_font_size=16, label_font_size=14, type='linear',
+    label_format='fixed', manual_precision=True, label_precision=0
+)
+sv.set_axis_prop(
+    axis='y', title='Collector Current (A)', 
+    title_font_size=16, label_font_size=14, type= 'log',
+    min=1e-15, min_fixed=True, max=ilevel, max_fixed=True
+)
+sv.set_legend_prop(
+    label_font_size=16, location='top_right', 
+    label_font_att='bold'
+)
+</pre>
+
+<p>Next, the curve is plotted:</p>
+
+<pre>
+icvc = f'IcVc({n})'
+sv.create_curve(
+    name=icvc, dataset=dataset, 
+    axisX='Collector InnerVoltage', 
+    axisY='Collector TotalCurrent'
+)
+sv.set_curve_prop(
+    icvc, plot='Plot_1D', color=color, label=f'IcVc(n{n}) {legend}', 
+    line_style='solid', line_width=3, show_markers=True
+)
+</pre>
+
+<p>The code block of the <tt>else</tt> clause is executed only when the Sentaurus Visual 
+node is run by pressing Ctrl+R. In this case, the breakdown voltage extraction is performed 
+using the Extraction module functions <tt>extract_bvv</tt> and <tt>extract_bvi</tt> (see 
+<a href="../sv/sv_6.html#8">
+Section 6.8 Sentaurus Visual Python Extraction Modules and Tcl Extraction Libraries</a>).</p>
+
+<p>First, the Extraction module is loaded. Second, the <tt>.plt</tt> file is loaded.</p>
+ 
+<pre>
+import svisualpylib.extract as ext
+sv.load_file(fname, name=dataset)
+</pre>
+
+<p>Then, the breakdown voltage extraction is performed:</p>
+
+<pre>
+# Get collector voltage and current values
+# sv.get_variable_data returns 1D NumPy array
+vcs = sv.get_variable_data(
+    varname='Collector InnerVoltage', dataset=dataset
+)
+ics = sv.get_variable_data(
+    varname='Collector TotalCurrent', dataset=dataset
+)
+
+# Extract breakdown voltage
+bv_vmax = ext.extract_bvv(
+    vcs, is_npn=True, name='BV_vmax', format='.2f'
+)
+bv_ilevel = ext.extract_bvi(
+    vcs, ics, i_o=ilevel, name='BV_Ilevel', format='.2f'
+)
+</pre>
+
+<p>As a result, the following lines are printed in the <tt>.out</tt> file of Sentaurus Visual:</p>
+
+<pre>
+DOE: BV_vmax 75.36
+DOE: BV_Ilevel 41.06
+</pre>
+
+<p>The extraction functions also write the extracted values to the Sentaurus Workbench table.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Sentaurus Visual: Plotting Band Diagram</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus
+Workbench project <tt>band_dgm</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/python/band_dgm</tt>. To run the Sentaurus 
+Visual nodes in this project, select the nodes and
+click the <strong>Run Selected Visualizer Nodes Together</strong> toolbar button.</p>
+
+<p><a href="../sv/sv_5.html#3_2">Section 5.3.2 Band Diagram Along Cutline</a> discusses how to plot the band diagram interactively in Sentaurus Visual. This section discusses how to plot the band diagram using Sentaurus Visual Python commands. 
+This example is the first tool instance (<tt>Eg</tt>) in the Sentaurus Workbench project.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/python/band_dgm/Eg_vis.py">
+Eg_vis.py</a>.</p>
+
+<p>In this example, Sentaurus Visual Python commands are used to load a TDR file 
+and to generate a vertical cut from the 2D plot of a GaAs solar cell under 
+short-circuit conditions. The cutline data is used to plot the energy band diagram 
+under short-circuit current conditions. Finally, the cutline data is exported to 
+a comma-separated value (CSV) file.</p>
+
+<p>The TDR file is loaded by using the <tt>sv.load_file</tt> command, and a 2D 
+plot is created from the loaded dataset by using the <tt>sv.create_plot</tt> command:</p>
+
+<pre>
+# Load TDR file
+tdrfile = 'solar_jsc_des.tdr'  # TDR file used for creating cutline
+dataset = 'Structure'
+sv.load_file(tdrfile, name=dataset)
+
+#  Create 2D plot
+sv.create_plot(name='Plot_Structure', dataset=dataset)
+</pre>
+
+<p>The <tt>sv.create_cutline</tt> command creates a 1D cutline normal to the x-axis at point 
+x=0.5. The result of this command is a 1D dataset that includes all the fields from the 
+original TDR file:</p>
+
+<pre>
+# Define cutline parameters
+direction = 'x'		# Cutline is created perpendicular to this axis
+position  = 0.5   	# x-position of the cut
+# Create cutline and store resultant 1D data in cut_dataset
+cut_dataset = sv.create_cutline(direction, at=position, dataset=dataset)
+</pre>
+
+<p>The <tt>sv.create_plot</tt> command is used to create a new empty frame for an xy plot:</p>
+
+<pre>
+sv.create_plot(name='Plot_BandDgm', xy=True)
+</pre>
+
+<p>The band diagram is created by plotting conduction and valence band energies as well as 
+the quasi-Fermi energies on this xy plot by using the <tt>sv.create_curve</tt> command:</p>
+
+<pre>
+# Create curves
+sv.create_curve(
+    name='Ec', dataset=cut_dataset,  
+    axisX='Y', axisY='ConductionBandEnergy'
+)
+sv.create_curve(
+    name='Efn', dataset=cut_dataset,  
+    axisX='Y', axisY='eQuasiFermiEnergy'
+)
+sv.create_curve(
+    name='Efp', dataset=cut_dataset,  
+    axisX='Y', axisY='hQuasiFermiEnergy'
+)
+sv.create_curve(
+    name='Ev', dataset=cut_dataset,  
+    axisX='Y', axisY='ValenceBandEnergy'
+)
+</pre>
+
+<p>The <tt>sv.export_variables</tt> command exports the band diagram data from 
+the cutline dataset into a text file in CSV format:</p>
+
+<pre>
+# Export variables from cutline dataset into a CSV file
+sv.export_variables(
+    dataset=cut_dataset, filename='n@node@_eg.csv', overwrite=True,
+    varList=[
+        'Y', 'ConductionBandEnergy', 'eQuasiFermiEnergy', 
+        'hQuasiFermiEnergy', 'ValenceBandEnergy'
+    ]
+)
+</pre>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>5.3 Sentaurus Visual: Loading CSV File Using pandas</h1>
+
+<p class="note">The files discussed in this section are part of the Sentaurus
+Workbench project <tt>band_dgm</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/python/band_dgm</tt>. To run the Sentaurus 
+Visual nodes in this project, select the nodes and click the 
+<strong>Run Selected Visualizer Nodes Together</strong> toolbar button.</p> 
+
+<p>Although Sentaurus Visual can directly read a CSV file, it can be sometimes advantageous
+to read the CSV file using the Python package pandas and to perform computations on the data 
+using pandas before plotting the data.</p>
+
+<p>This section discusses how to load the CSV file containing band diagram data 
+(created in the first tool instance <tt>Eg</tt>) in Sentaurus Visual Python  using 
+pandas and to plot the band diagram. This example is the second tool instance 
+(<tt>load_csv</tt>) in the Sentaurus Workbench project.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/python/band_dgm/load_csv_vis.py">
+load_csv_vis.py</a>.</p>
+
+<p>The Python statements found in the command file are explained below using an interactive 
+IPython session launched from the Sentaurus Workbench project directory <tt>Applications_Library/GettingStarted/python/band_dgm</tt>. The pandas package is customarily imported as <tt>pd</tt>:</p>
+
+<pre>
+&gt; gpythonsh -m IPython
+
+In [1]: import pandas as pd
+</pre>
+
+<p>The <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html"><tt>pandas.read_csv</tt></a> function is used to read the CSV file containing the band diagram data (created in the 
+first tool instance <tt>Eg</tt>) into the <tt>DataFrame</tt> object <tt>eg_df</tt>:</p>
+
+<pre>
+In [2]: eg_df = pd.read_csv('n1_eg.csv', skiprows=[1])
+</pre>
+
+<p>Here, the second row (row index = 1) of the CSV file is omitted (using the argument 
+<tt>skiprows</tt>) since it contains <tt>none</tt> values.</p>
+
+<p>A <tt>DataFrame</tt> object consists of rows and columns. Data for each of the variables 
+<tt>Y</tt>, <tt>ConductionBandEnergy</tt>, <tt>eQuasiFermiEnergy</tt>, and so on is stored 
+in columns. By default, evaluating <tt>eg_df</tt> prints the first and the last five rows 
+of the <tt>DataFrame</tt>. Usually, there are many rows and columns in a <tt>DataFrame</tt>. 
+You can use the <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.head.html"><tt>pandas.DataFrame.head()</tt></a> method to print the first five rows of <tt>eg_df</tt>:</p>  
+
+<pre>
+In [3]: eg_df.head()
+Out[3]: 
+          Y  ConductionBandEnergy  ...  hQuasiFermiEnergy  ValenceBandEnergy
+0  0.000000              1.423784  ...      -1.435074e-18           0.010776
+1  0.013222              1.423784  ...      -2.862661e-11           0.010776
+2  0.018711              1.423784  ...      -3.746893e-11           0.010776
+3  0.031933              1.423784  ...      -6.606767e-11           0.010776
+4  0.037422              1.423784  ...      -7.490142e-11           0.010776   
+</pre>
+
+<p>Similarly, you can print the last five rows of a <tt>DataFrame</tt> using the <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.tail.html"><tt>pandas.DataFrame.tail()</tt></a> method.</p>
+
+<p>The columns have names called <em>column labels</em>. You can see all the column labels 
+by using the <tt>columns</tt> attribute of the <tt>DataFrame</tt>:</p>
+
+<pre>
+In [4]: eg_df.columns
+Out[4]: 
+Index(['Y', 'ConductionBandEnergy', 'eQuasiFermiEnergy', 'hQuasiFermiEnergy',
+       'ValenceBandEnergy'],
+      dtype='object')
+</pre>    
+
+<p>The syntax for accessing values in a column is similar to accessing a value in a Python 
+dictionary using its key (see <a href="py_02.html#2_6">Section 2.2.6 Introduction to Dictionaries</a>). 
+You must specify the column label inside brackets. For example, the column with column label 
+<tt>ConductionBandEnergy</tt> contains the conduction band energy values, which can be 
+accessed using <tt>eg_df['ConductionBandEnergy']</tt>:</p>
+
+<pre>
+In [5]: eg_df['ConductionBandEnergy']
+Out[5]: 
+0      1.423784
+1      1.423784
+2      1.423784
+3      1.423784
+4      1.423784
+         ...   
+337   -0.081578
+338   -0.081578
+339   -0.081578
+340   -0.081578
+341   -0.081578
+Name: ConductionBandEnergy, Length: 342, dtype: float64
+</pre>    
+
+<p>The result is a pandas object of type <tt>Series</tt>:</p>
+
+<pre>
+In [6]: type(eg_df['ConductionBandEnergy'])
+Out[6]: pandas.core.series.Series
+</pre> 
+
+<p>You can perform computations on columns using arithmetic operators. You can add 
+new columns to a <tt>DataFrame</tt> by using the 
+<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.assign.html"> <tt>pandas.DataFrame.assign()</tt></a> method to assign the results of the computation. 
+For example, you can compute the band gap \( E_{g} = E_{c} - E_{v} \) and add a 
+new column with the label <tt>BandGap</tt>:</p>
+
+<pre>  
+In [7]: eg_df = eg_df.assign(  
+   ...:     BandGap = eg_df['ConductionBandEnergy'] - eg_df['ValenceBandEnergy']
+   ...: ) 
+</pre>
+
+<p>You need to pass an argument to the <tt>assign()</tt> method using the syntax <tt>keyword = value</tt>. The <tt>keyword</tt> is the new column label (without spaces). The <tt>value</tt> is an expression used to compute the values of the column.</p>
+
+<p>Instead of changing the <tt>DataFrame</tt> object on which it is invoked, the <tt>assign()</tt> method creates a new <tt>DataFrame</tt> object. To save the new <tt>DataFrame</tt> object, you must assign it to a variable. Here, you have reassigned the variable <tt>eg_df</tt> to the new <tt>DataFrame</tt> object.</p>
+
+<p>You can verify that <tt>eg_df</tt> now contains the <tt>BandGap</tt> column:</p>
+
+<pre>
+In [8]: eg_df.head()                                                        
+Out[8]: 
+          Y  ConductionBandEnergy  ...  ValenceBandEnergy   BandGap
+0  0.000000              1.423784  ...           0.010776  1.413007
+1  0.013222              1.423784  ...           0.010776  1.413007
+2  0.018711              1.423784  ...           0.010776  1.413007
+3  0.031933              1.423784  ...           0.010776  1.413007
+4  0.037422              1.423784  ...           0.010776  1.413007
+
+[5 rows x 6 columns]   
+</pre>    
+
+<p>Each column of <tt>eg_df</tt> can be converted into a 1D NumPy array using the 
+<a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.to_numpy.html">
+<tt>pandas.Series.to_numpy()</tt></a> method. The <tt>to_numpy()</tt> method acts 
+on a <tt>Series</tt> object that is defined in the pandas package. For example:</p>
+
+<pre>
+In [9]: ec = eg_df['ConductionBandEnergy'].to_numpy()
+
+In [10]: type(ec)
+Out[10]: numpy.ndarray
+</pre>
+
+<p>The NumPy arrays are used to create Sentaurus Visual variables using the 
+<tt>sv.create_variable</tt> command as shown here:</p>
+
+<pre>
+# Script: load_csv_vis.py
+...
+
+# Create Sentaurus Visual variables using 1D NumPy arrays
+dataset = 'PLT'
+sv.create_variable(name='Y', dataset=dataset, values=y)
+sv.create_variable(name='ConductionBandEnergy', dataset=dataset, values=ec)
+...
+</pre>
+
+<p>Finally, these Sentaurus Visual variables are used to create the band diagram using 
+the commands discussed in <a href="#2">Section 5.2 Sentaurus Visual: Plotting Band Diagram</a>.</p>
+
+<p class="note">For an introduction to pandas, see 
+<a href="https://notes.dsc10.com/02-data_sets/dataframes.html">(Baby)Pandas DataFrames</a> or 
+<a href="https://www.textbook.ds100.org/ch/06/pandas_intro.html">Working With Dataframes Using pandas</a>.</p> 
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_04.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

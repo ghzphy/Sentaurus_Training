@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Workbench 3. Creating Projects</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_02.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_04.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Workbench<br />3. Creating Projects</h1>
+
+<p>
+<a href="#Flow">3.1 Setting Up the Tool Flow</a><br />
+<a href="#Save">3.2 Saving Projects</a><br />
+<a href="#SDW">3.3 Using the Sentaurus Device Wizard</a><br />
+<a href="#Parallel">3.4 Setting Up Parallel Processing</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To set up and save a new Sentaurus Workbench project.</li>
+</ul>
+  
+<!--================================================-->
+<a name="Flow"></a>
+<h1>3.1 Setting Up the Tool Flow</h1>
+
+<p>The first step to setting up a tool flow is to create a project.</p>
+
+<p>To create a project, do one of the following:</p>
+
+<ul>
+<li>Choose <strong>Project</strong> &gt; <strong>New</strong> and then select either 
+<strong>Traditional Project</strong> or <strong>Hierarchical Project</strong> 
+(see <a href="swb_01.html#4">Section 1.4 Project Structure: 
+Traditional and Hierarchical Organizations</a> for details).</li>
+<li>Click the <img class="imgline" src="images/icons/new.png" width="39" height="23" alt="New toolbar button" /> 
+toolbar button.</li>
+</ul>
+ 
+<p>This creates a temporary project with a name similar to <tt>g_lnx_2879_0.tmp</tt> in 
+the <tt>tmp</tt> folder that can be viewed in the projects browser (see Figure 1).</p>
+
+<p><img src="images/swb_directory.png" width="160" height="30" 
+alt="Project directory with project folder" /></p>
+
+<p class="caption">Figure 1. Project directory showing project folder.</p>
+
+<p>To set up a tool flow, under the Family Tree, right-click the <strong>No Tools</strong> node 
+(see Figure 2) and choose <strong>Add</strong>.</p>
+
+<p><img src="images/swb_familytree.png" width="372" height="143" alt="Detail of Family Tree" /></p>
+
+<p class="caption">Figure 2. Detail of Project tab showing Family Tree.</p>
+
+<p>The Add Tool (or Tool Properties) dialog box opens (see Figure 3).</p>
+
+<p><img src="images/swb_addtool.png" width="563" height="430" alt="Add Tool dialog box" /></p>
+
+<p class="caption">Figure 3. Add Tool dialog box when adding first tool to the flow.</p>
+
+<p>The <strong>Label</strong> is the name by which this instance of Sentaurus Process 
+is referred. You can use any unique name you want. If you use multiple instances of 
+Sentaurus Process in a project, then each instance must have a unique label, for example, 
+<tt>sprocess1</tt> and <tt>sprocess2</tt>. The <strong>Input Files</strong> and 
+<strong>Output Files</strong> tabs list all files associated with the tool for reference.</p>
+
+<p>If you want to return to the Tool Properties dialog box for a tool you have already 
+created, then double-click the tool icon.</p>
+
+<p>Now, the command file for this tool must be created. Right-click the Sentaurus Process 
+tool icon and choose <strong>Edit Input</strong> &gt; <strong>Commands</strong>. The 
+text editor (gedit by default) opens for you to enter commands.</p>
+
+<p>To customize the text editor used for editing input files, see
+<a href="swb_05.html#2">Section&nbsp;5.2 Changing the Default Text Editor</a>.</p>
+
+<p>Next, add the following lines to the Sentaurus Process command file with the text editor:</p>
+
+<pre>
+Grid2D
+select silicon name=Boron z=1e15 store
+implant phosphorus dose=5e14 energy=40
+diffuse time=20 temperature=900
+struct tdr=n@node@ !Gas !interfaces
+</pre>
+
+<p>Save the <tt>sprocess_fps.cmd</tt> command file and close the text editor.</p>
+
+<p>In the next sections, you might want to add some extra tools to the flow (usually, 
+Sentaurus Structure Editor, or Sentaurus Device, or both, followed by Sentaurus Visual).</p>
+
+<!--================================================-->
+<a name="Save"></a>
+<h1>3.2 Saving Projects</h1>
+
+<p>Before running the project, you must save it.</p>
+
+<p>To save a project:</p>
+
+<ol>
+<li>Choose <strong>Project</strong> &gt; <strong>Save As</strong> &gt; <strong>Project</strong>.</li>
+<li>Navigate to where you want to save the project under <tt>$STDB</tt>.</li>
+<li>Save the project as <tt>parameters_scenarios</tt>.</li>
+</ol>
+
+<p>You can now run the project as described in 
+<a href="swb_02.html#RunProject">Section&nbsp;2.3 Running Projects</a>. There is only one node to 
+run for this project.</p>
+
+<!--================================================-->
+<a name="SDW"></a>
+<h1>3.3 Using the Sentaurus Device Wizard</h1>
+
+<p>The Sentaurus Device Wizard offers custom solutions for Sentaurus Device input 
+generation, followed by visualization of results and parameter extraction with 
+Sentaurus Visual.</p>
+
+<p>Its purpose is to help TCAD users to:</p>
+
+<ul>
+<li>Mitigate the rigidity of the constructions of the Sentaurus Device input language, 
+and make it easier for beginners to use</li>
+<li>Provide ready-to-go application examples for most frequently used TCAD applications</li>
+<li>Reduce the overall complexity of setting up a device simulation flow in 
+Sentaurus Workbench</li>
+</ul>
+
+<p>The Sentaurus Device Wizard consists of two parts:</p>
+
+<ul>
+<li>The graphical user interface (GUI)</li>
+<li>The library of examples. Examples are grouped by applications, where each 
+application group typically represents either certain device functionality 
+(such as power, wide bandgap, and memory devices) or different simulation techniques 
+(such as degradation, radiation, noise, and variability). Each example is already 
+equipped with the corresponding TDR geometry, which is referred to in the corresponding 
+<tt>Grid</tt> input statement (see 
+<a href="../sd/sd_1.html#File">Section&nbsp;1.2.1 File Section</a>).</li>
+</ul>   
+
+<p>To create an input command file for Sentaurus Device:</p>
+
+<ol>
+<li>Create a new project and add the Sentaurus Device tool in it.</li>
+
+<li>Choose <strong>Tool</strong> &gt; <strong>Edit Input</strong>, or 
+right-click the Sentaurus Device tool icon and choose <strong>Edit Input</strong> &gt; <strong>SDevice Wizard</strong>.<br />
+<p><img src="images/swb_sdw1.png" width="464" height="420" alt="Opening Sentaurus Device Wizard" /></p>
+<p>The Sentaurus Device Wizard opens.<br /><br />
+The following chart shows the operational scenario of the wizard, where you make several selections and enter your input as required. Some selections such as <strong>Physical Models</strong> and <strong>Numerical Setting</strong> can be omitted.</p>
+
+<p><a href="images/swb_sdw10.png"><img src="images/swb_sdw10.png" width="530" alt="Sentaurus Device Wizard operational scenario" /></a></p>
+</li>
+
+<li>Select an application.<br />
+Under Special Technique Demonstrators, select <strong>Breakdown Simulation</strong>.<br />
+<p><a href="images/swb_sdw2.png"><img src="images/swb_sdw2.png" width="530" alt="Selecting an application in Sentaurus Device Wizard" /></a></p>
+</li>
+
+<li>Click <strong>Next</strong>.</li>
+
+<li>Select a device (only one device is available for this application).<br />
+The options available depend on the application previously selected.<br />
+<p><img src="images/swb_sdw3.png" width="530" alt="Selecting a device in Sentaurus Device Wizard" /></p>
+</li>
+
+<li>Click <strong>Next</strong>.</li>
+
+<li>Select a simulation task.<br />
+Two tasks are available for the selected device. Select <strong>Diode reverse bias ramp with ABA</strong>.<br />
+<p><img src="images/swb_sdw5.png" width="530" alt="Selecting a simulation task in Sentaurus Device Wizard" /></p>
+</li>
+
+<li>Click <strong>Next</strong>.</li>
+
+<li>Select the numeric control parameter values and other controls.<br />
+These options provide the possibility to generate commented input and select a tool name for the 
+Sentaurus Visual tool instance.<br />
+<p><a href="images/swb_sdw9.png"><img src="images/swb_sdw9.png" width="530" alt="Selecting numeric controls in Sentaurus Device Wizard" /></a></p>
+</li>
+
+<li>Click <strong>Next</strong>.</li>
+
+<li>At the end, review the selection summary, which shows all the chosen settings for the 
+selected simulation task including physical models and numeric parameters for the 
+selected device.<br />
+<p><img src="images/swb_sdw4.png" width="530" alt="Selection summary in Sentaurus Device Wizard" /></p>
+</li>
+
+<li>Click <strong>Finish</strong>.<br />
+The wizard generates the input file for the selected simulation task and opens it in the 
+text editor (see Figure 4). Your default text editor in Sentaurus Workbench is used (jEdit 
+is shown as an example). If a file with a given name already exists, then you will be 
+prompted to confirm whether you want to overwrite it before creating a new one.</li>
+</ol>
+
+<p><a href="images/swb_sdw6.png"><img src="images/swb_sdw6.png" width="570" 
+alt="Input for device simulation" /></a></p>
+
+<p class="caption">Figure 4. Sentaurus Device command file as generated by 
+Sentaurus Device Wizard. (Click image for full-size view.)</p>
+
+<p>In addition to Sentaurus Device input generation, the Sentaurus Device Wizard creates 
+the subsequent Sentaurus Visual tool instance with a given name and copies its predefined 
+input to the project directory (see Figure 5). To be able to run a device simulation, all 
+relevant files (meshed device structure, parameter file, and so on) are also generated 
+inside the project.</p>
+
+<p><img src="images/swb_sdw8.png" width="299" height="124" alt="Resulting project view" /></p>
+
+<p class="caption">Figure 5. Executed project, generated by using Sentaurus Device Wizard.</p>
+
+<p>Finally, after executing the Sentaurus Device node, you can check the results in Sentaurus 
+Visual (see Figure 6).</p>
+
+<p><a href="images/swb_sdw7.png"><img src="images/swb_sdw7.png" width="570" 
+alt="Results shown in Sentaurus Visual" /></a></p>
+
+<p class="caption">Figure 6. Results of 3D diode simulation with ABA method. 
+(Click image for full-size view.)</p>
+
+<p>Now, you can replace the given device structure with your own device in the project 
+and repeat the device simulation. Before you run it, ensure that all the given electrode 
+names and bias conditions are appropriate for your device.</p>
+
+<!--================================================-->
+<a name="Parallel"></a>
+<h1>3.4 Setting Up Parallel Processing</h1>
+
+<p>Sentaurus Workbench supports parallel processing in a shared-memory multiprocessor 
+environment, as well as message passing interface (MPI). This is especially important 
+for 3D simulations, which require significant computation resources. To run simulations 
+in parallel, special commands are available to instruct tools to use thread parallelism 
+to accelerate the simulations (see 
+<a href="../sd/sd_9.html#5">Section&nbsp;9.5 Parallelization</a>).</p>
+
+<p>Sentaurus Workbench automatically synchronizes the number of requested parallel slots 
+between a simulation job and a scheduler. You need to decide on the required resources, 
+such as the number of requested parallel slots (CPUs) and the amount of memory (RAM), 
+<em>before</em> job execution. Sentaurus Workbench takes over this task and requests 
+appropriate computational resources during job submission (this is done by default).</p>
+
+<p>To configure parallel job execution, each tool has a corresponding Tool Properties 
+dialog box where you can set up parallelization on the <strong>Parallelization</strong> 
+tab of the dialog box (see Figure&nbsp;7).</p>
+
+<p><a href="images/swb_autoalloc.png"><img src="images/swb_autoalloc.png" width="570" 
+alt="Tool Properties Parallelization dialog box highlighting the automatic allocation option" /></a></p>
+
+<p class="caption">Figure 7. Tool Properties dialog box showing Parallelization tab used 
+to set up automatic CPU allocation for parallel computation. (Click image for full-size view.)</p> 
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_02.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_04.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

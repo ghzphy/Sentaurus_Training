@@ -1,0 +1,45 @@
+.noshow * { display: none; }
+div.tcard_fancy {
+	max-width: 100ex;
+	padding:0px;
+	border:1px solid gray;
+	border-radius:7px;
+	margin:7px;
+}
+
+div.tcard {
+	max-width: 100ex;
+	margin-bottom: 1ex;
+}
+
+div.title_fancy {
+	padding:0px;
+	border:1px solid gray;
+	border-radius:5px;
+	margin:0px;
+	background-color: lightgray;
+}
+
+div.title {
+	padding:0px;
+	border:1px solid gray;
+	margin-top: 1ex;
+	margin-bottom: 3px;
+	background-color: #999966;
+	background-color: #CCDDBB;
+}
+
+div.ctitle {
+	padding-left: 1em;
+	border: 1px solid #003366;
+	margin-top: 1ex;
+	margin-bottom: 3px;
+}
+
+#list {
+	width: 600px;
+	padding-top: 3px;
+	margin-left: auto;
+	margin-right: auto;
+}
+

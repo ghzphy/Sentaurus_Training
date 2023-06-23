@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 18. Special Focus: Simulating Ferroelectric Devices</title>
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" 
+charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  
+M.$mathQ = false</script>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_17.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />18. Special Focus: Simulating Ferroelectric Devices</h1>
+
+<p>
+ <a href="#overview">18.1 Overview</a><br />
+ <a href="#example">18.2 Example: Ferroelectric Hysteresis</a><br />
+ <a href="#relevant">18.3 Relevant Examples</a>  
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To demonstrate the use of ferroelectric models implemented in Sentaurus Device.</li>
+</ul>
+
+<!--================================================-->
+<a name="overview"></a> 
+<h1>18.1 Overview</h1>
+
+<p>Ferroelectric materials, such as PbZr<sub>x</sub>Ti<sub>1&ndash;x</sub>O<sub>3</sub> (PZT), 
+SrBi<sub>2</sub>Ta<sub>2</sub>O<sub>9</sub> (SBT), and (Bi,La)<sub>4</sub>Ti<sub>3</sub>O<sub>12</sub> 
+(BLT), and doped hafnium oxide, are characterized by spontaneous dielectric polarization 
+even when the applied electric field is zero. Polarization in these materials depends 
+nonlinearly on the electric field. The polarization at a given time depends on the electric 
+field at that time and the electric field at previous times. The history dependence leads 
+to the well-known phenomenon of hysteresis.</p>
+
+<p>Different ferroelectric models are available in Sentaurus Device, which cover the full 
+range of ferroelectric device simulation in increasing order of complexity:</p>
+
+<ul>
+<li>Analytic ferroelectric model (Preisach-based model)</li>
+<li>Directional ferroelectric model (default), which solves the Ginzburg&ndash;Landau&ndash;Khalatnikov 
+(GLK) equation assuming a single polarization direction</li>
+<li>Advanced edge-based ferroelectric model (Solver II), which uses the full formulation 
+of the GLK equation by assuming the divergence-free polarization constraint</li>
+</ul>
+
+<p>The Preisach-based model, being an analytic model, is simple and numerically efficient 
+compared to the other approaches. The next section explores the Preisach-based model using a 
+ferroelectric capacitor example.</p>
+
+<!--================================================-->
+<a name="example"></a> 
+<h1>18.2 Example: Ferroelectric Hysteresis</h1>
+
+<p>Sentaurus Device implements a Preisach-based model for ferroelectrics that features 
+minor loop nesting and memory wipeout features. This example explores these features.</p>
+ 
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/Ferroelectric/Hysteresis</tt>.</p>
+
+<!--==============================-->
+<h2>18.2.1 Project Organization</h2>
+
+<p>The simulations are organized in a Sentaurus Workbench project (see Figure 1). The tool 
+flow starts with Sentaurus Structure Editor, which generates the ferroelectric capacitor. 
+The Sentaurus Device tool instances <tt>sat_loop</tt>, <tt>depol</tt>, and <tt>mem_wipeout</tt> 
+simulate the saturation hysteresis loop, the depolarization, and the memory wipeout 
+characteristics of the ferroelectric capacitor. The Sentaurus Visual tool instances next 
+to the Sentaurus Device tools plot the respective characteristics.</p>
+
+<p><a href="images/sd_ferro_swb.png"><img src="images/sd_ferro_swb.png" width="570" 
+alt="Project organization" /></a></p>
+
+<p class="caption">Figure 1. Organization of the project in Sentaurus Workbench. 
+(Click image for full-size view.)</p>
+
+<!--==============================-->
+<a name="Preisach"></a>
+<h2>18.2.2 Preisach-Based Model</h2>
+
+<p>The basic concept of the Preisach-based approach is to model the material through 
+a cluster of independent dipoles, which can switch between two opposing states. Each 
+dipole has a rectangular hysteresis loop, and superposition of such simple hysteresis 
+units gives the net hysteresis loop. The following parameters that define the hysteresis 
+loop must be extracted from the experimental data for use in the Preisach-based model:</p>
+
+<ul>
+<li>Saturation polarization, \(P_{\text"s"}\)</li>
+<li>Coercive field, \(F_{\text"c"}\) </li>
+<li>Remanent polarization, \(P_{\text"r"}\)</li>
+</ul>
+
+<p>Figure&nbsp;2 shows the typical hysteresis plot noting these parameters.</p>
+
+<p><a href="images/sd_ferro_sat_loop.png"><img src="images/sd_ferro_sat_loop.png" width="570" 
+alt="Saturation loop" /></a></p>
+
+<p class="caption">Figure 2. Polarization versus electric field characteristic of the 
+ferroelectric capacitor. The points on the polarization curve are reached in the sequence 
+a, x, y, s, -s, x, y, s. The path represented by points -s, x, y, s, -s forms the 
+saturation loop. (Click image for full-size view.)</p>
+
+<p>Sentaurus Device computes the auxiliary polarization \(P_{\text"aux"}\) as an algebraic 
+function of the auxiliary field \(F_{\text"aux"}\) and is given by:</p>
+
+<p>\( 
+	P_{\text"aux"} = c . P_\text"s" . \text"tanh"( w . (F_{\text"aux"} &#177; F_\text"c" ) ) + P_{\text"off"}
+	\)</p>
+	
+
+<p>where \( 
+	w = 1 / {2 F_{\text"c"}} \text"ln" {P_\text"s"+P_\text"r"}/{P_\text"s"-P_\text"r"}
+	\).</p>
+
+<p>The parameters \(P_{\text"off"}\) and <tt>c</tt> result from the polarization history 
+of the material. The model is activated by specifying the keyword <tt>Polarization</tt> 
+in the <tt>Physics</tt> section of the command file:</p>
+
+<pre>
+Physics (Material= "HfO2") {
+   Polarization
+}</pre> 
+
+<p>To obtain a plot of the polarization field, <tt>Polarization/Vector</tt> is specified 
+in the <tt>Plot</tt> section of the command file:</p>
+
+<pre>
+Plot {
+   Polarization/Vector
+}
+</pre>
+ 
+<p>As previously noted, Sentaurus Device characterizes the static properties of a ferroelectric 
+material by three parameters: the remanent polarization (<tt>P_r</tt>), the saturation polarization 
+(<tt>P_s</tt>), and the coercive field (<tt>F_c</tt>). The transient response of the ferroelectric 
+material is characterized by the relaxation times (<tt>tau_E</tt>, <tt>tau_P</tt>) and by a 
+nonlinear coupling constant (<tt>kn</tt>). The following parameter values are specified for the 
+ferroelectric material in the parameter file:</p>
+ 
+<pre>
+Material = "HfO2" {
+   Polarization
+   { * P_r, P_s, and Fc for ferroelectric for x,y,z directions
+     P_r = (1.2e-5, 1.2e-5, 0)
+     P_s = (2e-5, 2e-5, 0)
+     F_c = (5e+5, 5e+5, 0)
+   }
+}
+</pre>
+
+<!--==============================-->
+<a name="discuss"></a>
+<h2>18.2.3 Discussion</h2>
+
+<p>The structure used for the simulation is a simple capacitor with two electrodes: 
+<tt>top</tt> and <tt>bottom</tt>. Figure&nbsp;2 shows the simulated hysteresis plot 
+of the ferroelectric capacitor. The points on the polarization curve are reached in 
+the sequence <tt>a, x, y, s, -s, x, y, s</tt>. An important property of ferroelectric 
+hysteresis is the well-defined saturation loop represented by the sequence 
+<tt>-s, x, y, s, -s</tt>.</p>
+
+<p>Ferroelectric materials are characterized by dielectric polarization owing to 
+preexisting dipoles in these materials. A group of dipoles having parallel orientation 
+forms a domain. In the inset of Figure&nbsp;2, each arrow represents a dipole and a 
+unique color is used to represent a domain. At zero electric field, the orientation 
+is such that the net dipole moment is zero and so the polarization is zero 
+(point <tt>a</tt> in Figure&nbsp;2) in the absence of an electric field.</p>
+
+<p>With an increasing electric field, more domains align with the electric field, 
+thereby increasing the net polarization (point <tt>y</tt>). As the field is increased 
+to point <tt>s</tt>, the net polarization saturates. The end points of the saturation loop 
+are denoted by <tt>s</tt> and <tt>-s</tt>. Irrespective of the previous history of the 
+ferroelectric capacitor, polarization points must lie on or within the saturation loop.</p>
+
+<p>Figure 3 shows the electrostatic potential field and polarization vector plots when 
+saving the ferroelectric capacitor states at the saturation end points <tt>s</tt> and 
+<tt>-s</tt>, as noted in Figure&nbsp;2.</p>
+
+<p><a href="images/sd_ferro_sat_loop_2dplot.png"><img src="images/sd_ferro_sat_loop_2dplot.png" 
+width="540" alt="Saturation loop for 2D plots" /></a></p>
+
+<p class="caption">Figure 3. Electrostatic potential field and  polarization vector plots: 
+(a) down polarization for positive voltage applied to top electrode and (b) up polarization 
+for negative voltage applied to top electrode. (Click image for full-size view.)</p>
+
+<p>The Preisach-based model allows the simulation of the effect of depolarization 
+(almost zero net polarization at zero applied field) as shown in Figure&nbsp;4. 
+To simulate this, a triangularly shaped voltage with constantly decreasing amplitude 
+(see inset of Figure&nbsp;4) is applied to the <tt>top</tt> electrode of the ferroelectric 
+capacitor. Sentaurus Device records turning points (points where the polarization curve 
+changes direction) as they are encountered during a simulation. Some turning points are 
+noted in Figure&nbsp;4. The memory always contains <tt>s</tt> as the oldest turning point 
+and <tt>-s</tt> as the second-oldest turning point.</p>
+
+<p><a href="images/sd_ferro_depol.png"><img src="images/sd_ferro_depol.png" width="540" 
+alt="Depolarization" /></a></p>
+
+<p class="caption">Figure 4. Polarization versus electric field characteristic illustrating 
+depolarization hysteresis loop. Inset shows the applied voltage. 
+(Click image for full-size view.)</p>
+
+<p>Figure 5 illustrates the simulation of memory wipeout, another interesting feature 
+of ferroelectric materials. This effect is seen when the amplitude of the voltage or 
+electric field is increased again after one or more depolarization cycles. The inset 
+of Figure&nbsp;5 shows the applied voltage. The points on the polarization curve are 
+reached in the sequence <tt>a, b, c, b, d</tt>. The sequence <tt>b, c, b</tt> forms 
+a subcycle or minor loop.</p>
+
+<p>Although Preisach-based hysteresis shows history dependence, not all of its prior 
+history needs to be recorded. For example, as the saturation loop is well defined, 
+if a large voltage is applied across the ferroelectric capacitor so that its polarization 
+point is on the saturation curve, then its behavior in the future no longer depends on 
+its past history. This implies that only the alternating series of dominant input voltage 
+extrema are important. After the polarization sequence <tt>a, b, c, b</tt>, the memory is 
+erased at <tt>b</tt> as the next polarization point <tt>d</tt> does not depend on the 
+previous history.</p>
+
+<p><a href="images/sd_ferro_mem_wipeout.png"><img src="images/sd_ferro_mem_wipeout.png" 
+width="540" alt="Memory wipeout" /></a></p>
+
+<p class="caption">Figure 5. Polarization versus electric field characteristic illustrating 
+memory wipeout; the saturation loop is included for reference. Inset shows the applied 
+voltage. (Click image for full-size view.)</p>
+
+<!--=========================-->
+<a name="relevant"></a>
+<h1>18.3 Relevant Examples</h1>
+
+<dl class="ref">
+
+<dt>Ex. 1</dt>
+<dd><cite>Simulation of Content-Addressable Memory Based on Ferroelectric FET</cite>, 
+available from <tt>Applications_Library/Memory/FeFET_CAM</tt>.</dd>
+
+<dt>Ex. 2</dt>
+<dd><cite>1T_FeRAM</cite>, available from Sentaurus Device Wizard.</dd>
+
+<dt>Ex. 3</dt>
+<dd><cite>Ferroelectric_Capacitor</cite>, available from Sentaurus Device Wizard.</dd>
+
+<dt>Ex. 4</dt>
+<dd><cite>Negative_Capacitance_FET</cite>, available from Sentaurus Device Wizard.</dd>
+
+</dl>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_17.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

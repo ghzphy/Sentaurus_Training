@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device EMW 5. Special Focus: Using CODE&nbsp;V Excitation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device Electromagnetic Wave Solver<br />
+5. Special Focus: Using CODE&nbsp;V Excitation</h1>
+
+<p>
+<a href="#1">5.1 Overview</a><br />
+<a href="#2">5.2 Preparing EMW for CODE&nbsp;V Excitation</a><br />
+<a href="#3">5.3 Extracting Excitation Fields From CODE&nbsp;V</a><br />
+<a href="#4">5.4 Using CODE&nbsp;V Excitation Fields in EMW</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To learn how to extract excitation fields suitable for EMW from the 
+Synopsys CODE&nbsp;V&reg; tool.</li>
+ <li>To understand how to import CODE&nbsp;V excitation fields into EMW.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Overview</h1>
+
+<p>The beam synthesis propagation (BSP) method of CODE&nbsp;V is often useful within
+optical systems where beam divergence due to diffraction can be significant,
+for example, camera lenses for image sensors. EMW offers an interface to BSP
+to import optical fields on 2D cross sections of CODE&nbsp;V and to use them as
+excitation.</p>
+
+<p>As CODE&nbsp;V does not support the export of H-fields, 
+complex E-fields must be exported at two different planes, from which EMW then
+can reconstruct the H-field. However, for the reconstruction of the H-field to be
+precise enough, interpolation must be avoided. Therefore, the distance of the export 
+planes in CODE&nbsp;V must correspond to the grid spacing at the excitation plane 
+of the EMW grid.</p>
+
+<p>To import a CODE&nbsp;V excitation into EMW, you must:</p>
+
+<ol>
+<li>Set up the EMW simulation and determine the grid spacing at the excitation plane.</li>
+<li>Define 2D cross-sectional slices in CODE&nbsp;V using adequate grid spacing and
+width, and export the fields.</li>
+<li>Run the EMW simulation using CODE&nbsp;V excitation.</li>
+</ol>
+
+<p>The following sections describe these steps in detail using a standard 
+camera lens from CODE&nbsp;V and a planar air&ndash;silicon interface for EMW.</p>
+
+<p>The complete CODE&nbsp;V project is available as 
+<a href="./files/codev-excitation.zip">codev-excitation.zip</a>.</p> 
+
+<p>The complete EMW project can be investigated from within Sentaurus Workbench in
+the directory <tt>Applications_Library/GettingStarted/emw/import-codev</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Preparing EMW for CODE&nbsp;V Excitation</h1>
+
+<p>Before exporting the excitation field in CODE&nbsp;V, you need to know the exact
+grid spacing and width of your excitation plane. Usually, this can be extracted
+directly from within Sentaurus Visual. However, if the tensor mesh is too big, it
+is faster to run a test EMW simulation with a few time steps, to create a 2D plot,
+and to extract the coordinates in Sentaurus Visual from the 2D plot.</p>
+
+<p> An example of how to set up a 2D plot can be found in the project
+<tt>Applications_Library/GettingStarted/emw/simple3d</tt> in the 
+<a href="../../Applications_Library/GettingStarted/emw/simple3d/emw_eml.cmd">
+emw_eml.cmd</a> command file.</p>
+
+<p>In this example, you can open the tensor mesh <tt>n3_msh.tdr</tt> directly in
+Sentaurus Visual and use the probe tool to find the excitation planes located at
+<tt>z1 = -0.3125</tt> and <tt>z2 = -0.25</tt>.</p>
+
+<p class="note">During probing in Sentaurus Visual, hold the Ctrl key to have 
+the probe tool snap to the vertex and to give you the exact coordinates.</p>
+
+<!--==================-->
+<a name="3"></a>
+<h1>5.3 Extracting Excitation Fields From CODE&nbsp;V</h1>
+
+<p>To run the CODE&nbsp;V part:</p>
+
+<ol>
+<li>Download the CODE&nbsp;V project files as <a href="./files/codev-excitation.zip">codev-excitation.zip</a>.</li>
+<li>Unzip the archive to the CODE&nbsp;V user directory typically: <tt>c:\CODEV\CVUSER</tt>.</li>
+<li>Edit the following lines in <a href="./files/emw-export.seq.txt">emw-export.seq.txt</a> 
+to match your EMW simulation:<br />
+
+<!-- grep file="./files/emw-export.seq.txt" startExpr="^gridWidth*"  endexpr="^planeZ2*" -->
+<pre>
+^gridWidth == 1e-3      ! Width of EMW grid in [mm]
+^npts      == 60        ! Number of exported grid points, look at snmesh log.
+^planeZ1   == -3.125e-3 ! z coordinate of 1st excitation mesh plane in [mm]
+^planeZ2   == -2.5e-3   ! z coordinate of 2nd excitation mesh plane in [mm]
+</pre>
+<!-- grep end -->
+</li>
+<li>Open CODE&nbsp;V.</li>
+<li>In the Command Window, type: <tt>tow in emw-export</tt></li>
+<li>Copy the excitation fields <tt>data_z1.dat</tt> and <tt>data_z2.dat</tt> to
+your Sentaurus Workbench project.</li>
+</ol>
+
+<p class="note">As the exported CODE&nbsp;V fields must match your EMW grid spacing,
+you must rerun CODE&nbsp;V whenever you change the EMW grid.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>5.4 Using CODE&nbsp;V Excitation Fields in EMW</h1>
+
+To use the CODE&nbsp;V fields as excitation in EMW, a <tt>CodeVExcitation</tt> section 
+must be defined in the 
+<a href="../../Applications_Library/GettingStarted/emw/import-codev/emw_eml.cmd">emw_eml.cmd</a> file:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/import-codev/emw_eml.cmd" startExpr="CodeVExcitation*"  endexpr="}*" -->
+<pre>
+CodeVExcitation {
+   InputDataFile    = {&quot;@pwd@/data_z1.dat&quot;, &quot;@pwd@/data_z2.dat&quot;}
+   AnchorPoint1     = {-0.5, -0.5, -0.3125}
+   AnchorPoint2     = {-0.5, -0.5, -0.25}
+   Wavelength       = 550
+   Nrise            = 5
+}
+</pre>
+<!-- grep end -->
+
+<p>Therein, the <tt>InputDataFile</tt> defines the input file names.</p>
+
+<p><tt>AnchorPoint1</tt> and <tt>AnchorPoint2</tt> set the reference point of the
+smallest x,y coordinates of the CODE&nbsp;V field data and the z-coordinate of
+the excitation planes. The propagating E-field is assumed to flow in the
+direction from z1 to z2, so in this example in the +z-direction.</p>
+
+<p>Other keywords such as <tt>Wavelength</tt> and <tt>Nrise</tt> have their usual
+meaning (see <a href="emw_2.html#6">Section&nbsp;2.6 PlaneWaveExcitation Section</a>).</p>
+
+<p>In addition, the keyword <tt>AmplitudeScaling</tt> can be used to scale the 
+imported excitation field.</p>
+
+<p>Figure 1 shows the resulting optical generation in silicon; half of the
+structure is blank to see the depth profile. Clearly, the circular focused beam
+spot is visible, and the depth profile shows a convergent beam into the silicon.</p>
+                                   
+<p><a href="images/emw_optgen.png"><img src="images/emw_optgen.png" width="550" 
+alt="Optical generation in silicon" /></a></p> 
+                         
+<p class="caption">Figure 1. Optical generation in silicon. (Click image for full-size view.)</p>
+
+<p class="note">CODE&nbsp;V excitation has the following restrictions:<br />
+1. The incident light propagation is limited to the z-direction.<br />
+2. Only the following boundary conditions are allowed:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ndash;&nbsp;<tt>CPML</tt> at all sides.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ndash;&nbsp;<tt>periodic</tt> at the X- and Y-sides, and <tt>CPML</tt> at the Z-side.<br />
+3. Only 3D simulations are supported.<br />
+4. The excitation plane must be in vacuum (that is, n=1, k=0).</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

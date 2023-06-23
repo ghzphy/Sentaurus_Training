@@ -1,0 +1,986 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 9. Three-Dimensional Device Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_8.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_10.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />9. Three-Dimensional Device Simulation</h1>
+
+<p>
+ <a href="#1">9.1 Overview </a><br />
+ <a href="#2">9.2 Meshing Controls</a><br />
+ <a href="#3">9.3 Numeric Controls</a><br />
+ <a href="#4">9.4 Linear Solvers</a><br />
+ <a href="#5">9.5 Parallelization</a><br />
+ <a href="#6">9.6 Understanding the Log File</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To describe how to run 3D device simulations and make them more efficient.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>9.1 Overview</h1>
+
+<p>In addition to 2D simulation capabilities, Sentaurus Device is designed to 
+simulate the device thermoelectrical behavior for native 3D devices as well as  
+device geometries with 3D cylindrical symmetry.</p>
+
+<p>Typically, 3D device simulations are more computationally expensive than 2D ones, 
+which require special solutions to be applied to make them running more efficiently.</p>
+
+<p>Some of these solutions are:</p>
+
+<ul>
+<li>Mesh optimization to allow for accurate 3D spatial discretization as well as 
+robust box method discretization of the partial differential equations.</li>
+<li>Use of numeric parameter sets, dedicated to 3D device simulations.</li>
+<li>Possibility to apply thread parallelism to accelerate simulations on shared-memory 
+computers.</li>
+<li>Linear equation system solvers, suitable for 3D device simulation.</li>
+<li>Strategy for debugging the output from the box method.</li>
+</ul>
+
+<p>The corresponding example, where most of the solutions described in this section are 
+applied, can be found in the <tt>Applications_Library/GettingStarted/sdevice/3Ddiode_demo</tt> 
+directory.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>9.2 Meshing Controls</h1>
+
+<p>Mesh generation, which produces grids suitable for 3D device simulations, might be not 
+an easy task. See <a href="../smesh/smesh_02.html">Section 2. Axis-Aligned Mesh Refinement</a> 
+for descriptions of different aspects of mesh generation using Sentaurus Mesh.</p>
+
+<p>This section summarizes some recommendations for those who are starting with 3D mesh generation:</p>
+
+<ul>
+<li>For complex device geometries, apply the mixed meshing strategy by combining an 
+axis-aligned mesh with boundary-conforming mesh refinement (see 
+<a href="../smesh/smesh_03.html#3">Section&nbsp;3.3 Offsetting</a> for how to do this 
+in Sentaurus Mesh).</li>
+
+<li>For device geometries with built-in periodicity, use <tt>Cuts</tt> to control the mesh 
+symmetry for the periodic parts of the structure:
+<br />
+
+<pre>
+AxisAligned {
+  yCuts=(1.03, 3.09, 5.15, 7.21, 9.27) 
+}
+</pre>
+</li>
+
+<li>Specify dedicated parameters in the <tt>Delaunizer</tt> section to control the number of 
+3D mesh nodes, the node connectivity, and the overall mesh quality (see Figure 1).</li>
+</ul>
+
+<p><a href="images/sd_3Dmeshcontrols.png"><img src="images/sd_3Dmeshcontrols.png" 
+width="570" alt="3D mesh controls"/></a></p>
+
+<p class="caption">Figure 1. Suggested Delaunizer settings for 3D mesh generation. 
+(Click image for full-size view.)</p>
+
+<p>The high-level Sentaurus Structure Editor command to produce the corresponding 
+<tt>Delaunizer</tt> section is shown here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/3Ddiode_demo/sde_dvs.cmd" startExpr="(sdesnmesh:delaunizer*" endExpr="*)*" " -->
+<pre>
+(sdesnmesh:delaunizer 
+  &quot;maxPoints&quot; 1e6 
+  &quot;maxConnectivity&quot; 120
+  &quot;delaunayTolerance&quot; 0. 
+  &quot;minDihedralAngleAllowed&quot; 1  
+)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="3"></a>
+<h1>9.3 Numeric Controls</h1>
+
+<p>Numeric controls can be split into different groups:</p>
+
+<ul>
+<li>General controls are used to control the solution methods and provide some 
+debugging information. Options allow you to switch on or off certain computations, such 
+as element quantity averaging, filtering out &quot;poor&quot; elements in the case of 
+the avalanche term computation, and simulation statistics controls.</li>
+<li>Nonlinear solver controls.</li>
+<li>Linear solver controls.</li>
+<li>Parallel computation controls.</li>
+</ul>
+
+<p>The first two controls are discussed here. The last two controls are discussed
+in <a href="../sd/sd_9.html#4">Section&nbsp;9.4 Linear Solvers</a> and 
+<a href="../sd/sd_9.html#5">Section&nbsp;9.5 Parallelization</a>.</p>
+
+<p>The full list of controls is demonstrated in the 
+<a href="../../Applications_Library/GettingStarted/sdevice/3Ddiode_demo/sdevice_des.cmd">sdevice_des.cmd</a>
+file from the <tt>Applications_Library/GettingStarted/sdevice/3Ddiode_demo</tt> project.</p>
+
+<!--====================-->
+<h2>9.3.1 General Controls</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/3Ddiode_demo/sdevice_des.cmd" startExpr="Math*" endExpr="*ExitOnFailure*" footer="  ...\n}" -->
+<pre>
+Math {
+  
+  Transient = BE
+  eMobilityAveraging = ElementEdge
+  hMobilityAveraging = ElementEdge
+  
+  ElementVolumeAvalanche
+  AvalFlatElementExclusion = 1.
+  
+  ParallelToInterfaceInBoundaryLayer(FullLayer -ExternalBoundary)
+  ComputeGradQuasiFermiAtContacts= UseQuasiFermi
+  
+  WeightedVoronoiBox
+  
+  AutoCNPMinStepFactor = 0
+  AutoNPMinStepFactor = 0
+  -PlotLoadable
+  SimStats   
+  
+  ExitOnFailure
+  ...
+}
+</pre>
+<!-- grep end -->
+
+<p>The general controls are:</p>
+
+<ul>
+<li><strong>Transient= BE</strong><br />
+Switches on the backward Euler transient solution method, which is usually &#126;2 times 
+faster than the default composite trapezoidal rule/backward differentiation formula 
+(TRBDF). It is recommended if a simulation runs in <tt>Transient</tt> mode.</li>
+
+<li><strong>e|hMobilityAveraging= ElementEdge</strong><br />
+Initiates mobility value-averaging for each semiconductor element edge, which results 
+in a smaller discretization error than averaging on the entire element.</li>
+
+<li><strong>ElementVolumeAvalanche</strong><br />
+Instructs the simulator to use a truncated element volume for the avalanche term 
+computation instead of the one computed by the box method (see Figure 2). This 
+ensures the computation of the avalanche term is not overestimated for flat elements.<br /><br />
+
+<img src="images/sd_EVA.png" width="450" alt="Truncated avalanche volume" /><br />
+
+<p class="caption">Figure 2. If ElementVolumeAvalanche is switched on, the avalanche 
+computation uses the truncated volume (filled as solid), instead of the volume 
+originally computed by the box method.</p></li>
+
+<li><strong>AvalFlatElementExclusion= &lt;value&gt;</strong><br />
+Filters out flat elements of the avalanche term computation. This might be useful for 
+the off-state breakdown computations. Elements with a flatness coefficient less 
+than the specified value should be filtered out.<br />
+
+<p class="note">Use this keyword with caution because, for large angle values, some 
+&quot;good&quot; elements could be filtered, which can lead to a breakdown voltage 
+overestimation. The typically suggested value should not exceed 1&deg; or 2&deg;.</p></li>
+
+<li><strong>ParallelToInterfaceInBoundaryLayer(FullLayer -ExternalBoundary)</strong><br />
+Requests that a driving-force field component parallel to the interface is used in the 
+high-field saturation and avalanche models for all elements that touch an interface, 
+but excludes elements that are in contact with the external boundary. This keyword can 
+be useful to avoid nonphysical breakdowns along an interface with a coarse mesh.</li>
+
+<li><strong>ComputeGradQuasiFermiAtContacts= UseQuasiFermi</strong><br />
+By default, for mesh elements touching electrodes, the electric field replaces the 
+gradient of the quasi-Fermi potential for the computations of the high-field saturation 
+model.<br />
+Evaluation of the electric field can be numerically problematic in situations when 
+the current densities are small. In such situations, it is suggested to use the gradient 
+of the quasi-Fermi potential at electrodes as a driving force.</li>
+
+<li><strong>WeightedVoronoiBox</strong><br />
+Switches on the use of the weighted Vorono&iuml; diagram in the box method computations 
+(see Figure 3). It works in conjunction with <tt>storeDelaunayWeight=true</tt> in 
+Sentaurus Mesh (see <a href="#2">Section&nbsp;9.2 Meshing Controls</a>).<br /><br />
+
+<a href="images/sd_voronoi.png"><img src="images/sd_voronoi.png" width="550" 
+alt="Original versus weighted Voronoi diagrams"/></a>
+
+<p class="caption">Figure 3. Two-dimensional non-Delaunay mesh: (top) not weighted 
+Vorono&iuml; diagram shows the overlap of the elements and (bottom) weighted Vorono&iuml; 
+diagram has no elements overlapping. (Click image for full-size view.)</p></li>
+
+<li><strong>AutoCNPMinStepFactor= 0, AutoNPMinStepFactor= 0</strong><br />
+In the case of nonconvergence, Sentaurus Device automatically activates the <tt>CNormPrint</tt> 
+and <tt>NewtonPlot</tt> commands (see  <a href="./sd_6.html#7">
+Section&nbsp;6.7 Debugging Newton Solver&ndash;Related Convergence Issues</a>)
+if the following criteria are met:<br />
+&ndash; For <tt>CNormPrint</tt>: step size &lt; <tt>AutoCNPMinStepFactor * MinStep</tt><br />
+&ndash; For <tt>NewtonPlot</tt>: step size &lt; <tt>AutoNPMinStepFactor * MinStep</tt> <br />
+By default, this will print out additional information on the last successful Newton iteration 
+and also will generate a <tt>*_des_min.tdr</tt> file for further debugging. In three dimensions, 
+such files can consume a lot of disk space. To switch off the generation of such files, zero 
+values are recommended.</li>
+
+<li><strong>-PlotLoadable</strong><br />
+By default, when a plot is produced, Sentaurus Device includes additional datasets in the 
+TDR file, which are required by the <tt>Load</tt> command to restart a simulation. In the 
+case of 3D simulations, plotting these datasets might require significant disk space. Use this 
+option to avoid plotting these extra datasets.</li>
+
+<li><strong>SimStats</strong><br />
+Use this option to write various simulation statistics (such as CPU time and memory 
+consumption) into a <tt>.plt</tt> file for further visualization.</li>
+
+<li><strong>ExitOnFailure</strong><br />
+Instructs Sentaurus Device to interrupt a simulation if any of the <tt>Solve</tt> section 
+commands fail.</li>
+</ul>
+
+<!--====================-->
+<a name="nonlin"></a>
+<h2>9.3.2 Nonlinear Solver Controls</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/3Ddiode_demo/sdevice_des.cmd" startExpr="*Digits*" endExpr="*RefDens_hGrad*" header="Math {\n  ..." footer="}" -->
+<pre>
+Math {
+  ...
+  Digits = 5
+  ErrRef(electron) = 1e8
+  ErrRef(hole) = 1e8
+  
+  Iterations = 10
+  NotDamped = 100
+  RHSMin = 1e-8
+  EquilibriumSolution(Iterations=100)
+  
+  Extrapolate
+  
+  RefDens_eGradQuasiFermi_ElectricField_HFS = 1e8
+  RefDens_hGradQuasiFermi_ElectricField_HFS = 1e8
+}
+</pre>
+<!-- grep end -->
+
+<p>For more details about the nonlinear system Newton solver, see 
+<a href="../sd/sd_6.html">Section 6. Nonlinear System Newton Solver</a>. The most 
+important controls we recommend to touch in case of 3D device simulation are discussed here.</p>
+
+<ul>
+<li><strong>Digits, ErrRef(electron), ErrRef(hole)</strong><br />
+These keywords control the convergence of transport model equations by looking 
+at the relative solution update \(Δx \) on each Newton or Gummel iteration:<br /><br />
+
+\[ {|Δx|} / {|x|+x_{\text"ref"}}  &lt; 10^{-\text"Digits"} \]
+<br />
+Here, \(x\) represents the corresponding solution variable (such as potential, 
+electron density, hole density etc.) and \(x_{\text"ref"}\) indicates the reference quantity 
+value, provided as the <tt>ErrRef</tt> statement for each solution variable in the 
+command file. For a smaller \(x_{\text"ref"}\) and a higher <tt>Digits</tt>, the 
+more accurate computations for a given solution variable will be required.<br />
+
+<p class="note">Specifying <tt>Digits=5</tt> should be sufficient for most cases. For 
+wide-bandgap device simulations, smaller values for carrier densities <tt>ErrRef</tt> 
+controls should be used due to much smaller intrinsic carrier densities in those materials.</p></li>
+
+<li><strong>Iterations, NotDamped, RHSMin</strong><br />
+While solving the transport model equations self-consistently, Sentaurus Device uses 
+the Newton-like solution method, where solutions are updated on each iteration as shown 
+in <a href="./sd_6.html#NewtonSolution">Figure&nbsp;1</a> of <a href="./sd_6.html#1">
+Section 6.1 Solving Nonlinear Equation System With Newton Solver</a>.<br />
+
+<p>When you run <tt>Quasistationary</tt> or <tt>Transient</tt> tasks with the Newton method, 
+such as <tt>Coupled {Poisson Electron Hole}</tt>, the Newton solver convergence is 
+verified by looking at two computed quantities:</p>
+
+<ul>
+<li>Global error criterion: 
+\(\text"error"\; = 1/ε_R 1/N ∑↙{e,i}{|z(e,i,j)-z(e,i,j-1)|} / {|z(e,i,j)|+z_{\text"ref"}(e)} &lt; 1\)</li>
+
+<li>Right-hand side (RHS) norm criterion: \(\text"RHS"\; = ||A ⋅ x - b|| &lt;\) <tt>RHSmin</tt></li>
+</ul>
+
+<p>The Newton solver quits the iterations if either criterion is met. Here,
+\(z\) indicates the corresponding solution variable, \(e\) refers to the
+equation, \(i\) denotes the node number, \(j\) corresponds to the iteration,
+and \(N\) corresponds to the total number of unknowns (number of nodes
+multiplied by the number of solution variables). The relative error \(ε_R\)
+corresponds to 10<sup>-<tt>Digits</tt></sup>. The reference error parameter
+\(z_{\text"ref"}(e)\) can be set through <tt>ErrRef(&lt;equation&gt;)</tt>.</p>
+
+<p>If the number of iterations exceeds the value of <tt>Iterations</tt>, then the Newton solver 
+quits, and the simulator cuts the step size and repeats the simulation 
+with a smaller step (see <a href="./sd_6.html#3">Section&nbsp;6.3 Optimizing the Nonlinear 
+Solver Performance</a>).<br /><br />
+By default, 20 Newton iterations are allowed. For large 3D tasks, a smaller number of 
+iterations is recommended, because each Newton iteration might take a significant amount of 
+CPU time. The Newton method typically has quadratic convergence behavior. Therefore, 
+specifying 10&ndash;12 iterations, in most cases, should be sufficient to reach the 
+converged solution.</p>
+
+<p class="note">If more iterations are required for a specific task, such as solving 
+the initial guess,  then the number of iterations can be explicitly specified as a 
+<tt>Coupled</tt> command option:<br />
+<tt>Coupled (iterations=100) { Poisson }</tt></p>
+
+<p>There are two solution damping methods available for the Newton solver: 
+<tt>LineSearchDamping</tt> and Bank&ndash;Rose damping. The former can be useful when 
+it is difficult to find a solution for a certain task, for example, computing the 
+initial guess (see <a href="./sd_6.html#2">Section&nbsp;6.2 Achieving a Good Initial Guess</a>). 
+For most cases, Bank&ndash;Rose damping is not recommended. To avoid it, 
+use the higher value for <tt>NotDamped</tt> (1000 by default) than for <tt>Iterations</tt>.</p></li>
+
+<li><strong>EquilibriumSolution(Iterations=100)</strong><br />
+   
+<p class="note">Having an electrode crossing a p-n junction or a heterointerface 
+can lead to an incorrect solution along such a contact due to the charge neutrality 
+condition imposed at Ohmic electrodes. To avoid this, the <tt>EqOhmic</tt> option 
+can be specified for an electrode, which instructs the simulator not to impose the 
+charge neutrality condition. This option is useful for both 2D and 3D device simulations,
+but can only be applied to isothermal device simulations.</p>
+
+If the <tt>EqOhmic</tt> option is activated on the electrode:<br />
+
+<pre>
+Electrode {
+  { Name="source"  Voltage= 0.0 EqOhmic}
+}
+</pre>
+
+<p>Sentaurus Device implicitly solves the Poisson equation at the very beginning to 
+produce the equilibrium state solution. This usually requires a much larger number of 
+iterations than specified by <tt>Iterations</tt>. To ensure there are enough 
+iterations allowed to solve the equilibrium state condition, specify the <tt>EquilibriumSolution</tt> 
+command with the dedicated options (such as <tt>Iterations</tt>, 
+<tt>LineSearchDamping</tt>, and <tt>Digits</tt>) relevant to this command only.</p></li>
+
+<li><strong>Extrapolate</strong><br />
+The initial guess for the next computed step could be obtained by linear extrapolation 
+from solutions computed in previous steps, which can drastically speed up convergence 
+(see <a href="./sd_6.html#4">Section&nbsp;6.4 Using the Extrapolate Option</a> for details).<br /><br /></li>
+
+<li><a name="smooth"></a><strong>RefDens_e|hGradQuasiFermi_ElectricField_HFS</strong><br />
+If the gradient of the quasi-Fermi level rapidly changes but the density does not, 
+then convergence can be unstable within regions of small densities. This can be 
+circumvented by introducing a correction density \(n_{0}\) in the 
+equation for the quasi-Fermi potential
+(see <a href="./sd_6.html#61">Section&nbsp;6.6.1 High-Field Saturation and Avalanche Generation</a> 
+for details).<br />
+
+<p>The nonzero \(n_{0}\) value stabilizes convergence within regions 
+with small densities but large \(∇Φ\) values. In this case, the special smoothing 
+procedure is applied between <tt>e|hGradQuasiFermi</tt> and <tt>ElectricField</tt> fields 
+for the high-field saturation model, which uses <tt>gradQuasiFermi</tt> as a default 
+driving force. See <a href="./sd_11.html#10">Section 11.10 Driving Force for Avalanche Generation 
+and High-Field Saturation Models</a> for details about different model driving
+forces and their smoothing controls.</p>
+
+<p class="note">For relatively large reference densities, with values greater than 
+n<sub>i</sub>(T), you might expect a breakdown voltage shift due to the difference 
+between the actual <tt>gradQuasiFermi</tt> and the electric-field driving-force values, 
+which enter the avalanche generation term computation. To avoid this, apply driving force 
+smoothing to the high-field velocity saturation model only, which is activated using 
+the <tt>RefDens_e|hGradQuasiFermi_ElectricField_HFS</tt> command options.</p></li>
+</ul>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>9.4 Linear Solvers</h1>
+
+<p>Different linear solvers are available in Sentaurus Device:</p>
+
+<ul>
+  <li><a href="#blocked">Section 9.4.1 Blocked Decomposition Solver</a></li>
+  <li><a href="#super">Section 9.4.2 SUPER Linear Solver</a></li>
+  <li><a href="#pardiso">Section 9.4.3 PARDISO Linear Solver</a></li>
+  <li><a href="#ils">Section 9.4.4 ILS Linear Solver</a></li>
+</ul>
+
+<p>The keyword <tt>Method</tt> specifies which solver Sentaurus Device will use. 
+By default, the SUPER linear solver is used. Table 1 summarizes different 
+aspects of each linear solver.</p>
+
+<table>
+<caption>Table 1. Linear solvers available in Sentaurus Device.</caption>
+
+<tr>
+<th>Solver</th>
+<th>Type</th>
+<th>Thread parallelism</th>
+<th>Extended precision support</th>
+<th>Recommended for</th>
+<th>Speciality</th>
+</tr>
+
+<tr>
+<td>Blocked</td>
+<td>Not a real solver, but a strategy to solve complex matrices in mixed mode</td>
+<td>no</td>
+<td>&ndash;</td>
+<td>Circuit and mixed-mode device simulations</td>
+<td>Mixed-mode circuit and device simulations</td>
+</tr>
+
+<tr>
+<td>SUPER</td>
+<td>Direct, sparse matrices</td>
+<td>no</td>
+<td>yes</td>
+<td>Medium 2D tasks, wide-bandgap devices</td>
+<td>Robust, very accurate, typically slowest over all</td>
+</tr>
+
+<tr>
+<td>PARDISO</td>
+<td>Direct, sparse matrices</td>
+<td>yes</td>
+<td>yes<sup>*</sup></td>
+<td>Large 2D devices, small- and medium-sized 3D silicon devices</td>
+<td>~2 times faster than SUPER, well parallelized</td>
+</tr>
+
+<tr>
+<td>ILS</td>
+<td>Iterative, sparse matrices</td>
+<td>yes</td>
+<td>yes</td>
+<td>Large 2D and 3D tasks, wide-bandgap devices</td>
+<td>Adjustable behavior, slight superlinear parallel scaling</td>
+</tr>
+</table>
+
+<p class="note"><sup>*</sup>Combining extended-precision arithmetic and parallelization 
+degrades the performance of PARDISO because the BLAS3 fast matrix multiplication library 
+(only available for the standard precision arithmetic) is not applied in this case.</p>
+
+<!--====================-->
+<a name="blocked"></a>
+<h2>9.4.1 Blocked Decomposition Solver</h2>
+
+<pre>
+Math {
+  Method= Blocked
+  SubMethod= ILS(set=1)
+  ACMethod= Blocked
+  ACSubMethod= ILS(set=2)
+  PrintLinearSolver
+}
+</pre>
+
+<p>Use the Blocked solver (<tt>Method=Blocked</tt>) when single or multiple 
+numerically simulated 2D or 3D devices are combined together within a circuit. 
+This is called the <em>mixed-mode device operation</em>, which is described in 
+<a href="../sd/sd_3.html">Section&nbsp;3. Mixed Mode.</a></p>
+
+<p>The concept of block decomposition is illustrated in Figure 4. Here, two devices 
+(Device 1 and Device&nbsp;2) are simulated numerically and coupled via the circuit. 
+The full matrix is decomposed into blocks, which include the sparse matrices of the 
+numerically simulated devices (&quot;1&quot; and &quot;2&quot;) coupled to the circuit 
+matrix &quot;c&quot; using the &quot;a&quot; and &quot;b&quot; matrices. Each &quot;1&quot; 
+and &quot;2&quot; matrix is solved using the solver specified by the <tt>SubMethod</tt>, 
+while the circuit matrix &quot;c&quot; is solved by the internal direct solver.</p>
+
+<p><a href="images/sd_blocked.png"><img src="images/sd_blocked.png" width="570" 
+alt="Schematics of the Blocked decomposition method"/></a></p>
+
+<p class="caption">Figure 4. Schematics of the blocked decomposition solver. Linear systems 
+for two numerically simulated devices are solved using the method specified by the SubMethod 
+keyword. In the case of small-signal AC analysis, a different linear solver can be selected 
+using the ACSubMethod command. (Click image for full-size view.)</p>
+
+<p class="note">Activate the option <tt>PrintLinearSolver</tt> in the <tt>Math</tt> section 
+to print out additional information regarding the linear solvers in the log file.</p>
+
+<!--====================-->
+<a name="super"></a>
+<h2>9.4.2 SUPER Linear Solver</h2>
+
+<p>To specify the SUPER direct linear solver for single-device simulations, use:</p>
+
+<pre>
+Math {
+  Method= Super
+}
+</pre>
+
+<p>To specify SUPER for mixed-mode device simulations, use:</p>
+
+<pre>
+Math {
+  Method= Blocked
+  SubMethod= Super
+}
+</pre>
+
+<p>If no solver is specified in the <tt>Math</tt> section, then the SUPER solver 
+will be used. The default solver settings for SUPER are optimized to address 
+most standard simulation needs. Modifying the direct solver settings is not recommended.</p>
+
+<p>For direct linear solvers, the <em>approximate</em> memory footprint 
+<em>M</em>(<em>N</em>) increases with the number of nodes <em>N</em> between &#126; 
+<em>c</em> x <em>N</em> x log(<em>N</em>) (ideal case) and  &#126; <em>c</em> x 
+<em>N</em><sup>3/2</sup> (realistic cases). Correspondingly, the number of arithmetic 
+operations <em>A</em>(<em>N</em>) increases with the number of nodes <em>N</em> between 
+&#126; <em>c</em> x <em>N</em><sup>3/2</sup> (ideal case) and &#126; <em>c</em> x 
+<em>N</em><sup>5/2</sup> (realistic cases). The proportionality constant <em>c</em> 
+reflects specific properties of the mesh structure and equations (that is, a linear system 
+matrix portrait).</p>
+
+<p class="note">For 2D tasks, especially wide-bandgap device simulations, SUPER provides 
+the best overall solution performance. It is generally not suitable for 3D device simulations 
+because it lacks parallelization, and memory consumption drastically increases with the 
+increased node count.</p>
+
+<!--====================-->
+<a name="pardiso"></a>
+<h2>9.4.3 PARDISO Linear Solver</h2>
+
+<p>To specify the Parallel Direct Solver (PARDISO) for single-device simulations, use:</p>
+
+<pre>
+Math {
+  Method= ParDiSo[(options)]
+}
+</pre>
+
+<p>To specify PARDISO for mixed-mode device simulations, use:</p>
+
+<pre>
+Math {
+  Method= Blocked
+  SubMethod= ParDiSo[(options)]
+}
+</pre>
+
+<p>Unlike SUPER, PARDISO takes full advantage of shared-memory multiprocessor computers 
+while being run on multiple CPUs in parallel. The default solver settings for PARDISO 
+are optimized to address most standard simulation needs.</p>
+
+<p>Several customizations are available for PARDISO (see Table 2).</p>
+
+<table>
+<caption>Table 2. Options available for PARDISO customization.</caption>
+
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+
+<tr>
+<td><tt>NonsymmetricPermutation</tt></td>
+<td>Computes initial nonsymmetric matrix permutation and scaling, which places 
+large matrix entries on the diagonal.</td>
+<td>on</td>
+</tr>
+
+<tr>
+<td><tt>IterativeRefinement</tt></td>
+<td>Performs up to two iterative refinement steps to improve the accuracy of the solution.</td>
+<td>off</td>
+</tr>
+
+<tr>
+<td><tt>MultipleRHS</tt></td>
+<td>Solves linear systems with multiple right-hand sides. This option applies to AC analysis only.</td>
+<td>off</td>
+</tr>
+
+<tr>
+<td><tt>RecomputeNonsymmetricPermutation</tt></td>
+<td>Computes nonsymmetric matrix permutation and scaling before each factorization.</td>
+<td>off</td>
+</tr>
+</table>
+
+<p>Using <tt>-NonsymmetricPermutation</tt> results in better speed but less accuracy 
+and is not recommended.</p>
+
+<p>Switching on <tt>IterativeRefinement</tt> and <tt>RecomputeNonsymmetricPermutation</tt> 
+targets better accuracy, but typically slows down the system solve.</p>
+
+<p>Running in single-CPU mode, PARDISO outperforms SUPER with respect to runtime and 
+memory requirements. Therefore, you can consider it for standard 2D simulation tasks. 
+For tasks that require higher accuracy (for example, wide-bandgap device simulations), 
+these customization options might be required, which make SUPER a more favorable choice.</p>
+
+<p>Having almost superlinear parallel scaling capabilities, PARDISO is also well suited 
+for medium-sized 3D device simulations. You might expect up to a &#126;12 times speedup 
+factor with PARDISO while running 3D simulations in parallel on a machine, equipped with 
+16 or more CPUs.</p>
+
+<!--====================-->
+<a name="ils"></a>
+<h2>9.4.4 ILS Linear Solver</h2>
+
+<p>To specify the Iterative Linear Solver (ILS) for single-device simulations, use:</p>
+
+<pre>
+Math {
+  Method= ILS[(set=&lt;n&gt;)]
+  [ILSrc= "set(&lt;n&gt;) {...};"]
+}
+</pre>
+
+<p>To specify ILS for mixed-mode device simulations, use:</p>
+
+<pre>
+Math {
+  Method= Blocked
+  SubMethod= ILS[(set=&lt;n&gt;)]
+  [ILSrc= "set(&lt;n&gt;) {...};"]
+}
+</pre>
+
+<p>Here, <tt>&lt;n&gt;</tt> indicates the set number, which is referred to in the 
+subsequent <tt>ILSrc</tt> statement.</p>
+
+<p>Compared to the direct method, the iterative approach reduces memory requirements 
+for large simulation tasks dramatically. Therefore, ILS is the preferred solver for 
+device simulations where the mesh node count exceeds the limit suitable for direct 
+linear solvers.</p>
+
+<p>ILS operation consist of the following steps:</p>
+
+<ol>
+<li>Compute nonsymmetric ordering to improve the matrix condition.</li>
+<li>Determine symmetric ordering to reduce fill-in in the preconditioner.</li>
+<li>Create a preconditioner to accelerate convergence.</li>
+<li>Call an iterative method.</li>
+</ol>
+
+<p>Each step is controlled by different parameters, which are combined within groups.</p>
+
+<p>Parameters that control the ILS behavior are grouped within a set. A set is 
+assigned a number, which is referred to in the input. Set numbers 1&ndash;19 are 
+reserved for the built-in defaults. User-defined sets can be assigned to numbers 20 
+and higher. Built-in parameter sets, which target different applications, are 
+hard-coded and do not actually need an explicit set specification. To activate any 
+of these sets, you need to specify the set number. For example:</p>
+
+<pre>
+Math {
+  Method= ILS(set=2)
+}
+</pre>
+
+<p>Figure 5 illustrates examples of built-in sets, suggested for different purposes.</p>
+
+<p><a href="images/sd_ils.png"><img src="images/sd_ils.png" width="570" 
+alt="Built-in ILS parameter sets" /></a></p>
+
+<p class="caption">Figure 5. Built-in ILS parameter sets and their parameter values. 
+(Click image for full-size view.)</p>
+
+<p>In addition, you can define custom sets using the <tt>ILSrc</tt> keyword. Table 3 
+refers to several ILS sets, which were established for different applications. To use 
+these sets, they must be defined explicitly using the <tt>ILSrc</tt> command in the 
+<tt>Math</tt> section.</p>
+
+<table>
+<caption>Table 3. ILS sets customized for different applications.</caption>
+
+<tr>
+<th>Application</th>
+<th>ILSrc set</th>
+</tr>
+
+<tr>
+<td>3D device off-state breakdown</td>
+<td><tt>ILSrc= "set (24) {<br />
+        iterative (gmres(150), tolrel=1e-10, maxit=300);<br />
+        preconditioning(ilut(1e-5,-1),left);<br />
+        ordering(symmetric=nd, nonsymmetric=mpsilst);<br />
+        options(verbose=0, refineresidual=10, prep=1, pdeg=2);<br />
+     };"</tt></td>
+</tr>
+<tr>
+<td>SiC device simulations</td>
+<td><tt>ILSrc= "set (25) {<br />      
+    iterative(gmres(100), tolrel=1e-10, tolunprec=1e-4, tolabs=0, maxit=200);<br />
+    preconditioning(ilut(1.5e-6,-1), left);<br />
+    ordering(symmetric=nd, nonsymmetric=mpsilst);<br />
+    options(compact=yes, linscale=0, refineresidual=10, verbose=0);<br />
+  };"</tt></td>
+</tr>
+<tr>
+<td>III&ndash;N device simulations</td>
+<td><tt>ILSrc= "set (26) {<br />      
+        iterative(gmres(100), tolrel=1e-12, tolunprec=1e-8, tolabs=0, maxit=200);<br />
+        preconditioning(ilut(1e-8,-1),left);<br />
+        ordering ( symmetric=nd, nonsymmetric=mpsilst );<br />
+        options( compact=yes, linscale=0, refineresidual=10, verbose=0); };<br />
+  };"</tt></td>
+</tr>
+</table>
+
+<p>The most relevant parameters for adjusting ILS behavior are:</p>
+
+<ul>
+<li>Quality of preconditioning:<br />
+
+<pre>
+preconditioning(ilut(<strong>&epsilon;</strong>,-1), left);
+</pre>
+
+Elements smaller than &epsilon; are removed during elimination. Smaller values of 
+&epsilon; lead to denser triangular factors L and U of the preconditioner, which 
+will increase the accuracy of the preconditioning step. Consequently, there is 
+a cost and accuracy trade-off when selecting the &epsilon; value.<br /></li>
+
+<li>Number of GMRES backvectors:<br />
+
+<pre>
+iterative (gmres(<strong>150</strong>), tolrel=1e-10, maxit=300);
+</pre>
+
+GMRES stores a given number of backvectors. If the solution does not converge within 
+a given restart number, GMRES restarts the iteration. A higher number of backvectors 
+improves convergence but increases memory use.<br /></li>
+
+<li>Stopping criteria for iterative solver:<br />
+
+<pre>
+iterative (gmres(150, tolrel=<strong>1e-10</strong>, maxit=<strong>300</strong>));
+</pre>
+
+The iterative solver stops when the residual error becomes less than a given normalized 
+value or if the maximum number of iterations is reached.<br /></li>
+
+<li>Extra options for matrix reordering and the ILUT preconditioner:<br />
+
+<pre>
+options(prep=<strong>1</strong>, pdeg=<strong>2</strong>);
+</pre>
+
+Convergence can be further improved by forcing the fixed initial ordering and 
+second-degree ILUT preconditioner.</li>
+
+<li>Forcing additional iterations:<br />
+
+<pre>
+options(verbose=0, refineresidual=<strong>10</strong>);
+</pre>
+
+Convergence can be further improved by forcing the iterative solver to have more 
+iterations after the stopping criteria are fulfilled.</li>
+</ul>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>9.5 Parallelization</h1>
+
+<pre>
+Math {
+  NumberOfThreads= &lt;n&gt;
+  ParallelLicense (Wait)
+  Wallclock
+}
+</pre>
+
+<p>Sentaurus Device uses thread parallelism to accelerate simulations on shared-memory 
+computers. Table 4 lists the parallelized components of Sentaurus Device.</p>
+
+<table>
+<caption>Table 4. Tasks involved in parallelization in Sentaurus Device.</caption>
+
+<tr>
+<th>Task</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>Box discretization</td>
+<td>Computation of box method coefficients.</td>
+</tr>
+
+<tr>
+<td>Matrix assembly</td>
+<td>Computation of mobility, avalanche, current density, energy flux; assembly of Poisson,
+continuity, lattice, and temperature equations.</td>
+</tr>
+
+<tr>
+<td>Linear system solve</td>
+<td>PARDISO and ILS solvers contribute to thread parallelism.</td>
+</tr>
+</table>
+
+<p>The value of the keyword <tt>NumberOfThreads</tt> declares the number of threads 
+to be allocated and used for parallelization. It must not exceed the physical 
+number of CPUs available on a machine or a cluster node where the simulation is run.</p>
+
+<p class="note">Do not use <tt>NumberOfThreads= maximum</tt>, which will 
+allocate all CPUs on a machine. At least one CPU must remain free to allow the system 
+task to be run. Otherwise, instead of a speedup, performance degradation will be observed.</p>
+
+<p>The <tt>ParallelLicense (Wait)</tt> command instructs the simulator to wait until 
+a parallel license becomes available.</p>
+
+<p>To display wallclock times (the real time between process invocation and termination) 
+rather than CPU times, use the <tt>Wallclock</tt> option.</p>
+
+<p class="note">One parallel license supports parallelization on four CPUs. Therefore, 
+to run on 16 CPUs, for example, four parallel licenses are required.</p>
+
+<p>To investigate different task contributions to the overall speedup, their 
+parallelization can be independently enabled using the following commands:</p>
+
+<pre>
+Math {
+  NumberOfAssemblyThreads = &lt;n&gt;
+  NumberOfSolverThreads   = &lt;n&gt;
+}
+</pre>
+
+<p>To see how parallelization contributes to a simulation speedup, run a simulation 
+in single-thread mode first, and then rerun it in parallel mode using a value higher than 
+one assigned using <tt>NumberOfThreads</tt>. Then, feed both log files to the 
+<tt>sdevicestat</tt> stand-alone routine, which will produce cumulative reports, 
+showing the accumulated times spent for each particular task. For example:</p>
+
+<pre>
+> sdevicestat n123_des.log
+...
+Total CPU-time        : 118.04 s
+Rhs-time              : 46.92 % ( 55.39 s )
+Jacobian-time         : 8.38 % ( 9.89 s )
+Solve-time            : 43.63 % ( 51.50 s )
+</pre>
+
+<p>Figure 6 explains the meaning of the speedup estimations shown in Figure 7, as follows:</p>
+
+<ul>
+<li>Wallclock Time: The real time a simulation took from invocation until termination</li>
+<li>Solver Speedup: The speedup due to the parallelization applied in the linear solver 
+compared to a single CPU run (Solve-time in log file)</li>
+<li>Assembly Speedup: How much faster the matrix assembly is (Rhs-time and Jacobian-time in log file) 
+due to multi-threading parallelization, compared to a single CPU run</li>
+</ul> 
+
+<p><a href="images/sd_simstat.png"><img src="images/sd_simstat.png" width="570" 
+alt="Speedup factors" /></a></p>
+
+<p class="caption">Figure 6. Explanation of fields shown in Figure 7. 
+(Click image for full-size view.)</p>
+
+<p>Figure 7 shows the comparison of 3D simulation results for a structure with 
+&#126;1M mesh nodes, running in parallel on different numbers of CPUs using PARDISO 
+and ILS.</p>
+
+<p><a href="images/sd_parallel.png"><img src="images/sd_parallel.png" width="570" 
+alt="PARDISO versus ILS speedups"/></a></p>
+
+<p class="caption">Figure 7. Comparison of the simulation speedup factors while 
+running large 3D device simulations on different numbers of CPUs using PARDISO 
+and ILS. (Click image for full-size view.)</p>
+
+<p>To run Sentaurus Device in parallel mode inside Sentaurus Workbench, the 
+automatic allocation feature is available, which allows you to automatically synchronize 
+the number of requested parallel slots between a simulation job and a scheduler.</p>
+
+<p>For more details about this Sentaurus Workbench feature, see 
+<a href="../swb/swb_02.html#RunProject">Section&nbsp;2.3 Running Projects</a>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>9.6 Understanding the Log File</h1>
+
+<p>When starting your 3D simulation for the first time, it is useful to look 
+in the log file to better understand the details of the mesh on which you run 
+your device simulations.</p>
+
+<p>All the commands you specified in the <tt>Math</tt> section of the 
+<a href="../../Applications_Library/GettingStarted/sdevice/3Ddiode_demo/sdevice_des.cmd">
+command file</a> should be reflected in the log file:</p>
+
+<pre>
+Model: Math  Switched on
+  Parameter: WeightedVoronoiBox = on
+  Parameter: BM_ExtendedPrecision = on
+  Parameter: AutoNPMinStepFactor = 0
+  Parameter: AutoCNPMinStepFactor = 0
+  Model: SimStats  Switched on
+  Parameter: ElementVolumeAvalanche = on
+  Parameter: AvalFlatElementExclusion = 1 deg
+  Parameter: ComputeGradQuasiFermiAtContacts = UseQuasiFermi
+  Parameter: RefDens_eGradQuasiFermi_ElectricField = 100000000 cm^-3
+  Parameter: RefDens_hGradQuasiFermi_ElectricField = 100000000 cm^-3
+</pre>
+
+<p>At the beginning of the simulation, the <tt>BoxMethod</tt> analyzes the input grid 
+and prints out detailed information about it:</p>
+
+<pre>
+           NumberOfVertices =  10935 
+           NumberOfElements =  50688 
+       NumberOfTetrahedrons =  50688  (100.0 %)
+     NumberOfObtuseElements =  16896  (33.33 %)
+NumberOfNonDelaunayElements =  0  ( 0.00 %)
+</pre>
+
+<p>The most important indication of the 3D mesh quality is how the generated mesh 
+fulfills the <a href="../smesh/smesh_05.html#delaunay">Delaunay criterion</a>. The 
+most important criteria are the <tt>DeltaVolume</tt>, which indicates the difference 
+between the real physical device volume and the volume computed by <tt>BoxMethod</tt>, 
+and the number of non-Delaunay mesh elements, which are reported for each region 
+inside the device independently. It is important to have as small as possible 
+<tt>DeltaVolume</tt> values for semiconductor regions and as few as possible 
+non-Delaunay elements.</p>
+
+<p><a href="images/sd_log.png"><img src="images/sd_log.png" width="570" 
+alt="Sentaurus Device non-Delaunay mesh statistics" /></a></p>
+
+<p class="caption">Figure 8. Sentaurus Device report on non-Delaunay mesh statistics. 
+(Click image for full-size view.)</p>
+
+<p>For more details, see <a href="../sd/sd_7.html">Section 7. Sentaurus Device at Runtime</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_8.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_10.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

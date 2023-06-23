@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 4. Defining Models and Specifying Parameters</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />4. Defining Models and Specifying Parameters</h1>
+
+<p>
+ <a href="#1">4.1 Introducing the Parameter Database Browser</a><br />
+ <a href="#2">4.2 Changing Parameters in the Command File</a><br />
+ <a href="#3">4.3 Example: Changing Dopant Diffusivity</a><br />
+ <a href="#4">4.4 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To show how to look up default models and parameter values.</li>
+ <li>To show how models and parameter values are selected in a command file.</li>
+ <li>To demonstrate model and parameter specification.</li>
+</ul>
+
+<p class="note">The files discussed in this section are part of the Sentaurus Workbench 
+project <tt>Models</tt>. The complete project can be investigated 
+from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sprocess/Models</tt>.</p>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>4.1 Introducing the Parameter Database Browser</h1>
+
+<p>If the physical models and parameter values are not specified explicitly, Sentaurus Process 
+uses the default models and parameters. These defaults are stored in the parameter database 
+of Sentaurus Process, which consists of a hierarchical directory that is part of the TCAD 
+release. The standard location is:</p>
+
+<pre>
+$STROOT/tcad/$STRELEASE/lib/score/Params/
+</pre>
+
+<p>The Parameter Database (PDB) Browser is a graphical representation of the parameter database 
+that is used to view, evaluate, and edit parameters.</p>
+
+<p>To start the PDB Browser, enter:</p>
+
+<pre>
+&gt; sprocess -p  
+</pre>
+
+<p><a href="images/sp_pdb.png"><img src="images/sp_pdb.png" width="570" 
+alt="Parameter Database Browser" /></a></p>
+
+<p class="caption">Figure 1. Parameter Database Browser. (Click image for full-size view.)</p>
+
+<p>In Figure 1, for example, the default expression of the segregation coefficient 
+<tt>Segregation</tt> for arsenic at <tt>Oxide_Silicon</tt> interfaces is shown. The value 
+is given as:</p>
+
+<pre>
+[Arr 0.75 -0.336]
+</pre>
+
+<p><tt>Arr</tt> is a Tcl procedure, which constructs an Arrhenius law expression. The first 
+argument is the pre-exponential factor, and the second one is the activation energy (see the 
+<a href="../tcl/tcl_menu.html">Tool Command Language module</a> for an introduction).</p>
+
+<p>In Figure 1, the lower-right pane plots the temperature dependency of the segregation 
+coefficient.</p>
+
+<p class="note">In principle, the entries in the parameter database can be edited directly 
+in the PDB Browser. However, the parameter database distributed with the TCAD release 
+is typically write protected.</p>
+
+<p>To edit the parameter database directly, copy the entire directory structure 
+<tt>$STROOT/tcad/$STRELEASE/lib/score</tt> to a user-writable location and set up 
+the environment variable <tt>SCHOME</tt>, which points to the new location.</p>
+
+<p>For example, for the <tt>tcsh</tt> shell, enter:</p>
+
+<pre>
+tcsh&gt; cp -R $STROOT/tcad/$STRELEASE/lib/score
+      /remote/users1/&lt;your_profile&gt;/score
+
+tcsh&gt; setenv SCHOME /remote/users1/&lt;your_profile&gt;/score
+</pre>
+
+<p>Choose <strong>Tools</strong> &gt; <strong>Edit</strong> to open the corresponding 
+file from the PDB Browser, here,<br />
+<tt>/remote/users1/&lt;your_profile&gt;/score/Params/Oxide_Silicon/Arsenic</tt> 
+in the text editor. The line corresponding to the segregation coefficient is:</p>
+
+<pre>
+array set $Base {Segregation {Double {[Arr 0.75 -0.336]}}}
+</pre>
+
+<p>All entries must start with the string <tt>array set $Base</tt>. Then follows the parameter name, 
+here <tt>Segregation</tt>, and the parameter type. For example, numeric parameters have the type 
+<tt>Double</tt>; logical flags have the type <tt>Boolean</tt>. The last part is the value 
+(or expression) of the parameter. Note that each entry and subentry is enclosed in braces.</p>
+
+<p>Changing parameter values directly in the PDB Browser can be a good way to ensure 
+the use of a consistent set of parameters for all projects. However, different projects 
+require different settings, and such global changes might cause problems. In this case, 
+other methods such as those discussed in the next sections are more appropriate.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Changing Parameters in the Command File</h1>
+
+<p>To change parameters for a specific simulation run, use the command:</p>
+
+<pre>
+pdbSet Oxide_Silicon Vacancy Ksurf {[Arrhenius 1e3 0.1]}
+</pre>
+
+<p>Here, the surface recombination rate <tt>Ksurf</tt> for vacancies at <tt>Oxide_Silicon</tt> 
+interfaces is set to an Arrhenius law:</p>
+
+<p> \[K_{surf} = A e^{-{E}/{kT}} \]  </p>
+
+<p>where \(A\) is the pre-exponential factor (1000 cm/s), and \(E\) is the 
+activation energy (0.1&nbsp;eV).</p>
+
+<p class="note">Two sets of delimiters are used. The brackets [] identify a Tcl expression, 
+and the braces {} suppress the evaluation of the expression, such that <tt>Ksurf</tt> is set to the 
+string <tt>[Arrhenius 1e3 0.1]</tt> instead of the value to which the string evaluates. The 
+evaluation can also be suppressed by masking the brackets with backslashes. This notation must 
+be used if the expression contains variables that should be expanded.</p>
+
+<p>For example:</p>
+
+<pre>
+set E0 0.1     ;# Activation energy (eV)
+set A0 1e3     ;# Surface recombination rate (cm/s)
+pdbSet Oxide_Silicon Vacancy Ksurf &quot;\[Arrhenius $A0 $E0\]&quot;
+</pre>
+
+<p>The difference between an immediate and a suppressed evaluation of the expression can be 
+seen when the value of <tt>Ksurf</tt> is retrieved.</p>
+
+<p>To retrieve the value of a parameter, use:</p>
+
+<pre>
+pdbDelayDouble Oxide_Silicon Vacancy Ksurf
+---&gt; [expr [Arrhenius 1e3 0.1]]
+
+pdbGet Oxide_Silicon Vacancy Ksurf
+---&gt; 20.8986
+</pre>
+
+<p>where the <tt>pdbDelayDouble</tt> command retrieves the value without evaluating it 
+(if it is an expression), and <tt>pdbGet</tt> evaluates it for the current conditions 
+(that is, at the current processing temperature).</p>
+
+<p>The following example shows how the evaluation depends on the current conditions:</p>
+
+<pre>
+pdbSet Oxide_Silicon Vacancy Ksurf {[ Arrhenius 1e3 0.1]}
+
+line x location=0.0      spacing=0.2&lt;um&gt; tag=SiTop                      
+line x location=2.0&lt;um&gt;  spacing=0.2&lt;um&gt; tag=SiBottom    
+region Silicon xlo=SiTop xhi=SiBottom 
+init concentration=1.0e15&lt;cm-3&gt; field=Boron wafer.orient=100
+
+puts [pdbGet Oxide_Silicon Vacancy Ksurf]
+---&gt; 20.8986
+
+diffuse temperature=900&lt;C&gt; time=40&lt;min&gt; 
+puts [pdbGet Oxide_Silicon Vacancy Ksurf]
+---&gt; 371.887
+</pre>
+
+<p>The first call of <tt>pdbGet</tt> evaluates the Arrhenius expression at 
+300&nbsp;K and the second call of <tt>pdbGet</tt>, at 900&deg;C.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 Example: Changing Dopant Diffusivity</h1>
+
+<p>The following example shows how to select a dopant diffusivity model 
+and how to change the model parameter from a default value:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Models/sprocess_fps.cmd" startExpr="pdbSet*" Lines=9 -->
+<pre>
+pdbSet Silicon Dopant DiffModel Constant
+
+line x location= 0.0&lt;um&gt;   tag= SubTop      spacing= 20.0&lt;nm&gt;
+line x location= 2.0&lt;um&gt;   tag= SubBottom   spacing= 20.0&lt;nm&gt;
+
+region Silicon xlo= SubTop xhi= SubBottom
+init concentration= 1e+10&lt;cm-3&gt; field= Boron
+
+implant species= Boron Silicon gaussian
+</pre>
+<!-- grep end -->
+
+<p>These commands set up a 1D structure and select a diffusivity model. The 
+implantation model was changed from the default model to a simple Gaussian 
+for aesthetic purposes.</p>
+
+<p>The dopant is now implanted and driven using the default diffusion parameters. The 
+structure is saved to start the next simulation using the same conditions immediately 
+after implantation.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Models/sprocess_fps.cmd" startExpr="implant Bor*" Lines=5 -->
+<pre>
+implant Boron dose= 1e14&lt;cm-2&gt; energy= 400.0&lt;keV&gt; 
+
+SetPlxList {Boron_Implant}
+WritePlx n@node@_AsImplant.plx
+struct tdr= n@node@_AsImplant
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Models/sprocess_fps.cmd" startExpr="diffuse*" Lines=4 -->
+<pre>
+diffuse temperature= 1000&lt;C&gt; time= 1&lt;hr&gt; 
+SetPlxList {BTotal}
+WritePlx n@node@_D1.plx
+
+</pre>
+<!-- grep end -->
+
+<p>The simulation is restarted at time zero. Before applying the identical anneal, the 
+diffusivity parameter is quadrupled from its default value obtained by the <tt>pdbGet</tt> 
+command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Models/sprocess_fps.cmd" startExpr="init tdr*" Lines=5 -->
+<pre>
+init tdr= n@node@_AsImplant
+pdbSet Silicon Boron Dstar &quot;\[expr 4.0*[pdbDelayDouble Silicon Boron Dstar]\]&quot;
+diffuse temperature= 1000&lt;C&gt; time= 1&lt;hr&gt;
+
+WritePlx n@node@_D2.plx
+</pre>
+<!-- grep end -->
+
+<p><img src="images/sp_pdb_diffex.png" width="537" height="475" 
+alt="Boron concentration versus depth for diffusivity parameter" /></p>
+
+<p class="caption">Figure 2. Boron concentration versus depth for a diffusivity parameter with 
+default value (red) and with a four-times default value (blue).</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Models/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p> 
+
+<!--================================================-->
+<a name="4"></a>
+<h1>4.4 Assignment</h1>
+
+<p>The objective of this exercise is to compare profile shapes produced using different 
+dopant-clustering models. The diffusivity of the mobile dopant will be identical in all comparisons.</p>
+
+<p><strong>Step 1. Define Substrate</strong></p>
+
+<ul>
+<li>Copy the commands from the previous example up to and including the 
+<tt>struct</tt> command to save the as-implanted profile.</li>
+</ul>
+
+<p><strong>Step 2. Set Up Identical Anneals to Be Used With Different Models</strong></p>
+
+<ul>
+<li>Initialize the simulation by loading the as-implanted profile.</li>
+<li>Set up a <tt>diffuse</tt> command for a 2-hour 1100&deg;C inert anneal.</li>
+<li>Either copy the above two steps four times or write a Tcl procedure for the anneal.</li>
+<li>Write the total boron concentration to a unique file name after each simulation.</li>
+</ul>
+
+<p><strong>Step 3. Run the First of the Four Simulations With Default Settings</strong></p>
+
+<ul>
+<li>The default boundary condition (<tt>HomNeumann</tt>) assumes no flux through the interface.</li>
+</ul>
+     
+<p><strong>Step 4. Change Boundary Condition to a Boron Sink for the Second of the Four Simulations</strong></p>
+
+<ul>
+<li>Use a <tt>pdbSet</tt> command with appropriate modifiers to change the boundary condition 
+to <tt>Dirichlet</tt>.</li>
+<li>Use a <tt>pdbSetDouble</tt> command (not <tt>pdbSet</tt>) to change the boron equilibrium 
+concentration at the silicon surface to the low value of 1 x 10<sup>10</sup> cm<sup>-3</sup>. 
+(This corresponds to boron evaporation from the surface.)</li>
+</ul>
+
+<p><strong>Step 5. Change Boundary Condition to a Boron Source for the Third of 
+the Four Simulations</strong></p>
+
+<ul>
+<li>Keep the Dirichlet boundary condition set in the previous step.</li>
+<li>Change the boron equilibrium concentration at the silicon surface to 10<sup>19</sup> cm<sup>-3</sup>. 
+(This corresponds to boron incorporation from the ambient gas or a predeposited layer.)</li>
+</ul>
+
+<p><strong>Step 6. Change Boundary Condition to Defaults But Decrease Solid Solubility 
+for Last Simulation</strong></p>
+
+<ul>
+<li>Use <tt>pdbSet</tt> to revert to the <tt>HomNeumann</tt> boundary condition.</li>
+<li>Set the boron solubility to 1 x 10<sup>17</sup> cm<sup>-3</sup>. (In this case, all boron 
+atoms in high-concentration areas (> 1 x 10<sup>17</sup> cm<sup>-3</sup>) are assumed to be in 
+immobile clusters.)</li>
+</ul>
+     
+<p><strong>Step 7. View the Output</strong></p>
+
+<p><img src="images/sp_pdb_diffassign.png" width="537" height="475" 
+alt="Comparison of 1D profile shapes for boron" /></p> 
+
+<p class="caption">Figure 3. Comparison of 1D profile shapes for boron produced using 
+different dopant-clustering models.</p>
+
+<p>Note that:</p>
+
+<ul>
+<li>The boundary model modifications affect only the top surface. The bottom surface has 
+<tt>HomNeumann</tt> boundary conditions, and they cannot be changed by users.</li>
+<li>The boron sink plot changes much too rapidly for the mesh at the surface. The sink rate 
+is very diffusion limited.</li>
+<li>The clustering model can be activated or deactivated by setting 
+<tt>pdbSet Silicon Boron ActiveModel</tt>. Options for dopants are <tt>None</tt>, <tt>Solid</tt>, 
+<tt>Transient</tt>, <tt>Precipitation</tt>, <tt>Cluster</tt>, <tt>BIC</tt>, <tt>ChargedCluster</tt>, 
+<tt>ComplexCluster</tt>, and <tt>Equilibrium</tt>.</li>
+</ul>
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Models/sprocess1_fps.cmd">
+sprocess1_fps.cmd</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1004 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Python 1. Getting Started</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_02.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Python Language<br />1. Getting Started</h1>
+
+<p>
+ <a href="#1">1.1 Overview</a><br />
+ <a href="#2">1.2 Using the Python Interpreter</a><br />
+ <a href="#3">1.3 Basic Python Conventions</a><br />
+ <a href="#4">1.4 Online Help</a><br />
+ <a href="#5">1.5 Resources and Further Reading</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce how the Python language is used in TCAD tools.</li>
+ <li>To demonstrate how to use the Python interpreter.</li>  
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Overview</h1>
+
+<p><a href="https://docs.python.org/3/">Python</a> is a high-level general-purpose 
+interpreted object-oriented language. TCAD Sentaurus tools such as Sentaurus 
+Visual Python Mode, Sentaurus Workbench Optimization Framework, Mystic, and Sentaurus 
+Process Explorer use Python.  Therefore, it is advantageous to know the basics of Python 
+and to learn about object-oriented programming concepts such as objects and classes.</p>
+
+<p>Figure 1 shows a typical Sentaurus Visual Python  script, which consists of several 
+types of command or statement:</p>
+
+<ul>
+ <li>Sentaurus Workbench preprocessor commands</li> 
+ <li>Python statements, including import statements for importing Sentaurus Visual Python extraction modules</li> 
+ <li>Sentaurus Visual Python commands</li> 
+ <li>Extraction module function calls</li> 
+</ul>
+
+<p><img src="images/svisual-script.png" width="430" height="497" 
+alt="Sentaurus Visual script" /></p>
+
+<p class="caption">Figure 1. Sentaurus Visual Python script.</p>
+
+<p>This section focuses on the basics of Python and how to use it with Sentaurus Visual Python Mode. Refer to the following sections in the TCAD Sentaurus Tutorial:</p>
+ 
+<ul>
+<li>For Sentaurus Workbench preprocessor commands, see 
+<a href="../swb/swb_08.html#2">Section 8.2 Project Variables</a></li> 
+ <li>For Sentaurus Visual Python, see <a href="../sv/sv_6.html#7">Section 6.7 Sentaurus Visual in Python Mode</a></li>  
+ <li>For Sentaurus Visual Python Extraction module functions or methods, see 
+<a href="../sv/sv_6.html#8">Section 6.8 Sentaurus Visual Python Extraction Modules and Tcl Extraction Libraries</a></li> 
+</ul>
+
+<!--=======================================================-->
+<a name="2"></a>
+<h1>1.2 Using the Python Interpreter</h1>
+
+<p>You can work with Python in several ways:</p>
+
+<ul>
+<li><a href="https://www.python.org/">Standard Python shell</a></li>
+<li><a href="https://ipython.readthedocs.io/en/stable/index.html">IPython</a> 
+(interactive Python)</li>
+<li><a href="https://jupyter.org/">JupyterLab</a> including <a href="https://jupyter-notebook.readthedocs.io/en/6.2.0/notebook.html">Jupyter Notebook</a></li>
+<li>TCAD Python distributions from Synopsys:<br />
+  <ul>
+  <li>gpythonsh<br />
+ Synopsys distributes a Python interpreter, gpythonsh, with TCAD tools. This utility is a general-purpose Python shell you can use at the command prompt in interactive mode or batch mode. You can also use it as a Python tool in your simulation flow in Sentaurus Workbench.</li>
+  <li>Sentaurus Visual Python Mode</li>
+  <li>Mystic GUI (see <a href="../tcadtospice/t2s_03.html#4">Section 3.4 Mystic Graphical User Interface</a>)</li>
+  <li><a href="https://docs.quantumatk.com/manual/Python.html#atk-python">ATK-Python</a></li>
+  </ul></li>
+</ul>
+
+<!--=====================================-->
+<a name="2_1"></a>
+<h2>1.2.1 Interactive Mode</h2>
+
+<p>You can start an interactive Python shell with the command:</p>
+
+<pre>
+&gt; gpythonsh
+</pre>
+
+<p><img src="images/gpythonsh.png" width="495" height="305" alt="gpythonsh: Python shell" /></p>
+
+<p class="caption">Figure 2. Python shell (interactive mode).</p>
+
+<p>In the interactive mode of Python, you can enter Python code at the primary prompt <tt>&gt;&gt;&gt;</tt> and press the Enter key to execute the code. In the case of 
+compound statements or statements that span multiple lines, the primary prompt 
+changes to the secondary prompt <tt>...</tt> as shown in Figure 2.</p>
+
+<p>The interactive Python shell is also known as <em>REPL</em>, which is an acronym 
+for read-eval-print-loop.</p>
+
+<p>Python REPL also supports <tt>TAB</tt> command completion using the Tab key for 
+autocompletion.</p>
+
+<!--========================-->
+<a name="2_1_1"></a>
+<h3>1.2.1.1 Using IPython</h3>
+
+<p><a href="https://ipython.readthedocs.io/en/stable/">IPython</a>, interactive Python, 
+is a powerful shell with advanced features such as:</p>
+
+<ul>
+<li>Syntax highlighting (see Figure 3)</li>
+<li><tt>TAB</tt> command completion using the Tab key for autocompletion and exploration of the contents of an object</li>
+<li>Better multiline editing support, for example, the cursor can be moved up or down using the Up Arrow and Down Arrow keys, and automatic indentation for compound statements</li>
+<li>Magic commands starting with the percentage (<tt>%</tt>) sign</li>
+<li>Using shell commands in IPython by prefixing the shell command with an exclamation 
+mark (<tt>!</tt>)</li>
+<li>Using the question mark (<tt>?</tt>) for online help (see <a href="#4">
+Section 1.4 Online Help</a>)</li>
+</ul>
+
+<a name="fig3"></a>
+<p><img src="images/ipython.png" width="453" height="384" alt="IPython shell" /></p>
+
+<p class="caption">Figure 3. IPython shell.</p>
+
+<p>The IPython module is included in TCAD Python. To launch gpythonsh with the IPython 
+module, use the following command:</p>
+
+<pre>
+&gt; gpythonsh -m IPython
+Python 3.8.12 (default, Sep 22 2022, 16:14:21) 
+Type 'copyright', 'credits' or 'license' for more information
+IPython 7.34.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: 
+</pre>   
+
+<p>IPython REPL differs slightly compared to standard Python REPL. The input prompt 
+is <tt>In [N]:</tt> instead of <tt>&gt;&gt;&gt;</tt>, where <tt>N</tt> is a number. 
+The results are displayed with an <tt>Out[N]</tt> prompt.</p>
+
+<p class="note">The sections of this Tutorial use <tt>&gt;</tt> to denote the 
+command prompt.</p> 
+
+<p>The magic command <tt>%quickref</tt> displays a quick reference of various IPython 
+commands:</p>
+
+<pre>
+In [1]: %quickref
+
+IPython -- An enhanced Interactive Python - Quick Reference Card
+================================================================
+
+obj?, obj??      : Get help, or more help for object (also works as
+                   ?obj, ??obj).
+?foo.*abc*       : List names in 'foo' containing 'abc' in them.
+%magic           : Information about IPython's 'magic' % functions.
+
+Magic functions are prefixed by % or %%, and typically take their arguments
+without parentheses, quotes or even commas for convenience.  Line magics take a
+single % and cell magics are prefixed with two %%.
+
+Example magic function calls:
+
+%alias d ls -F   : 'd' is now an alias for 'ls -F'
+alias d ls -F    : Works if 'alias' not a python name
+alist = %alias   : Get list of aliases to 'alist'
+...
+
+System commands:
+
+!cp a.txt b/     : System command escape, calls os.system()
+...
+
+History:
+
+_i, _ii, _iii    : Previous, next previous, next next previous input
+...
+
+Remember: TAB completion works in many contexts, not just file names
+or python names.
+
+The following magic functions are currently available:
+
+...
+%cd:
+    Change the current working directory.
+%clear:
+    Clear the terminal. 
+%magic:
+    Print information about the magic function system.
+%precision:
+    Set floating point precision for pretty printing.    
+%prun:
+    Run a statement through the python code profiler.
+%pwd:
+    Return the current working directory path.
+%quickref:
+    Show a quick reference sheet   
+%run:
+    Run the named file inside IPython as a program.
+%timeit:
+    Time execution of a Python statement or expression
+... 
+</pre>
+
+<p class="note">This output is truncated (indicated by <tt>...</tt>) and shows some 
+of the most useful IPython commands.</p> 
+
+<p>You can learn more about specific magic commands by using a question mark after the 
+command. For example, to see help for <tt>%precision</tt>, specify:</p>
+
+<pre>
+In [2]: %precision?
+
+Docstring:
+Set floating point precision for pretty printing.
+
+Can set either integer precision or a format string.
+
+If numpy has been imported and precision is an int,
+numpy display precision will also be set, via ``numpy.set_printoptions``.
+
+If no argument is given, defaults will be restored.
+
+Examples
+--------
+::
+
+    In [1]: from math import pi
+
+    In [2]: %precision 3
+    Out[2]: u'%.3f'
+
+    In [3]: pi
+    Out[3]: 3.142  
+    ...
+</pre>  
+
+<p>For more details about navigating the help system in both gpythonsh and IPython, 
+see <a href="#4">Section 1.4 Online Help</a>.</p>s
+
+<p>To learn more about IPython, refer to the 
+<a href="https://ipython.readthedocs.io/en/stable/interactive/tutorial.html">
+IPython Tutorial</a> and 
+<a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.00-ipython-beyond-normal-python.html">IPython: Beyond Normal Python</a>.</p>
+
+<!--==========================-->
+<a name="2_1_2"></a>
+<h3>1.2.1.2 Using Sentaurus Visual Python Mode</h3>
+
+<p>You can start Sentaurus Visual Python in interactive mode and use the Sentaurus 
+Visual Console as an interactive Python interpreter by using the <tt>-p</tt> option:</p>  
+
+<pre>
+&gt; svisual -p &amp;
+</pre>
+
+<a name="fig4"></a>
+<p><a href="images/svisual.png"><img src="images/svisual.png" width="570" 
+alt="Sentaurus Visual Python Mode" /></a></p>
+
+<p class="caption">Figure 4. Sentaurus Visual Python Mode. 
+(Click image for full-size view.)s</p>
+
+<p>The primary and secondary prompts in the Console are the same as those in gpythonsh.</p> 
+
+<p>As previously mentioned, a Python interactive shell is also known as REPL 
+(read-eval-print-loop). After you enter Python expressions and press the Enter key, 
+Python reads the code, <em>evaluates</em> it (finds the value of the expression), 
+prints the result, and waits for you to enter the next line of code. For example:</p>
+
+<pre>
+&gt;&gt;&gt; 1 + 2
+3
+&gt;&gt;&gt; 'Hello, TCAD Users!'
+'Hello, TCAD Users!'
+</pre>   
+
+<p>You can also use the built-in <a href="https://docs.python.org/3/library/functions.html#print"><tt>print</tt></a> function to display the result:</p>
+
+<pre>
+&gt;&gt;&gt; print(1 + 2)
+3
+&gt;&gt;&gt; print('Hello, TCAD Users!')
+Hello, TCAD Users!
+</pre> 
+
+<p>Because Python REPL prints the result of an expression automatically, you usually 
+do not have to use <tt>print</tt> statements in interactive mode. However, within a 
+script, you must use <tt>print</tt> statements to see the results because expression 
+results are not echoed automatically.</p>
+
+<p>Python functions are similar to Tcl procedures. To use Python functions, you must 
+pass input to the function, enclosed in parentheses. In both calls to the <tt>print</tt> 
+function, a single input was passed; the expression <tt>1 + 2</tt> in the first call 
+and the string <tt>'Hello, TCAD Users!'</tt> in the second call.</p>
+
+<p>Expressions, strings, and functions are discussed in the following sections:</p>
+
+<ul>
+<li><a href="py_02.html#3">Section 2.3 Arithmetic Operators and Expressions</a></li>
+<li><a href="py_02.html#2_5_1">Section 2.2.5.1 Strings</a></li>
+<li><a href="py_03.html#2">Section 3.2 Functions</a></li>
+</ul>
+
+<p>By default, gpythonsh prints the Python version when it is launched. You can also 
+determine the Python version by using the <tt>version</tt> attribute of the 
+<a href="https://docs.python.org/3/library/sys.html">sys</a> module:</p>
+
+<pre>
+&gt;&gt;&gt; import sys  # Import a library module called sys
+&gt;&gt;&gt; sys.version
+'3.8.12 (default, Sep 22 2022, 16:14:21) \n[GCC 9.2.0]'
+</pre>  
+
+<p>You can exit gpythonsh or Sentaurus Visual Python Mode by using the 
+<tt>quit()</tt> command:</p>
+
+<pre>
+&gt;&gt;&gt; quit()
+</pre> 
+
+<p>You can also exit gpythonsh and IPython by pressing Ctrl+D.</p>
+
+<!--==========================-->
+<a name="2_2"></a>
+<h2>1.2.2 Script Mode</h2>
+
+<p>Instead of entering code in Python REPL, you can save code in a file called 
+a <em>script</em> and then run Python in <em>script mode</em> to execute the 
+script. By convention, Python scripts have the extension <tt>.py</tt>.</p>
+
+<p>You can run a Python script from the command line with gpythonsh or Sentaurus 
+Visual Python using:</p>
+
+<pre>
+&gt; gpythonsh source.py
+&gt; svisual -b source.py
+</pre>
+
+<p>The <tt>-b</tt> option runs Sentaurus Visual in batch mode.</p>
+
+<!--==========================-->
+<a name="2_3"></a>
+<h2>1.2.3 Loading Scripts in Interactive Mode</h2>
+
+<p>A Python script <tt>source.py</tt> can be loaded from Python REPL (standard Python, 
+IPython, and Sentaurus Visual) with the <tt>import</tt> statement:</p>
+
+<pre>from source import *</pre>
+
+<p>For example, consider the script <tt>add.py</tt>:</p>
+
+<pre>
+# Script: add.py 
+x = 1
+y = 2
+z = x + y   
+</pre>   
+
+<p>You can load it from Python REPL using:</p>
+
+<pre>
+&gt;&gt;&gt; from add import *
+&gt;&gt;&gt; print(z)
+3
+</pre>  
+
+<p>This type of <tt>import</tt> statement is known as a <em>wildcard import</em> 
+since it imports all the variables and functions defined in the script. The 
+<tt>import</tt> statement is further discussed in <a href="py_03.html#1_2">
+Section&nbsp;3.1.2 Using Modules</a>.</p>
+
+<p class="note">The scripts discussed here are available in the directory 
+<tt>Applications_Library/GettingStarted/python/py_basics</tt>. The code examples 
+that must be entered at the interactive prompt are also available in this 
+Sentaurus Workbench project.<br /><br />
+
+Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/python/py_basics/python_pyt.py">
+python_pyt.py</a>.</p> 
+
+<p>You can also use the <tt>%run</tt> magic command to run a Python script 
+from the IPython prompt:</p>
+
+<pre>
+In [1]: %run add.py
+
+In [2]: print(z)
+3
+</pre>
+
+<p>As discussed in <a href="py_03.html#1_2_1">Section 3.1.2.1 Modules as Objects</a>, 
+Sentaurus Visual Python imports the <tt>svisual</tt> package by using:</p>
+
+<pre>import svisual as sv</pre>
+
+<p>It defines the function <tt>sv.load_script_file</tt> for running a Python script, 
+either in interactive mode or batch mode. For example:</p>
+
+<pre>sv.load_script_file('add.py')</pre>
+ 
+<!--==========================-->
+<a name="2_4"></a>
+<h2>1.2.4 Post-Run Interactive Mode</h2>
+
+<p>If you run a script from the command line and pass the <tt>-i</tt> option, 
+then Python first runs the script and then starts the interactive shell 
+(<tt>&gt;&gt;&gt;</tt> prompt):</p>
+
+<pre>
+&gt; gpythonsh -i source.py 
+&gt; gpythonsh -m IPython -i source.py
+</pre>
+
+<p>You can then access all the variables, functions, and classes defined in the 
+script from inside Python REPL. This is useful as a debugging tool. For example:</p> 
+
+<pre>
+&gt; gpythonsh -i add.py 
+&gt;&gt;&gt; z
+3
+</pre>
+
+<p>You can do the same with Sentaurus Visual Python Mode:</p>
+
+<pre>
+&gt; svisual source.py 
+</pre>
+
+<!--==========================-->
+<a name="2_5"></a>
+<h2>1.2.5 JupyterLab and Jupyter Notebook</h2>
+
+<p>You can run Python code interactively in Jupyter Notebook, which is part 
+of the JupyterLab interface. JupyterLab is an open-source web application. You 
+can use it to create documents that combine explanatory text, mathematics, Python 
+computations, and visualization. You can share notebooks with others and they can 
+run the code in the notebook. You can also convert the Jupyter Notebook into other 
+format types, including HTML, executable Python script, LaTEX, and PDF.</p>
+
+<p>You can launch Jupyter Notebook as part of JupyterLab. JupyterLab is not part 
+of the TCAD Python platform and needs to be installed separately.</p>
+
+<p>Jupyter Notebook primarily has two types of cell:</p>
+
+<ul>
+<li>Markdown cells are used to add text.</li>
+<li>Code cells are used to add Python code.</li>
+</ul>
+
+<p>A Python shell allows you to enter and run only one statement at a time. A Jupyter 
+Notebook contains code cells in which you can enter multiple statements similar to a 
+script and then run them sequentially. The code cell allows you to edit and write new 
+code, with full syntax highlighting and tab completion. The input prompt before each 
+code cell is <tt>[N]:</tt> instead of <tt>&gt;&gt;&gt;</tt> or <tt>In [N]:</tt>, 
+where <tt>N</tt> is a number.</p>
+
+<p>You run the code in a code cell by pressing Shift+Enter. Results are  displayed 
+in the notebook as the output of the cell. The output is not limited to text.</p>
+
+<p>For more information, see 
+<a href="https://jupyterlab.readthedocs.io/en/stable/user/interface.html">
+The JupyterLab Interface</a> and 
+<a href="https://jupyter-notebook.readthedocs.io/en/stable/notebook.html">
+The Jupyter Notebook</a>.</p>
+
+<!--==========================-->
+<a name="2_6"></a>
+<h2>1.2.6 Online Tools for Python</h2>
+
+<p>Many online tools are available for running Python programs, for example, 
+<a href="https://www.online-python.com/">Online Python</a> and 
+<a href="https://pythontutor.com/">Python Tutor</a>. 
+Python Tutor helps you learn Python, C, and other languages and is described in 
+<a href="py_02.html#5_1">Section 2.5.1 Python Tutor Visualization</a>.</p> 
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Basic Python Conventions</h1>
+
+<p>This section discusses the basic Python conventions such as how to 
+comment Python code, the structure of a typical Python program, and different 
+types of Python statement.</p>
+
+<!--===============================-->
+<a name="3_1"></a>
+<h2>1.3.1 Commenting Python Code</h2>
+
+<p>Similar to Tcl, the Python comment character is the hash (<tt>#</tt>) character. 
+The rest of the line after the comment character is ignored.</p>
+
+<p>The <tt>#</tt> character can be used to comment out a single line or to create 
+inline comments. You can comment out multiple lines of Python code using triple-quoted 
+strings. As discussed in <a href="py_02.html#2_5_1">Section&nbsp;2.2.5.1 Strings</a>, 
+triple-quoted strings can be created by enclosing characters, either in single 
+quotation marks (<tt>'</tt>) or double quotation marks (<tt>"</tt>). The following 
+script illustrates different types of comment:</p>
+
+<pre>
+# Script: comment.py
+# This script illustrates various comment types
+# This is a single-line comment
+"""
+This is a multiline comment
+x = 10
+y = 20
+w = x + y
+print(w)
+"""
+x = 1  # This is an inline comment
+y = 2  
+z = x + y  
+print(z)
+</pre>
+
+<!--===============================-->
+<a name="3_2"></a>
+<h2>1.3.2 Python Program Structure</h2>
+
+<p>Consider the following Python script <tt>add.py</tt>:</p>
+
+<pre>
+# Script: add.py
+x = 1
+y = 2
+z = x + y
+print(z)
+</pre>
+
+<p>Python scripts can be decomposed into statements, expressions, and objects, 
+as follows:</p>
+
+<ul>
+<li>Scripts contain statements. This example contains four statements.</li>
+<li>Statements contain expressions (discussed in <a href="py_02.html#3">
+Section&nbsp;2.3 Arithmetic Operators and Expressions</a>). 
+For example, <tt>x + y</tt> is an expression. Even literals such as <tt>1</tt> 
+and <tt>2</tt> are considered to be expressions.</li>
+<li>Expressions create and process objects (discussed in <a href="py_03.html#3">Section 3.3 Objects and Classes</a>). For example, the first two statements create the <tt>int</tt> 
+objects <tt>1</tt> and <tt>2</tt>. Evaluating the expression <tt>x + y</tt> creates 
+another <tt>int</tt> object <tt>3</tt>.</li>
+</ul>
+
+<!--===============================-->
+<a name="3_3"></a>
+<h2>1.3.3 Python Statements</h2>
+
+<p>Python <em>statements</em> are instructions that Python can execute. In general, 
+the Python interpreter executes statements sequentially in script mode. In interactive 
+mode, you enter a statement, press the Enter key, and then wait for the statement to 
+run to completion before entering another statement.</p>
+
+<p>Python has simple statements and compound statements.</p>
+
+<!--=========================-->
+<a name="3_3_1"></a>
+<h3>1.3.3.1 Simple Statements and Indentation</h3>
+
+<p>According to the <a href="https://docs.python.org/3/reference/simple_stmts.html">
+Python Language Reference</a>: <cite>A simple statement is comprised within a single 
+logical line.</cite></p> 
+
+<p>Assignment statements, <tt>print</tt> statements, function calls and other 
+expressions, and <tt>return</tt> statements are examples of simple statements.</p>
+
+<p>The number of spaces at the beginning of a code line is known as <em>indentation</em>. 
+In other programming languages such as C or Tcl, indentation is used to make code 
+more readable. In Python, indentation is important since it is used to structure the code.</p>
+
+<p>At the interactive prompt as well as in a Python script, you must start entering 
+each line of code in the leftmost column, with no leading spaces. Simple statements 
+end with a newline. So you terminate simple statements by pressing the Enter key at 
+the end of the statement. Pressing the Enter key also evaluates the simple statement.</p>
+
+<p>For example, each statement in the following code is a simple statement:</p>
+
+<pre>
+&gt;&gt;&gt; # Following statements have no space to the left
+&gt;&gt;&gt; x = 1       # assignment statement
+&gt;&gt;&gt; y = 2
+&gt;&gt;&gt; z = x + y
+&gt;&gt;&gt; print(z)    # print statement
+3
+</pre>
+
+<p>Using the indentation rule for simple statements, these can be combined to 
+create the script <tt>add.py</tt>:</p>
+
+<pre>
+# Script: add.py
+# Following simple statements have no space to the left
+x = 1
+y = 2
+z = x + y
+print(z)
+</pre>
+
+<p>A sequence of statements having the same indentation is called a <em>code block</em>. 
+For example, the statements shown above form a <em>top-level</em> code block since all 
+statements start at the leftmost column and have no space to the left.</p>
+
+<p>If your code is not indented correctly, then Python prints an error message and stops 
+executing the code:</p>
+
+<pre>
+&gt;&gt;&gt; x = 1       # no space to the left
+&gt;&gt;&gt;  y = 2      # incorrect indentation: one space to the left
+   File &quot;&lt;stdin&gt;&quot;, line 1
+     y = 2      # incorrect indentation: one space to the left
+     ^
+ IndentationError: unexpected indent
+</pre>
+
+<!--==========================-->
+<a name="3_3_2"></a>
+<h3>1.3.3.2 Compound Statements and Indentation</h3>
+
+<p>Compound statements have other statements nested inside them. In general, 
+they span multiple lines. The <tt>def</tt>, <tt>if</tt>, <tt>for</tt>, and 
+<tt>class</tt> statements are compound statements.</p>
+
+<p>For example, the <tt>def</tt> statement is used to define a function:</p>
+
+<pre>
+&gt;&gt;&gt; # Function definition
+&gt;&gt;&gt; def add(x, y):      # header line: 0 space
+...     result = x + y  # function body: 4 spaces
+...     return result   # function body: 4 spaces
+...
+&gt;&gt;&gt;
+</pre>
+
+<p>When you enter a compound statement on the Python prompt (<tt>&gt;&gt;&gt;</tt>) 
+and press the Enter key, the prompt changes to <tt>...</tt> as shown here and in 
+<a href="#fig4">Figure 4</a>. You must terminate multiline statements at the 
+interactive prompt with a blank line. So, after entering the last character in a 
+compound statement, you must press the Enter key <strong>twice</strong> to execute 
+such statements. In a script, all blank lines are ignored. So, you do not need the 
+blank line after compound statements, although <a href="https://pep8.org/#blank-lines">
+PEP 8 Style Guide</a> recommends surrounding top-level function definitions with 
+two blank lines:</p>
+
+<pre>
+# Script: add_fn.py
+def add(x, y):      # header line: 0 space
+    result = x + y  # function body: 4 spaces
+    return result   # function body: 4 spaces
+
+
+z = add(1, 2)
+print(z)   
+</pre>
+
+<p>The first line of a compound statement is known as the <em>header line</em>. 
+Similar to simple statements, you must start entering the header line in the leftmost 
+column. The header line is followed by a block of nested statements. Nested 
+statements must be indented one or more spaces. Each nested statement should be 
+indented by the same number of spaces.</p>
+
+<p>In Python documentation, a code block that is part of a compound statement 
+is called a 
+<a href="https://docs.python.org/3/reference/compound_stmts.html#compound-statements">
+<em>suite</em></a>.</p>
+
+<p>Python code blocks can be indented using either tabs or spaces. As discussed 
+in the <a href="https://docs.quantumatk.com/manual/Python.html#indentation">
+QuantumATK Tutorial</a>, you should consistently use either tabs or spaces. In 
+addition, the <cite>PEP 8 Style Guide</cite> recommends the use of four spaces per 
+indentation level.</p>
+
+<!--==========================-->
+<a name="3_3_3"></a>
+<h3>1.3.3.3 Multiple Simple Statements on One Line</h3>
+
+<p>You can enter several simple statements on one line, separated by semicolons. 
+For example:</p>
+
+<pre>
+&gt;&gt;&gt; x = 1; y = 2; z = x + y; print(z)
+3
+</pre>
+
+<p>This is not recommended by the <a href="https://pep8.org/">PEP 8 Style Guide</a> 
+because it can make code less readable.</p>
+
+<!--==========================-->
+<a name="3_3_4"></a>
+<h3>1.3.3.4 Line Continuation</h3>
+
+<p>For readability, long statements can span multiple lines, in which case, you 
+should use line continuation.</p>
+
+<p>Although not recommended by the <a href="https://pep8.org#maximum-line-length">
+PEP 8 Style Guide</a>, long Python statements can be separated over several lines 
+by ending each line with a backslash (<tt>\</tt>). Consider the following simple 
+statement:</p>
+
+<pre>
+&gt;&gt;&gt; my_list = [11, 22, 33, 44, 55, 66, 77, 88]
+</pre>
+
+<p>It can be written over multiple lines as follows:</p>
+
+<pre>
+&gt;&gt;&gt; # Line continuation using \
+&gt;&gt;&gt; my_list = [11, 22, 33, 44, \
+...            55, 66, 77, 88]
+&gt;&gt;&gt; my_list
+[11, 22, 33, 44, 55, 66, 77, 88]
+</pre>
+
+<p>Similar to entering compound statements, entering such simple statements over 
+multiple lines also changes the Python prompt to <tt>...</tt> (see 
+<a href="#fig4">Figure 4</a>). Unlike compound statements, you do not have 
+to terminate such statements with a blank line.</p>
+
+<p>In Python, the preferred way of wrapping long lines is by using implied 
+line continuation inside parentheses, brackets, or braces. For example:</p>
+
+<pre>
+&gt;&gt;&gt; # Implied continuation inside brackets
+&gt;&gt;&gt; my_list = [
+...    11, 22, 33, 44,
+...    55, 66, 77, 88, 
+... ]
+&gt;&gt;&gt; my_list
+[11, 22, 33, 44, 55, 66, 77, 88]
+</pre>
+
+<p>Long lines can also be split over multiple lines by wrapping expressions 
+in parentheses. For example, the long line <tt>x = 11 + 22 + 33 + 44 + 55 + 66</tt> 
+can be written over multiple lines:</p>
+
+<pre>
+&gt;&gt;&gt; # Breaking long lines using parentheses
+&gt;&gt;&gt; x = (
+...     11 + 22
+...     + 33 + 44
+...     + 55 + 66
+... )
+&gt;&gt;&gt; x
+231
+</pre>
+
+<p>The indentation of the continuation line does not matter:</p>
+
+<pre>
+&gt;&gt;&gt; x = (
+... 11 + 22
+...    + 33 + 44
+...        + 55 + 66
+... )
+&gt;&gt;&gt; x
+231
+</pre>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>1.4 Online Help</h1>
+
+<p>You can request information about Python objects by using the built-in 
+<a href="https://docs.python.org/3/library/functions.html#help"><tt>help</tt></a> 
+function:</p>
+
+<pre>
+&gt;&gt;&gt; help(print)  # help on built-in print function
+
+Help on built-in function print in module builtins:
+print(...)
+    print(value, ..., sep=&#39; &#39;, end=&#39;\n&#39;, file=sys.stdout, flush=False)
+    
+    Prints the values to a stream, or to sys.stdout by default.
+    Optional keyword arguments:
+    file:  a file-like object (stream); defaults to the current sys.stdout.
+    sep:   string inserted between values, default a space.
+    end:   string appended after the last value, default a newline.
+    flush: whether to forcibly flush the stream.
+</pre>
+
+<p>In IPython, you can use <tt>?</tt> after the function name as a shorthand 
+for accessing online help. For example, to request help for the <tt>print</tt> 
+function:</p>
+
+<pre>
+In [1]: print?
+Docstring:
+print(value, ..., sep=&#39; &#39;, end=&#39;\n&#39;, file=sys.stdout, flush=False)
+
+Prints the values to a stream, or to sys.stdout by default.
+Optional keyword arguments:
+file:  a file-like object (stream); defaults to the current sys.stdout.
+sep:   string inserted between values, default a space.
+end:   string appended after the last value, default a newline.
+flush: whether to forcibly flush the stream.
+Type:      builtin_function_or_method
+</pre>
+
+<p>For example, to request help for the <tt>int</tt> object:</p>
+
+<pre>
+In [2]: int?
+Init signature: int(self, /, *args, **kwargs)
+Docstring:     
+int([x]) -> integer
+int(x, base=10) -> integer
+
+Convert a number or string to an integer, or return 0 if no arguments
+are given.  If x is a number, return x.__int__().  For floating point
+numbers, this truncates towards zero.
+...
+</pre>
+
+<p>You can see more detailed information about the <tt>int</tt> object by 
+using the <tt>help</tt> function:</p>
+
+<pre>
+In [3]: help(int)    
+
+Help on class int in module builtins:
+
+class int(object)
+ |  int([x]) -> integer
+ |  int(x, base=10) -> integer
+ |  
+ |  Convert a number or string to an integer, or return 0 if no arguments
+ |  are given.  If x is a number, return x.__int__().  For floating point
+ |  numbers, this truncates towards zero.
+ |  
+ |  If x is not a number or if base is given, then x must be a string,
+ |  bytes, or bytearray instance representing an integer literal in the
+ |  given base.  The literal can be preceded by '+' or '-' and be surrounded
+ |  by whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.
+ |  Base 0 means to interpret the base from the string as an integer literal.
+ |  >>> int('0b100', base=0)
+ |  4
+ |  
+ |  Built-in subclasses:
+ |      bool
+:
+</pre> 
+
+<p>Notice the colon <tt>:</tt> at the end of this output. Whenever a colon is 
+displayed, you can press the Enter key to read one more line or press the 
+space bar to read the next page of the help message. You can request help 
+on using the help system by pressing the h key. You can exit the help screen 
+by pressing the q key.</p>
+
+<p>You can use the built-in 
+<a href="https://docs.python.org/3/library/functions.html#dir"><tt>dir</tt></a> 
+function to find all the variables and functions defined in a module:</p>
+
+<pre>
+&gt;&gt;&gt; import math  # Import math module
+&gt;&gt;&gt; # Get list of variables and functions defined in math module
+&gt;&gt;&gt; print(dir(math))   
+[... 'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil', 
+'comb', 'copysign', 'cos', 'cosh', 'degrees', 'dist', 'e', 'erf', 'erfc', 
+'exp', 'expm1', 'fabs', 'factorial', 'floor', 'fmod', 'frexp', 'fsum', 
+'gamma', 'gcd', 'hypot', 'inf', 'isclose', 'isfinite', 'isinf', 'isnan', 
+'isqrt', 'ldexp', 'lgamma', 'log', 'log10', 'log1p', 'log2', 'modf', 'nan', 
+'perm', 'pi', 'pow', 'prod', 'radians', 'remainder', 'sin', 'sinh', 'sqrt', 
+'tan', 'tanh', 'tau', 'trunc']
+
+&gt;&gt;&gt; help(math)  # help on math module
+Help on module math:
+
+NAME
+    math
+
+MODULE REFERENCE
+    https://docs.python.org/3.8/library/math
+...
+
+DESCRIPTION
+    This module provides access to the mathematical functions
+    defined by the C standard.
+
+FUNCTIONS
+    acos(x, /)
+        Return the arc cosine (measured in radians) of x.
+    
+    acosh(x, /)
+        Return the inverse hyperbolic cosine of x.
+...
+
+DATA
+    e = 2.718281828459045
+    inf = inf
+    nan = nan
+    pi = 3.141592653589793
+    tau = 6.283185307179586
+
+&gt;&gt;&gt; help(math.sin) # help on sine function in math module
+Help on built-in function sin in module math:
+
+sin(x, /)
+    Return the sine of x (measured in radians).
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>1.5 Resources and Further Reading</h1>
+
+<ul>
+<li><a href="https://docs.python.org/3/tutorial/index.html">The Python Tutorial</a></li>
+<li><a href="https://docs.python.org/3/library/index.html">The Python Standard Library</a></li>
+<li><a href="https://docs.python.org/3/glossary.html">The Python Glossary</a></li>
+
+
+<li><a href="https://pythontutor.com/visualize.html#mode=edit">Python Tutor</a>: 
+Embeddable Web-Based Program Visualization for CS Education, P. J. Guo</li>
+
+<li><a href="https://pep8.org/">PEP 8 &mdash; the Style Guide for Python Code</a></li>      
+
+<li><a href="https://www.tomasbeuzen.com/python-programming-for-data-science/README.html">
+T. Beuzen, Python Programming for Data Science</a></li>
+
+<li><a href="https://composingprograms.com/">J. DeNero, <cite>Composing Programs</cite></a></li>
+
+<li>A. B. Downey, <cite>Think Python: How to Think Like a Computer Scientist</cite>, 2nd ed., 
+<a href="https://greenteapress.com/thinkpython2/html/index.html">online version</a> and 
+<a href="https://greenteapress.com/wp/think-python-2e/">PDF version</a></li>
+
+<li><a href="https://github.com/jrjohansson/scientific-python-lectures">R. Johansson, 
+Lectures on scientific computing with Python</a></li>
+<li>R. Johansson, <cite>Numerical Python</cite>, 2nd ed., 2019</li>
+
+<li><a href="https://pythonnumericalmethods.berkeley.edu/notebooks/Index.html">Q. Kong, 
+T. Siauw, and A. Bayen, Python Programming and Numerical Methods: A Guide for Engineers and Scientists</a></li>
+
+<li>M. Lutz, <cite>Learning Python</cite>, 5th ed., O'Reilly</li>
+
+<li><a href="https://cs50.harvard.edu/python/2022/">D. J. Malan, CS50's Introduction 
+to Programming with Python</a></li>
+
+<li><a href="https://wesmckinney.com/book/">W. McKinney, Python for Data Analysis, 3rd ed., 
+Open Edition</a></li>
+
+<li><a href="http://www-personal.umich.edu/~mejn/computational-physics/">M. Newman, 
+Computational Physics with Python</a></li>
+
+<li><a href="https://diveintopython3.net/index.html">M. Pilgrim, Dive Into Python 3</a></li>
+    
+<li><a href="https://introcs.cs.princeton.edu/python/home/">R. Sedgewick, K. Wayne, 
+and R. Dondero, Introduction to Programming in Python</a></li>
+    
+<li><a href="https://jakevdp.github.io/PythonDataScienceHandbook/">J. VanderPlas, 
+Python Data Science Handbook</a></li>
+
+<li><a href="https://github.com/stanfordpython/course-reader">Stanford CS 41 Course Reader</a></li>
+
+<li><a href="https://www.youtube.com/watch?v=8L1MgStSZhk">Introduction to Numerical Computing 
+With NumPy | SciPy 2021 (Video)</a> </li>
+<li><a href="https://www.youtube.com/watch?v=8L1MgStSZhk">Learn Python Through Data Processing 
+in Pandas | SciPy 2021 (Video)</a></li>
+<li><a href="https://numpy.org/numpy-tutorials/">NumPy Tutorials</a></li>
+<li><a href="https://scipy-lectures.org/intro/">SciPy Lecture Notes</a></li>
+<li><a href="https://pandas.pydata.org/docs/getting_started/intro_tutorials/index.html">pandas:
+Getting started tutorials</a></li>
+</ul>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_02.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Workbench 4. Building Multiple Experiments</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_03.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_05.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Workbench<br />4. Building Multiple Experiments</h1>
+
+<p>
+ <a href="#Param">4.1 Adding Parameters</a><br />
+ <a href="#Experiment">4.2 Setting Up Multiple Experiments</a><br />
+ <a href="#Scenario">4.3 Creating Scenarios</a><br />
+ <a href="#Prune">4.4 Pruning Project Trees</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To add parameters and variables.</li>
+<li>To create multiple experiments and scenarios.</li>
+</ul>
+
+<!--================================================-->
+<a name="Param"></a>
+<h1>4.1 Adding Parameters</h1>
+
+<p>In Sentaurus Workbench, parameters can be defined and multiple values can 
+be assigned to them to create splits in experiments (simulations). Each new parameter value 
+creates an additional experiment. Therefore, for <em>N</em> 
+values of a parameter, there are <em>N</em> experiments. For two parameters, 
+P1 and P2, with <em>M</em> and <em>N</em> values, respectively, there are 
+<em>M</em> x <em>N</em> possible experiments.</p>
+
+<p>You will now introduce parameters to the simple project created in 
+<a href="swb_03.html">Section&nbsp;3. Creating Projects</a>.</p>
+
+<p>To add parameters:</p>
+
+<ol>
+<li>Choose <strong>Parameter</strong> &gt; <strong>Add Parameter/Values</strong>, or 
+right-click the gray box immediately below the Sentaurus Process icon in the table, 
+and choose <strong>Add Parameter/Values</strong>.</li>
+<li>In the Add Parameter/Values dialog box, enter the fields as shown in Figure 1.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p><img src="images/swb_addpara_type.png" width="478" height="522" 
+alt="Add Parameter/Values dialog box" /></p>
+
+<p class="caption">Figure 1. Add Parameter/Values dialog box for specifying the 
+pdose parameter.</p>
+
+<p>Repeat this procedure to create another parameter called <tt>penergy</tt> with 
+the default value of <tt>40</tt>. The <strong>Project</strong> tab should now look like 
+Figure&nbsp;2. Note that Sentaurus Workbench added virtual nodes (light blue) to represent 
+a possible future split.</p>
+
+<p><a href="images/swb_main_newpara.png"><img src="images/swb_main_newpara.png" width="570" 
+alt="Project tab showing new parameters" /></a></p>
+
+<p class="caption">Figure 2. Project tab showing new parameters. 
+(Click image for full-size view.)</p>
+
+<p>The parameters <tt>pdose</tt> and <tt>penergy</tt> are defined but are not used yet. 
+To use them, open the Sentaurus Process input file with a text editor, and replace the line:</p>
+
+<pre>
+implant phosphorus dose=5e14 energy=40
+</pre>
+
+<p>with:</p>
+
+<pre>
+implant phosphorus dose=@pdose@ energy=@penergy@
+</pre>
+
+<p>The constructs <tt>@pdose@</tt> and <tt>@penergy@</tt> are placeholders for 
+the parameters in the input file. Sentaurus Workbench replaces them with the 
+actual value of the parameters during the preprocessing stage.</p>
+
+<p>To preprocess the project:</p>
+
+<ul>
+<li>Choose <strong>Project</strong> &gt; <strong>Operations</strong> &gt; 
+<strong>Preprocess</strong>, or press Ctrl+P.</li>
+</ul>
+
+<p>You will be prompted to save the project.</p>
+
+<p><a href="images/swb_preprocesslog.png"><img src="images/swb_preprocesslog.png" width="570" 
+alt="Preprocessor Log dialog box" /></a></p>
+
+<p class="caption">Figure 3. Preprocessor Log dialog box. (Click image for full-size view.)</p>
+
+<p>You can use the Node Explorer (see <a href="swb_02.html#DisplayInfo">Section&nbsp;2.5 Displaying Node Output and Node Information</a>)
+to view the input file for node 1 (<tt>pp1_fps.cmd</tt>) and to see 
+that the parameters have indeed been replaced by their respective values for node 1.</p>
+
+<p class="note">Sentaurus Workbench automatically preprocesses a project 
+when you click the <strong>OK</strong> button of the Run Project dialog 
+box. Therefore, manual preprocessing is not necessary most of the time.</p> 
+
+<!--================================================-->
+<a name="Experiment"></a>
+<h1>4.2 Setting Up Multiple Experiments</h1>
+
+<p>To add multiple values for a parameter:</p>
+
+<ul>
+<li>Right-click the parameter name and choose <strong>Add Parameter/Values</strong>.</li>
+</ul>
+
+<p>For the parameter <tt>penergy</tt>, enter the values using linear progression, 
+as shown in Figure&nbsp;4.</p>
+
+<p class="note">It is sufficient to enter only three of the four values for linear 
+or logarithmic progressions. The fourth value is computed automatically. In addition, 
+you can choose the sorting order for parameter values by selecting the required option.</p>
+
+<p><img src="images/swb_addparavalue.png" width="479" height="523"
+alt="Adding parameter values for linear progression" /></p>
+
+<p class="caption">Figure 4. Add Parameter/Values dialog box to add multiple 
+parameter values for the penergy parameter as a linear progression.</p>
+
+<p>For the parameter <tt>pdose</tt>, enter values in the <strong>List of Values</strong> 
+field as shown in Figure&nbsp;5.</p>
+
+<p><img src="images/swb_addparavalue1.png" width="479" height="524" 
+alt="Adding multiple parameter values" /></p>
+
+<p class="caption">Figure 5. Add Parameter/Values dialog box to add multiple 
+parameter values for the pdose parameter as a list.</p>
+
+<p>After you have finished adding parameters, you should clean up the project.</p>
+
+<p>To clean up a project:</p>
+
+<ol>
+<li>Choose <strong>Project</strong> &gt; <strong>Operations</strong> &gt; <strong>Clean Up</strong>, 
+or press Ctrl+L.</li>
+<li>In the Cleanup Options dialog box, select the <strong>Renumber the Tree</strong> option 
+to renumber the nodes correctly (see Figure&nbsp;6).</li>
+</ol>
+ 
+<p><img src="images/swb_cleanup_tree.png" width="568" height="235" 
+alt="Cleanup Options dialog box" /></p>
+
+<p class="caption">Figure 6. Cleanup Options dialog box.</p>
+
+<p>Then, press the F9 key to display the node numbers, and preprocess the project by pressing Ctrl+P.
+The <strong>Project</strong> tab should look like Figure 7.</p>
+
+<p><a href="images/swb_mainclean.png"><img src="images/swb_mainclean.png" width="570" 
+alt="Main window with experiments" /></a></p>
+
+<p class="caption">Figure 7. Project tab with experiments. (Click image for full-size view.)</p>
+
+<p>When the project modifications are finished, you can save them by 
+choosing <strong>Project</strong> &gt; <strong>Save</strong>, or pressing Ctrl+S.</p>
+
+<p>In addition to the list and the linear distributions, you can define a logarithmic 
+or Gaussian distribution for parameter values. The illustration of the <tt>penergy</tt> 
+parameter value distribution, which follows the Gaussian distribution around the mean value 
+40 inside a given range, is shown on Figure&nbsp;8.</p>
+
+<p><img src="images/swb_addparavalue_gauss.png" width="479" height="525" 
+alt="Adding multiple parameter values using Gaussian distribution" /></p>
+
+<p class="caption">Figure 8. Add Parameter/Values dialog box to add multiple 
+parameter values for penergy parameter as a Gaussian distribution.</p>
+
+<!--================================================-->
+<a name="Scenario"></a>
+<h1>4.3 Creating Scenarios</h1>
+
+<p>With several values for the project parameters, the total number of experiments 
+(the possible simulations for each combination of the parameter values) can become 
+very high. You can run all of them or make subsets of the experiments called 
+<em>scenarios</em>. The entire set of experiments constitutes the scenario <tt>all</tt>.</p>
+
+<p>In addition, you can copy a set of experiments to create a dedicated scenario
+and run the experiments individually. To illustrate this, create a scenario called 
+<tt>high_energy</tt>, consisting of experiments with implantation energies higher 
+than 50&nbsp;keV.</p> 
+
+<p>To create a scenario (see Figure 9):</p>
+
+<ol>
+<li>Choose <strong>Scenario</strong> &gt; <strong>Add</strong>.</li>
+<li>In the <strong>Name</strong> field, type: <tt>high_energy</tt></li>
+<li>Select <strong>Activate Experiments Matching</strong>.</li>
+<li>From the <strong>Parameter</strong> list, select <tt>penergy</tt>.</li>
+<li>From the <strong>Operation</strong> list, select <tt>&gt;=</tt>.</li>
+<li>In the <strong>Value</strong> field, enter <tt>55</tt>.</li>
+<li>Select <strong>Enable Auto Matching of New Experiments</strong>.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p><a href="images/swb_addscen.png"><img src="images/swb_addscen.png" width="570"
+alt="Add Scenario dialog box" /></a></p>
+
+<p class="caption">Figure 9. Add Scenario dialog box. (Click image for full-size view.)</p>
+
+<p>This creates a scenario called <tt>high_energy</tt> containing experiments
+with <tt>penergy &gt;= 55</tt>.</p>
+
+<p>You can switch between existing scenarios by selecting them in the 
+<strong>Scenario</strong> box in the toolbar (see Figure&nbsp;10).</p>
+
+<p><img src="images/swb_scenario.png" width="291" height="230" 
+alt="Scenario box in toolbar" /></p>
+
+<p class="caption">Figure 10. Scenario box in toolbar.</p>
+
+<p>Another way to include experiments in a scenario is by individually adding them to a scenario,
+rather than using an expression. Suppose we want to create a secenario that contains only the 
+experiments 1 and 6. Use the Manage Membership in Scenarios dialog box (see Figure&nbsp;11) to add 
+the selected experiments to a scenario:</p>
+
+<ol>
+<li>In the <strong>Scenario</strong> box, select <strong>all</strong>.</li>
+<li>Select two experiments that correspond to the low energy value (40 keV) by clicking 
+while holding the Ctrl key.</li>
+<li>Choose <strong>Experiments</strong> &gt; <strong>Manage Membership in Scenarios</strong>.</li>
+<li>In the Manage Membership in Scenarios dialog box, click <strong>Add New Scenario</strong>.</li>
+<li>In the Add Scenario dialog box, enter the scenario name <tt>low_energy</tt>, and 
+click <strong>OK</strong>.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p><a href="images/swb_scenario4.png"><img src="images/swb_scenario4.png" width="570"
+alt="Experiments added to newly created scenario" /></a></p>
+
+<p class="caption">Figure 11. Experiments added to newly created scenario. 
+(Click image for full-size view.)</p>
+
+<p>The <tt>low_energy</tt> scenario is created containing the selected experiments 
+(see Figure&nbsp;12).</p>
+
+<p><img src="images/swb_scenario5.png" width="280" height="193" 
+alt="Newly created low_energy scenario with selected experiments" /></p>
+
+<p class="caption">Figure 12. Newly created low_energy scenario with selected 
+experiments copied into it.</p>
+
+<p>The creation of different scenarios is particularly helpful when many parameters 
+are used. The resulting experiments can be classified into separate scenarios to 
+reflect realistic situations.</p>
+
+<!--================================================-->
+<a name="Prune"></a>
+<h1>4.4 Pruning Project Trees</h1>
+
+<p>Often, when many parameters are used in a project, certain combinations 
+of parameters do not need to be simulated. In such cases, you can <em>prune</em>, 
+that is, remove unnecessary experiments from the project tree.</p>
+
+<p>To prune a project tree:</p>
+
+<ol>
+<li>Select the nodes.</li>
+<li>Choose <strong>Nodes</strong> &gt; <strong>Configuration</strong> &gt; 
+<strong>Prune</strong>, or press Ctrl+E.</li>
+</ol>
+
+<p>All pruned nodes appear gray and will not be executed (see Figure&nbsp;13).</p>
+
+<p class="note">If a parent node is pruned, then all subsequent nodes 
+in the project tree branch are pruned automatically.</p>
+
+<p><img src="images/swb_prune.png" width="281" height="298" alt="Pruned nodes" /></p>
+
+<p class="caption">Figure 13. Some project tree nodes are pruned and will not be executed.</p>
+
+<p>To show or hide pruned nodes:</p>
+
+<ul>
+<li>Choose <strong>View</strong> &gt; <strong>Tree Options</strong> &gt; 
+<strong>Show Pruned</strong>, or press the F8 key.</li>
+</ul>
+
+<p>To revert pruned nodes:</p>
+
+<ol>
+<li>Select the nodes.</li>
+<li>Choose <strong>Nodes</strong> &gt; <strong>Configuration</strong> &gt; 
+<strong>Unprune</strong>, or press Ctrl+U.</li>
+</ol>
+
+<p>The project <tt>parameters_scenarios</tt> is located in the directory 
+<tt>Applications_Library/GettingStarted/swb/parameters_scenarios</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_03.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_05.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

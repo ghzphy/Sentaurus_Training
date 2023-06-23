@@ -1,0 +1,571 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 5. Working With Custom Calibration Files</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />5. Working With Custom Calibration Files</h1>
+
+<p>
+ <a href="#1">5.1 Overview</a><br />
+ <a href="#2">5.2 Process-Dependent Settings</a><br />
+ <a href="#3">5.3 Example: p-Well Implantation</a><br />
+ <a href="#4">5.4 Example: Implantation With Ge Preamorphization</a><br />
+ <a href="#5">5.5 Documenting Parameter Changes</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to work efficiently with custom calibration files.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a> 
+<h1>5.1 Overview</h1>
+
+<p class="note">The files discussed in this section are part of the 
+Sentaurus Workbench project <tt>Custom_calibration</tt>. 
+The complete project can be investigated from within Sentaurus 
+Workbench in the directory <tt>Applications_Library/GettingStarted/ 
+sprocess/Custom_calibration</tt>.</p>
+
+<p>Models can be selected and parameters can be changed at any place 
+in a command file. However, this makes the command file difficult to 
+read and detracts from the process flow itself.</p> 
+
+<p>Sentaurus Process offers an elegant way to manage the selection of 
+process step&ndash;dependent models and parameters: a calibration file.</p>
+
+<p>A calibration file consolidates all model selections and parameter settings 
+in one location. Using calibration files has several advantages:</p>
+
+<ul>
+<li>Cleaner command files</li>
+<li>Easy reuse of calibrated models and parameters for different projects</li>
+<li>Easy sharing of calibrated processing steps</li>
+<li>Effective knowledge transfer from experienced to less experienced users</li>
+<li>Buildup of a custom database for calibration results</li>
+</ul>      
+
+<p>To load a calibration file at the beginning of a Sentaurus Process 
+command file, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd" startExpr="source*" Lines=1 -->
+<pre>
+source  @pwd@/calibration.fps
+</pre>
+<!-- grep end -->
+
+<p>The recommended way is first to load Advanced Calibration as a starting point 
+and then to load an additional calibration file (see 
+<a href="sp_6.html">Section 6. Working With Advanced Calibration</a>).</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Process-Dependent Settings</h1>
+
+<p>In the example discussed here, the calibration file 
+<tt>calibration.fps</tt> contains some model and parameter settings.</p> 
+
+<p>Click to view the calibration file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/calibration.fps">
+calibration.fps</a>.</p>
+
+<p>Often, you need to adjust models and parameters for a specific processing 
+step. This can be accomplished by making the relevant selections immediately 
+before the processing step, for example:</p>
+
+<pre>
+pdbSet Silicon Boron IFactor 2.5 
+implant Boron dose=1e12&lt;cm-2&gt; energy=20&lt;keV&gt; tilt=0 rotation=0
+</pre>
+
+<p>However, Sentaurus Process supports a more elegant method: callback procedures. 
+For example, Sentaurus Process calls the <tt>UserImpPreProcess</tt> function 
+<em>before</em> and the <tt>UserImpPostProcess</tt> function <em>after</em> each 
+implantation step. By redefining these user callback procedures in the calibration 
+file, the Sentaurus Process command file can be restricted to contain only generic 
+process flow definitions, and all parameter and model settings can be placed in the 
+calibration file.</p>
+
+<p>A similar concept is implemented in the Advanced Calibration file 
+(see <a href="sp_6.html">Section 6. Working With Advanced Calibration</a>), where 
+parameters and models are adjusted depending on the implantation conditions, such as species, 
+implantation energy, and dose. This approach is very effective for a global calibration.</p>
+
+<p class="note">In Advanced Calibration, the Sentaurus Process callback procedures after ion 
+implantation are redefined. The user callback procedures are not modified and can be used for 
+additional calibration.</p>
+
+<p>For the calibration of a single project, it is more convenient to adjust models and parameters 
+for a specified processing step. For example, in the command file of Sentaurus Process, introduce 
+the variable <tt>ProcessStepID</tt>, which identifies the processing step, with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd" startExpr="source*" Lines=1 -->
+<pre>
+source  @pwd@/calibration.fps
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd" startExpr="set*" Lines=1 -->
+<pre>
+set        ProcessStepID &quot;PWell Implantation&quot;
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd" startExpr="implant*" Lines=1 -->
+<pre>
+implant  Boron dose= 1e12&lt;cm-2&gt; energy= 20&lt;keV&gt; tilt= 0 rotation= 0 info= 2
+</pre>
+<!-- grep end -->
+
+<p>In the calibration file <tt>calibration.fps</tt>, write the following 
+redefinition of the preimplantation callback procedure:</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/calibration.fps" startExpr="proc UserImpPre*" Lines=5 -->
+<pre>
+proc UserImpPreProcess { Species Energy Dose Tilt Rotation Slice Mode } {
+  global  ProcessStepID
+  if { [ string match $ProcessStepID &quot;PWell Implantation&quot; ] } {
+    ChangeParameter &quot;pdbSet Silicon Boron IFactor 2.5&quot;
+  }
+</pre>
+<!-- grep end -->
+
+<p>This setup has the same effect as the Sentaurus Process code given at the 
+beginning of this section. The variable <tt>IFactor</tt> is set to 2.5 for the given 
+implantation step and controls the interstitial concentration after the implantation. 
+The number of interstitials is set to be <tt>IFactor</tt> multiplied by the number of 
+implanted dopant atoms.</p>
+
+<p class="note">In this setup, modified parameters are not reset automatically 
+to their default values. Therefore, any parameter changes remain active for all 
+subsequent processing steps, unless they are explicitly changed again.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>5.3 Example: p-Well Implantation</h1>
+
+<p>This example illustrates the use of a calibration file for a 1D Sentaurus Process 
+simulation. The example is presented in the form of a Sentaurus Workbench project, 
+which contains two <em>experiments</em>, which are distinguished by the Sentaurus Workbench 
+parameter <tt>calibration</tt>. In the first experiment, <tt>calibration=off</tt>. 
+In the second experiment, <tt>calibration=on</tt>.</p>
+
+<p>The Sentaurus Process command file <tt>sprocess_fps.cmd</tt> contains 
+the Sentaurus Workbench preprocessor directive:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd" startExpr="#if*" Lines=3 -->
+<pre>
+#if [string compare @calibration@ &quot;on&quot;] == 0
+source  @pwd@/calibration.fps
+#endif
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>In the <tt>calibration=on</tt> experiment, the calibration file 
+<tt>calibration.fps</tt> is read before the Sentaurus Process command 
+file is executed. In the <tt>calibration=off</tt> experiment, 
+default values are used.</p> 
+
+<p>After setting up the grid and defining the substrate, the p-well 
+implantation step is performed (see the command file 
+<tt>sprocess_fps.cmd</tt>):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd" startExpr="*PWell*" Lines=17 -->
+<pre>
+set        ProcessStepID &quot;PWell Implantation&quot;
+#---------------------------------------------------------------------
+deposit material= {Oxide} type= isotropic rate= {1.0} time= 0.01
+
+LogFile &quot;Boron IFactor before implant: [pdbGet Silicon Boron IFactor]&quot; 
+LogFile &quot;Boron AcInit  before implant: [pdbGetDouble Silicon Boron AcInit]&quot;
+
+implant  Boron dose= 1e12&lt;cm-2&gt; energy= 20&lt;keV&gt; tilt= 0 rotation= 0 info= 2
+
+LogFile &quot;Boron IFactor after implant: [pdbGet Silicon Boron IFactor]&quot; 
+LogFile &quot;Boron AcInit  after implant: [pdbGetDouble Silicon Boron AcInit]&quot;
+
+SetPlxList { Boron_Implant Int_Implant }
+WritePlx   n@node@_PWellimpl.plx   y=0
+
+
+#---------------------------------------------------------------------
+</pre>
+<!-- grep end -->
+
+<p>The <tt>AcInit</tt> parameter is used to determine the value of the active 
+concentration of dopants in crystalline regions, which is used to initialize 
+an annealing step.</p>
+
+<p class="note">The <tt>LogFile</tt> commands are included only to illustrate 
+the functionality of the callback procedures and can be removed to simplify 
+the structure of the command file.</p>
+
+<p>The calibration file <tt>calibration.fps</tt> contains the lines:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/calibration.fps" startExpr="proc UserImpPre*" Lines=5 -->
+<pre>
+proc UserImpPreProcess { Species Energy Dose Tilt Rotation Slice Mode } {
+  global  ProcessStepID
+  if { [ string match $ProcessStepID &quot;PWell Implantation&quot; ] } {
+    ChangeParameter &quot;pdbSet Silicon Boron IFactor 2.5&quot;
+  }
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/calibration.fps" startExpr="*UserImpPost*" startOccurrence=2 Lines=5 -->
+<pre>
+ proc UserImpPostProcess { Species Name Energy Dose Model IFac VFac CDose } {
+  global  ProcessStepID
+  if { [ string match $ProcessStepID &quot;PWell Implantation&quot; ] } {
+    ChangeParameter &quot;pdbSetDouble Silicon Boron AcInit 5e16&quot;
+  }
+</pre>
+<!-- grep end -->
+
+<p>Open the log file output of Sentaurus Process for the <tt>calibration=on</tt> 
+experiment to see the callback procedures at work. Look for the lines:</p>
+
+<pre>
+<span class="blue">Boron IFactor before implant: 1.0
+Boron AcInit  before implant: 5e+18</span>
+---------------------------------------------------------------- implant -----
+implant info= 2 energy= 20.00&lt;keV&gt; dose= 1.00e+12&lt;cm-2&gt; 
+tilt= 0.00e+00&lt;degree&gt; rotation= 0.00e+00&lt;degree&gt; Boron
+------------------------------------------------------------------------------
+&lt;<em>more information on implantation settings</em>&gt;
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Preprocessing implant data
+
+Selecting implant tables for species: Boron 
+<span class="red">ProcessStepID is &quot;PWell Implantation&quot;
+Redefining: pdbSet Silicon Boron IFactor 2.5</span>
+&lt;<em>more information on implantation tables</em>&gt;
+&lt;<em>...performing the implantation...</em>&gt;Building implantation models
+
+Postprocessing implantation data
+
+<span class="red">Redefining: pdbSetDouble Silicon Boron AcInit 5e16</span>
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+ Dose in:   Silicon_1     Oxide_1       Total
+              Silicon       Oxide
+    Boron  1.9909e+12  1.0337e+10  2.0013e+12
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+<span class="blue">Boron IFactor after implant: 2.5
+Boron AcInit  after implant: 5e+16</span>
+------------------------------------------------------------- SetPlxList -----
+SetPlxList { Boron_Implant Int_Implant }
+------------------------------------------------------------------------------
+--------------------------------------------------------------- WritePlx -----
+WritePlx n3_PWellimpl.plx y=0
+------------------------------------------------------------------------------
+</pre>
+
+<p> The <tt>LogFile</tt> commands in the Sentaurus Process command file
+generated the <span class="blue">blue text</span>. The <tt>LogFile</tt> commands
+in the calibration file <tt>calibration.fps</tt> generated the <span
+class="red">red text</span>.</p>
+
+<p>The first set of blue lines shows the Sentaurus Process default values for 
+<tt>IFactor</tt> and <tt>AcInit</tt>. Immediately before the implantation is 
+performed, Sentaurus Process calls the <tt>UserImpPreProcess</tt> callback procedure 
+and changes <tt>IFactor</tt> according to the requested value for the process step 
+<tt>PWell Implantation</tt> (see the first and second red lines).</p>
+
+<p>After the implantation is completed, Sentaurus Process calls the <tt>UserImpPostProcess</tt> 
+callback procedure  and changes <tt>AcInit</tt> according to the requested value 
+for the process step <tt>PWell Implantation</tt> (see the third red line).</p>
+
+<p>After the implantation step is completed, the changed values for <tt>IFactor</tt> and 
+<tt>AcInit</tt> are still active as shown in the last set of blue lines in the log file.</p>
+
+<p><a href="images/sp_cal_0.png"><img src="images/sp_cal_0.png" width="570" 
+alt="Interstitial concentration" /></a></p>
+
+<p class="caption">Figure 1. Interstitial concentration immediately after implantation 
+for the calibration=on experiment (red) and calibration=off experiment (blue). Black 
+dots show as-implanted boron profile. (Click image for full-size view.)</p>
+
+<p>For the default <tt>IFactor=1</tt>, the interstitial profile is identical to the 
+boron profile itself. With the calibrated value of <tt>IFactor=2.5</tt>, the 
+interstitial profile is 2.5 times larger.</p>
+
+<p class="note">To see the figures shown here within the project, select all Sentaurus Visual 
+nodes and click the <strong>Run Selected Visualizer Nodes Together</strong> toolbar button.</p>
+
+<p>The <tt>AcInit</tt> parameter determines the value of the active concentration of dopants 
+in crystalline regions, which is used to initialize an annealing step. To show the influence of 
+this parameter change, a very short (test) anneal step is included in the 
+<tt>sprocess_fps.cmd</tt> command file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd" startExpr="diffuse*600*" endExpr="WritePlx*" -->
+<pre>
+diffuse   time= 1.0e-12&lt;min&gt;   temp= 600&lt;C&gt;
+
+SetPlxList { BTotal BActive ITotal }
+WritePlx   n@node@_PWellrta_init.plx   y= 0
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sp_cal_1.png"><img src="images/sp_cal_1.png" width="570" 
+alt="1D profiles of boron concentration" /></a></p>
+
+<p class="caption">Figure 2. One-dimensional profiles of boron concentration with default 
+value of boron active concentration (calibration=off) and with calibrated value of boron active 
+concentration (calibration=on). (Click image for full-size view.)</p>
+
+<p>The initial activation level is determined as the lower value of the as-implanted doping 
+concentration and the <tt>AcInit</tt> value. For the default setting of 
+<tt>AcInit</tt>&nbsp;=&nbsp;5 x 10<sup>18</sup> (blue), all boron is assumed to be active. 
+After changing <tt>AcInit</tt> to 5 x 10<sup>16</sup>, most of the boron is assumed to be in 
+clusters (red).</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>5.4 Example: Implantation With Ge Preamorphization</h1>
+
+<p>To ensure shallow junctions for the low-doped drain (LDD) implantations, sometimes, 
+an additional implantation step with an electrically inactive dopant (mainly germanium) 
+is performed to amorphize the top silicon layer. This suppresses channeling and avoids 
+deep tails of the as-implanted profiles.</p>
+
+<p>In this example, a high-dose germanium implantation is performed before the boron 
+LDD and the quad arsenic halo implantation, with the following commands:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd" startExpr="*PMOS Halo/LDD*" endExpr="WritePlx*" -->
+<pre>
+set       ProcessStepID &quot;PMOS Halo/LDD&quot;
+#---------------------------------------------------------------------
+implant Germanium dose= 2e14&lt;cm-2&gt; energy= 100&lt;keV&gt; tilt= 0 rotation= 0
+implant Boron     dose= 5e14&lt;cm-2&gt; energy=   2&lt;keV&gt; tilt= 0 rotation= 0 \
+  info= 2
+implant Arsenic  dose= 6e13&lt;cm-2&gt; energy= 60&lt;keV&gt; tilt= 15&lt;degree&gt; rotation= 0 \
+  mult.rot= 4  info= 2
+
+SetPlxList { Boron_Implant Arsenic_Implant Damage Int_Implant}
+WritePlx   n@node@_LDDimpl.plx   y= 0
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>For this process step, the calibration file 
+<a href="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/calibration.fps">
+calibration.fps</a> contains the following redefinitions:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/calibration.fps" startExpr="*UserImpPre*" startOccurrence=2 endExpr="}*" -->
+<pre>
+proc UserImpPreProcess { Species Energy Dose Tilt Rotation Slice Mode } {
+  global  ProcessStepID
+  if { [ string match $ProcessStepID &quot;PWell Implantation&quot; ] } {
+    ChangeParameter &quot;pdbSet Silicon Boron IFactor 2.5&quot;
+  }
+
+  if { [ string match $ProcessStepID &quot;PMOS Halo/LDD&quot; ] } {
+
+    switch $Species {
+      &quot;Germanium&quot; {
+        ChangeParameter &quot;pdbSet Silicon Germanium IFactor 0.2&quot;
+      }
+      &quot;Boron&quot; {
+        ChangeParameter &quot;pdbSet Silicon Boron IFactor 0.1&quot;
+        ChangeParameter &quot;implant spec=Boron Silicon ratio=0.9999&quot;
+      }
+      &quot;Arsenic&quot; {
+        ChangeParameter &quot;pdbSet Silicon Arsenic IFactor 0.2&quot;
+        ChangeParameter &quot;pdbSet Silicon Arsenic VFactor 0.05&quot;
+        ChangeParameter &quot;implant spec=Arsenic  Silicon ratio=0.9999&quot;
+      }  
+    }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Besides the <tt>IFactor</tt> (and for arsenic, also the <tt>VFactor</tt>) redefinitions, 
+implantation settings for boron and arsenic are modified. The keyword <tt>ratio</tt> 
+determines the percentage of the total dose that is assigned to the amorphous profile 
+(the rest is assigned to the channeling profile). The setting of <tt>ratio=0.9999</tt> 
+almost fully suppresses channeling.</p>
+
+<p class="note">By default, Sentaurus Process takes into account channeling suppression 
+due to the damage generated by previous implantations, in both analytic and Monte Carlo 
+simulations. In this example, this feature has been switched off to show the calibration 
+methodology.</p>
+
+<p>In this callback procedure, a Tcl <tt>switch</tt> statement makes a specific
+parameter redefinition for each implanted species (see 
+<a href="../tcl/tcl_2.html#7">Section&nbsp;2.7 Conditional Branching</a>).</p>
+
+<p>These modifications are documented in the <tt>n3_fps.out</tt> log file:</p>
+
+<pre>
+---------------------------------------------------------------- implant -----
+implant info= 2 energy= 2.00&lt;keV&gt; dose= 5.00e+14&lt;cm-2&gt; tilt= 0.00e+00&lt;degree&gt; 
+        rotation= 0.00e+00&lt;degree&gt; Boron
+------------------------------------------------------------------------------
+&lt;<em>more information on implantation settings</em>&gt;
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Preprocessing implant data
+
+Selecting implant tables for species: Boron
+Redefining: pdbSet Silicon Boron IFactor 0.1
+Redefining: implant spec=Boron Silicon <span class="red">ratio=0.9999</span>
+Building implant models
+
+---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---
+Material: Silicon
+Region:   Silicon_1
+
+Vertical moments
+Cap        Rp         Stdev      Gamma      Beta       Ratio      PR
+um         um         um                                            
+0          0.0094467  0.0087927  -0.40433   9.9194     <span class="red">0.9999</span>     P4
+           0.022467   0.022548   -0.96512   4.9372     <span class="red">1e-04</span>      P4
+&lt;<em>more range table entries</em>&gt;
+</pre>
+
+<p>The corresponding lines in the log file for the <tt>calibration=off</tt> experiment read:</p>
+
+<pre>
+Opening table file: /ImpLib/Default/SiliconB_16e13-8e15.tab
+
+Vertical moments
+Cap        Rp         Stdev      Gamma      Beta       Ratio      PR
+um         um         um                                            
+0          0.0094467  0.0087927  -0.40433   9.9194     <span class="blue">0.4951</span>     P4
+           0.022467   0.022548   -0.96512   4.9372     <span class="blue">0.5049</span>     P4
+</pre>
+
+<p>The modifications due to the calibration are highlighted in red and the 
+default values are blue.</p>
+
+<p><a href="images/sp_cal_2.png"><img src="images/sp_cal_2.png" width="570" 
+alt="As-implanted boron and arsenic profiles" /></a></p>
+
+<p class="caption">Figure 3. As-implanted boron profiles (solid lines) and arsenic profiles 
+(dashes) with the calibration of the &quot;ratio&quot; parameter to account for preamorphization 
+(red) and with the default implantation tables (blue). (Click image for full-size view.)</p>
+
+<p> After the various implantation steps, the postprocessing callback procedure 
+<tt>UserImpPostProcess</tt> is called, which for the <tt>&quot;PMOS Halo/LDD&quot;</tt> 
+step is redefined in the calibration file <tt>calibration.fps</tt> as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/calibration.fps" startExpr="*Dechann*" Lines=4  -->
+<pre>
+# Dechanneling after Ge implantation.
+#
+proc UserImpPreProcess { Species Energy Dose Tilt Rotation Slice Mode } {
+  global  ProcessStepID
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/Custom_calibration/calibration.fps" startExpr="*PMOS Halo/LDD*" Lines=14 -->
+<pre>
+  if { [ string match $ProcessStepID &quot;PMOS Halo/LDD&quot; ] } {
+
+    switch $Species {
+      &quot;Arsenic&quot; {
+        ChangeParameter &quot;pdbSet Silicon Arsenic  AcInit  1e17&quot;
+        ChangeParameter &quot;pdbSet Silicon Arsenic  AmInit  2e19&quot;
+      }
+      &quot;Boron&quot; {
+        ChangeParameter &quot;pdbSet Silicon Boron    AcInit  1e17&quot;
+        ChangeParameter &quot;pdbSet Silicon Boron    AmInit  1e19&quot;
+      }
+    }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>In particular, the parameter <tt>AmInit</tt> limits the (initial) activation level in 
+recrystallized amorphous regions. Here, for example, the boron activation level is limited to 
+10<sup>19</sup> cm<sup>-3</sup>.</p>
+
+<p><a href="images/sp_cal_3.png"><img src="images/sp_cal_3.png" width="570" 
+alt="Annealed boron and arsenic profiles" /></a></p>
+
+<p class="caption">Figure 4. Annealed boron profiles (solid lines) and arsenic profiles 
+(dashes) with calibrated parameters set (red) and default parameters set (blue). 
+(Click image for full-size view.)</p>
+
+<p>Using the default parameters results in excessively deep profiles because 
+preamorphization is neglected. The effect of setting <tt>AmInit</tt> for boron 
+to 10<sup>19</sup> cm<sup>&ndash;3</sup> can be seen in the highly doped regions.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>5.5 Documenting Parameter Changes</h1>
+
+<p>In the calibration file <tt>calibration.fps</tt>, a special procedure 
+generates entries in the log file, which document all the parameter and 
+model changes:</p>
+
+<pre>
+set LastProcessStepID "none"
+proc <span class="red">ChangeParameter</span> { CMD } {
+  global  ProcessStepID
+  global  LastProcessStepID
+
+  if { $LastProcessStepID != $ProcessStepID } {
+    LogFile &quot;ProcessStepID is \&quot;$ProcessStepID\&quot;&quot;
+  }
+  LogFile &quot;Redefining: $CMD&quot;
+  eval $CMD
+  set LastProcessStepID $ProcessStepID
+}
+</pre>
+
+<p> The Tcl procedure <tt>ChangeParameter</tt> writes <tt>ProcessStepID</tt> for each 
+new process flow step into the log file and writes the parameter and model change commands 
+before executing them.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

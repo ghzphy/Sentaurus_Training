@@ -1,0 +1,492 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = true; M.inline$$Q = true</script>    
+
+ <title>TCAD Sentaurus Tutorial &ndash; Tips &amp; Tricks 6. Variability Analysis Using Impedance Field Method</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tips &amp; Tricks<br />6. Variability Analysis Using Impedance Field Method</h1>
+
+<p>
+<a href="#1">6.1 What is the impedance field method?</a><br />
+<a href="#2">6.2 Does IFM analysis require calibration?</a><br />
+<a href="#3">6.3 How does IFM analysis of RDF effects compare to atomistic RDF analysis?</a><br />
+<a href="#4">6.4 Can IFM describe non-Gaussian distributions?</a><br />
+<a href="#5">6.5 How do I extract &sigma;(V<sub>t</sub>) and &sigma;(I<sub>d</sub>) from IFM simulation results?</a><br />
+<a href="#6">6.6 Which parameters are necessary for oxide thickness variation analysis?</a><br />
+<a href="#7">6.7 How do I simulate variation of the gate length of MOSFETs?</a><br />
+<a href="#8">6.8 How are 2D and 3D simulations handled in the IFM?</a><br />
+<a href="#9">6.9 Relevant Application Notes</a><br />
+<a href="#10">6.10 References</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To present how to perform variability analysis using the impedance field method.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>6.1 What is the impedance field method?</h1>
+
+<p>The random variability of leading-edge transistors is an issue of growing 
+concern as transistor scaling continues. With each new technology generation, 
+new materials and process steps are introduced to chip manufacturing that affect 
+transistor variability. The impedance field method (IFM) is an important tool for 
+variability analysis and is available in Sentaurus Device.</p>
+
+<p>The basic concept behind the IFM is to treat randomness as a perturbation 
+of a reference device. Rather than solving the full nonlinear Poisson and drift-diffusion 
+equations for a large number of random device realizations, you obtain the 3D TCAD 
+solution only once for the reference device. Then, you compute the current fluctuations 
+at the device terminals caused by these random perturbations. This computation is based 
+on linear response theory using a Green's function technique.</p>
+
+<p>For modeling statistical variability, Sentaurus Device supports variants 
+of the IFM: noise-like IFM, statistical IFM, and deterministic IFM.</p>
+
+<!--======================-->
+<h2>6.1.1 Noise-Like Impedance Field Method</h2>
+
+<p>The noise-like IFM performs noise analysis of semiconductor devices. Its basic concept 
+is to establish a model of the noise sources of the device and, for each local fluctuation, 
+to evaluate its effect on the device terminals where the output noises are measured. The 
+total noise observed on the device terminals is calculated by summing the contribution 
+of all the local fluctuations. There are two main steps in performing noise-like IFM 
+simulations.</p>
+
+<p>The first step identifies the appropriate microscopic models of the noise sources, 
+that is, the local fluctuations inside the device. Depending on the problem and the kind of 
+noise of interest, the noise sources could be, for example, fluctuations of the device 
+geometry or the dopants inside the device.</p>
+
+<p>The second step determines the impact of the noise sources on the device terminal 
+outputs. It is assumed that the terminal voltages and the local fluctuations follow 
+linear relationships, which are obtained by computing the Green's function of the terminal 
+voltages. When the Green's functions are computed, the total noise on device terminals 
+can be readily calculated from the noise sources.</p>
+
+<p>Noise source models related to variability analysis are available for random dopant 
+fluctuations, random geometric fluctuations, random trap concentration fluctuations 
+(bulk and interface traps), and random workfunction fluctuations.</p>
+
+<!--======================-->
+<h2>6.1.2 Statistical Impedance Field Method</h2>
+
+<p>Within the statistical impedance field method (sIFM), you use the Green's function 
+to compute the linear current response to actual random perturbation. To obtain 
+statistical samples, for example, for random dopant fluctuations, you assume that 
+doping is spatially uncorrelated and that the number of dopants in a given volume 
+follows a Poisson distribution, with an average given by the average number of dopants 
+in the volume.</p>
+
+<p>Sentaurus Device can generate actual random perturbations for any of 
+the following quantities under investigation: dopant fluctuations, geometric fluctuations 
+(for example, oxide thickness variation and line edge roughness), trap concentration 
+fluctuations (bulk and interface traps), workfunction fluctuations, band-edge fluctuations, 
+metal conductivity fluctuations, and dielectric constant fluctuations.</p>
+
+<p>You also can include the effects of a random contact resistor attached to the 
+drain contact of a MOSFET. The effect of this resistor on the I<sub>d</sub>&ndash;V<sub>g</sub> 
+characteristics can be computed in a postprocessing step with Sentaurus Visual.</p>
+
+<p>For details, see the <cite>Sentaurus&trade; Visual User Guide</cite>, Appendix G. 
+Specifically, the documentation for the <tt>ifm::GetsIFMStdDev</tt> and 
+<tt>ifm::ReadsIFM</tt> procedures.</p>
+
+<p>From the linear current response, you compute the full I&ndash;V curves of the 
+randomized devices. The IFM approximates the generally nonlinear system by a linear, 
+small-signal, equivalent one. You can improve the accuracy of this inherent 
+approximation by leveraging all otherwise available information about the system.</p>
+
+<p>The IFM provides a certain degree of freedom in selecting which linearized quantities 
+to consider. For example, for a MOS transistor I<sub>d</sub>&ndash;V<sub>g</sub> simulation, 
+you can consider either the linear gate-voltage response, or the linear drain-current 
+response of the system, or a combination of both. For a transistor in saturation, the gate 
+voltage only weakly controls the drain current and, therefore, considering the linear 
+drain-current response is more appropriate. In the subthreshold regime, on the other hand, 
+random fluctuation effects are very well described by threshold voltage fluctuations, 
+which are intuitively linked to the linear gate-voltage response. This additional information 
+is incorporated into the I&ndash;V computation algorithm by formulating a set of boundary 
+conditions specific to the devices and biasing schemes at hand.</p>
+
+<p>An application note <a href="#App1">[App.&nbsp;1]</a> includes examples of 
+performing sIFM simulations.</p>
+
+<!--======================-->
+<h2>6.1.3 Deterministic Impedance Field Method</h2>
+
+<p>For the deterministic IFM, you specify the variations directly. Instead of using 
+doping profile randomizations, you use your own modified doping profile. 
+Sentaurus Device computes the effect of the variations on the observation terminal 
+voltages and currents. Compared to random fluctuations, deterministic variations give 
+you more control over the variation and are easier to understand, because no statistical 
+interpretation is required. This method is particularly useful for screening and 
+corner analysis.</p>
+
+<!--================================================-->
+<a name="2"></a> 
+<h1>6.2 Does IFM analysis require calibration?</h1>
+
+<p>The IFM analysis of random dopant fluctuation (RDF) effects does not require 
+any calibration. The amplitude of the RDF effect is proportional to the local doping 
+level and is determined automatically. Each doping species contributes to RDF effects 
+individually. For example, in an area of a device with compensated doping, the contributions 
+from donors and acceptors add rather than subtract.</p>
+
+<p>Comparisons to experimental data and to atomistic simulations show that this 
+approach works accurately without the need to calibrate any IFM parameters.</p>
+
+<p>After the traps themselves have been calibrated, no additional calibration 
+is needed for the IFM analysis of random trap fluctuation. Similar to RDF, the amplitude 
+of the random trap fluctuation effect is determined automatically by the local trap 
+concentration.</p>
+
+<p>The models for random geometric fluctuations and random workfunction fluctuations 
+offer several use-adjustable parameters that require calibration.</p>
+
+<!--================================================-->
+<a name="3"></a> 
+<h1>6.3 How does IFM analysis of RDF effects compare to atomistic RDF analysis?</h1>
+
+<p>Accurate atomistic RDF analysis requires 3D simulations because, in a 2D structure, 
+each dopant atom becomes a charged rod that runs across the entire channel width, which 
+significantly exaggerates the effect. A 3D simulation uses a large number of randomized 
+samples. To obtain statistically relevant results, you must use a minimum of 200 
+samples. Sometimes 100&thinsp;000 samples are used 
+<a href="#ried-2011">[Ref.&nbsp;1]</a>, which constitute a huge computational effort.</p>
+
+<p>In the IFM approach, which can be used in two and three dimensions, the simulation is 
+performed only once and takes about twice as long as DC analysis. Therefore, IFM analysis 
+can be performed 100 to 50&thinsp;000 times faster than the atomistic approach.</p>
+
+<p>In terms of accuracy, direct comparisons of the IFM and atomistic approaches have shown 
+that they result in almost identical threshold variabilities (see, for example, 
+<a href="#roy-2011">[Ref.&nbsp;2]</a>) if the comparison is performed correctly.</p>
+
+<p>However, not all of the well-accepted TCAD transport models and parameters are 
+directly applicable to atomistic RDF analysis. Many TCAD transport models are specifically 
+designed to simulate an &quot;average&quot; device structure with a continuous 
+&quot;average&quot; doping profile. When randomizing a doping profile, this 
+implicit assumption of smooth doping profiles is violated. For certain TCAD transport 
+models, this results in spurious &ndash; and at times very strong &ndash; nonlinearities. 
+Therefore, you must carefully select the TCAD transport models you want to use for 
+your atomistic simulations <a href="#elsayed-2012">[Ref.&nbsp;3]</a>.</p>
+
+<p>Furthermore, atomistic simulations do not automatically reproduce the correct average 
+(see, for example, <a href="#wong-1993">[Ref.&nbsp;4]</a>). If you use the same TCAD transport 
+models and parameters, the threshold voltage of the unperturbed &quot;average&quot; device 
+will not correspond to the average of the threshold voltages of the randomized devices. 
+Now, you typically have calibrated your TCAD transport models and parameters such that you 
+obtain the correct results for the unperturbed &quot;average&quot; device. Therefore, 
+you will need to redo this calibration for the atomistic simulations to recover these 
+correct results.</p>
+
+<p>With the IFM, first you compute the TCAD solution, then you determine the linear response 
+of the TCAD solution to the given perturbation. Consequently, all well-established TCAD 
+transport models and all calibrated transport model parameters can be used directly 
+for the IFM. In addition, the linearization guarantees by design that, for example, the 
+threshold voltage of the unperturbed &quot;average&quot; device will be the same as the 
+average of the threshold voltages of the randomized devices.</p>
+
+<!--================================================-->
+<a name="4"></a> 
+<h1>6.4 Can IFM describe non-Gaussian distributions?</h1>
+
+<p>The noise-like IFM is fast, easy to use, and efficient when it is sufficient to 
+know the fluctuation-induced standard deviations of terminal currents and voltages.</p>
+
+<p>The noise-like IFM does not make any assumptions about the actual shape 
+of the distribution functions, so a standard deviation can be uniquely defined for 
+any distribution function. However, if all you know is the standard deviation, you 
+cannot draw any conclusions about possible non-Gaussian distribution tails.</p>
+
+<p>Experimental data published in <a href="#tsunomura-2008">[Ref.&nbsp;5]</a> 
+<a href="#song-2011">[Ref.&nbsp;6]</a> exhibits purely Gaussian threshold voltage 
+and driving current distributions for a million transistors, which correspond to 
+the range of 10 standard deviations &ndash; which raises at least the possibility 
+that non-Gaussian behavior observed in certain atomistic simulations might be 
+artifacts of the method (see 
+<a href="#3">Section&nbsp;6.3 How does IFM analysis of RDF effects compare to atomistic RDF analysis?</a>).</p>
+
+<p>Using the statistical IFM, you can describe the non-Gaussian behavior of 
+derived quantities. An example of such a derived quantity is the static noise 
+margin of an SRAM cell (see the application note <a href="#App2">[App.&nbsp;2]</a>).</p>
+
+<p>Variability due to surface traps can also show pronounced non-Gaussian
+distributions when the average number of traps is low, for example, two. In
+this case, it is statistically possible for a given device to have 5 or 6 traps,
+but it is impossible to have less than zero traps. Consequently, the distribution must 
+be very asymmetric. Such a case is illustrated and discussed in an application note 
+<a href="#App1">[App.&nbsp;1]</a>.</p>
+
+<!--================================================-->
+<a name="5"></a> 
+<h1>6.5 How do I extract &sigma;(V<sub>t</sub>) and &sigma;(I<sub>d</sub>) from IFM simulation results?</h1>
+
+<p>In typical noise-like IFM simulations for MOSFETs, the noise simulation is run 
+at a series of bias points. The noise spectrum of the terminal currents of interest 
+is calculated for each bias point. The $V_t$ variation $σ_{Vt}$ can be calculated from 
+the noise spectrum in a postprocessing step. For example, when the noise-like IFM is 
+applied to an I<sub>d</sub>&ndash;V<sub>g</sub> simulation, the drain current variation 
+$σ_{Id}$ is calculated from the drain noise current spectral density $S_{Id}$, which is 
+a function of $V_g$:</p>
+
+<p>$$σ_{Id} = √{S_{Id}(V_g) ⋅ 1 \text"Hz"}$$</p>
+
+<p>The calculation of the current variations assumes that the contact voltages remain fixed. 
+Assuming fixed drain and gate currents, the gate voltage variation  $σ_{Vg}$ 
+can be calculated from the drain noise current spectral density $S_{Id}$ and the 
+drain-gate admittance $A_{dg}$:</p>
+
+<p>$$σ_{Vg} = σ_{Id}/A_{dg} = {√{S_{Id}(V_g) ⋅ 1 \text"Hz"}}/A_{dg}$$</p>
+
+<p>The gate-voltage variation is also a function of the gate voltage $V_g$. 
+The threshold voltage variation $σ_{Vt}$ is $σ_{Vg}$ at 
+$V_g = V_t$, where $V_t$ is the user-defined threshold voltage, 
+typically the linear or saturation $V_t$ based on a constant drain-current level. 
+The variation of the drain-current $S_{Id}$ is directly available from AC analysis 
+results. The relative drain-current variation is:</p>
+
+<p>$$σ_{Id}/I_d = √{S_{Id} ⋅ 1 \text"Hz"}/I_d$$</p>
+
+<p>The drain-current variation is also a function of the gate and drain voltages. A special 
+point commonly referred to is the saturation drain-current $I_{d,Sat}$ variation, 
+located at $V_g = V_{ds} = V_{dd}$ on this curve. Sometimes, 2D simulation 
+structures are used to approximate quasi-3D structures, assuming that the device is 
+homogeneous along the third (width) dimension. The <tt>AreaFactor</tt> is set to the device 
+width. With 2D simulations, the standard deviations of the 3D devices can be calculated from 
+those of the 2D device by the following relations:</p>
+
+<p>
+$$\table 
+σ_{Vg}^{3\text"D"},=,σ_{Vg}^{2\text"D"}√{1\: \text"μm"} / √w ; 
+σ_{Id}^{3\text"D"},=,σ_{Id}^{2\text"D"}√w / √{1\: \text"μm"} ; 
+$$
+</p>
+
+<p>When the <tt>AreaFactor</tt> ($w$) is set correctly, the standard deviations calculated 
+by the IFM are scaled properly according to the above relations.</p>
+
+<!--================================================-->
+<a name="6"></a> 
+<h1>6.6 Which parameters are necessary for oxide thickness variation analysis?</h1>
+
+<p>Two parameters must be provided for oxide thickness variation analysis: the amplitude 
+and the correlation length of the oxide thickness fluctuations. The amplitude is usually 
+set to the atomic step at the silicon&ndash;oxide interface, which is approximately 0.2&nbsp;nm, 
+as can be seen in a TEM in <a href="#niwa-1996">[Ref.&nbsp;7]</a>.</p>
+
+<p>For high-k gate dielectrics, usually a SiO<sub>2</sub> interlayer is used. If the 
+simulation structure explicitly contains such an interlayer, the amplitude should be set 
+to the atomic step. However, if the equivalent oxide thickness (EOT) is used instead, the 
+amplitude must be scaled according to the ratio of high-k permittivity to SiO<sub>2</sub> 
+permittivity.</p>
+
+<p>The correlation length determines how long are the flat parts of the interface in between 
+the atomic steps. A typical correlation length for the silicon&ndash;oxide interface is 
+approximately 4&nbsp;nm as can be seen in experimental data shown in 
+<a href="#niwa-1996">[Ref.&nbsp;7]</a>.</p>
+
+<!--================================================-->
+<a name="7"></a> 
+<h1>6.7 How do I simulate variation of the gate length of MOSFETs?</h1>
+
+<p>In an actual manufacturing process, when the gate length of a MOSFET varies, 
+the liner oxide, the spacers, the source/drain extensions (SDEs), and the deep source/drain 
+(SD) regions all vary accordingly, as they are formed in a self-aligned process.</p>
+
+<p>In an IFM simulation, however, this does not happen automatically as the IFM
+usually treats all variability sources as statistically independent. It is
+possible, however, to correlate different variability sources using the
+<tt>RandomField</tt> option. A random field is an abstract, dimensionless, and
+normalized amplitude field. It can be used in the form of a multiplication factor in
+one or more statistical IFM (sIFM) variability sources.</p>
+
+<p>For gate-length variability or line edge roughness (LER), for example, you would
+need to correlate the fluctuations of the side gate edges using the <tt>Geometric</tt> 
+option of the sIFM and the fluctuations of the doping profiles using the 
+<tt>DopingVariation</tt> option of the sIFM.</p>
+
+<p>For a spacer-patterning process of the gate stack, the spatial fluctuations of
+the two gate edges are correlated. For the IFM modeling of this situation, it is
+sufficient to define a vectorial shift of both the source-side and drain-side
+gate edges, and the corresponding doping profile. Note, however, that in this case, the
+LER is typically small and negligible compared to other variability sources.</p>
+
+<p>For direct patterning of the gate stack, the spatial fluctuations of the two
+gate edges are uncorrelated. For the IFM modeling of this situation, it is
+necessary to separate the source side and the drain side by limiting the
+application of the IFM variations to box-shaped regions using the
+<tt>SpatialShape</tt>, <tt>SpaceMid</tt>, and <tt>SpaceSig</tt> options. Then, 
+you define separate random fields for the source side and the drain side.</p>
+
+<p>As a worse-case scenario, it is also of interest to anticorrelate the spatial 
+fluctuations of the two gate edges. In this case, you can use a single random field 
+for the source-side and the drain-side areas, and correlate them by defining them 
+together in a single <tt>RandomizedVariation</tt> statement, using equal but opposite 
+shift vectors.</p>
+
+<p>In particular, for device structures with complicated spacers, it can be
+challenging to properly define and correlate the various interfaces involved in
+the gate length or LER variability simulation. Note also that the accuracy of the 
+results of gate-length variability IFM can be sensitive to meshing. Furthermore, when 
+simulating devices with an actually changed gate length, the current as a function of 
+amplitude tends to show some nonlinear behavior, which cannot be captured by linear 
+response theory. Therefore, it is recommended to validate the IFM setup, the mesh, and 
+the applicability by comparing IFM results for a spatially uniform gate-length variation 
+with standard TCAD simulation results for device structures with an actually changed gate length.</p>
+
+<p>An alternative approach to modeling gate-length variation is to create a
+parameterized simulation structure and to vary the gate length parameter. This method 
+ensures that all of the mentioned variation factors are included automatically. Multiple 
+gate-length splits can be defined and organized using Sentaurus Workbench.</p>
+
+<!--================================================-->
+<a name="8"></a> 
+<h1>6.8 How are 2D and 3D simulations handled in the IFM?</h1>
+
+<p>Even when considering a reference device structure that exhibits 2D symmetry 
+(extruded devices), the randomization will break the 2D symmetry, and any variability 
+analysis must be performed using full 3D TCAD simulations.</p>
+
+<p>Fortunately, when using the IFM, you can use a very efficient hybrid approach. 
+For the IFM, you need the Green's function and the randomization. The 
+Green's function depends only on the reference device and this retains 2D symmetry, 
+while the randomization will almost always exhibit 3D symmetry.</p>
+
+<p>Therefore, if your device structure exhibits 2D symmetry, you can rely on the much 
+faster 2D TCAD simulations to compute the DC results as well as the Green's functions. 
+The current response to the randomization, however, will be computed in three dimensions. 
+For that, the device structure is extruded internally in the third dimension. For some 
+variability sources, namely, RDFs, the convolution integral of the Green's function and 
+the randomization can be performed analytically in the third dimension, and the 
+simulation speed does not depend on the selected device width.</p>
+
+<p>For other variability sources, namely, sources with a finite correlation length, 
+the convolution integral must be performed numerically in the third dimension and, 
+therefore, the evaluation speed of the convolution integral for an extruded 2D structure 
+will be approximately the same as for a real 3D structure and will depend on the selected 
+device width.</p>
+
+<p>The device width is set with the keyword <tt>AreaFactor</tt>, which defaults to 
+1&nbsp;&micro;m. To activate this hybrid approach, use the keyword <tt>ExtrudeTo3D</tt>. 
+This is necessary to model variations correctly with spatial correlations, but it will 
+increase the runtime for these variations. Without this keyword, for all variability sources 
+with a finite correlation length, the randomization is performed assuming that the 
+variations are correlated perfectly in the third spatial direction. The keyword 
+<tt>ExtrudeTo3D</tt> has no effect on 3D structures.</p>
+
+<!--================================================-->
+<a name="9"></a> 
+<h1>6.9 Relevant Application Notes</h1>
+
+<dl class="ref">
+
+<dt>App. 1</dt>
+<dd><a name="App1"></a><cite>Modeling Random Variability Effects With the Statistical Impedance Field Method</cite>, TCAD Sentaurus Applications Library, available from <br />
+<tt>../Applications_Library/Variability/FinFET_Variability_sIFM</tt>.</dd>
+
+<dt>App. 2</dt>
+<dd><a name="App2"></a><cite>Modeling Statistical Variability of Static Noise Margins of SRAM Cells Using the Statistical Impedance Field Method</cite>, available from <br />
+<tt>../Applications_Library/Variability/SRAM_Variability/SRAM_3d</tt>.</dd>
+
+</dl>
+
+<p class= "note">
+Check the <cite>List of Available TCAD Sentaurus Application Examples and Notes</cite> article, 
+available from the SolvNetPlus support site, for the latest versions of an application example.<br />
+Go to<a href="https://solvnetplus.synopsys.com/s/article/List-of-Available-TCAD-Sentaurus-Application-Examples-and-Notes-1576165785936">
+https://solvnetplus.synopsys.com/s/article/List-of-Available-TCAD-Sentaurus-Application-Examples-and-Notes-1576165785936</a>.</p>
+
+<!--================================================-->
+<a name="10"></a> 
+<h1>6.10 References</h1>
+
+<dl class="ref">
+<dt>Ref. 1</dt>
+<dd><a name="ried-2011"></a>D. Reid <em>et al.</em>, &quot;Statistical Enhancement 
+of the Evaluation of Combined RDD- and LER-Induced V<sub>T</sub> Variability: Lessons From 
+10<sup>5</sup> Sample Simulations,&quot; <cite>IEEE Transactions on Electron Devices</cite>, 
+vol. 58, no. 8, pp. 2257&ndash;2265, 2011.</dd>
+
+<dt>Ref. 2</dt>
+<dd><a name="roy-2011"></a>G. Roy <em>et al.</em>, &quot;Comparative Simulation Study 
+of the Different Sources of Statistical Variability in Contemporary Floating-Gate 
+Nonvolatile Memory,&quot; <cite>IEEE Transactions on Electron Devices</cite>, vol. 58, 
+no. 12, pp. 4155&ndash;4163, 2011.</dd>
+
+<dt>Ref. 3</dt>
+<dd><a name="elsayed-2012"></a>K. El Sayed, E. Lyumkis, and A. Wettstein, 
+&quot;Modeling Statistical Variability with the Impedance Field Method,&quot; 
+in <cite>International Conference on Simulation of Semiconductor Processes and Devices 
+(SISPAD)</cite>, Denver, CO, USA, pp. 205&ndash;208, September 2012.</dd>
+
+<dt>Ref. 4</dt>
+<dd><a name="wong-1993"></a>H.-S. Wong and Y. Taur, &quot;Three-Dimensional &quot;Atomistic&quot; 
+Simulation of Discrete Random Dopant Distribution Effects in Sub-0.1&mu;m MOSFET's,&quot; 
+in <cite>IEDM Technical Digest</cite>, Washington, DC, USA, pp. 705&ndash;708, December 1993.</dd>
+
+<dt>Ref. 5</dt>
+<dd><a name="tsunomura-2008"></a>T. Tsunomura <em>et al.</em>, &quot;Analyses of 5&sigma; 
+V<sub>th</sub> Fluctuation in 65nm-MOSFETs Using Takeuchi Plot,&quot; in 
+<cite>Symposium on VLSI Technology</cite>, Honolulu, HI, USA, pp. 156&ndash;157, June 2008.</dd>
+
+<dt>Ref. 6</dt>
+<dd><a name="song-2011"></a>X. Song <em>et al.</em>, &quot;Impact of DIBL Variability 
+on SRAM Static Noise Margin Analyzed by DMA SRAM TEG,&quot; in <cite>IEDM Technical Digest</cite>, 
+Washington, DC, USA, pp. 62&ndash;65, December 2011.</dd>
+
+<dt>Ref. 7</dt>
+<dd><a name="niwa-1996"></a>M. Niwa, K. Okada, and R. Sinclair, &quot;Atomically flat, ultra 
+thin-SiO<sub>2</sub>/Si(001) interfaces formation by UHV heating,&quot; 
+<cite>Applied Surface Science</cite>, vol. 100&ndash;101, pp. 425&ndash;430, July 1996.</dd>
+</dl>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

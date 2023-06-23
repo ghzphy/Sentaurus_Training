@@ -1,0 +1,591 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Interconnect 4. Example: Thermoelectromechanical Analysis of an Interconnect (3D)</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Interconnect<br />4. Example: Thermoelectromechanical Analysis of an Interconnect (3D)</h1>
+
+<p>
+ <a href="#1">4.1 Overview</a><br />
+ <a href="#2">4.2 Using a Mask Layout to Build the Structure</a><br />
+ <a href="#3">4.3 Defining the Boundary Conditions and Loads</a><br />
+ <a href="#4">4.4 Solving the Coupled Thermal, Electrical, and Mechanical Domains</a><br />
+ <a href="#5">4.5 Postprocessing</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To create an interconnect structure from a layout.</li>
+ <li>To show how to activate the Joule effect and the temperature boundary conditions in the model.</li>
+ <li>To demonstrate how to couple different physical domains (thermal, electrical and mechanical).</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Overview</h1>
+
+<p>In this example, you will simulate a simple technological process to create one 
+level of interconnect with two metals using a given layout, and then will perform 
+a coupled field analysis of the thermal, electrical, and mechanical effects in 
+three dimensions.</p>
+
+<p>When the process simulation is completed and the 3D structure is finished, you start 
+the thermoelectromechanical analysis part. A potential difference is applied to 
+two pads at the extremities of the interconnect, the produced current generates heat by 
+the Joule effect, and finally, due to the thermal expansion of the different materials 
+involved, stresses are induced. This sequence of events is calculated in a coupled and 
+self-consistent way.</p>
+
+<p>A basic knowledge of Sentaurus Workbench and Silicon WorkBench is required 
+to better understand the structure of this project and the way you deal with 
+layouts and masks. See the <a href="../swb/swb_menu.html">Sentaurus Workbench module</a> 
+and <a href="../ic/ic_menu.html">Silicon WorkBench Interface module</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sinterconnect/3D_Interconnect</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Using a Mask Layout to Build the Structure</h1>
+
+<p>In practice, it is common to have a layout as a starting point for the generation 
+of interconnects or other silicon technology structures. Here, you adapt a simple 
+GDS layout for the needs of Sentaurus Interconnect using Silicon WorkBench. The GDS file 
+is imported directly into Sentaurus Interconnect using the following commands:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - icwb import" endExpr="##end - icwb import" excludelines="##*" format="wrap"-->
+<pre>
+icwb gds.file= &quot;@pwd@/Model1.gds&quot; cell= &quot;base&quot; scale= 1e-2 \
+	layer.numbers= {0:0 1:0 2:0 3:0 4:0 5:0} \
+	layer.names=   {0:0 1:0 2:0 3:0 4:0 5:0} \
+	domain.name= SIM3D1 sim3d= &quot;-220.0 -70.0 1380.0 1020&quot;
+
+set y_min [icwb bbox left]
+set y_max [icwb bbox right]
+set z_min [icwb bbox back]
+set z_max [icwb bbox front]
+</pre>
+<!-- grep end -->
+
+<p>The <tt>icwb</tt> command defines the GDS file to import, the scale, the cell name, 
+the layer numbers and associated names, as well as the domain name to be given and the simulation 
+domain boundary box in GDS coordinates. By default, the dimensions in the imported file are in 
+nanometers, and the scale factor should be equal to <tt>0.001</tt> to adapt it to the default 
+dimensions of Sentaurus Interconnect (&mu;m). For this project, to create a 10-times bigger 
+structure, you must set <tt>scale=0.01</tt>.</p>
+
+<p>At this point, you extract the boundaries of the simulation domain in the yz plane, 
+so you can use them later at the initialization of the 3D grid. This is done by using 
+the <tt>icwb bbox</tt> command and the options <tt>left</tt>, <tt>right</tt>, 
+<tt>back</tt>, and <tt>front</tt> for the boundaries. After importing the 
+Silicon WorkBench layout file, all the masks are created with the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - icwb create masks" endExpr="##end - icwb create masks" excludelines="##*" format="wrap"-->
+<pre>
+icwb.create.all.masks
+</pre>
+<!-- grep end -->
+
+<!--===================-->
+<h2>4.2.1 Mask Layers </h2>
+
+<p>Three mask layers (see <a href="#Fig1">Figure 1</a>) are used to structure the two 
+metal layers and to etch the via in the SiO<sub>2</sub> dielectric separating them. 
+Layers <tt>1:0</tt> and <tt>2:0</tt> are used for metal 1 (see <a href="#Fig2">Figure&nbsp;2</a>) 
+and metal 2, respectively, and <tt>3:0</tt> is used for the via (see <a href="#Fig3">Figure&nbsp;3</a>). 
+Two additional layers <tt>4:0</tt> and <tt>5:0</tt> are used later to define the contact 
+regions in the model.</p>
+
+<a name="Fig1"></a>
+<p><a href="images/si_tem_metal1viametal2.png"><img src="images/si_tem_metal1viametal2.png" 
+width="570" alt="General view with all layers of layout" /></a></p>
+
+<p class="caption">Figure 1. General view with all layers of the layout used to create 
+the masks for patterning metal 1 (green), SiO<sub>2</sub> (yellow), and metal 2 (blue). 
+(Click image for full-size view.)</p>
+
+<a name="Fig2"></a>
+<p><a href="images/si_metal1_layout.png"><img src="images/si_metal1_layout.png" 
+width="570" alt="Metal 1 layer" /></a></p>
+
+<p class="caption">Figure 2. Layout of mask for patterning metal 1 (aluminum). 
+(Click image for full-size view.)</p>
+
+<a name="Fig3"></a>  
+<p><a href="images/si_metal1via_layout.png"><img src="images/si_metal1via_layout.png" 
+width="570" alt="Metal 1 and via mask layouts" /></a></p>
+
+<p class="caption">Figure 3. Metal 1 and via mask layouts. 
+(Click image for full-size view.)</p>
+  
+<!--===================-->
+<a name="2.2"></a>
+<h2>4.2.2 Process Sequence</h2>
+
+<p>Before starting the process simulation, first you must initialize the 
+3D simulation domain and define the initial grid. This is done as in the 
+previous example with the <tt>line</tt>, <tt>region</tt>, and <tt>init</tt> commands 
+as follows:</p>
+  
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - 3D Domain" endExpr="##end - 3D Domain" excludelines="##*" format="wrap"-->
+<pre>
+line x location= 0.000&lt;um&gt; spacing= 0.25&lt;um&gt; tag= top
+line x location= 5.000&lt;um&gt; spacing= 1.0&lt;um&gt; tag= bottom
+line y location= $y_min&lt;um&gt; spacing= 1.0&lt;um&gt; tag= left
+line y location= $y_max&lt;um&gt; spacing= 1.0&lt;um&gt; tag= right
+line z location= $z_min&lt;um&gt; spacing= 1.0&lt;um&gt; tag= back
+line z location= $z_max&lt;um&gt; spacing= 1.0&lt;um&gt; tag= front
+
+region silicon substrate xlo= top xhi= bottom ylo= left yhi= right zlo= back \
+  zhi= front
+
+refinebox @METAL1@ xrefine= 0.25 
+refinebox @METAL2@ xrefine= 0.25 
+refinebox Oxide xrefine= 0.25
+
+init !DelayFullD wafer.orient= {0 0 1} notch.direction= {1 1 0}
+</pre>
+<!-- grep end -->
+
+<p>The <tt>init</tt> command has two arguments for specifying the crystallographic 
+orientation of the silicon wafer:</p>
+
+<ul>
+<li><tt>wafer.orient= {0 0 1}</tt> for the orientation of the wafer surface</li>
+<li><tt>notch.direction= {1 1 0}</tt> for the orientation of the flat of the wafer</li>
+</ul>
+
+<p>Before the <tt>init</tt> command, you better define the refinements in the 
+vertical direction (<tt>x</tt>) of the deposited layers with the command 
+<tt>refinebox</tt> and arguments for the material and for the refinement itself 
+(<tt>xrefine=&lt;n&gt;</tt>).</p>
+
+<p>A useful feature of splitting the processing steps is applied in this project 
+(see <a href="#Fig4">Figure 4</a>). In the command script, each defined process-step node 
+in Sentaurus Workbench is marked by the Sentaurus Workbench command <tt>#split &lt;c&gt;</tt> 
+so that it can be launched, after modifications of the corresponding process step, 
+without rerunning all the previous steps.</p>
+
+<a name="Fig4"></a>
+<p><img src="images/si_tem_swb.png" width="271" height="273" 
+alt="Sentaurus Workbench setup of project" /></p>
+  
+<p class="caption">Figure 4. Sentaurus Workbench setup of project, showing different 
+nodes used to split the process steps. </p>
+  
+<p>In the next sections, the process steps to create the 3D interconnect structure 
+are presented.</p>
+
+<p><strong>Step 1</strong></p>
+
+<p>The first photolithography step is the deposition and etching of metal 1 
+(<tt>Aluminum</tt>). This is performed in two splits with the following <tt>deposit</tt>, 
+<tt>photo</tt>, and <tt>etch</tt> commands:</p>
+    
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - M1" endExpr="##end - M1" excludelines="##*" format="wrap"-->
+<pre>
+#split M1_DEPO
+deposit region.name= Metal1 @METAL1@ thickness= 0.5 fields.values= \
+  {StressELYY= -5.0e7&lt;Pa&gt; StressELZZ= -5.0e7&lt;Pa&gt;} 
+
+#split M1_LITHO
+photo mask= {1:0_n}
+etch @METAL1@ aniso  thickness= 0.600 
+strip photo 
+</pre>
+<!-- grep end -->
+    
+<p><a href="#Fig5">Figure 5</a> shows the resulting structure with the patterned metal 1 
+layer. During deposition, you added intrinsic compressive stresses in the aluminum layer 
+of 50 MPa in the y- and z-directions with the <tt>fields.values</tt> argument of the 
+<tt>deposit</tt> command. After the deposition step, the stresses in the structure are 
+rebalanced automatically. If you need to switch off the automatic rebalancing of stresses, 
+use <tt>pdbSet Mechanics EtchDepoRelax 0</tt> (resetting it to <tt>1</tt> restores 
+the stress rebalancing).</p>
+
+<a name="Fig5"></a>      
+<p><a href="images/si_tem_metal1_pattern.png"><img src="images/si_tem_metal1_pattern.png" 
+width="500" alt="Metal 1 patterned on substrate" /></a></p>
+
+<p class="caption">Figure 5. Metal 1 patterned on the substrate using mask layer 
+1:0. (Click image for full-size view.)</p>
+
+<p><a href="#Fig6">Figure 6</a> shows the relaxed von Mises stresses in the 3D model 
+after deposition and etching of aluminum.</p>
+
+<a name="Fig6"></a>    
+<p><a href="images/si_tem_vonmises.png"><img src="images/si_tem_vonmises.png" 
+width="500" alt="von Mises stresses in metal 1" /></a></p>
+    
+<p class="caption">Figure 6. von Mises stresses in structure after deposition of metal 1 
+with 50 MPa compressive residual stresses. (Click image for full-size view.)</p>
+
+<p><strong>Step 2</strong></p>
+
+<p>During the second processing step, the interconnect dielectric (SiO<sub>2</sub>) is 
+deposited and the step mask <tt>3:0</tt> is used to open the via in the layer. 
+<a href="#Fig7">Figure 7</a> shows the structure at the end of this step. 
+The commands used for this step are:</p>
+    
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - SiO2" endExpr="##end - SiO2" excludelines="##*" format="wrap"-->
+<pre>
+#split OX_DEPO
+deposit region.name= Oxide1 Oxide type= fill coord=-1.200   
+
+#split OX_LITHO
+photo mask= {3:0_p}
+etch Oxide thickness= 1.000 aniso
+strip photo
+</pre>
+<!-- grep end -->
+
+<a name="Fig7"></a>
+<p><a href="images/si_tem_sio2_layer_etch.png"><img src="images/si_tem_sio2_layer_etch.png" 
+width="500" alt="Dielectric via etched" /></a></p>
+
+<p class="caption">Figure 7. SiO<sub>2</sub> layer etched with mask 3:0 
+to create the interconnect via. (Click image for full-size view.)</p>
+
+<p><strong>Step 3</strong></p>
+
+<p>The final processing step is the deposition and etching of metal 2 (copper). 
+This is done in a similar way as for metal 1 but without adding intrinsic stress 
+in the layer. The resulting structure after this step is shown in <a href="#Fig8">Figure 8</a> 
+and <a href="#Fig9">Figure 9</a> where the dielectric is rendered transparent for better 
+visualization. The commands for this step are:</p>
+    
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - M2" endExpr="##end - M2" excludelines="##*" format="wrap"-->
+<pre>
+#split M2_DEPO
+deposit region.name= Metal2 @METAL2@ type= fill coord=-1.800 
+grid bbox
+
+#split M2_LITHO
+photo mask= {2:0_n}
+etch @METAL2@ thickness= 1.000 aniso 
+strip photo
+</pre>
+<!-- grep end -->
+
+<a name="Fig8"></a>    
+<p><a href="images/si_tem_metal2_pattern.png"><img src="images/si_tem_metal2_pattern.png" 
+width="500" alt="Metal 2 layer patterned on top of dielectric" /></a></p>
+
+<p class="caption">Figure 8. Metal 2 layer patterned on top of the dielectric using mask 
+2:0. (Click image for full-size view.)</p>
+
+<a name="Fig9"></a>  
+<p><a href="images/si_tem_metal2_pattern_transparent.png"><img src="images/si_tem_metal2_pattern_transparent.png" 
+width="500" alt="Transparent dielectric" /></a></p>
+
+<p class="caption">Figure 9. Same as Figure 8 but with transparency used 
+for SiO<sub>2</sub>. (Click image for full-size view.)</p>
+
+<!--===================-->
+<a name="2.3"></a>
+<h2>4.2.3 Remeshing the Model</h2>
+
+<p>During the processing steps described in 
+<a href="#2.2">Section 4.2.2 Process Sequence</a>, you kept a relatively coarse 
+mesh to gain simulation time (see <a href="#Fig10">Figure 10</a>). Up to this stage, 
+this choice did not affect significantly the stresses in the structure as the residual 
+stresses in metal 1 are uniform, and the temperature is kept constant throughout the 
+processing. In more complicated cases, the mesh might need to be refined during 
+(for example, <tt>Adaptive</tt>) or between the processing steps for better accuracy.</p>
+
+<a name="Fig10"></a>  
+<p><a href="images/si_tem_coarse_mesh.png"><img src="images/si_tem_coarse_mesh.png" 
+width="500" alt="Initial coarse mesh" /></a></p>
+
+<p class="caption">Figure 10. Initial coarse mesh used during process simulation 
+steps. (Click image for full-size view.)</p>
+  
+<p>In the coupled field analysis that follows, you can expect to have current flow 
+in the interconnect layers as well as heat flow that will influence the stresses 
+in the model. For this reason, you want to refine the mesh around and in the metal 
+regions to increase accuracy. This is done with <tt>refinebox</tt> commands:</p>
+  
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - remesh" endExpr="##end - remesh" excludelines="##*" format="wrap"-->
+<pre>
+line clear
+
+refinebox clear
+
+refinebox name= all min= $gbbox_min max= $gbbox_max xrefine= 1.0 yrefine= 1.0 \
+  zrefine= 1.0
+
+refinebox name= Dielectric min= $gbbox_min max= $gbbox_max xrefine= 0.5 \
+  materials= {Oxide}
+
+refinebox name= Metals min= $gbbox_min max= $gbbox_max xrefine= 0.35 \
+  materials= {Aluminum Copper}
+
+refinebox name= metal1 mask= {1:0_n} mask.edge.refine.extent= 0.5 \
+  mask.edge.mns= 0.250 mask.edge.ngr= 1.500 min= $gbbox_min max= $gbbox_zero
+
+refinebox name= metal2 mask= {2:0_n} mask.edge.refine.extent= 0.5 \
+  mask.edge.mns= 0.250 mask.edge.ngr= 1.500  min= $gbbox_min max= $gbbox_zero
+
+refinebox remesh
+</pre>
+<!-- grep end -->
+  
+<p>The most outstanding method here is refinement using the mask layout. 
+This method also is presented in 
+<a href="../ic/ic_2.html#3">Section 2.3 Layout-Driven Mesh Refinement</a>, 
+and information about the <tt>refinebox</tt> command is available in the 
+<cite>Sentaurus&trade; Interconnect User Guide</cite>.</p>
+  
+<p>The <tt>mask.edge.mns</tt> argument specifies the minimum mesh size near the mask edge. 
+This must be used with <tt>mask.edge.refine.extent</tt> to have an effect, as the latter 
+defines the distance from the mask edge over which edge-based refinement occurs. Finally, 
+the <tt>mask.edge.ngr</tt> argument defines the growth rate of refinement away from the 
+mask edge (default is 1.0, that is, no growth).</p>
+  
+<p><a href="#Fig11">Figure 11</a> shows the meshed model after the refinement procedure. 
+Mesh refinement also is discussed in more detail in the Sentaurus Process module 
+(see <a href="../sp/sp_9.html">Section 9. Special Focus: Meshing</a>).</p>
+
+<a name="Fig11"></a>  
+<p><a href="images/si_tem_remesh.png"><img src="images/si_tem_remesh.png" 
+width="500" alt="Meshed model after refinement" /></a></p>
+
+<p class="caption">Figure 11. Meshed model after refinement in and around 
+the metallic interconnect lines. (Click image for full-size view.)</p>
+  
+<!--===================-->
+<h2>4.2.4 Defining the Contacts From the Layout</h2>
+  
+<p>In Sentaurus Interconnect, contact regions are specified to apply loads and boundary 
+conditions. In general, this is done using the <tt>contact</tt> command. In this example, 
+the contact regions have been designed in the layout file and, now you can use the layers 
+to create the contacts on the 3D model. The command <tt>icwb.contact.mask</tt> is used for 
+this reason, with the mask layers <tt>4:0</tt> and <tt>5:0</tt> as shown here:</p>
+  
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - contacts" endExpr="##end - contacts" excludelines="##*" format="wrap"-->
+<pre>
+#split CONTACT
+icwb.contact.mask layer.name= 4:0 name= cont1 box @METAL1@ xlo= 0.100 \
+  xhi=-0.100 !cut.mesh
+icwb.contact.mask layer.name= 5:0 name= cont2 box @METAL2@ xlo=-1.700 \
+  xhi=-1.800 !cut.mesh
+</pre>
+<!-- grep end -->
+
+<p>These commands create two contacts on the two pads of aluminum and copper lines as 
+shown in <a href="#Fig12">Figure 12</a>. The option <tt>!cut.mesh</tt> forces the 
+contact to be adapted to the available elements without changing the mesh. As a result, 
+the size of the defined contact might be smaller than designed on the layout. If the 
+contact must be defined accurately on the structure, this option must not be used, 
+but in that case, the model is remeshed.</p>
+
+<a name="Fig12"></a>  
+<p><a href="images/si_tem_contacts_layout.png"><img src="images/si_tem_contacts_layout.png" 
+width="570" alt="Contacts layout" /></a></p>
+
+<p class="caption">Figure 12. Contacts designed on the interconnect layout 
+(colored magenta). (Click image for full-size view.)</p>
+  
+<p>For more information about the <tt>icwb.contact.mask</tt> command, see 
+<a href="../ic/ic_2.html#4">Section&nbsp;2.4 Layout-Driven Contact Definition</a> 
+and the <cite>Sentaurus&trade; Interconnect User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 Defining the Boundary Conditions and Loads</h1>
+
+<p>When the contact regions are specified, you can proceed with the definition of the 
+boundary conditions (BCs) and the loads. <a href="#Fig13">Figure 13</a> shows an overview of 
+all the applied loads and BCs. For this coupled field analysis, multiple BCs and 
+loads must be applied to <tt>cont2</tt>, but this is done in separate steps and not in a single 
+command as it can be observed in the commands here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - BCs 2" endExpr="##end - BCs 2" excludelines="##*" format="wrap"-->
+<pre>
+#split THELMECH 
+supply contact.name= cont1 voltage= 0.000&lt;V&gt;
+
+supply contact.name= cont2 voltage= 0.050&lt;V&gt;
+supply contact.name= cont2 temperature= 30.0&lt;C&gt;
+stressdata bc.location= cont2 bc.value= {pressure=50.0&lt;MPa&gt;}
+
+pdbSet @METAL1@ Temperature JouleHeating 1
+pdbSet @METAL2@ Temperature JouleHeating 1
+pdbSet Silicon AttachThermalResistor 1
+pdbSet WaferThickness 500.0
+pdbSet Env.Temp 30.0
+</pre>
+<!-- grep end -->
+
+<a name="Fig13"></a>
+<p><a href="images/si_tem_bc_load_overview.png">
+<img src="images/si_tem_bc_load_overview.png" width="500" alt="BCs and loads applied to the model" /></a></p>
+
+<p class="caption">Figure 13. Overview of BCs and loads applied to the model. 
+(Click image for full-size view.)</p>
+
+<p>Joule heating in both metals is activated with the command:</p>
+
+<pre>
+pdbSet &lt;material&gt; Temperature JouleHeating 1
+</pre>
+
+<p>The boundary condition for temperature at the bottom of the wafer is set by a 
+Dirichlet condition, and the temperature there is set to 30&deg;C with 
+<tt>pdbSet Env.Temp 30.0</tt>.</p>
+
+<p>To take into consideration the thickness of the wafer (500 &mu;m) and its thermal 
+conductivity, two <tt>pdbSet</tt> commands are used, respectively:</p>
+
+<pre>
+pdbSet WaferThickness 500.0
+pdbSet Silicon AttachThermalResistor 1
+</pre>
+
+<p>With this method, you do not need to mesh the full silicon thickness, thereby 
+reducing the simulation time.</p>
+
+<p>Electrical BCs also are applied to both contacts using the <tt>supply</tt> command. 
+With this command, it is also possible to apply temperature, current, or power (electrical or thermal) 
+BCs. Finally, a constant pressure is applied to <tt>cont2</tt>, and the mechanics BCs 
+remain the same for the substrate as those were set at the beginning of the simulation, that is, 
+the bottom of the silicon substrate is fully clamped:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - BCs 1" endExpr="##end - BCs 1" excludelines="##*" format="wrap"-->
+<pre>
+stressdata bc.location= Bottom bc.value= {dx=0.0 dy=0.0 dz=0.0}
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="4"></a>
+<h1>4.4 Solving the Coupled Thermal, Electrical, and Mechanical Domains</h1>
+
+<p>Coupling the physical domains in Sentaurus Interconnect is straightforward. 
+Specify the <tt>mode</tt> command followed by the names of the domains to be coupled 
+as shown in this example, and then solve the problem:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Interconnect/sinterconnect_sis.cmd" startExpr="##start - solve" endExpr="##end - solve" excludelines="##*" format="wrap"-->
+<pre>
+mode mechanics current thermal
+
+solve  time= 1.0&lt;min&gt; init= 0.1&lt;min&gt; maxstep= 0.5&lt;min&gt; 
+</pre>
+<!-- grep end -->
+
+<p>It is important to note that, in this case, you are dealing with heat generation 
+due to the Joule effect. For this type of simulation, sufficient time should be given 
+to the simulation so that the system reaches a dynamic equilibrium and the temperature 
+distribution in the structure stabilizes. For that reason, <tt>time</tt> is specified 
+in the <tt>solve</tt> command along with the initial step <tt>init=&lt;n&gt;</tt> and 
+the maximum step <tt>maxstep=&lt;n&gt;</tt>.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>4.5 Postprocessing</h1>
+
+<p>This section presents some results using Sentaurus Visual for postprocessing.
+The electrostatic potential (see <a href="#Fig14">Figure 14</a>), the current density 
+(see <a href="#Fig15">Figure 15</a>), and the temperature (see <a href="#Fig16">Figure 16</a>) 
+are mapped on the 3D model after the solution.</p>
+
+<p>In addition, the heat rates due to the Joule effect, the total heat rate, and the heat 
+flux have been calculated in the solution and are shown in <a href="#Fig17">Figure 17</a>, 
+<a href="#Fig18">Figure 18</a>, and <a href="#Fig19">Figure 19</a>, respectively. Finally, 
+the von Mises stresses are presented in <a href="#Fig20">Figure 20</a>.</p>
+
+<a name="Fig14"></a>
+<p><a href="images/si_pp_elpotential.png"><img src="images/si_pp_elpotential.png" 
+width="500" alt="Electrostatic potential" /></a></p>
+
+<p class="caption">Figure 14. Electrostatic potential in conductive regions of the model. 
+(Click image for full-size view.)</p>
+
+<a name="Fig15"></a>
+<p><a href="images/si_pp_currentdensity.png"><img src="images/si_pp_currentdensity.png" 
+width="500" alt="Current density" /></a></p>
+
+<p class="caption">Figure 15. Current density in aluminum and copper lines. 
+(Click image for full-size view.)</p>
+
+<a name="Fig16"></a>
+<p><a href="images/si_pp_temperature.png"><img src="images/si_pp_temperature.png" 
+width="500" alt="Temperature in interconnect structure" /></a></p>
+
+<p class="caption">Figure 16. Temperature in interconnect structure and substrate. 
+(Click image for full-size view.)</p>
+
+<a name="Fig17"></a>
+<p><a href="images/si_pp_jouleheat.png"><img src="images/si_pp_jouleheat.png" 
+width="500" alt="Heat generation rate in metallic lines due to Joule effect" /></a></p>
+
+<p class="caption">Figure 17. Heat generation rate in metallic lines due to the 
+Joule effect (the asinh function is used for scaling). As expected, the heat generation 
+rate density corresponds to the current density (see <a href="#Fig15">Figure 15</a>) 
+in the conductors. (Click image for full-size view.)</p>
+
+<a name="Fig18"></a>
+<p><a href="images/si_pp_totalheat.png"><img src="images/si_pp_totalheat.png" 
+width="500" alt="Total heat rate" /></a></p>
+
+<p class="caption">Figure 18. Total heat generation rate in the model (linear scale). 
+The Joule effect being the only heat source in the model, the total heat generation rate 
+is equal to the Joule effect heat generation rate at every point of the structure.
+(Click image for full-size view.)</p>
+
+<a name="Fig19"></a>
+<p><a href="images/si_pp_heatflux.png"><img src="images/si_pp_heatflux.png" 
+width="500" alt="Heat flux" /></a></p>
+
+<p class="caption">Figure 19. Calculated heat flux mapped on the 3D model of the 
+interconnect. (Click image for full-size view.)</p>
+
+<a name="Fig20"></a>
+<p><a href="images/si_pp_vonmises.png"><img src="images/si_pp_vonmises.png" 
+width="500" alt="von Mises stresses" /></a></p>
+
+<p class="caption">Figure 20. von Mises stresses in interconnect lines 
+and substrate. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

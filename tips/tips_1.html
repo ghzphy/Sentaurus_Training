@@ -1,0 +1,547 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tips &amp; Tricks 1. Three-Dimensional Simulations With Sentaurus Process</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tips &amp; Tricks<br />1. Three-Dimensional Simulations With Sentaurus Process</h1>
+
+<p>
+  <a href="#1.1">1.1 Do I need special settings for 3D process simulation mode?</a><br />
+  <a href="#1.2">1.2 What can I do if my 3D process simulation fails?</a><br />
+  <a href="#1.3">1.3 What can I do with 3D MGOALS?</a><br />
+  <a href="#1.4">1.4 Which resolution should I use with 3D MGOALS?</a><br />
+  <a href="#1.5">1.5 When should I switch off the repair function (<tt>!repair</tt>) in 3D MGOALS?</a><br />
+  <a href="#1.6">1.6 Can user-defined geometry be combined with 3D MGOALS geometry?</a><br />
+  <a href="#1.7">1.7 How do I prepare process results for device simulation?</a><br />
+  <a href="#1.8">1.8 I have a layout in a specific format. Can it be used in Sentaurus Process?</a><br />
+  <a href="#1.9">1.9 Which type of mesh is needed for 3D diffusion simulations?</a><br />
+  <a href="#1.10">1.10 Which type of mesh is needed for 3D mechanics simulations?</a><br />
+  <a href="#1.11">1.11 Which solver settings should I use for 3D simulations?</a><br />
+  <a href="#1.12">1.12 How many particles should I use for 3D Monte Carlo implantation simulations?</a><br />
+  <a href="#1.13">1.13 What sort of speedup can I expect when using multithreading in 3D simulations?</a><br />
+  <a href="#1.14">1.14 Can moving boundaries be simulated in three dimensions?</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To provide guidelines for selecting the most appropriate settings for 3D simulations 
+     with Sentaurus Process.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1.1"></a>
+<h1>1.1 Do I need special settings for 3D process simulation mode?</h1>
+
+<p>No special settings are needed to switch to 3D process simulation mode in Sentaurus Process.</p>
+
+<p>Sentaurus Process uses MGOALS to simulate geometry changes during process simulation. 
+MGOALS is an internally developed library targeting simulation of process-oriented steps 
+such as etching and deposition.</p>
+
+<!--================================================-->
+<a name="1.2"></a> 
+<h1>1.2 What can I do if my 3D process simulation fails?</h1>
+
+<p>In most cases, nontrivial failures of 3D process simulations occur during 
+meshing. The primary reason for these failures is the poor quality of the 
+input geometry or the geometry boundary for meshing.</p>
+
+<p>For the purpose of studying and correcting such failures, the following steps 
+are recommended:</p>
+
+<ol>
+ <li>Simulate all geometries by commenting out all steps that require meshing 
+  (such as diffusion, implantation, stress, saving, and splits). To obtain additional 
+  information about the geometry, specify info level 1: 
+  <tt>pdbSet InfoDefault 1</tt></li>
+
+ <li>Save snapshots of the geometry in TDR boundary format: <tt>struct tdr.bnd=&lt;c&gt;</tt></li>
+  
+ <li>Examine the log file. Pay attention to the value of <tt>minDihedralAngle</tt>. 
+  If its value is less than 1, you can expect potential problems with the subsequent 
+  meshing steps.</li>
+
+ <li>For problematic steps, examine the saved snapshots and consider making small changes 
+  to the operation. For example, adding a small isotropic component to anisotropic 
+  operations can often result in significantly improved geometry quality. In many cases, 
+  anisotropic operations can be combined into simple multimaterial etching with the same 
+  rate for all materials (a prime example of this is spacer etching).</li>
+
+ <li>When you are satisfied with the geometry metrics, activate all steps and rerun the 
+  entire simulation.</li>
+
+ <li>For very complicated long-running flows, you also can consider checking the 
+  robustness of the meshing by replacing a step that requires a mesh with 
+  <tt>grid remesh</tt>.</li>
+</ol>
+
+<p>For more details about the MGOALS module, refer to the 
+<cite>Sentaurus&trade; Process User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="1.3"></a> 
+<h1>1.3 What can I do with 3D MGOALS?</h1>
+
+<p>The 3D MGOALS module supports practically all geometric operations used in TCAD. 
+For the simulation of these operations, the main algorithms used are fast level set, 
+full level set, and MGOALS (proprietary) geometric.</p>
+
+<table width="570">
+<caption>Table 1. Main geometric operations and algorithms used by default.</caption>
+
+<tr>
+<th>3D MGOALS operation</th>
+<th>Default algorithm</th>
+</tr>
+
+<tr>
+<td>Isotropic etching and deposition</td>
+<td>Fast level set</td>
+</tr>
+
+<tr>
+<td>Anisotropic (vertical) etching and deposition</td>
+<td>MGOALS geometric</td>
+</tr>
+
+<tr>
+<td>Trapezoidal, directional etching and deposition</td>
+<td>MGOALS geometric</td>
+</tr>
+
+<tr>
+<td>Chemical-mechanical polishing, strip, and fill</td>
+<td>MGOALS geometric</td>
+</tr>
+
+<tr>
+<td>Selective deposition</td>
+<td>Fast level set, or geometric based on the type</td>
+</tr>
+
+<tr>
+<td>Crystallographic etching and deposition</td>
+<td>Full level set</td>
+</tr>
+
+<tr>
+<td>Polyhedron insertion</td>
+<td>MGOALS geometric</td>
+</tr>
+
+<tr>
+<td>Fourier etching and deposition</td>
+<td>Full level set</td>
+</tr>
+</table>
+
+<p>Anisotropic, isotropic, and directional operations can be forced to use 
+the full level-set algorithm by adding the <tt>force.full.levelset</tt> option. 
+In general, this should be used only in special cases such as multimaterial etching 
+with different rates for the different materials, or material exposure detection.</p>
+
+<!--================================================-->
+<a name="1.4"></a> 
+<h1>1.4 Which resolution should I use with 3D MGOALS?</h1>
+
+<p>In general, the default setting is recommended for most geometry simulations with 
+MGOALS.</p>
+
+<p>In some cases though, it might be beneficial to adjust the default resolution. 
+One example is when working with a large structure. To reduce CPU time and memory usage 
+and, at the same time, to decrease the complexity of the structure (and thereby the load 
+on Sentaurus Mesh), you might want to increase the default resolution. But by how much?</p>
+
+<p>It is recommended to have at least three resolution layers in the geometry feature 
+when operations are performed. For fast level set, this can be set by the corresponding 
+<tt>mgoals</tt> setting:</p>
+
+<pre>
+mgoals resolution=1.0/3.0
+</pre>
+
+<p>A different argument is used to control the full level-set resolution:</p>
+
+<pre>
+mgoals full.resolution=0.1
+</pre>
+
+<!--================================================-->
+<a name="1.5"></a> 
+<h1>1.5 When should I switch off the repair function (<tt>!repair</tt>) in 3D MGOALS?</h1>
+
+<p>The repair function in the MGOALS module eliminates very small features in the 
+geometry (slivers). Such small features can be the result of many simulation steps with 
+numeric and round-off errors. By eliminating these small features, the load on 
+Sentaurus Mesh is reduced and, therefore, the simulation success rate is increased. 
+That is why this option is switched on by default.</p>
+
+<p>The repair function works by encapsulating small features with the host material. 
+Upon close examination of the resulting structures, you might notice some uneven patches, 
+or scars, on the surfaces. In many cases, these should not have any detrimental effect on 
+the simulation. However, in rare cases, these patches can result in complications in some 
+operations, following the one when the repair was performed. In such cases, it can be 
+beneficial to switch off the repair function by adding the flag <tt>!repair</tt> in that 
+<tt>etch</tt> or <tt>deposit</tt> command.</p>
+
+<p>An example is a sequence of an anisotropic operation, followed by an isotropic 
+operation of the same material. The anisotropic operation might force geometry repair and 
+create a patch on the material surface, and then as a result of the isotropic operation, 
+this patch will grow. By switching off the repair function for the anisotropic operation, 
+however, you can avoid this surface artifact.</p>
+
+<!--================================================-->
+<a name="1.6"></a> 
+<h1>1.6 Can user-defined geometry be combined with 3D MGOALS geometry?</h1>
+
+<p>Yes, it can. There are two ways to do that. The external geometry can be 
+either created outside of Sentaurus Process using Sentaurus Structure Editor and then loaded, 
+or created on the fly and then incorporated into the structure.</p>
+
+<p>You can create a structure in a standalone Sentaurus Structure Editor run and 
+save the geometry as a TDR boundary file. Then, the geometry can be inserted by the 
+following commands:</p>
+
+<pre>
+polyhedron name= &lt;MyPolyhedron&gt; tdr= &lt;name&gt;
+insert polyhedron= &lt;MyPolyhedron&gt;
+</pre>
+
+<p>The first command imports the external geometry, and the second command 
+incorporates it into the current structure.</p>
+
+<p class="note">The inserted external object must be properly aligned with the 
+Sentaurus Process structure. Users are responsible for placing the external 
+geometry at the proper location with respect to the simulation structure when 
+creating it.</p>
+
+<p>In addition, polyhedra can be created internally in Sentaurus Process by using 
+bricks or by specifying them point by point using the <tt>polyhedron</tt> command. 
+For more details, refer to the <cite>Sentaurus&trade; Process User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="1.7"></a> 
+<h1>1.7 How do I prepare process results for device simulation?</h1>
+
+<p>Often, the mesh requirements for device simulation differ from those for 
+process simulation since the equations solved are different. That is why it is 
+advisable to create a new mesh starting from scratch as the final step in the 
+process simulation. This usually involves the following steps:</p>
+
+<ol>
+<li>Clear the process simulation mesh:<br />
+<pre>
+refinebox clear
+line clear
+</pre></li>
+
+<li>Set very high values for adaptive meshing parameters to deactivate any adaptation 
+on doping profiles that can occur by default:<br />
+
+<pre>
+pdbSet Grid AdaptiveField Refine.Abs.Error 1e37 
+pdbSet Grid AdaptiveField Refine.Rel.Error 1e10 
+pdbSet Grid AdaptiveField Refine.Target.Length 100.0
+</pre></li>
+
+<li>Set high-quality Delaunay meshes:<br />
+
+<pre>
+pdbSet Grid SnMesh DelaunayType boxmethod
+</pre></li>
+
+<li>Set the interface spacing for the device mesh:<br />
+
+<pre>
+pdbSet Grid SnMesh min.normal.size &lt;n&gt;
+pdbSet Grid SnMesh normal.growth.ratio.3d &lt;n&gt;
+pdbSet Grid SnMesh max.box.angle.3d &lt;n&gt;
+</pre></li>
+
+<li>Set which interfaces will have interface meshes, for example, silicon:<br />
+
+<pre>
+refinebox interface.materials= {Silicon}
+</pre></li>
+
+<li>Switch on field adaptive refinement:<br />
+
+<pre>
+pdbSet Grid Adaptive 1
+</pre></li>
+
+<li>Specify lines if necessary:<br />
+
+<pre>
+line y location= $Ymin+0.001
+line z location= $Zmin+0.001
+</pre></li>
+
+<li>Specify the refinement strategy, for example:<br />
+
+<pre>
+refinebox mask=Device_Active xtop=-0.05 xbot=0.2 \
+  refine.fields= {NetActive} def.max.asinhdiff= 1.0 \
+  refine.max.edge= &quot;0.02/$fd $PolyPitch/(8*$fd) $IsoPitch/(8.0*$fd)&quot; \
+  refine.min.edge= &quot;0.005/$fd $PolyPitch/(16*$fd) $IsoPitch/(16.0*$fd)&quot; \
+  adaptive Silicon add
+  ...
+</pre></li>
+</ol> 
+
+<!--================================================-->
+<a name="1.8"></a> 
+<h1>1.8 I have a layout in a specific format. Can it be used in Sentaurus Process?</h1>
+
+<p>TCAD Sentaurus features an interface to the Synopsys layout editor Silicon WorkBench. 
+It allows you to view and edit layouts in most of the industry-standard formats including 
+GDSII and OASIS&reg;. One advantage of Silicon WorkBench over existing TCAD layout editors 
+is its support of very large layout files through efficient memory management.</p>
+
+<p>The files typically associated with the Silicon WorkBench layout interface in 
+Sentaurus Process are the original layout file, the Sentaurus markup file, and the 
+TCAD layout file. Silicon WorkBench stores TCAD-specific information in the markup 
+file such as the simulation domain, stretch lines, and auxiliary layers, for the 
+purpose of editing the markup information at a later time when needed. The layout 
+information relevant to the TCAD Sentaurus tools is stored in the TCAD layout file.</p>
+
+<!--================================================-->
+<a name="1.9"></a> 
+<h1>1.9 Which type of mesh is needed for 3D diffusion simulations?</h1>
+
+<p>Optimizing the number of grid points for a diffusion simulation is a very important task. 
+On the one hand, you must ensure that you have an adequate mesh where it is needed. 
+On the other hand, an excessive mesh can reduce the speed performance of the simulation. 
+The optimum spacing is determined usually by how well you can capture segregation effects.</p>
+
+<p>Based on previous experience, a 2&ndash;5&nbsp;nm interface spacing in the channel for 
+CMOS technology simulations is a good starting point. One-dimensional simulations of 
+the profiles in the important areas are very helpful to determine the adequate interface 
+spacing.</p>
+
+<p class="note">The maximum number of points produced by Sentaurus Mesh is set to 
+500&thinsp;000 by default. In some cases, especially for large structures and 
+complicated geometries, this might be insufficient and it is recommended that you 
+increase this number, for example:<br /><br />
+<tt>pdbSet Grid SnMesh MaxPoints 800000</tt></p>
+
+<!--================================================-->
+<a name="1.10"></a> 
+<h1>1.10 Which type  of mesh is needed for 3D mechanics simulations?</h1>
+
+<p>The requirements for meshes to simulate mechanics effects are less stringent 
+than those for diffusion simulation. For high-accuracy stress simulations, 
+Delaunay-type meshes are not required. That is why constrained or conformal 
+(default) delaunization with Sentaurus Mesh would be sufficient. It is also necessary 
+to refine only the material interfaces for accurate mechanics simulations. A mesh 
+spacing of 5&nbsp;nm is usually sufficient to accurately capture these effects. 
+In rare cases, with structures having many details, you might need to use a smaller 
+interface refinement but not below 1&nbsp;nm.</p>
+
+<!--================================================-->
+<a name="1.11"></a> 
+<h1>1.11 Which solver settings should I use for 3D simulations?</h1>
+
+<p>The default settings are appropriate for most 3D simulations.</p>
+
+<p>The solvers available in Sentaurus Process are:</p>
+
+<ul>
+<li>PARDISO applies a direct matrix inversion technique.</li>
+<li>ILS uses an iterative scheme to solve the matrix equations.</li>
+</ul>
+
+<p>The direct solver PARDISO is used by default in 1D and 2D mechanics simulations because 
+of its robustness. However, direct solvers are usually memory intensive and slower 
+than iterative ones, which is why the iterative solver ILS is used by default for 
+all diffusion and 3D mechanics simulations.</p>
+
+<p class="note"> The <tt>SetPerformanceMode</tt> command in Sentaurus Process helps 
+to accelerate diffusion steps in a simulation.</p>
+
+<p>For more information about solver settings, see 
+<a href="../sd/sd_9.html#4">Section 9.4 Linear Solvers</a>.</p>
+
+<!--================================================-->
+<a name="1.12"></a> 
+<h1>1.12 How many particles should I use for 3D Monte Carlo implantation simulations?</h1>
+
+<p>It is very important in Monte Carlo implantation to choose the optimal number
+of pseudoparticles for the simulation. In 3D simulations, by default, this
+number is specified per 2500 nm<sup>2</sup> surface area. This number usually
+varies between tens of thousands to hundreds of thousands.</p>
+
+
+<p>The speed of the simulation depends on the implantation conditions and the number of 
+particles. In general, tilted implantations of light elements can take a significant 
+amount of time to perform, since there are many statistical events (for example, 
+scattering and channeling) that must be taken into account.</p>
+
+<p class="note">The number of pseudoparticles in a simulation is not the same 
+as the real number of ions implanted in the structure. In practice, it is 
+recommended to simulate pseudoparticles 1000 times the real number of implanted ions.</p>
+
+<!--================================================-->
+<a name="1.13"></a> 
+<h1>1.13 What sort of speedup can I expect when using multithreading in 3D simulations?</h1>
+
+<p>The main modules of  Sentaurus Process have been written and optimized 
+to run in parallel.</p>
+
+<table>
+<caption>Table 2. Summary of parallel performance for different operations.</caption>
+
+<tr>
+<th>Operation</th>
+<th>1 thread</th>
+<th>2 threads</th>
+<th>4 threads</th>
+<th>8 threads</th>
+<th>16 threads</th>
+</tr>
+
+<tr>
+<td>Assembly</td>
+<td>1.0</td>
+<td>1.2</td>
+<td>1.7</td>
+<td>2.1</td>
+<td>2.3</td>
+</tr>
+    
+<tr>
+<td>Diffusion</td>
+<td>1.0</td>
+<td>1.6</td>
+<td>2.6</td>
+<td>3.6</td>
+<td>4.0</td>
+</tr>
+
+<tr>
+<td>Implantation</td>
+<td>1.0</td>
+<td>2</td>
+<td>3.6</td>
+<td>7.5</td>
+<td>15</td>
+</tr>
+
+<tr>
+<td>Mechanics</td>
+<td>1.0</td>
+<td>1.7</td>
+<td>2.2</td>
+<td>3.8</td>
+<td>4.1</td>
+</tr>
+</table>
+
+<p class="note">These numbers are provided as a guide only. Parallel performance 
+of different parts of Sentaurus Process is improving continually, and the 
+actual numbers that you observe might be different.</p>
+
+<!--================================================-->
+<a name="1.14"></a> 
+<h1>1.14 Can moving boundaries be simulated in three dimensions?</h1>
+
+<p>Moving boundaries and the geometry modifications associated with them are 
+among the most challenging tasks in three dimensions. Even though Sentaurus Process 
+can simulate process steps such as oxidation and silicidation in three dimensions, 
+it is not recommended for everyday simulations because simulation times 
+can be long. Instead, such steps can be considered on a case-by-case basis.</p>
+
+<p>If there is concern about some specific effects such as oxidation-enhanced 
+diffusion, during diffusion, you can simulate 3D oxidation without moving 
+boundaries by specifying:</p>
+
+<pre>
+pdbSetBoolean Grid DoNotMove.Reaction 1
+</pre>
+
+<p>When it is necessary to include the simulation of moving boundaries, you can use 
+the experimental MovingMesh algorithm. MovingMesh performs local mesh transformation 
+during moving-boundary operations in three dimensions (oxidation or silicidation):</p>
+
+<pre>
+pdbSet Grid Use.MovingMesh 1
+</pre>
+
+<p>MovingMesh relies on two internal algorithms DelPSC and MLS. DelPSC performs 
+the actual mesh transformation, cleanup, and quality improvements. Several 
+parameters control DelPSC operations, with the main ones being:</p>
+
+<pre>
+pdbSet Grid MovingMesh Apply.Brep.DelPSC 1
+pdbSet Grid MovingMesh Apply.Brep.DelPSC.Resolution &lt;n&gt;   ;# um
+pdbSet Grid MovingMesh Apply.Brep.DelPSC.Accuracy   &lt;n&gt;   ;# um
+</pre>
+
+<p>In rare cases, the moving-boundary geometry can develop some small features that will limit the 
+robustness and the maximum-possible time step during the simulation. To avoid such situations, 
+MLS is used to &quot;repair&quot; the geometry. The main criteria when to call MLS are:</p>
+
+<pre>
+pdbSet Grid MovingMesh Repair.Geometry.Min.Dihedral.Angle &lt;n&gt;
+                                               ;# deg (typically 0.1)
+pdbSet Grid MovingMesh Repair.Geometry.Max.Face.Angle &lt;n&gt;
+                                               ;# deg (typically 179.5)
+</pre>
+
+<p>Parameters that are used to control MLS typically include its resolution:</p>
+
+<pre>
+pdbSet Grid MovingMesh Repair.Geometry 1
+pdbSet Grid MovingMesh Repair.Geometry.Resolution &lt;n&gt;   ;# um
+</pre>
+
+<p>To simplify the setting of all parameters related to MovingMesh, Sentaurus Process provides 
+the command:</p>
+
+<pre>
+Set3DMovingMeshMode &lt;n&gt;
+</pre>
+
+<p>where <tt>&lt;n&gt;</tt> is usually the smallest layer thickness (in &mu;m) in the structure.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body></html>

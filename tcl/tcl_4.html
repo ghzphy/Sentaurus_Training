@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tcl 4. Examples</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tool Command Language<br />4. Examples</h1>
+
+<p>
+<a href="#1">4.1 Sentaurus Visual: Extracting Breakdown Voltage</a><br />
+<a href="#2">4.2 Sentaurus Process: Extracting Oxide Thickness</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To present Tcl examples that are specific to TCAD Sentaurus.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Sentaurus Visual: Extracting Breakdown Voltage</h1>
+
+<p>This example shows how Tcl commands and Sentaurus Visual commands are mixed 
+in a Sentaurus Visual input flow to extract the open-base breakdown voltages from 
+a bipolar transistor simulation result. The example is in the  
+<tt>Applications_Library/GettingStarted/tcl/bv_extract</tt> directory.</p>
+
+<p>Different breakdown voltages are extracted:</p>
+
+<ul>
+<li><tt>BV_vmax</tt> is defined as the maximum collector 
+voltage achieved during the sweep.</li>
+<li><tt>BV_Ilevel</tt> is defined as the collector voltage at
+which the collector current exceeds a certain value.</li>
+</ul>
+
+<p>If the Sentaurus Visual tool node does not have a &quot;done&quot; status, that is, 
+it is not yellow, first run the node to produce the results. Then, click the 
+<strong>Run Selected Visualizer Nodes Together</strong> toolbar button to create the plot.</p>
+
+<p><img src="images/tcl_break.png" width="450" height="420" 
+alt="Breakdown voltage extraction" /></p>
+
+<p class="caption">Figure 1. Schematics of the extraction of the BJT 
+breakdown voltage.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/tcl/bv_extract/BV_SV_vis.tcl">
+BV_SV_vis.tcl</a>.</p>
+
+<p>The file consists of two sections, which are executed depending on whether 
+<strong>Run Selected Visualizer Nodes Together</strong> is active. The mode is 
+determined by checking whether the Tcl variable <tt>runVisualizerNodesTogether</tt> 
+is defined, by using:</p>
+
+<!-- grep startExpr="if*" Lines=1 file="../../Applications_Library/GettingStarted/tcl/bv_extract/BV_SV_vis.tcl" -->
+<pre>
+if {![info exists runVisualizerNodesTogether]} {
+</pre>
+<!-- grep end -->
+
+<p>The first block of the <tt>if</tt> statement is evaluated when <tt>runVisualizerNodesTogether</tt> 
+is not defined, that is, when the tool is executed in batch mode.</p> 
+
+<p>First, the extraction libraries are loaded, which contain functions for many commonly 
+formed extraction jobs. Second, the <tt>.plt</tt> file is loaded.</p>
+ 
+<!-- grep startExpr="*load_library*" Lines=2 file="../../Applications_Library/GettingStarted/tcl/bv_extract/BV_SV_vis.tcl" -->
+<pre>
+  load_library extract
+  load_file $fname -name PLT($N)
+</pre>
+<!-- grep end -->
+
+<p>Then, the actual breakdown voltage extraction steps are performed by using the 
+extraction procedures <tt>ext::ExtractBVv</tt> and <tt>ext::ExtractBVi</tt>. These 
+procedures send the extracted values automatically to the Sentaurus Workbench table.</p>
+
+<!-- grep startExpr="*ext::Extract*" Lines=2 file="../../Applications_Library/GettingStarted/tcl/bv_extract/BV_SV_vis.tcl" -->
+<pre>
+  ext::ExtractBVv -out BV_vmax   -name out -v $Vcs -i $Ics -sign +1  -f %.2f
+  ext::ExtractBVi -out BV_Ilevel -name out -v $Vcs -i $Ics -io $Ilevel -f %.2f
+</pre>
+<!-- grep end -->
+
+<p>The second block of the <tt>if</tt> statement is evaluated only when the tool is called 
+with <strong>Run Selected Visualizer Nodes Together</strong>. In this case, no extraction 
+is performed, but the curve of the collector current versus the collector voltage is plotted.</p>
+
+<p>For this purpose, first an empty 1D plot is created and the parameters for this plot, 
+such as axes and legend, are adjusted.</p>
+ 
+<!-- grep startExpr="*create_plot*" endExpr="*set_legend*" file="../../Applications_Library/GettingStarted/tcl/bv_extract/BV_SV_vis.tcl" -->
+<pre>
+    create_plot -1d -name Plot_1D
+    select_plots Plot_1D
+    set_plot_prop -hide_title -show_legend
+    set_axis_prop -title_font_size 24 -scale_font_size 20 
+    set_axis_prop -axis x -title &quot;Collector Voltage (V)&quot; -type linear \
+      -scale_format fixed -manual_precision -scale_precision 0
+    set_axis_prop -axis y -title &quot;Collector Current (A)&quot; -type log \
+      -min 1e-15 -min_fixed -max $Ilevel -max_fixed
+    set_legend_prop -label_font_size 16 -label_font_att bold
+</pre>
+<!-- grep end -->
+
+<p>Then, the actual curve plotting is performed:</p>
+
+<!-- grep startExpr="*create_curve*" Lines=4 file="../../Applications_Library/GettingStarted/tcl/bv_extract/BV_SV_vis.tcl" -->
+<pre>
+  create_curve -name IcVc($N) -dataset PLT($N) \
+    -axisX &quot;Collector InnerVoltage&quot; -axisY &quot;Collector TotalCurrent&quot;
+  set_curve_prop IcVc($N) -label &quot;IcVc(n$N) $legend&quot; \
+    -color $color -line_style solid -line_width 3 -show_markers 
+</pre>
+<!-- grep end -->
+
+<p>As a result, the Sentaurus Visual node returns the extracted values from 
+<tt>&quot;DOE:&quot;</tt> output:</p>
+
+<pre>
+DOE: BV_vmax 75.36
+DOE: BV_Ilevel 41.06
+</pre>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Sentaurus Process: Extracting Oxide Thickness</h1>
+
+<p>This example demonstrates the use of Tcl scripting within 
+a Sentaurus Process command file. Find the example in 
+<tt>Applications_Library/GettingStarted/tcl/tox_extract</tt>.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/tcl/tox_extract/sprocess_fps.cmd">
+sprocess_fps.cmd</a>.</p>
+
+<p>After some simulation commands specific to Sentaurus Process,  
+the Sentaurus Process Tcl function <tt>layers</tt> is used to extract 
+information about the generated layers as a list. Each layer entry 
+is a list containing the top and bottom coordinates, an integral value of
+the current dataset (not of interest here), and the material:</p>
+
+<!-- grep startExpr="set LAYERS*" endExpr="*Silicon*" file="../../Applications_Library/GettingStarted/tcl/tox_extract/sprocess_fps.cmd" format="wrap" -->
+<pre>
+set LAYERS [layers]
+puts &quot;$LAYERS&quot;
+#-&gt;{         Top                Bottom             Integral \
+  Material }
+#-&gt;{  -1.584176604347e-02  1.126859234306e-02  6.391490417248e+09 Oxide }
+#-&gt;{   1.126859234306e-02  5.000000000000e-01  4.360844257716e+10 Silicon }
+</pre>
+<!-- grep end -->
+
+<p>To extract the oxide thickness, the <tt>LAYERS</tt> table is reduced 
+to a simple flat list, consisting of the first column, that is the top 
+coordinates, only:</p>
+
+<!-- grep startExpr="set firstColumn*" endExpr="}*" file="../../Applications_Library/GettingStarted/tcl/tox_extract/sprocess_fps.cmd" -->
+<pre>
+set FirstColumn [list]
+foreach Row $LAYERS {
+ lappend FirstColumn [lindex $Row 0]
+}
+</pre>
+<!-- grep end -->
+
+<p>Next, you determine the oxide thickness by subtracting the top coordinates 
+of the first layer and the second layer. The result is printed to the log file as 
+<tt>DOE:</tt> output, such that Sentaurus Workbench can extract it from the
+output and add it to the result table:</p>
+
+<!-- grep startExpr="set Tox*" endExpr="*DOE*" file="../../Applications_Library/GettingStarted/tcl/tox_extract/sprocess_fps.cmd" -->
+<pre>
+set Tox [expr [lindex $FirstColumn 2] - [lindex $FirstColumn 1]]
+puts &quot;The thickness of the grown oxide is \
+        [format %.2f [expr 1e3*$Tox]] nm&quot;
+#-&gt; The thickness of the grown oxide is 27.20 nm
+puts &quot;DOE: Tox $Tox&quot;
+</pre>
+<!-- grep end -->
+
+<p class="note">Run Sentaurus Process with the command-line option
+<tt>-n</tt> to suppress syntax-checking when using Tcl expressions,
+which use information only available at runtime.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

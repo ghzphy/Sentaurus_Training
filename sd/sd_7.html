@@ -1,0 +1,429 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 7. Sentaurus Device at Runtime</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_6.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_8.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />7. Sentaurus Device at Runtime</h1>
+
+<p>
+ <a href="#1">7.1 Running Sentaurus Device</a><br />
+ <a href="#2">7.2 Log File</a><br />
+ <a href="#3">7.3 Version and Host Information</a><br />
+ <a href="#4">7.4 Active Math Parameters</a><br />
+ <a href="#5">7.5 Active Physical Models</a><br />
+ <a href="#6">7.6 Device Structure Files</a><br />
+ <a href="#7">7.7 Box Volume Statistics</a><br />
+ <a href="#8">7.8 List of Changed Parameters</a><br />
+ <a href="#9">7.9 Solve Report</a><br />
+ <a href="#10">7.10 Runtime Statistics</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To run Sentaurus Device and to understand its output.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>7.1 Running Sentaurus Device</h1>
+
+<ul>
+<li>To start the Sentaurus Device default version from the command line, use:<br />
+<pre>&gt; sdevice [command_file_name]</pre>
+where the optional <tt>command_file_name</tt> is a valid command file of Sentaurus Device. 
+For example:<br />
+<pre>&gt; sdevice pp1_des.cmd</pre></li>
+        
+<li>To list the Sentaurus Device command-line options, use:<br />
+<pre>&gt; sdevice -h</pre></li>
+
+<li>To list all of the installed Sentaurus Device releases, use:<br />
+<pre>&gt; sdevice -releases</pre></li>
+
+<li>To check the release version, use:<br />
+<pre>&gt; sdevice -v</pre></li>
+
+<li>To run Sentaurus Device from a particular release, use:<br />
+<pre>&gt; sdevice -rel T-2022.03</pre></li>
+</ul>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>7.2 Log File</h1>
+
+<p>For each simulation, Sentaurus Device opens and exports to a log file all the runtime 
+information relevant to the simulation. The file is named after the input command file with 
+the extension <tt>.log</tt>. The information includes the Sentaurus Device version and the 
+host machine, the device structure definition files, the active models and parameters applied, 
+the solution report, and possibly error messages.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>7.3 Version and Host Information</h1>
+
+<p>The Sentaurus Device version and host machine information 
+is recorded at the beginning of the log file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startLine=1 endExpr="*Date*" format="TrimWrap"-->
+<pre>
+****************************************************************************
+***                           Sentaurus Device                           ***
+***                          Version U-2022.12                           ***
+***                      (0.6958654, x86_64, Linux)                      ***
+***                                                                      ***
+***                       Copyright (C) 1994-2022                        ***
+***                            Synopsys, Inc.                            ***
+***                                                                      ***
+***  This software and the associated documentation are confidential     ***
+***  and proprietary to Synopsys, Inc.  Your use or disclosure of this   ***
+***  software is subject to the terms and conditions of a written        ***
+***  license agreement between you, or your company, and Synopsys, Inc.  ***
+****************************************************************************
+
+Running on machine with the following configuration:
+Host Name: blaisun1
+Operating System: Linux rel. 3.10.0-1127.10.1.el7.x86_64 ver. #1 SMP Wed Jan 5 \
+  14:28:03 UTC 2022
+Machine Type: x86_64
+Process ID: 26284
+Number of processors: 20
+Domain Name: synopsys.com
+Date: Mon Feb 14 11:39:15 2022  (CEST)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="4"></a>
+<h1>7.4 Active Math Parameters</h1>
+
+<p>The active math parameters can be found under <tt>&quot;Numerical parameters&quot;</tt> in the 
+log file. The parameters define the error limits and error reference values used in the
+ simulation:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startExpr="Numerical parameters*" lines=15 footer="..." -->
+<pre>
+Numerical parameters:
+  Absolute error : 
+    Poisson : 1.0000e-03
+    eqPoisson : 1.0000e-03
+    Electron : 1.0000e-05
+    Hole : 1.0000e-05
+    Photon-Rate-Equation : 1.0000e-07
+    Photon-Phase-Equation : 1.0000e-05
+    Rate-Stabilize-Equation : 1.0000e-07
+    QW-Scattering-Equations : 1.0000e-05
+    QW-eScattering-Equation : 1.0000e-05
+    QW-hScattering-Equation : 1.0000e-05
+    Optical Problem : 1.0000e-03
+    Wavelength : 1.0000e-03
+    Bandstructure : 1.0000e-03
+...
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="5"></a>
+<h1>7.5 Active Physical Models</h1>
+
+<p>Information about the physical models that were applied follows the 
+<tt>&quot;Physical models&quot;</tt> record:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startExpr="Physical models:*" lines=15 footer="..." format="wrapTrim" -->
+<pre>
+Physical models:
+With SRH-Recombination
+Without field dependent lifetimes
+With doping dependent lifetimes
+With temperature dependent lifetimes (power law)
+Without thermal resistance interfaces
+Without distributed resistance interfaces for electrons
+Without distributed resistance interfaces for holes
+Fermi Statistic
+Intrinsic density models:
+default bandgap model
+Bandgap narrowing model: OldSlotboom with bandgap narrowing (Fermi)
+Electron mobility:
+Doping dependence:
+Default
+...
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="6"></a>
+<h1>7.6 Device Structure Files</h1>
+
+<p>Information about the loaded device structure file is reported under the 
+<tt>&quot;Reading grid&quot;</tt> record:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startExpr="Reading grid*" endExpr="done.*" format="wrapTrim"-->
+<pre>
+Reading grid 'n1_msh.tdr' ...
+coordinate system: UCS, 3d_sprocess (x is device down direction)
+use coordinate system as is (no transformation)
+TDR format
+Number of grid points is 3548.
+done.
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="7"></a>
+<h1>7.7 Box Volume Statistics</h1>
+
+<p>The box method volume statistics reported under the <tt>&quot;non-Delaunay elements&quot;</tt> 
+record helps to analyze the mesh quality in terms of the number of poor-quality 
+mesh elements and a <tt>BoxMethodVolume</tt> deviation from an actual physical 
+device volume:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startExpr="*Region non-Delaunay elements*" endExpr="*done.*" format="wrap_Trim_strmap({\-\-\-\-\-\-\-\-\-\- \-\-\-\-\- .......... .....})" -->
+<pre>
+/-------- Region non-Delaunay elements \
+  ------------------------------------------
+Region                  Volume      BoxMethodVolume  DeltaVolume  Elements \
+  non-Delaunay      non-DelaunayVolume
+name                    [um2]          [um2]           [%] \
+  Elements              [um2]   [%]
+------------------------------------------------------------
+R.Gateox             2.0400000e-04  2.0400000e-04     3.7e-13       664 \
+  0 ( 0.00 %)   0.0000000e+00 ( 0.0000)
+R.PolyReox           1.0000000e-03  1.0000000e-03     8.5e-14       157 \
+  0 ( 0.00 %)   0.0000000e+00 ( 0.0000)
+R.PolyReox_mirrored  1.0000000e-03  1.0000000e-03     1.2e-13       157 \
+  0 ( 0.00 %)   0.0000000e+00 ( 0.0000)
+R.Substrate          3.7000000e-01  3.7000000e-01     2.4e-12      4706 \
+  0 ( 0.00 %)   0.0000000e+00 ( 0.0000)
+R.Polygate           5.0000000e-03  5.0000000e-03     1.2e-12       742 \
+  0 ( 0.00 %)   0.0000000e+00 ( 0.0000)
+R.Spacer             4.4956237e-03  4.4956237e-03     4.3e-13       237 \
+  0 ( 0.00 %)   0.0000000e+00 ( 0.0000)
+R.Spacer_mirrored    4.4956237e-03  4.4956237e-03     5.6e-13       237 \
+  0 ( 0.00 %)   0.0000000e+00 ( 0.0000)
+............................................................
+Total                3.8619525e-01  3.8619525e-01     1.9e-13      6900 \
+  0 ( 0.00 %)   0.0000000e+00 ( 0.0000)
+\------------------------------------------------------------
+done.
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="8"></a>
+<h1>7.8 List of Changed Parameters</h1>
+
+<p>New model parameters other than the defaults are reported under 
+the <tt>&quot;Reading parameters&quot;</tt> record:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startExpr="Reading parameter file*" lines=10 footer="..." -->
+<pre>
+Reading parameter file 'pp2_des.par' ...
+---------------------------------------------------
+ Reading parameters for material &quot;Silicon&quot;
+---------------------------------------------------
+
+	Differences compared with default parameters:
+	Scharfetter(elec): tau_max = 3.0000e-08, instead of: 1.0000e-05 [s]
+	Energy relaxation time: tau_w_ele = 0.2, instead of: 0.3 [ps]
+	Energy relaxation time: tau_w_hol = 0.2, instead of: 0.25 [ps]
+
+...
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="9"></a>
+<h1>7.9 Solve Report</h1>
+
+<p>This section discusses the different information available in the
+solve report.</p>
+
+<!--=======================-->
+<h2>7.9.1 Stepping Information</h2>
+
+<p>In <tt>Quasistationary</tt> sweeps, the <tt>t</tt> value is the virtual time, ranging 
+between 0 and 1, that represents how much of the sweep goal has been reached. For example, 
+<tt>t=0.352967</tt> indicates that approximately 35% of the goal has been completed. 
+In <tt>Transient</tt> sweeps, however, the <tt>t</tt> value refers to the real time measured 
+in seconds:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startExpr="Computing step from t*" lines=1 -->
+<pre>
+Computing step from t=0.0000e+00 to t=0.1 (Stepsize: 0.1) :
+</pre>
+<!-- grep end -->
+
+<p>The printed <tt>Stepsize</tt> is in terms of <tt>t</tt>.</p>
+
+<!--=======================-->
+<h2>7.9.2 Equations List</h2>
+
+<p>When solving the task for each time step, the following report is produced:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startExpr="Computing step from t*" endExpr="*source*" -->
+<pre>
+Computing step from t=0.0000e+00 to t=0.1 (Stepsize: 0.1) :
+Computing Coupled( 5 circuit-equation(s) , 1 poisson-equation(s) , 
+                   1 current-contact-equation(s) , 1 electron-equation(s) , 
+                   1 hole-equation(s) ) 
+using Bank/Rose nonlinear solver.
+
+Iteration   |Rhs|      factor     |step|     error   #inner  #iterative  time
+------------------------------------------------------------------------------
+    0      3.73e+10                                                      0.07
+    1      5.84e+09   1.00e+00   3.33e+00   1.14e+07    0         5      0.23
+    2      4.41e+08   1.00e+00   9.62e-01   9.43e+04    0         5      0.38
+    3      8.30e+07   1.00e+00   6.51e-01   9.95e+05    0         5      0.54
+    4      6.08e+04   1.00e+00   3.53e-01   1.08e+04    0         5      0.69
+    5      1.30e+00   1.00e+00   1.41e-05   7.33e-01    0         5      0.84
+Finished, because...
+Error smaller than 1 ( 7.3312E-01 ).
+
+Accumulated times:
+Assembly time:        0.53 s
+Solve time:      0.30 s
+Total time:      0.84 s
+
+Device Instance 'nmos1':
+Contact              Voltage              Electron      Hole         Conduction 
+                 outer       inner        current       current      current
+ drain        0.000E+00    0.000E+00      5.378E-16     9.642E-28    5.378E-16
+ gate        -3.000E-01   -3.000E-01     -4.627E-36     4.627E-36    0.000E+00
+ source       0.000E+00    0.000E+00      5.378E-16    -7.889E-29    5.378E-16
+</pre>
+<!-- grep end -->
+
+<p>where:</p>
+
+<ul>
+<li>The <tt>Iteration</tt> column counts the number of Newton iterations.</li>
+<li>The <tt>|Rhs|</tt> column shows the evolution of the normalized residual right-hand side. 
+For good converging iterations, the <tt>|Rhs|</tt> value becomes smaller with each iteration.</li>
+<li>The <tt>factor</tt> column shows the applied damping factor. For most cases, damping is not 
+recommended. Ensure that, in the <tt>Math</tt> section, the selected number of <tt>NotDamped</tt>
+iterations is greater than the number of <tt>Iterations</tt> 
+(see <a href="sd_1.html#Math">Section 1.2.5 Math Section</a>).</li>  
+<li>The <tt>|step|</tt> column shows the normalized step size between two Newton iterations. 
+For good converging iterations, the step size decreases steadily.</li>
+<li>The <tt>error</tt> column shows the normalized error estimate. For good-converging 
+iterations, the error decreases steadily.</li>
+<li>The <tt>#inner</tt> and <tt>#iterative</tt> columns are relevant for plugin-type iterations 
+only, which are usually unnecessary.</li>
+<li>The <tt>time</tt> column shows the accumulated computation time in seconds.</li>
+</ul>
+
+<p>The Newton iterations are considered to have converged if the normalized <tt>error</tt> 
+estimate becomes smaller than 1 or the normalized residual <tt>|Rhs|</tt> value becomes smaller 
+than 10<sup>-5</sup>. This value can be changed using the keyword <tt>RhsMin</tt> in the 
+<tt>Math</tt> section.</p>
+
+<p>Newton iterations are considered to have failed to converge if any of these conditions are met:</p>
+      
+<ul>
+<li>The number of iterations exceeds the preset <tt>Iterations</tt> value 
+(see <a href="sd_1.html#Math">Section&nbsp;1.2.5 Math Section</a>).</li>
+<li>The right-hand side increases by more than a factor of <tt>1e10</tt>. This value can 
+be changed in the <tt>Math</tt> section using the keyword <tt>RhsFactor</tt>.</li>
+<li>During the iterations, the lattice or carrier temperature at a node becomes higher 
+than a certain upper limit.</li>
+</ul>
+
+<p>If the Newton iterations failed to converge, the step size is reduced by default by a factor of 2. 
+The step size is reduced further as needed, until the step size becomes smaller than the 
+minimum step size (see <a href="sd_1.html#Solve">Section 1.2.6 Solve Section</a>). Then, the 
+<tt>Quasistationary</tt> or <tt>Transient</tt> process terminates.</p>
+
+<p>Sentaurus Device will start the next command in the <tt>Solve</tt> section, 
+unless the flag <tt>ExitOnFailure</tt> is set in the <tt>Math</tt> section 
+(see <a href="sd_1.html#Math">Section 1.2.5 Math Section</a>). In this case, 
+Sentaurus Device terminates the entire run.</p>
+
+<p>If a <tt>Coupled</tt> statement outside of a <tt>Quasistationary</tt> or <tt>Transient</tt> 
+statement fails, Sentaurus Device continues to the next command in the <tt>Solve</tt> section 
+or terminates, as previously discussed.</p>
+
+<p>If the Newton iterations converge within considerably fewer iterations 
+than set by <tt>Iterations</tt> (see <a href="sd_1.html#Math">Section 1.2.5 Math Section</a>), 
+the step size increases by <tt>Increment</tt> until the <tt>MaxStep</tt> size 
+is reached (see <a href="sd_1.html#Solve">Section 1.2.6 Solve Section</a>). 
+In <tt>Transient</tt>, the <tt>Increment</tt> value exactly as specified is used; 
+while for <tt>Quasistationary</tt>, the number of iterations, performed on a 
+previous step, is considered for <tt>Increment</tt> computation.</p>
+
+<!--================================================-->
+<a name="10"></a>
+<h1>7.10 Runtime Statistics</h1>
+
+<p>Information about runtime and memory use is located at the end of the log file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/n2_des.log" startExpr="Sentaurus Device peak memory*" startOffset=-1 endExpr="*Good Bye*" -->
+<pre>
+******************************************************************************
+Sentaurus Device peak memory usage: 248 megabytes
+Sentaurus Device simulation times:
+  wallclock: 71.71 s (0 h:01 m:11 s)
+  total cpu: 71.65 s (0 h:01 m:11 s)
+Sentaurus Device simulation finished (Date: Mon Feb 14 11:40:27 2022  (CEST)).
+********************************* Good Bye ! *********************************
+</pre>
+<!-- grep end -->
+
+<p>The reported memory use refers to the maximum memory size over the whole 
+simulation.</p>
+
+<p>The <tt>wallclock</tt> time records the elapsed time between the launch of the 
+Sentaurus Device job and its completion. The <tt>total cpu</tt> time records the 
+time that the job was occupying a CPU. If other jobs are running on the computer 
+at the same time, then the <tt>wallclock</tt> time might be considerably larger than 
+the <tt>total cpu</tt> time. It is recommended to specify the <tt>Wallclock</tt> 
+option in the <tt>Math</tt> section to produce the correct timing report when 
+running a simulation in parallel mode on multiple processors:</p>
+
+<pre>
+Math {
+  ...
+  Wallclock
+}
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_6.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_8.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

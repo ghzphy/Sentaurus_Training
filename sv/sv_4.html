@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Visual 4. Visualizing 3D Structures</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Visual<br />4. Visualizing 3D Structures</h1>
+
+<p>
+ <a href="#1">4.1 Rendering Controls</a><br />
+ <a href="#2">4.2 Rotating Structures</a><br />
+ <a href="#3">4.3 Predefined View Planes</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the controls for visualizing 3D structures in Sentaurus Visual.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Rendering Controls</h1>
+
+<p>To follow this section, download the following file by right-clicking and choosing 
+<strong>Save Target As</strong>:</p>
+
+<ul>
+<li><a href="files/finfet_des.tdr">finfet_des.tdr</a></li>
+</ul>
+
+<p>Depending on computer performance, availability of hardware acceleration, 
+and network speed, working with large 3D plots can be a slow process. To improve this, 
+Sentaurus Visual provides a <em>fast draw</em> option for rendering plots. This option 
+draws only the boundaries of a 3D plot when it is manipulated, which has a large impact 
+on performance.</p>
+
+<p>To enable fast draw:</p>
+
+<ul>
+<li>Choose <strong>View</strong> &gt; <strong>Fast Draw</strong> or click the 
+<img class="imgline" src="images/icons/fast_draw.png" width="24" height="22" alt="Fast Draw icon" /> 
+toolbar button.</li>
+</ul>
+
+<p>When the mouse is released at the end of a rotation or zoom, the full structure is 
+rendered again with material-colored and field-colored contours.</p>
+
+<p><a href="images/sv_fast_mode.png"><img src="images/sv_fast_mode.png" width="570" 
+alt="Fast draw activated" /></a></p>
+
+<p class="caption">Figure 1. Using fast draw only the boundaries of the structure 
+are shown. (Click image for full-size view.)</p>
+
+<p>By default, fast draw is switched on. To switch it off for the session:</p>
+
+<ul>
+<li>Choose <strong>View</strong> &gt; <strong>Fast Draw</strong> or click the 
+<img class="imgline" src="images/icons/fast_draw.png" width="24" height="22" alt="Fast Draw icon" /> 
+toolbar button.</li>
+</ul>
+
+<p>To switch it off permanently, in the User Preferences dialog box 
+(see <a href="sv_1.html#8">Section 1.8 User Preferences</a>), navigate to 
+<strong>2D/3D</strong> &gt; <strong>Rendering</strong>, and clear the 
+<strong>Enable Fast Draw</strong> option.</p>
+
+<p>Fast draw introduces a delay between releasing the mouse button and re-rendering 
+the structure. By default, the delay is 0.5 seconds. The delay can be changed in 
+the User Preferences dialog box.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Rotating Structures</h1>
+
+<p>Three-dimensional plots can be rotated freely over a rotation point or rotated 
+around a fixed axis.</p>
+
+<p>To select free rotation, click the Select/Rotate button 
+<img class="imgline" src="images/icons/select_rotate.png" width="23" height="20" alt="Select/Rotate icon" />.
+Drag to rotate the structure.</p>
+
+<p> To rotate around one of the Cartesian coordinate axes, click the corresponding
+toolbar button: 
+<img class="imgline" src="images/icons/rotate_x.png" width="22" height="22" alt="Rotation Axis X icon" />, 
+<img class="imgline" src="images/icons/rotate_y.png" width="22" height="22" alt="Rotation Axis Y icon" />, 
+<img class="imgline" src="images/icons/rotate_z.png" width="22" height="22" alt="Rotation Axis Z icon" />.</p>
+
+<p>Alternatively, as you move the mouse, hold the X key to rotate around 
+the x-axis, hold the Y key to rotate around the y-axis, or hold the Z key 
+to rotate around the z-axis.</p>
+
+<p>To set a rotation origin, use the camera configuration by either choosing 
+<strong>View</strong> &gt; <strong>Camera Configuration</strong>, or placing 
+the mouse on the required point and pressing the 0 key. The new rotation 
+origin will be temporarily indicated by a red circle and three axis-aligned lines.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 Predefined View Planes</h1>
+
+<p>To facilitate the viewing of complex 3D structures, Sentaurus Visual has 
+toolbar buttons to show a plot in one of the axis-aligned planes:</p>
+
+<table>
+<tr>
+<th>Button</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/viewplane_xy.png" 
+width="24" height="24" alt="View Plane XY icon" /></td>
+<td>Shows a 3D plot in the xy plane.</td>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/viewplane_yz.png" 
+width="24" height="24" alt="View Plane YZ icon" /></td>
+<td>Shows a 3D plot in the yz plane.</td>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/viewplane_xz.png" 
+width="24" height="24" alt="View Plane XZ icon" /></td>
+<td>Shows a 3D plot in the xz plane.</td>
+</tr>
+</table>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

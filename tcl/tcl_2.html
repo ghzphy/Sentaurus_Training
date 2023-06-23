@@ -1,0 +1,733 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tcl 2. Basics</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tool Command Language<br />2. Basics</h1>
+
+<p>
+<a href="#1">2.1 Simple Variables</a><br />
+<a href="#2">2.2 Arithmetic Expressions</a><br />
+<a href="#3">2.3 Strings</a><br />
+<a href="#4">2.4 Lists</a><br />
+<a href="#5">2.5 Loops</a><br />
+<a href="#6">2.6 Arrays</a><br />
+<a href="#7">2.7 Conditional Branching</a><br />
+<a href="#8">2.8 Logical Operators</a><br />
+<a href="#9">2.9 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To introduce basic Tcl commands that are most useful for working with TCAD
+Sentaurus tools.</li>
+</ul>
+
+<p class="note">All examples discussed in this module are available in the directory 
+<tt>Applications_Library/GettingStarted/tcl/tcl_basics</tt>.<br /><br />
+
+Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd">
+gtclsh_tcl.cmd</a>.</p>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Simple Variables</h1>
+
+<p>In Tcl, variables do not need to be declared before being used 
+and they do not have a type. This means that the difference between 
+an integer, a floating-point variable, and a string is only how the 
+variable is used:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.1.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set i  3
+set q  1.6e-19
+set W  &quot;Hello World&quot;
+</pre>
+<!-- grep end -->
+
+<p>The dollar sign (<tt>$</tt>) is used to access the value of a variable. 
+(The <tt>puts</tt> command writes to standard output, that is, to the screen.)</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.1.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+puts &quot;The value of i is $i&quot;
+#-&gt; The value of i is 3
+
+puts &quot;The elementary charge is $q C&quot;
+#-&gt; The elementary charge is 1.6e-19 C
+
+puts &quot;The string W contains &gt;$W&lt;&quot;
+#-&gt; The string W contains &gt;Hello World&lt;
+</pre>
+<!-- grep end -->
+
+<p>In some cases, it is unclear where the variable name ends and a string starts. 
+In this case, use <tt>{}</tt> to indicate where the variable name ends:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.1.c*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+puts &quot;The ${i}rd value&quot;
+#-&gt; The 3rd value
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Arithmetic Expressions</h1>
+
+<p>Use the Tcl function <tt>expr</tt> to execute an arithmetic expression:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.2.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set j   [expr $i+5]
+puts &quot;$i + 5 is $j&quot;
+#-&gt; 3 + 5 is 8
+
+set pi [expr 2.0*asin(1.0)]
+puts &quot;pi = $pi&quot;
+#-&gt; pi = 3.141592653589793
+
+set SIN [expr sin($pi/4.0)]
+puts &quot;sin(pi/4.0) is $SIN&quot;
+#-&gt; sin(pi/4.0) is 0.7071067811865475
+</pre>
+<!-- grep end -->
+
+<p>Like other programming languages, note the different 
+ways of handling integer and floating-point operations:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.2.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+puts [expr 1/2]
+#-&gt; 0
+
+puts [expr 1/2.0]
+#-&gt; 0.5
+</pre>
+<!-- grep end -->
+
+<p class="note">Therefore, in most cases, you should append a dot (.) 
+to any integer when doing arithmetics.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 Strings</h1>
+
+<p>In a Tcl script, <strong>every value is a string</strong>. Every component of each command, 
+from the name that is used to locate its routine, to the arguments that are passed to that routine, 
+is also a string.</p>
+
+<p>If you want to represent multiple words within a string, you should use either double quotation 
+marks or braces:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="set MyString*" endExpr="*MyVar*" -->
+<pre>
+set MyString &quot;Hello World&quot;
+set MyVariable {This is the string}
+</pre>
+<!-- grep end -->
+
+<p>Double quotation marks are not needed for a single word:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="set SingleWord*" Lines=1 -->
+<pre>
+set SingleWordString Hello
+</pre>
+<!-- grep end -->
+
+<p>To combine several strings, use the <tt>append</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="append*" endExpr="#->*" excludeLines="puts*" -->
+<pre>
+append SingleWordString &quot;!&quot;
+#-&gt; Hello!
+</pre>
+<!-- grep end -->
+
+<p>To access the string content, use the dollar sign (<tt>$</tt>) as usual:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="set MyString*" endExpr="#->*" excludeLines="*MyVar*" -->
+<pre>
+set MyString &quot;Hello World&quot;
+puts $MyString
+#-&gt;Hello World
+</pre>
+<!-- grep end -->
+
+<p>Several functions allow you to manipulate strings, including the following:</p>
+
+<ul>
+<li><tt>string length</tt> returns the number of characters in a string:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="string*length*" endExpr="#->*"  excludeLines="puts*" -->
+<pre>
+string length $MyString
+#-&gt; 11
+</pre>
+<!-- grep end -->
+</li>
+
+<li><tt>string index</tt> returns the character at a given index, note that counting starts at 0:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="string*index*" endExpr="#->*"  excludeLines="puts*" -->
+<pre>
+string index $MyString 6
+#-&gt; W
+</pre>
+<!-- grep end -->
+</li>
+
+<li><tt>string range</tt> returns the range of characters in a string from <tt>index1</tt> 
+to <tt>index2</tt>:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="string*range*" endExpr="#->*"  excludeLines="puts*" -->
+<pre>
+string range $MyString 3 7
+#-&gt; lo Wo
+</pre>
+<!-- grep end -->
+</li>
+
+<li><tt>string equal -nocase</tt> checks whether two strings are equal in a case-insensitive way. 
+It returns 1 if the strings are equal; otherwise, 0:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="string*equal*" endExpr="#->*"  excludeLines="puts*" -->
+<pre>
+string equal -nocase &quot;hello&quot; &quot;HeLlO&quot;
+#-&gt; 1
+</pre>
+<!-- grep end -->
+</li>
+
+<li><tt>string match</tt> checks for matching strings. It returns 1 if the string matches 
+a pattern; otherwise, 0. If you specify the <tt>-nocase</tt> option, then the function 
+attempts to match the string in a case-insensitive way:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="*string*match*" endExpr="###*" endOffset=-1 excludeLines="puts*" format="excludeEmpty" -->
+<pre>
+string match &quot;*ello*&quot; $MyString
+#-&gt; 1
+string match &quot;Hell&quot; $MyString
+#-&gt; 0
+string match &quot;hell*&quot; $MyString
+#-&gt; 0
+string match -nocase &quot;hell*&quot; $MyString
+#-&gt; 1
+</pre>
+<!-- grep end -->
+</li>
+
+<li><tt>string trim</tt> removes <tt>trimcharacters</tt> from both ends of a string. 
+The default <tt>trimcharacters</tt> is whitespace. The <tt>string trimleft</tt> and 
+<tt>string trimright</tt> functions remove <tt>trimcharacters</tt> from the left and 
+right sides of a string, respectively:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="set*StringToTrim*" endExpr="###*" endOffset=-1 excludeLines="puts*" format="excludeEmpty" -->
+<pre>
+set StringToTrim &quot; abcba &quot;
+string trim $StringToTrim
+#-&gt; abcba
+string trim $StringToTrim &quot; a&quot;
+#-&gt; bcb
+string trimleft $StringToTrim &quot; a&quot;
+#-&gt; bcba
+string trimright $StringToTrim &quot;a &quot;
+#-&gt; abcb 
+</pre>
+<!-- grep end -->
+</li>
+
+<li><tt>string first</tt> returns the index of the first occurrence of <tt>string1</tt> 
+in <tt>string2</tt>. The <tt>string last</tt> function returns the index of the last 
+occurrence of <tt>string1</tt> in <tt>string2</tt>. If not found, the function returns -1:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="set*string2*" endExpr="###*" endOffset=-1 excludeLines="puts*" format="excludeEmpty" -->
+<pre>
+set string2 &quot;tutorial&quot;
+string first &quot;o&quot; $string2
+#-&gt; 3
+string last &quot;t&quot; $string2
+#-&gt; 2
+</pre>
+<!-- grep end -->
+</li>
+
+<li><tt>string tolower</tt> returns the string in lowercase characters. The 
+<tt>string toupper</tt> function returns the string in uppercase characters:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="strin*tolower*" endExpr="###*" endOffset=-1 excludeLines="puts*" format="excludeEmpty" -->
+<pre>
+string tolower $MyString
+#-&gt; hello world
+string toupper $MyString
+#-&gt; HELLO WORLD
+</pre>
+<!-- grep end -->
+</li>
+</ul>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>2.4 Lists</h1>
+
+<p>A very basic type of Tcl is a list. A list consists of elements that are 
+separated by whitespace. The first element of a list is associated with 
+the index 0.</p>
+
+<ul>
+<li>Define a list with the <tt>list</tt> function:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.4.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set ABCList   [list a b c d e]
+set NUMList   [list 1 2 3 4 5 6]
+set STRList   [list This sentence is a TCL list]
+set MIXList   [list a 2 3.1415 TCL ?]
+set EMPTYList [list]
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Reference a list as a whole with:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.4.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+puts $ABCList
+#-&gt; a b c d e
+  
+puts $NUMList
+#-&gt; 1 2 3 4 5 6
+    
+puts $STRList 
+#-&gt; This sentence is a TCL list
+    
+puts $MIXList
+#-&gt; a 2 3.1415 TCL ?
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Find the number of elements in a list with the <tt>llength</tt> function:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.4.c*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set LENGTH [llength $ABCList]
+puts &quot;ABCList contains $LENGTH elements.&quot;
+#-&gt; ABCList contains 5 elements
+</pre>
+<!-- grep end -->
+</li>
+    
+<li>Reference one or several elements of a list with the <tt>lindex</tt> function:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.4.d*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+puts &quot;The first element of ABCList is:  [lindex $ABCList 0]&quot;
+#-&gt; The first element of ABCList is:  a
+    
+puts &quot;The second element of NUMList is: [lindex $NUMList 1]&quot;
+#-&gt; The second element of NUMList is: 2
+   
+puts &quot;The last element of MIXList is:   [lindex $MIXList end]&quot;
+#-&gt; The last element of MIXList is:   ?
+    
+puts &quot;The next to last element of ABCList is \
+      [lindex $ABCList [expr $LENGTH -2]]&quot;
+#-&gt; The next to last element of ABCList is  d
+    
+set SUBList [lrange $STRList 1 3]
+puts &quot;The second to fourth elements of STRList are &gt;$SUBList&lt;&quot;
+#-&gt;  The second to fourth elements of STRList are &gt;sentence is a&lt;   
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Find the index of a given element in a list with the <tt>lsearch</tt> function:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.4.e*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set cIndex [lsearch $ABCList &quot;c&quot;]
+puts &quot;The letter c has the index $cIndex&quot;
+#-&gt; The letter c has the index 2
+</pre>
+<!-- grep end -->
+</li>
+    
+<li>Append an element to a list with the <tt>lappend</tt> function:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.4.f*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set NewElement f
+lappend ABCList $NewElement
+</pre>
+<!-- grep end -->
+</li>
+
+<li>Sort a list with the <tt>lsort</tt> function:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.4.g*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set UnsortedList [list 45.1 78.6 12.6 1.5 89.4 11.6]
+set SortedList   [lsort -real $UnsortedList]
+puts $SortedList
+#-&gt; 1.5 11.6 12.6 45.1 78.6 89.4  
+</pre>
+<!-- grep end -->
+
+<p>The most commonly used <tt>lsort</tt> flags are:</p>
+
+<ul>
+<li><tt>-ascii</tt> (default)</li>
+<li><tt>-integer</tt></li>
+<li><tt>-real</tt></li>
+<li><tt>-increasing</tt></li>
+<li><tt>-decreasing</tt></li>
+</ul>
+<br /></li>
+
+<li>Sort a list of lists with the <tt>lsort</tt> function. Use the
+<tt>-index</tt> option to select which entry is used for sorting:
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.4.h*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set UnsortedList [list {a 45.1 1} {g 78.6 5} {r 12.6 8} \
+                       {c  1.5 2} {q 89.4 3} {n 11.6 4}]
+set SortedList_0   [lsort -index 0 -ascii $UnsortedList]
+puts $SortedList_0
+#-&gt; {a 45.1 1} {c  1.5 2} {g 78.6 5} {n 11.6 4} {q 89.4 3} {r 12.6 8}
+    
+set SortedList_1   [lsort -index 1 -real $UnsortedList]
+puts $SortedList_1
+#-&gt; {c  1.5 2} {n 11.6 4} {r 12.6 8} {a 45.1 1} {g 78.6 5} {q 89.4 3}    
+
+set SortedList_2   [lsort -index 2 -integer $UnsortedList]
+puts $SortedList_2
+#-&gt; {a 45.1 1} {c  1.5 2} {q 89.4 3} {n 11.6 4} {g 78.6 5} {r 12.6 8}
+</pre>
+<!-- grep end -->
+</li>
+
+</ul>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>2.5 Loops</h1>
+
+<p>This section describes different loop operations that can be 
+performed using Tcl.</p>
+
+<!--==========================-->
+<h2>2.5.1 The foreach Loop</h2>
+
+<p>The <tt>foreach</tt> loop operates on lists:</p>
+      
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.5.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+foreach NUM $NUMList CHAR $ABCList {
+  puts &quot;The ${NUM} letter of the alphabet is $CHAR&quot;
+}
+#-&gt; The 1 letter of the alphabet is a
+#-&gt; The 2 letter of the alphabet is b
+#-&gt; The 3 letter of the alphabet is c
+#-&gt; The 4 letter of the alphabet is d
+#-&gt; The 5 letter of the alphabet is e
+#-&gt; The 6 letter of the alphabet is f   
+</pre>
+<!-- grep end -->
+
+<p>A <tt>foreach</tt> loop steps through the given lists, here <tt>NUMList</tt> 
+and <tt>ABCList</tt>, and executes the body, here a simple <tt>puts</tt> for each 
+element of the list.</p>
+
+<p>The current elements of the list are stored in the variables <tt>NUM</tt> and 
+<tt>CHAR</tt>. All lists given to the <tt>foreach</tt> loop should have the same 
+number of elements. Otherwise, they are padded with empty elements <tt>{}</tt>.</p>
+
+<!--==========================-->
+<h2>2.5.2 The for Loop</h2>
+   
+<p>The <tt>for</tt> loop uses a counter that is incremented in each pass. In the 
+following <tt>for</tt> loop, the variable <tt>i</tt> takes the values 0, 1, 2, ..., 
+10:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.5.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+for { set i 0 } { $i &lt;= 10 } { incr i } {
+  puts -nonewline &quot; i=$i &quot;
+}
+#-&gt; i=0  i=1  i=2  i=3  i=4  i=5  i=6  i=7  i=8  i=9  i=10 
+</pre>
+<!-- grep end -->
+
+<p>The first argument of the <tt>for</tt> loop initializes the counter, here <tt>i</tt> 
+is set to zero. The second argument defines the end condition, here, the loop is 
+executed until the variable <tt>i</tt> is no longer less than or equal to 10. The third 
+argument defines the increment of the counter after each pass, here, the counter 
+is incremented by 1.</p>
+    
+<p class="note">The spaces at the locations marked by * are required:<br /><br />
+
+<tt>for*{ set i 0 }*{ $i &lt;= 10 }*{ incr i }*{...}</tt>
+</p>
+
+<!--==========================-->
+<h2>2.5.3 The while Loop</h2>
+
+<p>The <tt>while</tt> loop offers more flexibility than the <tt>for</tt> loop. 
+The end condition can be anything.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.5.c*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set f 1.0
+set x 0.0
+while { $f &gt; 0.0 } {
+   set x [expr $x + 0.01]
+   set f [expr 1.0 - $x*$x]   
+}
+puts &quot;Zero crossing is at x= $x&quot;
+#-&gt; Zero crossing is at x= 1.0 
+</pre>
+<!-- grep end -->
+
+<p>Here, a <tt>while</tt> loop is used to find the zero crossing of the function 
+f = 1 &ndash; x<sup>2</sup>. In each pass, <tt>x</tt> increases, and the function <tt>f</tt> 
+is evaluated. The process stops when <tt>f</tt> is no longer positive.</p>
+
+<!--==========================-->
+<h2>2.5.4 The break and continue Keywords</h2>
+
+<p>The loop flow can be influenced by using the following keywords:</p>
+
+<ul>
+<li><tt>break</tt> immediately terminates the current loop.</li>
+<li><tt>continue</tt> immediately continues from the beginning of the loop again.</li>
+</ul>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.5.d*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+for {set i 0} {$i&lt;=100} {incr i} {
+  if {[expr fmod($i, 2)] == 0} {
+    continue
+  } elseif {$i &gt; 6} {
+    break
+  } 
+  puts $i
+}
+#-&gt; 1
+#-&gt; 3
+#-&gt; 5
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="6"></a>
+<h1>2.6 Arrays</h1>
+
+<p> An array contains elements that can be addressed using an identifier.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.6.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set model(1) Fermi
+set model(2) Constant
+set model(3) 3Stream
+set model(4) 5Stream
+
+for { set i 1 } { $i &lt;= 4 } { incr i } {
+  puts &quot;Model #$i is $model($i)&quot;
+}
+#-&gt; Model #1 is Fermi
+#-&gt; Model #2 is Constant
+#-&gt; Model #3 is 3Stream
+#-&gt; Model #4 is 5Stream
+</pre>
+<!-- grep end -->
+
+<p>Here, the identifier is an integer index. However, in Tcl, the array
+identifier does not have to be an integer or a number:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.6.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set Identifiers [list first second third fourth]
+set model(first)  Fermi
+set model(second) Constant
+set model(third)  3Stream
+set model(fourth) 5Stream
+
+foreach i $Identifiers {
+  puts &quot;The $i model is $model($i)&quot;
+}
+#-&gt; The first model is Fermi
+#-&gt; The second model is Constant
+#-&gt; The third model is 3Stream
+#-&gt; The fourth model is 5Stream
+</pre>
+<!-- grep end -->
+
+<p class="note">If a variable is used as an array, it can no longer 
+be used as a normal variable unless the array is deleted using
+<tt>array&nbsp;unset&nbsp;&lt;variable&nbsp;name&gt;</tt>.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>2.7 Conditional Branching</h1>
+
+<p>The <tt>if</tt> blocks execute conditional code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.7.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set val 1
+if { $val == 0 } {
+   puts &quot;val is 0&quot;
+} elseif { $val &gt; 2 } {
+   puts &quot;val is larger than 2&quot;
+} else {
+   puts &quot;val is negative or one&quot;
+}
+#-&gt; val is negative or one
+</pre>
+<!-- grep end -->
+
+<p>The additional <tt>elseif</tt> test condition and the default 
+<tt>else</tt> are optional.</p>
+
+<p>The main comparators are:</p>
+
+<ul>
+<li>EQUAL: <tt>==</tt></li>
+<li>NOT EQUAL: <tt>!=</tt></li>
+<li>GREATER THAN: <tt>></tt></li>
+<li>GREATER THAN OR EQUAL TO: <tt>>=</tt></li>
+<li>LESS THAN: <tt>&lt;</tt></li>
+<li>LESS THAN OR EQUAL TO: <tt>&lt;=</tt></li>
+</ul>
+
+<p>The <tt>switch</tt> blocks are more compact than the <tt>if</tt> 
+blocks, but they are restricted to tests for equality:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.7.b*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set MODEL Fermi      
+switch $MODEL {
+  Constant { puts &quot;Use constant diffusion model&quot; }
+  Fermi    { puts &quot;Use Fermi diffusion model&quot;}
+}
+#-&gt; Use Fermi diffusion model
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="8"></a>
+<h1>2.8 Logical Operators</h1>
+
+<p>Use logical operators to create more complex conditions:</p>
+
+<ul>
+<li>AND: <tt>&amp;&amp;</tt></li>
+<li>OR: <tt>||</tt></li>
+<li>NOT: <tt>!</tt></li>
+</ul>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.8.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set Vd 1.5
+set Device &quot;pMOS&quot;
+set Simulation &quot;IV&quot;
+
+if { $Vd &lt; 0.1 &amp;&amp; $Device == &quot;nMOS&quot;  &amp;&amp;  $Simulation != &quot;BV&quot; } {
+   puts &quot;Simulate nMOS IdVg in linear regime&quot;
+} elseif { $Vd &gt; 0.1 &amp;&amp; $Device == &quot;pMOS&quot;  &amp;&amp;  ! ($Simulation == &quot;BV&quot;) } {
+   set Vd [expr -1.0*$Vd]
+   puts &quot;Simulate pMOS IdVg for Vd=$Vd&quot;
+} elseif { $Simulation == &quot;BV&quot; || $Device == &quot;BJT&quot; } {
+   puts &quot;Simulate BJT or MOS breakdown&quot;
+} else {
+   puts &quot;None of the specified conditions are met...&quot;
+}
+#-&gt; Simulate pMOS IdVg for Vd=-1.5
+</pre>
+<!-- grep end -->
+
+<p class="note">Using the NOT operator <tt>!</tt> directly before <tt>()</tt> 
+will confuse the Sentaurus Workbench preprocessor, as it is 
+misinterpreted as the start of a Tcl preprocessing block. To avoid 
+this, insert a space between the exclamation mark and the opening 
+parenthesis: <tt>!&nbsp;()</tt>.</p>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>2.9 Assignment</h1>
+
+<p>The following Tcl lists contain a vector of frequency points and
+corresponding current gain values (h21). In this assignment:</p>
+
+<ul>
+<li>Convert the gain to dB, that is, create a new list in which the gain 
+values contain 20*log10(h21).</li>
+<li>Find the 3-dB point by scanning the data for the first point where 
+the gain dropped by 3 dB below the low frequency value.</li>
+</ul>
+
+<p>Use the following data:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd" startExpr="###*2.9.a*" startOffset=1 endExpr="###*" endOffset=-2 -->
+<pre>
+set freqList [list 1.00e5  2.15e5  4.64e5  1.00e6  2.15e6  4.64e6  \
+                   1.00e7  2.15e7  4.64e7  1.00e8  2.15e8  4.64e8  \
+                   1.00e9  2.15e9  4.64e9  1.00e10 2.15e10 4.64e10 \
+                   1.00e11 2.15e11 4.64e11 1e+12 ]
+
+set h21List  [list 33.62   33.62   33.62   33.62   33.62   33.62   \
+                   33.62   33.61   33.59   33.46   32.86   30.48   \
+                   23.74   14.12    7.06    3.34   1.57    0.75    \
+                    0.38    0.19    0.20    0.23 ]
+</pre>
+<!-- grep end -->
+
+<p>Click to view a solution in the primary file 
+<a href="../../Applications_Library/GettingStarted/tcl/tcl_basics/gtclsh_tcl.cmd">
+gtclsh_tcl.cmd</a>. Search for <tt>###&nbsp;2.9</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tcl_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

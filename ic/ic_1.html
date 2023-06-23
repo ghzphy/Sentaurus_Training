@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Silicon WorkBench Interface 1. Working With the GUI</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="ic_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="ic_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Silicon WorkBench Interface<br />
+1. Working With the Graphical User Interface</h1>
+
+<p>
+ <a href="#1">1.1 Strategy</a><br />
+ <a href="#2">1.2 Starting the Graphical User Interface</a><br />
+ <a href="#3">1.3 Renaming Layers</a><br />
+ <a href="#4">1.4 Creating Auxiliary Layers</a><br />
+ <a href="#5">1.5 Using Boolean Operations</a><br />
+ <a href="#6">1.6 Using Stretches</a><br />
+ <a href="#7">1.7 Defining Simulation Domains</a> <br />
+ <a href="#8">1.8 Saving Information</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To start the graphical user interface and to perform basic operations 
+in the TCAD Sentaurus&ndash;Silicon WorkBench interface.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>1.1 Strategy</h1>
+
+<p>Sentaurus Process can read GDS layout files directly as shown in 
+<a href="../sp/sp_14.html">Section&nbsp;14. Special Focus: Using Mask Information From GDSII Files</a>, 
+or you can use the Silicon WorkBench graphical user interface (GUI) 
+to prepare the layout information and to declare the simulation domains. Additional 
+information that makes the process simulation setup more convenient can be supplied.</p>
+
+<p>In this module, the following strategy is applied:</p>
+ 
+<ul>
+<li>The GDS file is loaded into the GUI. A mapping of layer numbers to layer 
+names is performed and is saved for later use.</li>
+<li>Auxiliary layers are defined.</li>
+<li>Simulation domains are defined.</li>
+<li>Information is saved.</li>
+</ul>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt> Applications_Library/GettingStarted/siwb/siwb_for_process</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>1.2 Starting the Graphical User Interface</h1>
+
+<p>You can start the GUI from the command line with:</p>
+
+<pre>
+siwb
+</pre>
+
+<p>To load a GDS file, choose <strong>File</strong> &gt; <strong>Open</strong>. 
+An example is shown in Figure 1.</p>
+
+<p>For a detailed description of Silicon WorkBench functionality, choose 
+<strong>Help</strong> &gt; <strong>Documentation</strong>. This links to the user 
+documentation.</p>
+
+<p>In this section, only functionality relating to layout information in process 
+simulation is discussed.</p>
+
+<p class="note">Even though this section discusses how to use Silicon WorkBench, other 
+Synopsys layout editors, IC WorkBench Edit/View Plus and IC Validator WorkBench, can 
+provide the same functionality for TCAD purposes. If you use IC WorkBench Edit/View Plus, 
+then you must set the appropriate environment variable. In a Linux C shell, this can be 
+performed on the command line or in the <tt>.cshrc</tt> file:<br /><br />
+
+<tt>setenv ICWBEV_USER SENTAURUS</tt><br /><br />
+
+and the command to start the tool is <tt>icwbev</tt>. Similarly, if you use IC Validator 
+WorkBench, then the environment variable to set is <tt>ICVWB_USER</tt> and the command 
+to start the tool is <tt>icvwb</tt>.</p> 
+
+<p><a href="images/ic_maingui.png"><img src="images/ic_maingui.png" 
+width="570" alt="Main window of Silicon WorkBench" /></a></p> 
+
+<p class="caption">Figure 1. Main window of Silicon WorkBench with a GDS file loaded. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>1.3 Renaming Layers</h1>
+
+<p>The original GDS file contains numbered layout layers. For a TCAD simulation, 
+this is not convenient, and most users want to address layers by names. 
+The mapping of layer numbers is performed by clicking in the window with the 
+layout layers and adding the corresponding name, as shown in Figure&nbsp;2.</p>
+
+<p><a href="images/ic_layoutlayers.png"><img src="images/ic_layoutlayers.png" width="570" 
+alt="Numbered layers and renamed layers" /></a></p>
+
+<p class="caption">Figure 2. (Left) Numbered layers and (right) renamed layers. 
+(Click image for full-size view.)</p>
+
+<p>The mapping of layer numbers to layer names must be saved. To save the mapping:</p>
+
+<ol>
+<li>Click the <strong>Sentaurus Export</strong> button 
+<img class="imgline" src="images/icons/savemarkup.png" width="45" height="57" 
+alt="Sentaurus Export button" />.<br /> 
+The Sentaurus Export dialog box opens.</li>
+<li>Select <strong>Markups</strong>.</li>
+<li>Select <strong>Active layout</strong>.</li>
+<li>In the <strong>Output file</strong> field, enter the name of the file.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>It is convenient to save the file with a <tt>.tcl</tt> or <tt>.mac</tt> extension 
+because these are predefined file filters when reading or writing files in Silicon WorkBench. 
+The file that is saved this way is an ASCII file, which looks like:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/siwb/siwb_for_process/BiCMOS_mkp.mac" startLine=3 endLine=9 format="wrap"-->
+<pre>
+default winding 1
+layout open ./BICMOSinverter.gds Inverter
+cell transform 1.0 0.0 0 0.0 0.0
+layer add 1:0
+layer configure 1:0 -name NWELL -fill #00ff00 -pattern fill12-a -outline \
+  #00ff00 -lineStyle solid -lineWidth 1 
+layer add 2:0
+layer configure 2:0 -name NPDIFF -fill #0000ff -pattern fill12-b -outline \
+  #0000ff -lineStyle solid -lineWidth 1 
+</pre>
+<!-- grep end -->
+
+<p>This file contains the absolute path to the original GDS file and the mapping 
+of layer numbers to layer names. Therefore, you can read this file into the Silicon WorkBench 
+GUI instead of loading the GDS file. In many cases, however, the correspondence of layer 
+numbers to layer names is the same for many GDS files. You can delete the first lines 
+of this file (until <tt>cell transform</tt>) and keep only the lines starting with 
+<tt>layer configure</tt>. Then, this file can be read after a GDS file has been loaded 
+into the GUI. Finally, a file containing the layer numbers and the corresponding 
+layer names can be created manually. The display options can be omitted:</p>
+
+<pre>
+layer configure 1:0 -name NWELL
+layer configure 2:0 -name NPDIFF
+</pre>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>1.4 Creating Auxiliary Layers</h1>
+
+<p>In a TCAD simulation flow, it is often helpful to create additional layers and to use 
+these as masks. A GDS file usually has layers for metallization, but these layers do not 
+distinguish between different contacts such as source, gate, and drain. In a TCAD 
+simulation, however, it is essential to have that information.</p>
+
+<p>To add this information to the layout, you can add auxiliary layers containing several polygons. To add a new layer:</p>
+
+<ol>
+<li>In the Tree View pane, right-click <strong>Layout Layers</strong> and choose 
+<strong>New Layer</strong>.<br />
+The New Layer dialog box opens.</li>
+<li>Assign a layer number and a layer name, and select a fill pattern and a color for the polygons. 
+Then, click <strong>OK</strong> to close the dialog box.</li>
+<li>Draw polygons by selecting the <strong>Polygon</strong> toolbar button on the <strong>Edit</strong> tab.</li>
+</ol>
+
+<p>Figure 3 shows the part of a layout that contains an NMOS transistor. Three new layers 
+have been added: nsource, ngate, and ndrain. With this, contacts can be assigned easily 
+in Sentaurus Process, and no changes are necessary if a different simulation domain 
+is chosen. </p>
+
+<p><a href="images/ic_auxlayers.png"><img src="images/ic_auxlayers.png" 
+width="570" alt="Main window of Silicon WorkBench showing auxiliary layers" /></a></p> 
+
+<p class="caption">Figure 3. Introducing auxiliary layers: NMOS part of a layout 
+is shown, and additional layers are introduced for the source, drain, and gate 
+contacts. (Click image for full-size view.)</p>
+
+<p>It is not necessary that these additional polygons are defined everywhere in the 
+layout (as in the previous example, you do not need to create polygons for all 
+contacts in the layout). It is only necessary to define them in regions in which 
+TCAD simulations are performed (the TCAD simulation domains).</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>1.5 Using Boolean Operations</h1>
+
+<p>Silicon WorkBench supports the use of Boolean operations, which can be helpful 
+when creating auxiliary layers, for example. Boolean operations are used with the 
+Tcl/Tk programming language. The logical <em>and</em> operation of two layers, 
+for example, is:</p>
+
+<pre>
+set L1 [bop extract -layers 20]
+set L2 [bop extract -layers 21]
+set L1andL2 [bop and $L1 $L2]
+bop insert $L1andL2 30
+</pre>
+
+<p>Here, layer <tt>20</tt> is assigned to the variable <tt>L1</tt> and layer <tt>21</tt> 
+is assigned to the variable <tt>L2</tt>. The third line performs the logical <em>and</em> 
+operation of layers <tt>L1</tt> and <tt>L2</tt>, and assigns the result to the variable 
+<tt>L1andL2</tt>. The last line adds the result as layer <tt>30</tt> to the current layout.</p> 
+
+<p>For information about the use of Booleans, refer to the Silicon WorkBench 
+documentation (choose <strong>Help</strong> &gt; <strong>Documentation</strong>).</p>
+
+<p>The layout must be flat to allow for Boolean operations. If the layout is hierarchical, 
+then type <tt>hierarchy explode</tt> in the Command Pane of the GUI.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>1.6 Using Stretches</h1>
+
+<p>Silicon WorkBench supports the use of stretches. A stretch is a line in the layout 
+perpendicular to which the layout can be stretched.</p>
+
+<p>Such a stretch is introduced by clicking the <strong>Stretch</strong> button 
+<img class="imgline" src="images/icons/stretch.png" width="46" height="55" alt="Stretch icon" /> 
+and drawing a horizontal or vertical stretch line in the layout (see Figure 4). 
+The stretch is named automatically. It can be renamed in the list of open cells. 
+The exact coordinates can be specified there as well.</p>
+
+<p><a href="images/ic_stretch.png"><img src="images/ic_stretch.png" width="570" 
+alt="Part of a layout with a stretch" /></a></p> 
+
+<p class="caption">Figure 4. Part of a layout showing a stretch; black arrow indicates 
+the positive direction of stretch values. (Click image for full-size view.)</p>
+
+<p>The stretch utility applies the stretch to all mask layers. The effect is illustrated in 
+Figure 5 in which a gate length variation is simulated. If you want to apply a stretch only 
+to one layer, see <a href="ic_2.html#1">Section&nbsp;2.1 Defining the Process Simulation Domain</a>.</p>
+
+<p><a href="images/ic_stretch_para.png"><img src="images/ic_stretch_para.png" width="570" 
+alt="Stretch=0.0 and Stretch=1.0" /></a></p> 
+
+<p class="caption">Figure 5. Parameterizing a simulation using a stretch that is applied 
+to the middle of the gate mask. (Left) With a stretch value of 0.0, the original mask is 
+used. (Right) With a stretch value of 1.0, all mask edges with a coordinate right of the 
+middle of the gate are moved by 1.0 &mu;m. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>1.7 Defining Simulation Domains</h1>
+
+<p>You can define 1D, 2D, and 3D TCAD simulation domains. They are called point, gauge, 
+and highlight, respectively, and can be drawn into the layout by selecting the 
+appropriate button from the toolbar:</p>
+ 
+<p><img class="imgline" src="images/icons/point.png" width="35" height="53" alt="Point icon" />&nbsp;&nbsp;
+<img class="imgline" src="images/icons/gauge.png" width="42" height="55" alt="Gauge icon" />&nbsp;&nbsp;
+<img class="imgline" src="images/icons/highlight.png" width="57" height="57" alt="Highlight icon" /></p>
+
+<p>In most cases, you will draw the simulation domains at their approximate positions. 
+The exact coordinates can be specified in the list of open cells (see Figure 6). 
+The names of the simulation domains also can be changed there.</p>
+
+<p class="note">It is recommended not to let simulation domains coincide with mask edges.</p>
+
+<p><a href="images/ic_domains.png"><img src="images/ic_domains.png" width="570" 
+alt="Part of a layout with several simulation domains" /></a></p> 
+
+<p class="caption">Figure 6. Part of a layout with several simulation domains: 
+the exact coordinates and the names of simulation domains and stretch lines 
+can be specified in the list of open cells in the Tree View pane. (Click image for 
+full-size view.)</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>1.8 Saving Information</h1>
+
+<p>After all the steps described in the previous sections, two files should be saved: 
+one file that contains all of the above information and can be used for a restart at 
+this step, and one file that can be used with Sentaurus Process.</p>
+
+<p>The first file, the <em>Sentaurus markup file</em>, contains the mapping 
+of layer numbers to layer names, the auxiliary layers, and the TCAD simulation 
+domains. The name of the original layout file and the absolute path to it are saved 
+in this markup file, so it is sufficient to load only  this file if changes need 
+to be made.</p>
+
+<p>To save a markup file:</p>
+
+<ol>
+<li>Click the <strong>Sentaurus Export</strong> button.<br />
+The Sentaurus Export dialog box opens.</li>
+<li>Select <strong>Markups</strong>.</li>
+<li>If you have added auxiliary layers, then select <strong>Include new layers</strong>.<br />
+The original GDSII file will not be changed.</li>
+<li>To open a specific layout file when reloading the markup file, select 
+<strong>Open a layout file</strong>:<br />
+(a) <strong>Active layout</strong>: Select this option when using a centrally located 
+GDSII layout. This option is particularly useful when working with a very large full-chip layout.<br />
+(b) <strong>Layout</strong>: Select this option when working with an edited or a local 
+version of the GDSII layout. Specify the name of the layout.</li>
+<li>Enter the file name in the <strong>Output file</strong> field.<br />
+The recommended extension for this file is <tt>_mkp.mac</tt>.</li>
+<li> Click <strong>OK</strong>.</li>
+</ol>
+
+<p>The second file, the <em>TCAD layout file</em>, is used to exchange 
+layout information between Silicon WorkBench and TCAD Sentaurus. This file is 
+flat and does not contain a reference to the GDSII file. It is a small file 
+because it contains only the parts of the layout needed for TCAD Sentaurus.</p>
+
+<p>To save this file:</p>
+
+<ol>
+<li>Click the <strong>Sentaurus Export</strong> button.<br />
+The Sentaurus Export dialog box opens.</li>
+<li>Select <strong>TCAD layout</strong>.</li>
+<li>A layer in a layout can be defined by a large number of touching or overlapping 
+polygons. It is recommended to merge all these polygons into a smaller number of 
+possibly more complex polygons by selecting <strong>Merge shapes</strong>.</li>
+<li>For better viewing, layers are padded by 10 nm. To change this value, 
+edit the <strong>Margin</strong> field.</li>
+<li>Enter the file name in the <strong>Output file</strong> field.<br />
+The recommended extension for this file is <tt>_lyt.mac</tt>.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p class="note">You can reload and edit the markup file (<tt>*_mkp.mac</tt>) as needed. 
+The TCAD layout file (<tt>*_lyt.mac</tt>), however, should be reloaded for viewing only 
+(for example, for debugging purposes). Editing and resaving the TCAD layout will result 
+in duplication of polygons.<br /><br />
+Since the markup file contains the full path to the GDSII file, you will 
+need to edit the markup file if you move the GDSII file or if you rename the directory 
+containing the markup file.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="ic_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">&lt;&lt; previous section</span>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="ic_2.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

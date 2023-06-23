@@ -1,0 +1,1054 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 17. Special Focus: External Model Interfaces &ndash; CMI, PMI, Tcl CurrentPlot</title>
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js"
+charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;
+M.$mathQ = false</script>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_16.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_18.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />17. Special Focus: External Model Interfaces &ndash; CMI, PMI, 
+Tcl CurrentPlot</h1>
+
+<p>
+<a href="#1">17.1 Overview</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#compilepmi">17.1.1 Compiling PMIs</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#externalmodel">17.1.2 Using External Interface Models</a><br />
+ 
+<a href="#2">17.2 Compact Model Interfaces</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#cmi_dynamic">17.2.1 CMI: Coupled Inductance</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#cmi_tres">17.2.2 CMI: Electrothermal Resistor</a><br />
+
+<a href="#3">17.3 PMI: Generation&ndash;Recombination</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_avalanche">17.3.1 PMI Avalanche Generation: Okuto Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_recomb">17.3.2 PMI Recombination: Auger Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_lifetime">17.3.3 PMI Lifetimes: Temperature-Dependent Scharfetter</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_nonlocal_recomb">17.3.4 PMI Nonlocal Recombination Model: Point-to-Point Tunneling Model</a><br />
+
+<a href="#4">17.4 PMI: Mobility</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_mobility">17.4.1 PMI Mobility: Implementing Lombardi, Canali, and Masetti Models</a><br />
+
+<a href="#5">17.5 PMI: Semiconductor Band Structure</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_bg">17.5.1 PMI Band Gap: Default Bandgap Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_bgn">17.5.2 PMI Bandgap Narrowing: Bennett&ndash;Wilson Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_effmass">17.5.3 PMI Effective Mass: Linear Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_affinity">17.5.4 PMI Electron Affinity: Default Affinity Model</a><br />
+
+<a href="#6">17.6 PMI: Phase and State Transitions</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_msc_abes">17.6.1 PMI Multistate Configuration&ndash;Dependent Apparent Band-Edge Shift: PCM Device</a><br />
+
+<a href="#7">17.7 PMI: Thermal Properties and Heat</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_heatcapacity">17.7.1 PMI Heat Capacity: Constant and Rational Models</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_thermalcond">17.7.2 PMI Thermal Conductivity: Temperature-Dependent Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_thinlayerkappa">17.7.3 PMI Thermal Conductivity: Thin Layer Model</a><br />
+
+<a href="#8">17.8 PMI: Optics</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#crimi_k_si_rss">17.8.1 CRIMI k for Silicon: RSS Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#crimi_nk_hgcdte_hougen">17.8.2 CRIMI n&amp;k for HgCdTe: Hougen Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_quantumyield">17.8.3 PMI Optical Quantum Yield: Bandgap Step Function</a><br />
+
+<a href="#9">17.9 PMI: Mechanical Stress</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_mobilitystressfactor">17.9.1 PMI Mobility Stress Factor: Effective Stress Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_polarization">17.9.2 PMI Piezoelectric Polarization: Gaussian Polarization</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_stress">17.9.3 PMI Stress: Set Constant Stress</a><br />
+
+<a href="#10">17.10 PMI: Simulation Controls</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_currentplot">17.10.1 PMI CurrentPlot: Interpolated Potential</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_msc_currentplot">17.10.2 PMI CurrentPlot: Plot Multistate Configuration Occupancies</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_newtonstep">17.10.3 PMI Newton Step</a><br />
+
+<a href="#11">17.11 PMI: Various</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_erelaxtime">17.11.1 PMI Energy Relaxation Time: Constant and Rational Models</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_hotcarrierinj">17.11.2 PMI Hot Carrier Injection: Lucky Electron Model</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_incomplete">17.11.3 PMI Incomplete Ionization: Ionization Factors</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pmi_spacefactor">17.11.4 PMI Space Factor: Read PMIUserField</a><br />
+
+<a href="#tcl_currentplot">17.12 Tcl CurrentPlot: Compute Conductivity</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce how to use external model interfaces in Sentaurus  Device.</li>
+ <li>To provide code examples following those documented in the <cite>Sentaurus&trade; Device User Guide</cite>.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>   
+<h1>17.1 Overview</h1>
+
+<p>Sentaurus Device allows to add user-defined models in different ways:</p>
+
+<ul>
+<li>The physical model interface (PMI), for example, for recombination, mobility, bandgap models, 
+and so on. For a complete list, see the <cite>Sentaurus&trade; Device User Guide</cite>.</li>
+<li>The compact model interface (CMI) for lumped elements in mixed-mode simulations.</li>
+<li>The Tcl CurrentPlot interface for adding quantities to the PLT file.</li>
+</ul>
+
+<p class="note">As PMIs and CMIs are handled in the same way, for simplicity, in this section, 
+they are referred to simply as <em>PMI</em>. Unless otherwise mentioned, the described PMI features 
+also apply to the CMI and the complex refractive index model interface (CRIMI).</p>
+
+<p>PMIs are written in C++ (*.C) and must be compiled with the same compiler version and options 
+as Sentaurus Device. The compiled files (*.os.linux64) are loaded directly into Sentaurus Device. 
+Therefore, a PMI must be compiled for a particular TCAD Sentaurus release. Otherwise, Sentaurus 
+Device might terminate.</p>
+
+<p>To check whether a PMI has been compiled for a particular release, enter the following in a shell:</p>
+
+<pre>
+&gt; strings pmi_my_special_model.so.linux64 | grep version
+Synopsys Sentaurus TCAD version T-2022.03
+</pre>
+
+<p>In contrast, Tcl CurrentPlot files do not require any compilation and can be used for all releases.</p>
+
+<!--=========================-->
+<a name="compilepmi"></a>   
+<h2>17.1.1 Compiling PMIs</h2>
+
+<p>To compile a PMI for a particular Sentaurus Device version, the compiler version must be identical 
+to the one used to compile Sentaurus Device. You can check the compiler version of Sentaurus
+Device as follows:</p> 
+                    
+<pre>
+&gt; sdevice --compiler
+...       
+gcc version 7.3.0 (GCC)
+</pre>
+
+<p>Next, check whether your gcc has the same version:</p>
+
+<pre>
+> gcc -v
+...       
+gcc version 7.3.0 (GCC)
+</pre>
+
+<p>Finally, you can double-check whether all <tt>PATH</tt> settings are correct and the 
+compilation script <tt>cmi</tt> does indeed find the correct compiler by using:</p>
+
+<pre>
+> cmi -a
+Sentaurus cmi invokes the following C++ compiler to produce a shared object
+file (output of the command "g++ --version"):
+
+g++ (GCC) 7.3.0
+...       
+The following version of the C++ compiler was used by Synopsys to compile
+Sentaurus tools (output of the command "/depot/qsc/QSCR/bin/g++ -v"):
+...
+gcc version 7.3.0 (GCC) 
+
+NOTE: These two C++ compiler versions should be identical.
+      Otherwise, update your UNIX search path.
+</pre>
+
+<p class="note">If the gcc version installed on your system differs from the one used 
+to compile Sentaurus Device, then first install the same gcc version on your machine 
+before compiling any PMIs for Sentaurus Device.</p>
+
+<p>Now, you can compile your PMI with:</p>
+
+<pre>
+&gt; cmi pmi_my_special_model.C
+</pre>
+
+<!--=========================-->
+<a name="externalmodel"></a>   
+<h2>17.1.2 Using External Interface Models</h2>
+
+<p>PMIs and Tcl CurrentPlot scripts share the same common search path defined by 
+<tt>PMIPath</tt>. CMIs use the search path defined by <tt>CMIPath</tt>. Ensure that, 
+in the Sentaurus Device command file, <tt>PMIPath</tt> and <tt>CMIPath</tt> are set 
+correctly and point to your model file:</p>
+
+<pre>
+File { ...
+  CMIPath = &quot;/path/to/my/special/cmi/model&quot;
+  PMIPath = &quot;/path/to/my/special/pmi/model&quot;
+}
+</pre>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>17.2 Compact Model Interfaces</h1>
+
+<p>This section presents CMIs.</p>
+
+<!--======================-->
+<a name="cmi_dynamic"></a>
+<h2>17.2.1 CMI: Coupled Inductance</h2>
+
+<p>This example demonstrates how to implement a coupled inductance as a CMI. The coupled 
+inductor modifies the input sinusoidal signal depending on the values of the self-inductances 
+<tt>L1</tt> and <tt>L2</tt>, and the mutual inductance coefficient <tt>k</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/cmi_dynamic/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the CMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/cmi_dynamic/coupled.C">coupled.C</a>.</p>
+
+<p>Click to view the compact circuit file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/cmi_dynamic/coupled.ccf">coupled.ccf</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/cmi_dynamic</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/cm_ug.pdf#page=171">
+Compact Models User Guide, Chapter 4, Example: Coupled Inductance</a>.</p>
+
+<!--======================-->
+<a name="cmi_tres"></a>
+<h2>17.2.2 CMI: Electrothermal Resistor</h2>
+
+<p>This example demonstrates how to implement a thermoelectric resistance as a CMI. 
+Tuning the linear temperature coefficient <tt>alpha</tt> can control the temperature dependence 
+of the resistor.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/cmi_tres/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the CMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/cmi_tres/tres.C">tres.C</a>.</p>
+
+<p>Click to view the compact circuit file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/cmi_tres/tres.ccf">tres.ccf</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/cmi_tres</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/cm_ug.pdf#page=202">
+Compact Models User Guide, Chapter 4, Example: Implementing the Electrothermal Resistor Model</a>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>17.3 PMI: Generation&ndash;Recombination</h1>
+
+<p>This section presents generation&ndash;recombination PMIs.</p>
+
+<!--=========================-->
+<a name="pmi_avalanche"></a>
+<h2>17.3.1 PMI Avalanche Generation: Okuto Model</h2>
+
+<p>This PMI allows you to introduce an additional generation term due to impact ionization 
+into the electron and hole continuity equations. The example implements the Okuto avalanche 
+model as a PMI and compares the breakdown I&ndash;V characteristics of a silicon resistor 
+with the built-in model.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_avalanche/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file using the simplified C++ interface 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_avalanche/pmi_Okuto.C">pmi_Okuto.C</a>.</p>
+
+<p>Click to view the PMI file using the standard C++ interface 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_avalanche/pmi_Okuto_std.C">
+pmi_Okuto_std.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_avalanche</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1269">
+Sentaurus&trade; Device User Guide, Chapter 39, Avalanche Generation</a>.</p>
+
+<!--===========================-->
+<a name="pmi_recomb"></a>
+<h2>17.3.2 PMI Recombination: Auger Model</h2>
+
+<p>This PMI allows you to introduce an additional generation&ndash;recombination term into 
+the electron and hole continuity equations. For example, you can implement the built-in Auger 
+recombination model as a PMI and compute the dark current of a 1D silicon diode.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_recomb/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_recomb/pmi_recomb.C">
+pmi_recomb.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_recomb</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1276">
+Sentaurus&trade; Device User Guide, Chapter 39, Generation&ndash;Recombination</a>.</p>
+
+<!--=============================-->
+<a name="pmi_lifetime"></a>
+<h2>17.3.3 PMI Lifetimes: Temperature-Dependent Scharfetter</h2>
+
+<p>This PMI allows you to implement new models for the electron and hole lifetimes in the 
+Shockley&ndash;Read&ndash;Hall (SRH) or the coupled defect level (CDL) recombination models.</p>
+
+<p>For example, you can implement a model for doping-dependent (Scharfetter) and temperature-dependent 
+(power law) lifetimes: 
+
+\[τ = [τ_{min} + {τ_{max} - τ_{min}} / {1 + ({N_i}/{N_{ref}})^γ}]⋅(T/{T_0})^α\]
+
+as a PMI to compute the SRH recombination in a 1D silicon diode.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_lifetime/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_lifetime/pmi_lifetime.C">
+pmi_lifetime.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_lifetime</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1279">
+Sentaurus&trade; Device User Guide, Chapter 39, Lifetimes</a>.</p>
+
+<!--=========================-->
+<a name="pmi_nonlocal_recomb"></a>
+<h2>17.3.4 PMI Nonlocal Recombination Model: Point-to-Point Tunneling Model</h2>
+
+<p>This PMI allows you to compute electron and hole recombination rates of a vertex 
+that depends on arbitrary values of remote vertices.</p>
+
+<p>The example demonstrates a point-to-point tunneling model for a 1D abrupt p-n junction. 
+The tunneling rate <em>r</em> is computed by comparing the electron and hole quasi-Fermi 
+(\(Φ_{n,1},Φ_{p,2}\)) potentials between two vertices v<sub>1</sub> and v<sub>2</sub>. 
+If \(Φ_{n,1} &lt; Φ_{p,2}\), then: 
+
+\[r = A e^{-B(E_{V,2} - E_{C,1})^2} Δ/{1+Δ}\] 
+
+with \(Δ = Φ_{p,2} - Φ_{n,1} \).</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_nonlocal_recomb/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_nonlocal_recomb/pmi_tunneling_recomb.C">
+pmi_tunneling_recomb.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_nonlocal_recomb</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1283">
+Sentaurus&trade; Device User Guide, Chapter 39, Nonlocal Generation&ndash;Recombination</a>.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>17.4 PMI: Mobility</h1>
+
+<p>This section presents mobility PMIs.</p>
+
+<!--========================-->
+<a name="pmi_mobility"></a>
+<h2>17.4.1 PMI Mobility: Implementing Lombardi, Canali, and Masetti Models</h2>
+
+<p>This PMI provides direct access to the mobility models. Three types of mobility model 
+are supported: doping-dependent mobility, mobility degradation at interfaces, and high-field 
+saturation.</p>
+
+<p>For example, you can implement the built-in doping-dependent Masetti model, a simplified version 
+of the built-in Lombardi model for degradation at interfaces, and the built-in high-field saturation 
+Canali model as PMIs to compute the I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> 
+characteristics in a MOSFET.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobility/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI files using the simplified C++ interface 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobility/pmi_dopingdep.C">
+pmi_dopingdep.C</a>, 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobility/pmi_enormal.C">
+pmi_enormal.C</a>, and 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobility/pmi_highfield.C">
+pmi_highfield.C</a>.</p>
+
+<p>Click to view the PMI files using the standard C++ interface 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobility/pmi_dopingdep_std.C">
+pmi_dopingdep_std.C</a>, 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobility/pmi_enormal_std.C">
+pmi_enormal_std.C</a>, and 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobility/pmi_highfield_std.C">
+pmi_highfield_std.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_mobility</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1288">
+Sentaurus&trade; Device User Guide, Chapter 39, Mobility</a>.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>17.5 PMI: Semiconductor Band Structure</h1>
+
+<p>This section presents PMIs related to the semiconductor band structure.</p>
+
+<!--========================-->
+<a name="pmi_bg"></a>
+<h2>17.5.1 PMI Band Gap: Default Bandgap Model</h2>
+
+<p>This PMI allows you to implement a new bandgap model. You can use any formula as a function 
+of temperature for the band gap.</p>
+
+<p>For example, you can implement the default temperature-dependent bandgap model:  
+
+\[E_g(T) = E_g(0) - {α T^2}/{T+β}\]
+
+as a PMI and compute the current of a 1D silicon diode (reference: W. Bludau, A. Onton, and W.&nbsp;Heinke, 
+&quot;Temperature dependence of the band gap in silicon,&quot; <cite>Journal of Applied Physics</cite>, 
+vol.&nbsp;45, no.&nbsp;4, pp. 1846&ndash;1848, 1974).</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_bg/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_bg/pmi_bg.C">pmi_bg.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_bg</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1320">
+Sentaurus&trade; Device User Guide, Chapter 39, Band Gap</a>.</p>
+
+<!--========================-->
+<a name="pmi_bgn"></a>
+<h2>17.5.2 PMI Bandgap Narrowing: Bennett&ndash;Wilson Model</h2>
+
+<p>This PMI allows you to implement a new bandgap narrowing model. The amount of bandgap 
+narrowing is computed as a function of total doping. First, acceptor and donor dopings are 
+read, and then they are added to find the total doping. You can use any formula as a 
+function of the total doping to find the amount of bandgap narrowing.</p>
+
+<p>For example, you can implement the Bennett&ndash;Wilson bandgap narrowing model of Sentaurus Device 
+given by:
+
+\[ΔE_g^0 = \{\table E_{ref}⋅[ln({N_{tot}}/{N_{ref}})]^2, N_{tot} ≥ N_{ref}; 0, \text otherwise\]
+
+as a PMI and compute the current of a 1D silicon diode (reference: H. S. Bennett and C. L. Wilson, 
+&quot;Statistical comparisons of data on band-gap narrowing in heavily doped silicon: Electrical 
+and optical measurements,&quot; <cite>Journal of Applied Physics</cite>, vol. 55, no. 10, 
+pp. 3582&ndash;3587, 1984).</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_bgn/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_bgn/pmi_bgn.C">pmi_bgn.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_bgn</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1323">
+Sentaurus&trade; Device User Guide, Chapter 39, Bandgap Narrowing</a>.</p>
+
+<!--================================================-->
+<a name="pmi_effmass"></a>
+<h2>17.5.3 PMI Effective Mass: Linear Model</h2>
+
+<p>This PMI allows you to implement a new effective mass model for electrons and holes. 
+You can use any formula as a function of temperature <em>T</em> for the electron and hole 
+effective masses.</p>
+
+<p>For example, you can implement a linear effective mass model, where the effective mass changes 
+linearly with temperature:
+
+\[m_e = m_{e,300} + δ_e ⋅ (T-300)\]
+and
+\[m_h = m_{h,300} + δ_h ⋅ (T-300)\]
+</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_effmass/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_effmass/pmi_effmass.C">
+pmi_effmass.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_effmass</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1325">
+Sentaurus&trade; Device User Guide, Chapter 39, Effective Mass</a>.</p>
+
+<!--========================-->
+<a name="pmi_affinity"></a>
+<h2>17.5.4 PMI Electron Affinity: Default Affinity Model</h2>
+
+<p>This PMI implements a user-defined fraction of the bandgap shrinkage to add to the 
+affinity. For example, you can compare the default built-in silicon affinity model as a function 
+of temperature:
+
+\[χ(T) = χ(0) + {α T^2}/{2(T+β)}\]
+
+with the PMI model.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_affinity/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_affinity/pmi_affinity.C">
+pmi_affinity.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_affinity</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1329">
+Sentaurus&trade; Device User Guide, Chapter 39, Electron Affinity</a>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>17.6 PMI: Phase and State Transitions</h1>
+
+<p>This section presents PMIs related to phase and state transitions.</p>
+
+<!--================================================-->
+<a name="pmi_msc_abes"></a>
+<h2>17.6.1 PMI Multistate Configuration&ndash;Dependent Apparent Band-Edge Shift: PCM Device</h2>
+
+<p>This example demonstrates the usage of a multistate configuration capture and emission PMI 
+(<tt>pmi_ce_msconfig</tt>) for a process compact model (PCM) device, modeled by a three-state model 
+representing the crystalline, amorphous, and melted phases. As band-edge shift models for the 
+conduction band and the valence band, an apparent band-edge shift model (<tt>pmi_abes</tt>) with 
+multistate configuration dependency is used.</p>
+
+<p>Click to view the command files 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_abes/dc_des.cmd">
+dc_des.cmd</a>, 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_abes/reset_des.cmd">
+reset_des.cmd</a>, and
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_abes/set_des.cmd">
+set_des.cmd</a>.</p>
+
+<p>Click to view the PMI files 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_abes/pmi_ce_msconfig.C">
+pmi_ce_msconfig.C</a> and 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_abes/pmi_abes.C">
+pmi_abes.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_abes</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1332">
+Sentaurus&trade; Device User Guide, Chapter 39, Multistate Configuration&ndash;Dependent 
+Apparent Band-Edge Shift</a> and 
+<a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1400">
+Chapter 39, Trap Capture and Emission Rates</a>.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>17.7 PMI: Thermal Properties and Heat</h1>
+
+<p>This section presents PMIs related to thermal properties and heat.</p>
+
+<!--================================================-->
+<a name="pmi_heatcapacity"></a>
+<h2>17.7.1 PMI Heat Capacity: Constant and Rational Models</h2>
+
+<p>This PMI allows you to implement a new heat capacity model to be used with heat 
+simulations. You can use any formula as a function of temperature <i>T</i>.</p>
+
+<p>For example, you can implement two heat capacity models: a constant model that replicates 
+the constant model in Sentaurus Device and a rational model that implements the formula:
+
+\[c_L = a + bT + c/T^2\]
+</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_heatcapacity/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file for the constant model 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_heatcapacity/pmi_heatcapacity.C">
+pmi_heatcapacity.C</a>.</p>
+
+<p>Click to view the PMI file for the rational model 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_heatcapacity/pmi_rational.C">
+pmi_rational.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_heatcapacity</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1347">
+Sentaurus&trade; Device User Guide, Chapter 39, Heat Capacity</a>.</p>
+
+<!--==========================-->
+<a name="pmi_thermalcond"></a>
+<h2>17.7.2 PMI Thermal Conductivity: Temperature-Dependent Model</h2>
+
+<p>This PMI allows you to implement a new thermal conductivity model to be used with heat 
+simulations. You can use any formula as a function of temperature <em>T</em>.</p>
+
+<p>For example, you can implement the temperature-dependent resistivity models:
+\[κ = 1/{a + b T + c T^2} \]
+</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_thermalcond/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file using the simplified C++ interface 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_thermalcond/pmi_thermalcond.C">
+pmi_thermalcond.C</a>.</p>
+
+<p>Click to view the PMI file using the standard C++ interface 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_thermalcond/pmi_thermalcond_std.C">
+pmi_thermalcond_std.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_thermalcond</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1358">
+Sentaurus&trade; Device User Guide, Chapter 39, Thermal Conductivity</a>.</p>
+
+<!--==========================-->
+<a name="pmi_thinlayerkappa"></a>
+<h2>17.7.3 PMI Thermal Conductivity: Thin Layer Model</h2>
+
+<p>This PMI implements a user-defined thermal conductivity model that depends on the layer thickness 
+and doping concentration according to the following formula:
+\[  κ = κ_0 ⋅ [a_2 (d-d_0)^2 + a_1 (d-d_0) + a_0)⋅ e^{α (d-d_0)}] ⋅ [b_2 (h-h_0)^2 + b_1 (h-h_0) + b_0)⋅ e^{β (h-h_0)}] \]
+where \(d, a, α\) are doping-related quantities and \(h, b, β\) are thickness-related quantities.</p>
+
+<p>For example, you can compare the heating behavior of a thin silicon layer for two artificial 
+parameter sets of the given PMI model.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_thinlayer_kappa/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_thinlayer_kappa/pmi_thinlayer_kappa.C">
+pmi_thinlayer_kappa.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_thinlayerkappa</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1361">
+Sentaurus&trade; Device User Guide, Chapter 39, Example: Thin-Layer Thermal Conductivity</a>.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>17.8 PMI: Optics</h1>
+
+<p>This section presents PMIs related to optics.</p>
+
+<!--==========================-->
+<a name="crimi_k_si_rss"></a>
+<h2>17.8.1 CRIMI k for Silicon: RSS Model</h2>
+
+<p>This example demonstrates how to implement the Rajkanan, Singh, and Shewchun (RSS) 
+temperature-dependent optical absorption model for silicon using the CRIMI (reference: 
+K. Rajkanan, R. Singh, and J. Shewchun, &quot;Absorption Coefficient of Silicon for Solar Cell Calculations,&quot; <cite>Solid-State Electronics</cite>, vol. 22, no. 9, pp. 793&ndash;795, 1979). 
+The model is valid within an error of 20% for a temperature range of 20 K to 500 K, 
+and a wavelength range of 0.3&ndash;1.1 &mu;m.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/crimi_k_si_rss/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the CMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/crimi_k_si_rss/crimi_k_si_rss.C">
+crimi_k_si_rss.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/crimi_k_si_rss</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1368">
+Sentaurus&trade; Device User Guide, Chapter 39, Complex Refractive Index Model Interface</a>.</p>
+
+<!--==========================-->
+<a name="crimi_nk_hgcdte_hougen"></a>
+<h2>17.8.2 CRIMI n&amp;k for HgCdTe: Hougen Model</h2>
+
+<p>This example demonstrates how to implement a mole fraction&ndash;dependent and temperature-dependent 
+model for the complex refractive index of Hg<sub>1&ndash;x</sub>Cd<sub>x</sub>Te. The model was 
+calibrated in the temperature range of 80 K to 300 K for infrared, that is, in the wavelength range 
+5&ndash;15 &mu;m (reference: C. A. Hougen, &quot;Model for infrared absorption and transmission 
+of liquid-phase epitaxy HgCdTe,&quot; <cite>Journal of Applied Physics</cite>, vol. 66, no. 8, 
+pp. 3763&ndash;3766, 1989; <a href="https://doi.org/10.1063/1.344038">https://doi.org/10.1063/1.344038</a>).</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/crimi_nk_hgcdte_hougen/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the CMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/crimi_nk_hgcdte_hougen/crimi_nk_hgcdte_hougen.C">
+crimi_nk_hgcdte_hougen.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/crimi_nk_hgcdte_hougen</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1368">
+Sentaurus&trade; Device User Guide, Chapter 39, Complex Refractive Index Model Interface</a>.</p>
+
+<!--==========================-->
+<a name="pmi_quantumyield"></a>
+<h2>17.8.3 PMI Optical Quantum Yield: Bandgap Step Function</h2>
+
+<p>This PMI allows you to create sophisticated quantum yield models to define how absorbed 
+photon density is converted to optical generation. This simple example rebuilds the bandgap 
+step function built-in model.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_quantumyield/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_quantumyield/pmi_qy_eg.C">
+pmi_qy_eg.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_quantumyield</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1375">
+Sentaurus&trade; Device User Guide, Chapter 39, Optical Quantum Yield</a>.</p>
+
+
+<!--================================================-->
+<a name="9"></a>
+<h1>17.9 PMI: Mechanical Stress</h1>
+
+<p>This section presents PMIs related to mechanical stress.</p>
+
+<!--================================-->
+<a name="pmi_mobilitystressfactor"></a>
+<h2>17.9.1 PMI Mobility Stress Factor: Effective Stress Model</h2>
+
+<p>This PMI provides access to the stress-dependent isotropic mobility enhancement factors 
+for modeling the piezoresistive effect.</p>
+
+<p>For example, you can implement the built-in effective stress model as a PMI to simulate 
+the effect of mechanical stress on the I<sub>d</sub>&ndash;V<sub>g</sub> characteristics of 
+a MOSFET.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobilitystressfactor/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_mobilitystressfactor/pmi_EffectiveStressModel.C">
+pmi_EffectiveStressModel.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_mobilitystressfactor</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1385">
+Sentaurus&trade; Device User Guide, Chapter 39, Mobility Stress Factor</a>.</p>
+
+<!--================================-->
+<a name="pmi_polarization"></a>
+<h2>17.9.2 PMI Piezoelectric Polarization: Gaussian Polarization</h2>
+
+<p>This PMI allows you to add piezoelectric polarization, which enters the Poisson equation 
+as an additional charge.</p>
+
+<p>The example demonstrates a spatially Gaussian-shaped polarization vector: 
+\[P = (\table A e^{-c (x - x_0)^2}; 0; 0)\]</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_polarization/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_polarization/pmi_polarization.C">
+pmi_polarization.C</a>.</p>
+ 
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_polarization</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1392">
+Sentaurus&trade; Device User Guide, Chapter 39, Piezoelectric Polarization</a>.</p>
+
+<!--================================-->
+<a name="pmi_stress"></a>
+<h2>17.9.3 PMI Stress: Set Constant Stress</h2>
+
+<p>This PMI allows you to compute user-defined mechanical stress. The example sets a constant stress.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_stress/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_stress/pmi_stress.C">
+pmi_stress.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_stress</tt>.</p>
+
+<p>For more details,  see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1396">
+Sentaurus&trade; Device User Guide, Chapter 39, Stress</a>.</p>
+
+<!--================================================-->
+<a name="10"></a>
+<h1>17.10 PMI: Simulation Controls</h1>
+
+<p>This section presents PMIs related to simulation controls.</p>
+
+<!--=======================-->
+<a name="pmi_currentplot"></a>
+<h2>17.10.1 PMI CurrentPlot: Interpolated Potential</h2>
+
+<p>This PMI allows you to access data on the entire device and to plot arbitrary data into 
+the current plot file. The example demonstrates how to plot the interpolated value of the 
+electrostatic potential for a certain coordinate position. The feature is demonstrated for 
+the standard and simplified C++ interfaces. </p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_currentplot/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file using the standard C++ interface 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_currentplot/pmi_currentplot.C">
+pmi_currentplot.C</a>.</p>
+
+<p>Click to view the PMI file using the simplified C++ interface 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_currentplot/pmi_float_currentplot.C">
+pmi_float_currentplot.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_currentplot</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1447">
+Sentaurus&trade; Device User Guide, Chapter 39, Current Plot File</a>.</p>
+
+<!--=======================-->
+<a name="pmi_msc_currentplot"></a>
+<h2>17.10.2 PMI CurrentPlot: Plot Multistate Configuration Occupancies</h2>
+
+<p>This example demonstrates the usage of the CurrentPlot PMI <tt>pmi_cp</tt> to plot the 
+maximum, minimum, and average state occupation probabilities of one multistate configuration 
+in one region.</p>
+
+<p>Click to view the corresponding PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_currentplot/pmi_cp.C">pmi_cp.C</a>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_currentplot/reset_des.cmd">
+reset_des.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_msc_currentplot</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1447">
+Sentaurus&trade; Device User Guide, Chapter 39, Current Plot File</a>.</p>
+
+<!--================================================-->
+<a name="pmi_newtonstep"></a>
+<h2>17.10.3 PMI Newton Step</h2>
+
+<p>This PMI allows you to precompute data during Newton iterations. The PMI 
+provides access to the device mesh and device data, and can access PMI functions to print 
+messages to the log file.</p>
+
+<p>The example demonstrates the usage of the PMI for quasistationary, transient, and 
+continuation simulations in single device mode (pin, latchup) and mixed mode (latchupMM).</p>
+
+<p>Click to view the command files 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_newtonstep/pin_des.cmd">
+pin_des.cmd</a>, 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_newtonstep/latchup_des.cmd">
+latchup_des.cmd</a>, and
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_newtonstep/latchupMM_des.cmd">
+latchupMM_des.cmd</a>.</p>
+
+<p>Click to view the different implementations of PMI files 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_newtonstep/pmiNewtonStep.C">
+pmiNewtonStep.C</a>, 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_newtonstep/pmi_float_newtonstep.C">
+pmi_float_newtonstep.C</a>, and 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_newtonstep/pmi_double_newtonstep.C">
+pmi_double_newtonstep.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_newtonstep</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1453">
+Sentaurus&trade; Device User Guide, Chapter 39, Preprocessing for Newton Iterations and Newton Step Control</a>.</p>
+
+<!--================================================-->
+<a name="11"></a>
+<h1>17.11 PMI: Various</h1>
+
+<p>This section presents various PMIs.</p>
+
+<!--======================-->
+<a name="pmi_erelaxtime"></a>
+<h2>17.11.1 PMI Energy Relaxation Time: Constant and Rational Models</h2>
+
+<p>This PMI allows you to implement a new energy relaxation time model for electrons 
+and holes to be used with hydrodynamic simulations. You can use any formula as a function 
+of electron and hole temperatures <i>T</i><sub>n</sub> and <i>T</i><sub>p</sub>.</p>
+
+<p>For example, you can implement two energy relaxation time models: a constant model that 
+replicates the constant model in Sentaurus Device and a rational model that implements the formulas:<br />
+
+\[\table τ_{en} = {a_e T_n + b_e}/{T_n + c_e}, ,  ,  τ_{hp} = {a_h T_p + b_h}/{T_p + c_h}\]</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_erelaxtime/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file for the constant model 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_erelaxtime/pmi_erelaxtime.C">
+pmi_erelaxtime.C</a>.</p>
+
+<p>Click to view the PMI file for the rational model 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_erelaxtime/pmi_rational.C">
+pmi_rational.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_erelaxtime</tt>.</p>
+
+<p>For more details,  see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1460">
+Sentaurus&trade; Device User Guide, Chapter 39, Energy Relaxation Times</a>.</p>
+
+<!--======================-->
+<a name="pmi_hotcarrierinj"></a>
+<h2>17.11.2 PMI Hot Carrier Injection: Lucky Electron Model</h2>
+
+<p>This PMI allows you to implement a new hot carrier injection model. The model can be used 
+to compute the gate current and can be limited to a single carrier type by specifying the 
+carrier type after the model name. For example: <tt>PMI_LuckyModel(electron)</tt></p>
+
+<p>For example, you can implement the lucky electron model and run the model on an NMOSFET to compute 
+the gate current.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_hotcarrierinj/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_hotcarrierinj/PMI_LuckyModel.C">
+PMI_LuckyModel.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_hotcarrierinj</tt>.</p>
+
+<p>For more details,  see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1472">
+Sentaurus&trade; Device User Guide, Chapter 39, Hot-Carrier Injection</a>.</p>
+
+<!--======================-->
+<a name="pmi_incomplete"></a>
+<h2>17.11.3 PMI Incomplete Ionization: Ionization Factors</h2>
+
+<p>This PMI allows you to introduce new equations for the ionization factors of the incomplete 
+ionization model. For example, you can implement the Matsuura model as a PMI and compute the 
+concentration of ionized impurity atoms in a SiC resistor at different temperatures.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_incomplete/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_incomplete/pmi_incomplete.C">
+pmi_incomplete.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_incomplete</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1479">
+Sentaurus&trade; Device User Guide, Chapter 39, Incomplete Ionization</a>.</p>
+
+<!--======================-->
+<a name="pmi_spacefactor"></a>
+<h2>17.11.4 PMI Space Factor: Read PMIUserField</h2>
+
+<p>This PMI allows you to compute arbitrary user-defined space distributions for metal 
+workfunctions, traps, bond concentrations, extended nonradiative multiphonon model precursor 
+concentrations, and piezoresistance enhancement factors.</p>
+
+<p>The example compares a trap space factor set directly from <tt>PMIUserField1</tt> with a PMI 
+that reads <tt>PMIUserField1</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_spacefactor/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the PMI file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/pmi_spacefactor/pmi_spacefactor.C">
+pmi_spacefactor.C</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/pmi_spacefactor</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1486">
+Sentaurus&trade; Device User Guide, Chapter 39, Space Factor</a>.</p>
+
+<!--================================================-->
+<a name="tcl_currentplot"></a>
+<h1>17.12 Tcl CurrentPlot: Compute Conductivity</h1>
+
+<p>The Tcl CurrentPlot interface is a convenient way to compute composite result values at each 
+solution point. This example demonstrates the inline capabilities using a few lines in the Sentaurus 
+Device command file, as well as using an external Tcl file for more complex tasks.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/tcl_currentplot/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>Click to view the corresponding Tcl file 
+<a href="../../Applications_Library/GettingStarted/sdevice/pmi/tcl_currentplot/conductivity.tcl">
+conductivity.tcl</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/pmi/tcl_currentplot</tt>.</p>
+
+<p>For more details, see the <a href="../../manuals/PDFManual/data/sdevice_ug.pdf#page=1491">
+Sentaurus&trade; Device User Guide, Chapter 40</a>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_16.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_18.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

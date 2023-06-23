@@ -1,0 +1,1769 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true; M.$mathQ = false</script>  
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 3. Mixed Mode</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />3. Mixed Mode</h1>
+
+<p>
+ <a href="#1">3.1 Overview</a><br />
+ <a href="#2">3.2 Mixed-Mode Simulations</a><br />
+ <a href="#3">3.3 Transient Sweep</a><br />
+ <a href="#4">3.4 Small-Signal AC Analysis</a><br />
+ <a href="#5">3.5 Compact Models</a><br />
+ <a href="#6">3.6 PrimeSim HSPICE Netlists</a><br />
+ <a href="#7">3.7 Implicit Contact Resistance in Mixed Mode</a><br />
+ <a href="#8">3.8 Harmonic Balance Simulations</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate mixed-mode simulations in Sentaurus Device.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Overview</h1>
+
+<p><a href="sd_2.html">Section&nbsp;2. Carrier Transport Models</a> discusses the 
+use of Sentaurus Device as a single-device simulator. Sentaurus Device also supports 
+mixed-mode simulations on small circuits in which multiple circuit elements, 
+including physical devices, compact model devices, and lumped elements, can exist.</p>
+
+<p>For mixed-mode simulations, the command file of Sentaurus Device must include not only 
+the definitions of each individual element in the circuit, but also a netlist showing the 
+connectivity between the elements. As a result, additional sections, for example, the 
+<tt>System</tt> section, are introduced in the command file. In a mixed-mode simulation, 
+the <tt>Solve</tt> section also can be specified to solve either part of the system or 
+the entire system.</p>
+
+<p>Example applications include simulations of ring oscillators and single event upset of SRAM 
+cells consisting of both compact model transistors and physical devices, and analyses of the 
+performance of RF amplifiers with lumped elements and external parasitics.</p>
+      
+<p>The command files of Sentaurus Device featured in this section are contained 
+in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/sdevice/CMOSInverter</tt>.</p>
+
+<p>To work with the project, start Sentaurus Workbench and copy the 
+<tt>CMOSInverter</tt> project to a local directory. The target directory must 
+reside under the Sentaurus Workbench working directory to which the environment 
+variable <tt>$STDB</tt> points. For details about this environment variable, see 
+<a href="../swb/swb_01.html#2">Section&nbsp;1.2 Starting Sentaurus Workbench</a>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Mixed-Mode Simulations</h1>
+
+<p>The Sentaurus Device primary file <tt>sdevice_des.cmd</tt> within this project 
+is used to simulate the voltage transfer characteristics (VTC) of a CMOS inverter 
+consisting of both NMOS and PMOS devices. A second Sentaurus Device primary file 
+<tt>sdevice1_des.cmd</tt> is used to simulate the inverter switching behavior.</p>
+
+<p>Click to view the primary files 
+<a href="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/vtc_des.cmd">
+vct_des.cmd</a> and 
+<a href="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/switching_des.cmd">
+switching_des.cmd</a>.</p>
+
+<!--=========================-->
+<h2>3.2.1 Device Section</h2>
+
+<p>This section defines a physical device that is later used to define 
+a circuit element:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/vtc_des.cmd" startExpr="Device NMOS*" endExpr="}*" -->
+<pre>
+Device NMOS {
+
+  Electrode{
+    { Name=&quot;source&quot;    Voltage=0.0 }
+    { Name=&quot;drain&quot;     Voltage=0.0 }
+    { Name=&quot;gate&quot;      Voltage=0.0 }
+    { Name=&quot;substrate&quot; Voltage=0.0 }
+  }
+
+  File{
+     Grid    = &quot;@tdr|nmos@&quot; 
+     Plot    = &quot;@tdrdat@&quot;
+     Current = &quot;@plot@&quot;
+     Param   = &quot;@parameter@&quot;
+  }
+
+  Physics{
+    AreaFactor=5
+    Mobility( DopingDep HighFieldSaturation Enormal )
+    EffectiveIntrinsicDensity( oldSlotboom )
+  }
+
+}
+</pre>
+<!-- grep end -->
+
+<p>Each <tt>Device</tt> section contains an <tt>Electrode</tt>, a <tt>File</tt>, and a 
+<tt>Physics</tt> section. A unique identifier is required for each <tt>Device</tt> section, 
+for example, <tt>NMOS</tt> and <tt>PMOS</tt>.</p>
+
+<p>The <tt>AreaFactor</tt> keyword defines the width of the devices. By default 
+in 2D simulations, Sentaurus Device assumes that the width of the simulated 
+device is 1&nbsp;&mu;m such that the simulated current has the unit of A/&mu;m.</p>
+
+<p>In mixed mode, however, when currents from different devices interact, they must be scaled 
+according to the actual device widths. In this example, the actual device width is set to 
+5&nbsp;&mu;m for the NMOS and 10&nbsp;&mu;m for the PMOS.</p>
+
+<p>In the <tt>File</tt> section, the same root names for the output files, 
+represented by the Sentaurus Workbench parameters <tt>@tdrdat@</tt> and 
+<tt>@plot@</tt>, are specified in both NMOS and PMOS device definitions. 
+The conflict will be resolved when the instances of the devices are defined 
+in the circuit. Sentaurus Device automatically adds the name of the instance 
+in front of the given root name to make the saved file names unique.</p>
+
+<!--=========================-->
+<h2>3.2.2 Global Output File</h2>
+
+<pre>
+File{
+   Output = "@log@"
+}
+</pre>
+
+<p>In single-device simulations, the <tt>File</tt> section specifies the input 
+and output files of the simulation (see <a href="sd_1.html#File">Section&nbsp;1.2.1 File Section</a>).</p>
+
+<p>In mixed-mode simulations with multiple devices, the <tt>File</tt> section 
+can be placed either inside a <tt>Device</tt> definition (for example, the 
+NMOS or PMOS definition) or outside of any <tt>Device</tt> definition. The 
+(output) files specified in the global <tt>File</tt> section are used by all 
+<tt>Device</tt> sections.</p>
+
+<p>In this example, the <tt>Output</tt> file specified in the global <tt>File</tt> 
+section, represented by the Sentaurus Workbench parameter <tt>@log@</tt>, is 
+used by both the NMOS and PMOS definitions.</p>
+
+<!--=========================-->
+<h2>3.2.3 Global Plot Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/vtc_des.cmd" startExpr="Plot{*" endExpr="}*" -->
+<pre>
+Plot{
+    eDensity hDensity
+    eCurrent hCurrent
+    ElectricField eEnormal hEnormal
+    eQuasiFermi hQuasiFermi
+    Potential Doping SpaceCharge
+    SRH Auger 
+    ImpactIonization
+    eMobility hMobility
+    DonorConcentration AcceptorConcentration
+    Doping
+    eVelocity hVelocity
+}
+</pre>
+<!-- grep end -->
+
+<p>Like the global <tt>File</tt> section, the globally defined <tt>Plot</tt> section is used 
+by all <tt>Device</tt> definitions. In this example, a single (global) <tt>Plot</tt> section 
+is used for both the NMOS and PMOS definitions.</p>
+
+<p class="note">To define a <tt>Plot</tt> section that is valid only for a specific 
+<tt>Device</tt> definition, place it inside the corresponding definition.</p>
+
+<!--=========================-->
+<a name="System"></a>
+<h2>3.2.4 System Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/vtc_des.cmd" startExpr="System{*" endExpr="}*" -->
+<pre>
+System{
+  Vsource_pset vdd (dd 0) { dc = 0.0 }
+  Vsource_pset vin (in 0) { dc = 0.0 }
+
+  NMOS nmos1 ( &quot;source&quot;=0  &quot;drain&quot;=out &quot;gate&quot;=in &quot;substrate&quot;=0 )
+  PMOS pmos1 ( &quot;source&quot;=dd &quot;drain&quot;=out &quot;gate&quot;=in &quot;substrate&quot;=dd )  
+  Capacitor_pset cout ( out 0 ){ capacitance = 3e-14 }
+
+  Plot &quot;n@node@_sys_des.plt&quot; (time() v(in) v(out) 
+                              i(nmos1,out) i(pmos1,out) i(cout,out) )
+}
+</pre>
+<!-- grep end -->
+
+<p><img src="images/sd_inverter.png" width="350" height="339" alt="Circuit diagram of CMOS inverter" /></p>
+
+<p class="caption">Figure 1. Circuit diagram of CMOS inverter.</p>
+
+<p>The <tt>System</tt> section is necessary only for mixed-mode simulations with multiple elements. 
+Both the circuit elements and their mutual connections (or the netlist) are defined in the 
+<tt>System</tt> section.</p> 
+
+<p>The keyword <tt>Vsource_pset</tt> represents a compact model voltage source (defined in 
+the Sentaurus Device built-in models). The model is used here to define the two voltage 
+sources in the circuit, that is, <tt>vdd</tt> and <tt>vin</tt>. Both voltage sources have two 
+terminals. The <tt>vdd</tt> is connected to nodes <tt>dd</tt> and <tt>0</tt>, which is the 
+<tt>ground</tt>. The <tt>vin</tt> is connected to nodes <tt>in</tt> and <tt>0</tt>.</p>
+
+<p>The two physical device definitions, NMOS and PMOS, defined in the previous <tt>Device</tt> 
+sections are used here to define the two circuit elements, <tt>nmos1</tt> and <tt>pmos1</tt>, 
+respectively. The same device definition can be repeated to define multiple circuit elements, all 
+having identical physical properties but connected to different nodes of the circuit. For example, 
+the NMOS definition can be used to define elements such as <tt>nmos1</tt>, <tt>nmos2</tt>, and 
+<tt>nmos3</tt>.</p>
+
+<p>The electrodes of the physical device defined in the <tt>Electrode</tt> section of the 
+<tt>Device</tt> section are all connected to a node of the circuit, for example, 
+<tt>&quot;source&quot;=0 &quot;drain&quot;=out</tt>.</p>
+
+<p>The keyword <tt>Capacitor_pset</tt> represents a compact model capacitor, which is used in 
+this example to define a lumped capacitor load, <tt>cout</tt>, in the circuit.</p>
+
+<p>The <tt>Plot</tt> statement inside the <tt>System</tt> section allows voltages and currents 
+at selected nodes of the circuit to be recorded. To record voltage, specify the node name. To 
+record current, specify both the element and the node name through which the current flows.</p>
+
+<!--=========================-->
+<a name="Math"></a>
+<h2>3.2.5 Math Section</h2>
+      
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/vtc_des.cmd" startExpr="Math{*" endExpr="}*" -->
+<pre>
+Math{
+  Extrapolate
+  RelErrControl
+  Digits=4
+  Notdamped=50
+  Iterations=12
+  Transient=BE
+  Method=Blocked
+  SubMethod=ParDiSo
+}
+</pre>
+<!-- grep end -->
+
+<p>In mixed-mode simulations, the <tt>Blocked</tt> linear solver is recommended to 
+solve the circuit linear system equations. In contrast, to solve the large sparse 
+linear equation system on a numerically simulated device level, the <tt>ParDiSo</tt> 
+linear solver is used. For transient simulations, the backward Euler method is 
+activated using <tt>Transient=BE</tt>.</p>
+
+<!--=========================-->
+<a name="Solve"></a>
+<h2>3.2.6 Solve Section</h2>
+      
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/vtc_des.cmd" startExpr="Solve{*" endExpr="}*" -->
+<pre>
+Solve{  
+  NewCurrentPrefix=&quot;init&quot;
+  Coupled(Iterations=100){ Poisson }
+  Coupled{ Poisson Electron Hole Contact Circuit }
+
+  Quasistationary( 
+     InitialStep=1e-3 Increment=1.35 
+     MinStep=1e-5 MaxStep=0.05 
+     Goal{ Parameter=vdd.dc Voltage= 1.5 } 
+  ){ Coupled{ nmos1.poisson nmos1.electron nmos1.hole nmos1.contact 
+              pmos1.poisson pmos1.electron pmos1.hole pmos1.contact
+              circuit }
+  }
+
+  NewCurrentPrefix=&quot;&quot;
+  Quasistationary( 
+     InitialStep=1e-3 Increment=1.35 
+     MinStep=1e-5 MaxStep=0.01 
+     Goal{ Parameter=vin.dc Voltage= 1.5 } 
+  ){ Coupled{ nmos1.poisson nmos1.electron nmos1.hole nmos1.contact 
+              pmos1.poisson pmos1.electron pmos1.hole pmos1.contact
+              circuit }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>In mixed-mode simulations, other sets of equations must be solved in addition to 
+the equations solved for single devices, for example, the Poisson equation and the 
+carrier continuity equations. The pair of statements in the <tt>Coupled</tt> statement 
+(<tt>Contact</tt> and <tt>Circuit</tt>) specifies explicitly the set of equations 
+to be included in the solution.</p>
+
+<p class="note">In mixed-mode simulations, the inclusion is performed by default, 
+unless the Poisson equation is the only equation to be solved.</p>
+
+<p>In the <tt>Goal</tt> statement of the two <tt>Quasistationary</tt> commands, the ramping 
+targets are <tt>vdd.dc</tt> and <tt>vin.dc</tt>, which are model parameters defining the 
+voltages of the corresponding voltage sources. Since these two voltage sources are connected 
+to nodes in the circuit, the equivalent of these statements ramps up the nodal voltages.</p>
+
+<p>In the last two <tt>Coupled</tt> statements, the device names (<tt>nmos1</tt> and <tt>pmos1</tt>) 
+restrict the set of equations to be applied to a specific device in the simulation. 
+In this example, the electron continuity equation is solved for the <tt>nmos1</tt> device, and 
+the hole continuity equation is solved only for the <tt>pmos1</tt> device.</p>
+
+<p>The two <tt>Quasistationary</tt> commands first switch on the power-supply 
+voltage source <tt>vdd</tt> (from 0&nbsp;V to 1.5 V) and then ramp up the input-signal 
+voltage source <tt>vin</tt>, which also increases from 0 V to 1.5 V.</p>
+
+<p><img src="images/sd_vtc.png" width="537" height="499" alt="VTC curve for CMOS inverter" /></p>
+
+<p class="caption">Figure 2. VTC curve for CMOS inverter.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Transient Sweep</h1>
+
+<p>In Sentaurus Device, transient simulations are performed using the <tt>Transient</tt> command 
+in the <tt>Solve</tt> section. The command can be used in both single-device simulations and 
+mixed-mode circuit-device simulations.</p>
+
+<p>The command file to simulate the inverter transient switching behavior, featured in this 
+section, is available within the same Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/sdevice/CMOSInverter</tt>. The transient simulation 
+is performed by the second Sentaurus Device tool instance labeled <tt>sdevice1</tt>.</p>
+
+<p>Most of the file for the transient simulation is discussed in 
+<a href="#1">Section 3.1 Overview</a> and <a href="#2">Section&nbsp;3.2 Mixed-Mode Simulations</a>, 
+therefore, it is not repeated here. Only sections that differ from the VTC step are discussed here.</p>
+
+<!--=========================-->
+<h2>3.3.1 System Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/switching_des.cmd" startExpr="System{*" endExpr="}*"-->
+<pre>
+System{
+  Vsource_pset vdd (dd 0) { dc = 0.0 }
+  Vsource_pset vin (in 0) { 
+    pulse = (0.0       # dc
+             1.5       # amplitude
+             10e-12    # td
+             10e-12    # tr
+             10e-12    # tf
+             60e-12    # ton
+            140e-12)   # period 
+  }
+
+  NMOS nmos1 ( &quot;source&quot;=0  &quot;drain&quot;=out &quot;gate&quot;=in &quot;substrate&quot;=0 )
+  PMOS pmos1 ( &quot;source&quot;=dd &quot;drain&quot;=out &quot;gate&quot;=in &quot;substrate&quot;=dd )  
+  Capacitor_pset cout ( out 0 ){ capacitance = 3e-14 }
+
+  Plot &quot;n@node@_sys_des.plt&quot; (time() v(in) v(out) 
+                              i(nmos1,out) i(pmos1,out) i(cout,out) )
+}
+</pre>
+<!-- grep end -->
+
+<p>In the previous example (see <a href="#2">Section&nbsp;3.2 Mixed-Mode Simulations</a>), 
+the input signal <tt>vin</tt> was defined as a static voltage source in the <tt>System</tt> 
+section (see <a href="#System">Section&nbsp;3.2.4 System Section</a>) whose initial 
+value was 0.0&nbsp;V and that was then ramped up to 1.5&nbsp;V using the <tt>Quasistationary</tt> 
+command in the <tt>Solve</tt> section (see <a href="#Solve">Section&nbsp;3.2.6 Solve Section</a>).</p>
+
+<p>In this example, <tt>vin</tt> is defined as a time-dependent voltage source that generates 
+a pulse train, as seen in Figure 3.</p> 
+
+<p>Other time-dependent signals, such as sinusoids, can be defined as well.</p>
+
+<p><a href="images/sd_switch_new.png"><img src="images/sd_switch_new.png" width="550" 
+alt="Switching characteristics of CMOS inverter" /></a></p>
+
+<p class="caption">Figure 3. Switching characteristics of CMOS inverter: 
+input voltage (black), output voltage (red), and current flowing through 
+NMOS transistor (blue). (Click image for full-size view.)</p>
+
+<!--=========================-->
+<h2>3.3.2 Solve Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/CMOSInverter/switching_des.cmd" startExpr="Solve{*" endExpr="}*"-->
+<pre>
+Solve{  
+  NewCurrentPrefix=&quot;init_&quot;
+  Coupled(Iterations=100){ Poisson }
+  Coupled{ Poisson Electron Hole Contact Circuit }
+
+  Quasistationary( 
+     InitialStep=1e-3 Increment=1.35 
+     MinStep=1e-5 MaxStep=0.05 
+     Goal{ Parameter=vdd.dc Voltage= 1.5 } 
+  ){ Coupled{ nmos1.poisson nmos1.electron nmos1.hole nmos1.contact 
+              pmos1.poisson pmos1.electron pmos1.hole pmos1.contact
+              circuit }
+  }
+
+  NewCurrentPrefix=&quot;&quot;
+  Transient (
+     InitialTime=0 FinalTime=200e-12
+     InitialStep=1e-12 Increment=1.3
+     MaxStep=5e-12 MinStep=1e-15
+     TurningPoints (
+     	 ( Condition ( Time ( 1e-11 ; 8e-11 ; 1.5e-10 ) ) Value= 3.0e-13 )
+     	 ( Condition ( Time ( Range= ( 1e-11 2e-11 ) ; Range= ( 8e-11 9e-11 ) ; 
+     	 	Range= ( 1.5e-10 1.6e-10 ) ) ) Value= 1.0e-12 )
+     )
+  ){ Coupled{ nmos1.poisson nmos1.electron nmos1.hole nmos1.contact 
+              pmos1.poisson pmos1.electron pmos1.hole pmos1.contact
+              circuit }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>The target of a transient sweep is <tt>FinalTime</tt>. Like the parameters specified in the 
+<tt>Quasistationary</tt> command, parameters specified in the <tt>Transient</tt> command, 
+for example, <tt>InitialTime</tt> and <tt>FinalTime</tt>, control the sweeping of the 
+time and check the convergence of the solution. The default unit of these parameters is second.</p>
+
+<p>Unlike the <tt>Quasistationary</tt> command, no <tt>Goal</tt> statement is necessary in a 
+<tt>Transient</tt> sweep.</p> 
+
+<p>The <tt>TurningPoints</tt> statement is used to improve the solution accuracy when 
+the input signal changes with a steep gradient. Here, the first condition initiates 
+the computation of the transient for the time points where the rises and falls of the 
+input signal start and limits the time step to the value given by <tt>Value</tt>. The 
+second condition limits the advancing time step during the entire rise and fall ranges 
+of the input signal. Here, <tt>Value</tt> indicates the  maximum time step achievable 
+within the specified interval.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>3.4 Small-Signal AC Analysis</h1>
+
+<p>In a small-signal analysis simulation, Sentaurus Device computes the 
+<strong>Y</strong>-matrix that describes how the currents in a circuit would 
+react if the applied voltages at different contact nodes of the circuit 
+receive a small perturbation \(δv\):</p>
+
+<p>\[ δi = Y · δv = ( A + j · ω · C ) · δv \]</p>
+
+<p>The <strong>Y</strong>-matrix measures the small current changes \(δi\), 
+in response to a small voltage perturbation \(δv\).</p>
+
+<p>The complex <strong>Y</strong>-matrix can be split into two parts. The real part 
+\(A\) is the <em>conductance matrix</em> that measures the in-phase 
+response of the current with the voltage. The imaginary part \(C\) is the 
+<em>capacitance matrix</em> that measures the out-phase response. The symbol \(j\) 
+denotes the imaginary unit and \(ω\) denotes the frequency of the small-signal change.</p>
+
+<p>For a typical MOS device with four terminals, gate (g), drain (d), source (s), and body (b), 
+the \(A\) and \(C\) matrices have the following elements:</p>
+
+<p>\[  [\table i_g; i_d; i_s; i_b] = 
+( [\table a_g_g, a_g_d, a_g_s, a_g_b; a_d_g, a_d_d, a_d_s, a_d_b ; a_s_g, a_s_d, a_s_s, a_s_b; a_b_g, a_b_d, a_b_s, a_b_b ] 
+ + j · ω · [\table c_g_g, c_g_d, c_g_s, c_g_b; c_d_g, c_d_d, c_d_s, c_d_b ; c_s_g, c_s_d, c_s_s, c_s_b; c_b_g, c_b_d, c_b_s, c_b_b ]) · 
+[\table v_g; v_d; v_s; v_b]
+\]</p>
+
+<p>For example, the \(a_d_g\) element represents the in-phase drain-current response 
+to a small gate-voltage change, which is by definition the transconductance of the 
+MOS device. Similarly, \(c_b_g\) represents the out-phase body-current response to 
+a small change in gate voltage. This quantity corresponds to the gate-to-body 
+capacitance. In the <tt>.plt</tt> file, \(a_d_g\) corresponds to <tt>a(d,g)</tt>.</p>
+
+<p>Sentaurus Device performs small-signal analyses in the mixed-mode environment
+(see <a href="#2">Section&nbsp;3.2 Mixed-Mode Simulations</a>), which makes it
+possible to include, for example, external parasitics or matching networks in
+the analyses.</p>
+
+<p>The small-signal analysis command files of Sentaurus Device featured in 
+this section are used in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/sdevice/AC</tt>.</p>
+
+<p>To work with the project, start Sentaurus Workbench and copy the 
+<tt>AC</tt> project to a local directory. The target directory must 
+reside under the Sentaurus Workbench working directory to which the environment 
+variable <tt>$STDB</tt> points. For details about this environment variable, see 
+<a href="../swb/swb_01.html#2">Section&nbsp;1.2 Starting Sentaurus Workbench</a>.</p>
+
+<p>The Sentaurus Device primary file <tt>AC_des.cmd</tt> from this project 
+includes commands to conduct a small-signal AC analysis on a MOSFET device.</p> 
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/AC/AC_des.cmd">
+AC_des.cmd</a>.</p>
+
+<!--========================-->
+<h2>3.4.1 Device Section</h2>
+      
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/AC_des.cmd" startExpr="Device*" lines=1 footer="  ...\n}" -->
+<pre>
+Device &quot;MOS&quot; {
+  ...
+}
+</pre>
+<!-- grep end -->
+
+<p>Since small-signal analyses are performed in the mixed-mode environment, one or more 
+<tt>Device</tt> sections are required to define the physical devices.</p>
+
+<!--========================-->
+<h2>3.4.2 Global Output File Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/AC_des.cmd" startExpr="File {*" endExpr="}*" -->
+<pre>
+File {
+  Output    = &quot;@log@&quot;
+  ACExtract = &quot;@acplot@&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>The file name for the AC analysis output is declared in the global 
+<tt>File</tt> section. If specified by the special Sentaurus Workbench 
+parameter <tt>@acplot@</tt> as shown here, it will be expanded by the 
+preprocessor to <tt>n2_ac_des.plt</tt>, where <tt>n2</tt> is the actual 
+Sentaurus Workbench node number.</p>
+
+<!--========================-->
+<h2>3.4.3 System Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/AC_des.cmd" startExpr="System {*" endExpr="}*" -->
+<pre>
+System {
+  *-Physical devices:
+  MOS nmos1 ( &quot;source&quot;=s  &quot;drain&quot;=d &quot;gate&quot;=g &quot;substrate&quot;=b )
+  
+  *-Lumped elements:
+  Vsource_pset vs (s 0) { dc = 0.0 }
+  Vsource_pset vg (g 0) { dc = 0.0 }   
+  Vsource_pset vb (b 0) { dc = 0.0 }  
+  Vsource_pset vd (d 0) { dc = 0.0 }
+}
+</pre>
+<!-- grep end -->
+
+<p>For small-signal analysis simulations, an attached voltage source is required for each terminal 
+if the terminal is to be included in the AC analysis.</p>
+
+<!--========================-->
+<a name="344"></a>
+<h2>3.4.4 Solve Section</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/AC/AC_des.cmd" startExpr="Solve {*" endExpr="}*" -->
+<pre>
+Solve {
+  
+  NewCurrentPrefix=&quot;init_&quot;
+  Coupled(Iterations=100){ Poisson }
+  Coupled{ Poisson Electron Hole  }
+  
+  Quasistationary ( 
+    InitialStep=0.1 Increment=1.3
+    MaxStep=0.5 Minstep=1.e-5  
+    Goal { Parameter=vg.dc Voltage=-3.0 }
+  ){ Coupled { Poisson Electron Hole } }
+  
+  NewCurrentPrefix=&quot;&quot;
+  Quasistationary (
+    InitialStep=0.01 Increment=1.3
+    MaxStep=0.05 Minstep=1.e-5 
+    Goal { Parameter=vg.dc Voltage=3.0 }
+  ){ ACCoupled (
+      StartFrequency=1e6 EndFrequency=1e6 NumberOfPoints=1 Decade
+      Node(s d g b) Exclude(vs vd vg vb) 
+      ACCompute (Time = (Range = (0 1)  Intervals = 40))
+  ){ Poisson Electron Hole }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>The initial <tt>Quasistationary</tt> command biases the device to the starting gate voltage 
+for the C&ndash;V sweep.</p>
+
+<p>The <tt>ACCoupled</tt> statement activates the small-signal analysis during the next 
+<tt>Quasistationary</tt> sweep.</p> 
+
+<p>In this example, the AC analysis is performed at a single frequency (1 MHz) only. For a 
+frequency sweep, the start and end frequencies as well as the steps of frequencies must 
+be defined. The keyword <tt>Decade</tt> or <tt>Linear</tt> determines whether the frequency 
+points are distributed equidistantly on a logarithmic or linear scale, respectively.</p>
+
+<p>The node list in the <tt>Node</tt> statement declares which nodes must be included in 
+the <strong>Y</strong>-matrix calculation.</p>
+
+<p>All voltage sources attached to nodes mentioned in the <tt>Node</tt> list must be excluded 
+from the AC analysis, since a voltage source represents a short circuit for an AC signal. 
+To exclude a given voltage source, include it in the <tt>Exclude</tt> statement.</p>
+
+<p>The (optional) <tt>ACCompute</tt> statement enforces that the AC analysis is performed on 
+a set of predefined bias points. However, Sentaurus Device can compute intermediate steps to 
+ensure convergence. For large structures and simulations with slow convergence, <tt>ACCompute</tt> 
+can help to speed up the simulation considerably by suppressing the AC analysis at intermediate 
+points.</p>
+
+<p><a href="images/sd_cv.png"><img src="images/sd_cv.png" width="550" 
+alt="Various capacitances as function of gate voltage" /></a></p>
+
+<p class="caption">Figure 4. Total-gate (red), gate-to-contact (blue), and 
+gate-to-body (green) capacitance as a function of gate voltage. (Click image 
+for full-size view.)</p>
+
+<!--========================-->
+<h2>3.4.5 AC Analysis With Implicitly Defined Circuit</h2>
+
+<p>You can set up a small-signal AC analysis in a simplified way without specifying 
+a circuit explicitly. The keyword <tt>ImplicitACSystem</tt> in the <tt>Math</tt> section 
+defines the circuit implicitly and lets you perform a small-signal analysis without the 
+<tt>Device</tt> and <tt>System</tt> sections. The <tt>ACCoupled</tt> statement must be 
+defined as in <a href="#344">Section&nbsp;3.4.4 Solve Section</a>. The simulation is 
+performed such that all voltage sources are excluded from the AC analysis.</p>
+
+<p>The implicitly used circuit nodes are named automatically and are used to address the 
+output data. The total gate capacitance in the <tt>.plt</tt> file is named, for example, 
+<tt> c(N_gate, N_gate)</tt>.</p> 
+
+<p>The second Sentaurus Device tool instance in the project 
+<tt>Applications_Library/GettingStarted/sdevice/AC</tt> uses <tt>ImplicitACSystem</tt>. 
+The second Sentaurus Visual tool instance uses the automatically named output 
+quantities to plot a C&ndash;V curve.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>3.5 Compact Models</h1>
+
+<p>In Sentaurus Device mixed-mode simulations, several compact models, typically 
+used in circuit simulations, are available. Such models range from basic elements 
+such as voltage and current sources to sophisticated compact models for power and 
+submicron device simulation. This section demonstrates the use of such models.</p>
+
+<p>A project similar to the inverter example in <a href="#3">Section 3.3 Transient Sweep</a> 
+is given in the directory <tt>Applications_Library/GettingStarted/sdevice/inverter_compact_model</tt>. 
+Therein, the NMOS and PMOS devices of the inverter are simulated using the BSIM3 model.</p>
+
+<!--=====================-->
+<h2>3.5.1 Sentaurus spice2sdevice Utility</h2>
+
+<p>Model cards contain parameter sets, mostly in SPICE format, for specific devices 
+such as NMOS and PMOS. The <tt>spice2sdevice</tt> utility can convert simple model 
+cards, as well as subcircuit and SPICE circuit files, into files compatible with 
+Sentaurus Device.</p>
+
+<p>In this example, the translation is accomplished within Sentaurus Workbench using 
+a shell tool instance labeled <tt>SPtoSD</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/inverter_compact_model/SPtoSD_csh.cmd">
+SPtoSD_csh.cmd</a>.</p>
+
+<p>The command:</p> 
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/inverter_compact_model/SPtoSD_csh.cmd" startExpr="spice2sde*" lines=1 -->
+<pre>
+spice2sdevice -m -o @pwd@/models/models.scf @pwd@/MODELS.cir
+</pre>
+<!-- grep end -->
+
+<p>translates the BSIM3 parameter sets of the Synopsys PrimeSim&trade; HSPICE&reg; model cards contained 
+in the file <tt>MODELS.cir</tt> in the project directory into Sentaurus Device parameter sets, 
+and writes the result into the file <tt>models.scf</tt> in the directory <tt>models</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/inverter_compact_model/MODELS.cir">
+MODELS.cir</a> and the file 
+<a href="../../Applications_Library/GettingStarted/sdevice/inverter_compact_model/models/models.scf">
+models.scf</a>.</p>
+
+<p>The option <tt>-m</tt> indicates that only model cards are contained in the 
+file to be translated. The resulting Sentaurus Device parameter sets can be 
+inspected in <tt>models.scf</tt>. The command-line options for <tt>spice2sdevice</tt> are:</p>
+
+<pre>
+-b             Use Berkeley SPICE models instead of PrimeSim HSPICE.
+               (applies only to MOSFETs level 1, 2, and 3).
+-c             Translate a SPICE circuit file.
+-m             Translate a SPICE model file.
+-o &lt;filename&gt;  Store the Sentaurus Device circuit file in &lt;filename&gt;.
+-d             Print additional debug information.
+-v             Show version information.
+-h             Show this help message.
+</pre>
+
+<!--=====================-->
+<h2>3.5.2 Path to Model and Circuit Information: SpicePath</h2>
+
+<p>In the global <tt>File</tt> section of the Sentaurus Device command file, a 
+directory can be specified as <tt>SpicePath</tt>. This directory is scanned by 
+Sentaurus Device for files with the extension <tt>.scf</tt>. Such files can 
+contain circuit parts to be used in the <tt>System</tt> section of the command 
+file or user-defined compact model parameter sets from model cards:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/inverter_compact_model/vtc_des.cmd" startExpr="File*" endExpr="}*" -->
+<pre>
+File{
+   Output = &quot;@log@&quot;
+   SpicePath= &quot;@pwd@/models&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>The project directory, represented by the Sentaurus Workbench variable <tt>@pwd@</tt>, 
+contains a subdirectory <tt>models</tt> with the parameter file <tt>models.scf</tt>. 
+As previously discussed, this file is generated with the <tt>spice2sdevice</tt> utility 
+from the PrimeSim HSPICE model card <tt>MODELS.cir</tt>. Alternatively, a model parameter set 
+can be provided manually, for example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/inverter_compact_model/models/models.scf" startExpr="PSET*" lines=9 footer="...}" -->
+<pre>
+PSET nmos_bsim3
+  DEVICE BSIM3
+  PARAMETERS
+    a0 = 0.3496967
+    a1 = 0.02778747
+    a2 = 0.9
+    ags = 0.1
+    at = 22400
+    b0 = 0.546
+...}
+</pre>
+<!-- grep end -->
+
+<p>In the first line, you define a name for the model (here, <tt>nmos_bsim3</tt>). 
+The second line states that the model is based on the BSIM3 model. Next is a 
+list of the model parameters with relative values. The number of parameters can be 
+several hundreds for a complete model.</p>
+
+<!--=====================-->
+<h2>3.5.3 Instances of Compact Models: Instance Parameters</h2>
+
+<p>The <tt>System</tt> section of the Sentaurus Device command file is:</p>  
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/inverter_compact_model/vtc_des.cmd" startExpr="System*" endExpr="}*" -->
+<pre>
+System{
+  Vsource_pset vdd (dd 0) { dc = 0.0 }
+  Vsource_pset vin (in 0) { dc = 0.0 }
+  Vsource_pset vss (ss 0) { dc = 0.0 }
+
+  nmos_bsim3 mosn1 ( out  in  ss  ss ) { l=0.30u w=@wnmos@ } 
+  pmos_bsim3 mosp1 ( out  in  dd  dd ) { l=0.25u w=@wpmos@ }
+
+  Capacitor_pset cout ( out 0 ) { capacitance = 20e-15 }
+
+  Plot &quot;n@node@_sys_des.plt&quot; (time() v(dd) v(in) v(out) 
+                              i(mosn1,out) i(mosp1,out) i(cout,out) )
+}
+</pre>
+<!-- grep end -->
+
+<p>It is similar to that in <a href="#System">Section 3.2.4 System Section</a>. 
+The only difference here is that instances of the compact models defined in the file 
+<tt>model.scf</tt> replace the corresponding TCAD device instances. For the NMOS device, 
+the instance <tt>mosn1</tt> of an <tt>nmos_bsim3</tt> model is specified and connected to 
+appropriate contact nodes. The ordering of the contacts corresponds to 
+<tt>(drain gate source sub)</tt> in the BSIM3 model. Similarly, the PMOS device of the 
+inverter is given by the instance <tt>mosp1</tt> of a <tt>pmos_bsim3</tt> model.</p>
+
+<p>The compact model parameters specified in the file <tt>model.scf</tt> are valid for 
+all instances of that model. Parameters specific to an individual instance of the model 
+can be defined in braces &ndash; {} &ndash; directly in the <tt>System</tt> section of 
+the command file.</p>
+
+<p>In this example, the gate length <tt>l</tt> and the device width <tt>w</tt> are 
+specified for both the NMOS <tt>mosn1</tt> and the PMOS <tt>mosp1</tt>.</p>
+
+<p>For a complete list of available models and their instance parameters, refer to the 
+<cite>Compact Models User Guide</cite>. Further model-specific information can be found 
+in the PrimeSim HSPICE documentation.</p>
+
+<p>The results for the VTC as well as the switching behavior of the MOS inverter are shown 
+in Figure&nbsp;5 and Figure&nbsp;6, respectively.</p>
+
+<p><img src="images/sd_vtc_spice.png" width="464" height="394" alt="VTC for CMOS inverter" /></p>
+
+<p class="caption">Figure 5. VTC for CMOS inverter using MOS compact models.</p>
+
+<p><img src="images/sd_switching_spice.png" width="543" height="430" 
+alt="CMOS inverter switching characteristics" /></p>
+
+<p class="caption">Figure 6. Switching characteristics of CMOS inverter using 
+MOS compact models: input voltage (black),  output voltage (red), and current flowing 
+through NMOS transistor (blue).</p>
+
+<p>The model parameters used are for demonstration purposes only.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>3.6 PrimeSim HSPICE Netlists</h1>
+
+<p>In Sentaurus Device mixed-mode simulations, PrimeSim HSPICE netlists are accepted 
+for a subset of the PrimeSim HSPICE language. Such netlists must be provided in a 
+separate file and are referenced in the <tt>System</tt> section of a 
+mixed-mode simulation.</p>
+
+<p>A corresponding demonstration example of a ring oscillator is available in 
+the <tt>Applications_Library/GettingStarted/sdevice/ring_oscillator</tt> directory.</p>
+
+<p><a href="images/sd_ring_oscillator_schematics.png"><img src="images/sd_ring_oscillator_schematics.png" 
+width="550" alt="Five-stage ring oscillator" /></a></p>
+
+<p class="caption">Figure 7. Schematics of a five-stage ring oscillator with 
+delay capacitances. (Click image for full-size view.)</p>
+
+<p>The <tt>System</tt> section of the Sentaurus Device command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/osci_des.cmd">
+osci_des.cmd</a> for this ring oscillator reads:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/osci_des.cmd" startExpr="System*" endExpr="}" -->
+<pre>
+System{
+  
+  Netlist = &quot;@pwd@/stages.cir&quot;
+  nmos &quot;x1.m1&quot; ( &quot;source&quot;=gnd  &quot;drain&quot;=2 &quot;gate&quot;=1 &quot;substrate&quot;=gnd ) 
+               { Physics {AreaFactor= 0.2} }
+  pmos &quot;x1.m2&quot; ( &quot;source&quot;=nvd  &quot;drain&quot;=2 &quot;gate&quot;=1 &quot;substrate&quot;=nvd ) 
+               { Physics {AreaFactor= 0.3} }
+  Capacitor_pset C1 ( 2 gnd ){ capacitance = 1e-15 }
+  Vsource_pset vdd (nvd gnd) { dc =0 }
+
+  initialize ( 1=@&lt;vdd/2&gt;@ 2=@&lt;vdd/2&gt;@ 3=@&lt;vdd/2&gt;@ 4=@&lt;vdd/2&gt;@ 5=@&lt;vdd/2&gt;@ )
+  Plot &quot;n@node@_sys_des.plt&quot; (time() v(nvd) v(1) v(2) v(3) v(4) v(5)
+                              i(vdd,nvd) 
+                              i(&quot;x1.m1&quot;,2) i(&quot;x1.m2&quot;,2)
+                              i(&quot;x2.m1&quot;,3) i(&quot;x2.m2&quot;,3)
+                              i(&quot;x3.m1&quot;,4) i(&quot;x3.m2&quot;,4)
+                              i(&quot;x4.m1&quot;,5) i(&quot;x4.m2&quot;,5)
+                              i(&quot;x5.m1&quot;,1) i(&quot;x5.m2&quot;,1)
+                             )
+  set(gnd=0)
+}
+</pre>
+<!-- grep end -->
+
+<p>The corresponding PrimeSim HSPICE netlist 
+<a href="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/stages.cir">
+stages.cir</a>, referenced in the <tt>System</tt> section by:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/osci_des.cmd" startExpr="System*" endExpr="*Netlist*" -->
+<pre>
+System{
+  
+  Netlist = &quot;@pwd@/stages.cir&quot;
+</pre>
+<!-- grep end -->
+<pre>
+  ...
+}
+</pre>
+
+<p>describes the last four stages of the ring oscillator. The NMOS and PMOS of the 
+first stage are simulated by the drift-diffusion model for the physical devices 
+<tt>x1.m1</tt> and <tt>x1.m2</tt>. They are defined in the corresponding 
+<tt>Device</tt> sections of the command file as usual. The netlist 
+<tt>stages.cir</tt> contains the following elements:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/stages.cir" startExpr=".TITLE*" endExpr="*.END" -->
+<pre>
+.TITLE 'Five Stage Ring Oscillator'
+
+.MODEL nMOS_L54 NMOS Level=54
++ version =    4.6
++ vth0=0.22
+
+.MODEL pMOS_L54 PMOS Level=54
++ version =    4.5
++ vth0=-0.22
+
+.GLOBAL gnd
+.PARAM L=130n WP=150n WN=100n
+
+.SUBCKT INVERTER IN OUT DD SS
+*    Drain  Gate  Source  SubStrate  Model       L        W      
+M1   OUT    IN    DD      DD         pMOS_L54  L=L  W='2*WP'
+M2   OUT    IN    SS      SS         nMOS_L54  L=L  W='2*WN'
+C1   OUT    gnd   1f
+.ENDS INVERTER
+ 
+*X1 defined with physical devices in System section
+X2 2  3  nvd  gnd INVERTER  
+X3 3  4  nvd  gnd INVERTER  
+X4 4  5  nvd  gnd INVERTER  
+X5 5  1  nvd  gnd INVERTER  
+
+.END
+</pre>
+<!-- grep end -->
+
+<p>The netlist starts with a title line and ends with the <tt>.END</tt> statement. 
+Everything following <tt>.END</tt> is ignored.</p>
+
+<p>The <tt>.GLOBAL</tt> statement specifies the node names (here, <tt>gnd</tt>) 
+globally available across all subcircuits.</p>
+
+<p>The <tt>.MODEL</tt> statements define the SPICE model specifications for the devices 
+<tt>nMOS_L54</tt> and <tt>pMOS_L54</tt>, which are defined to be the PrimeSim HSPICE Level&nbsp;54 
+model along with some explicitly set model parameters. The corresponding settings for 
+NMOS and PMOS are shown here (the plus sign is the line continuation character).</p>
+
+<p>PrimeSim HSPICE parameters are names associated with a value. They are specified using 
+the <tt>.PARAM</tt> statement. Numeric and string parameters are supported.</p>
+
+<p>The following statement specifies values for L, WP, and WN:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/stages.cir" startExpr=".PARAM*" lines=1 -->
+<pre>
+.PARAM L=130n WP=150n WN=100n
+</pre>
+<!-- grep end -->
+
+<p>The values can be specified in decimal form or together with scale factors 
+such as <tt>n</tt> for 10<sup>&ndash;9</sup> (nano). For a list of scale factors, 
+refer to the <cite>Sentaurus&trade; Device User Guide</cite>.</p>
+
+<p>Subcircuits are typically used for reusable cells. Their general syntax is:</p>
+
+<pre>
+.SUBCKT name n1 n2 ... [param1= ...] {param2= ...] ...
+.ENDS
+</pre>
+
+<p>Here, a stage of the ring oscillator containing an inverter and a delay capacitance 
+is defined as subcircuit <tt>INVERTER</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/stages.cir" startExpr=".SUBCKT*" endExpr=".ENDS*" -->
+<pre>
+.SUBCKT INVERTER IN OUT DD SS
+*    Drain  Gate  Source  SubStrate  Model       L        W      
+M1   OUT    IN    DD      DD         pMOS_L54  L=L  W='2*WP'
+M2   OUT    IN    SS      SS         nMOS_L54  L=L  W='2*WN'
+C1   OUT    gnd   1f
+.ENDS INVERTER
+</pre>
+<!-- grep end -->
+
+<p>As exemplified for the width <tt>W</tt> of the MOS devices by <tt>'2*WP'</tt> 
+and <tt>'2*WN'</tt>, simple arithmetic operations can be performed in the PrimeSim HSPICE 
+netlist. For a complete set of available arithmetic expressions and functions, 
+refer to the <cite>Sentaurus&trade; Device User Guide</cite>.</p>
+
+<p>The remaining elements in the <tt>System</tt> section of the <tt>MixedMode</tt> 
+command file are a standard voltage source <tt>vdd</tt> together with various node 
+initialization voltages and a <tt>Plot</tt> statement. Therein, element names contained 
+in a subcircuit such as <tt>&quot;x3.m1&quot;</tt> are referenced by combining the 
+subcircuit name (<tt>x3</tt>) and the device name (<tt>m1</tt>). The combined name 
+must be used within double quotation marks.</p>
+
+<p>For the Sentaurus Device simulation, the PrimeSim HSPICE netlist of the <tt>System</tt> 
+section is translated internally by the <tt>spice2sdevice</tt> utility, and the resulting 
+elements in Sentaurus Device syntax are substituted for the PrimeSim HSPICE netlist. These 
+elements can be checked in the log file of the Sentaurus Device simulation.</p>
+
+<p>Finally, in the <tt>Solve</tt> section, the DC supply voltage is ramped to 2&nbsp;V 
+(represented by the Sentaurus Workbench parameter <tt>@vdd@</tt>), followed by a 
+transient to establish oscillations:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/osci_des.cmd" startExpr="Solve*" endExpr="}" -->
+<pre>
+Solve{  
+  NewCurrentPrefix=&quot;init_&quot;	
+  Coupled { Poisson circuit }
+  Quasistationary ( 
+		InitialStep= 1e-2 Increment= 1.41
+		MinStep= 1e-7     MaxStep= 0.2
+		Goal { parameter= vdd.dc Voltage= @vdd@ }
+	){ Coupled { Poisson Electron Hole circuit} 
+	}
+  
+  NewCurrentPrefix=&quot;&quot;
+  Transient( 
+     InitialTime=0.0 FinalTime= 1e-9
+     InitialStep=5e-13 Increment=1.35 
+     MinStep=1e-13 MaxStep=2e-12
+  ){ Coupled{ poisson electron hole circuit }
+  }
+ System(&quot;rm init_*.plt&quot;) 
+}
+</pre>
+<!-- grep end -->
+
+<p>Starting with the transient simulation, the limitations for the initialized 
+node voltages are removed, and the system can evolve freely. Figure&nbsp;8 shows 
+the resulting waveforms.</p>
+
+<p><a href="images/sd_oscillations.png"><img src="images/sd_oscillations.png" width="550" 
+alt="Five-stage ring oscillator waveforms" /></a></p>
+
+<p class="caption">Figure 8. Voltage and current transients of the first inverter stage: 
+input voltage (solid red), output voltage (solid green), and current flowing through 
+NMOS transistor (dashed light-blue) and PMOS (dashed blue) transistor. (Click image 
+for full-size view.)</p>
+
+<p>You can see that, after a short transient, the feedback loop starts to stabilize 
+and the system begins to oscillate periodically.</p>
+
+<p>As an alternative to the specification in the <tt>System</tt> section, 
+you can declare physical devices in the PrimeSim HSPICE netlist using the statement 
+<tt>.SDEVICE device_name drain gate source bulk</tt>, and use instances of it with 
+subcircuit commands such as <tt>x1 d g s b device_name</tt>.</p>
+
+<p>However, in contrast to the standard specification of physical devices in the 
+<tt>System</tt> section shown here, you cannot use instance-specific <tt>Physics</tt> 
+settings, such as <tt>Areafactor</tt>, for the NMOS <tt>x1.m1</tt> for physical 
+devices instanced in the PrimeSim HSPICE netlist.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/ring_oscillator/osci_des.cmd" startExpr="System*" endExpr="*Physics*" -->
+<pre>
+System{
+  
+  Netlist = &quot;@pwd@/stages.cir&quot;
+  nmos &quot;x1.m1&quot; ( &quot;source&quot;=gnd  &quot;drain&quot;=2 &quot;gate&quot;=1 &quot;substrate&quot;=gnd ) 
+               { Physics {AreaFactor= 0.2} }
+</pre>
+<!-- grep end -->
+<pre>
+...
+}
+</pre>
+
+<p>For a description of the supported subsets of PrimeSim HSPICE specifications and models, 
+refer to the <cite>Sentaurus&trade; Device User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>3.7 Implicit Contact Resistance in Mixed Mode</h1>
+
+<p>To create a small voltage differential between the TCAD device contact and the circuit 
+node to which it is connected, Sentaurus Device adds a very small resistor between the 
+contact and the node. By default, the value of this resistor is 1&nbsp;m&Omega;, but it can 
+be adjusted by using:</p>
+
+<pre>
+Math {
+   MixedModeContactResistance=&lt;float&gt;
+}
+</pre>
+
+<p>The value can be any positive number. If the value is set to zero (default), then 
+the internal 1&nbsp;m&Omega; resistor is used.</p>
+
+<p>In the example located in the directory 
+<tt>Applications_Library/GettingStarted/sdevice/MixedModeContactResistance</tt>, a silicon 
+resistor with an internal resistance of 10&nbsp;&Omega;&mu;m<sup>2</sup> is defined. In 
+experiment 1 of the project, that is, for a device with a 1&nbsp;&mu;m<sup>2</sup> area, the 
+effective resistance computed from I&ndash;V curves in single device mode is 10&nbsp;&Omega; 
+(Rsil), as expected. In mixed mode, it can be observed that there are two 1&nbsp;m&Omega; 
+additional resistors at two contacts (Rext).</p>
+
+<p>Having this resistor gives better convergence of device simulations, as there is some 
+voltage difference between the TCAD device contacts and the connected node. Therefore, 
+it is good to have such a small resistor. However, when an <tt>areafactor</tt> is used, 
+the resistor value might become too small. You can observe that in experiment 3 of the 
+project, where <tt>areafactor=1e4</tt> is used, the added contact resistance is only 
+1e-7&nbsp;&Omega;, which might lead to convergence issues. This issue would not occur if 
+the actual device area was set to 1e4, instead of using <tt>areafactor</tt>. You can 
+observe that the extra resistor is still 1&nbsp;m&Omega; in experiment 5.</p>
+
+<p>The way to correct that is to use <tt>MixedModeContactResistance=1e-3</tt>. You can 
+observe that for both experiments 4 and 6, the extra resistor is 1&nbsp;m&Omega;, giving 
+consistent results whether <tt>areafactor</tt> is used or the actual device area is increased.</p>
+
+<p class="note">Any resistor value defined in the <tt>Electrode</tt> section overrides 
+the value specifed by <tt>MixedModeContactResistance</tt>.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>3.8 Harmonic Balance Simulations</h1>
+
+<p>Sentaurus Device supports harmonic balance (HB) analysis for mixed-mode simulations. 
+HB analysis is a frequency-domain method that solves periodic time-dependent problems. 
+As such, it is computationally more efficient for problems with time constants that 
+differ by orders of magnitude. Moreover, the periodic excitation is not restricted to 
+infinitesimally small amplitudes as assumed for small-signal AC analysis (see 
+<a href="#4">Section&nbsp;3.4 Small-Signal AC Analysis</a>).</p>
+
+<p>Different modes of HB analysis are available:</p>
+
+<ul>
+<li>The multidimensional Fourier transformation (MDFT) mode is suitable for multitone 
+analysis and one-tone analysis.</li>
+<li>The standard discrete Fourier transformation (SDFT) mode supports only one-tone analysis.</li>
+</ul>
+
+<p>The corresponding demonstration examples for these modes are available in the 
+<tt>Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn</tt> project directory.</p>
+
+<p>Click to view the command files for the 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/SDFT_des.cmd">
+SDFT</a>, 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_des.cmd">
+MDFT one-tone</a>, and 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_2Tone_des.cmd">
+MDFT two-tone</a> simulations.</p>
+
+<p class="note">Harmonic balance is not supported for traps or ferroelectrics.</p>
+
+<!--==========================-->
+<h2>3.8.1 Selecting the SDFT Mode or MDFT Mode</h2>
+
+<p>The SDFT mode is the default mode. Using this mode, the mixed-mode circuit can 
+contain the standard SPICE and compact model interface (CMI) models. No special 
+<tt>Math</tt> settings are required for this mode.</p>
+
+<p>As an option, the logarithm of the carrier density can be used as a solution variable. 
+This is beneficial for convergence in some HB simulations in the SDFT mode and MDFT mode.</p>
+
+<p>The <tt>HBPlotFilePerNewton</tt> option requests to save HB <tt>.plt</tt> files for 
+each converged nonlinear solve. This is needed to avoid issues with the subsequent 
+Sentaurus Visual scripts.</p>
+
+<p>The <tt>-NewHBFileNames</tt> option protects from saving HB results in the 
+new unified format.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/SDFT_des.cmd" startExpr="Math*" lines=4 -->
+<pre>
+Math { 
+  HBPlotFilePerNewton	
+  HB {
+    LogDensity    
+</pre>
+<!-- grep end -->
+<pre>
+&nbsp;&nbsp;...
+} 
+</pre>
+
+<p>The MDFT mode is activated by the <tt>MDFT</tt> option in the <tt>HB</tt> section 
+of the global <tt>Math</tt> section. This mode requires compact models defined by the 
+CMI, which support assembly routines in the frequency domain. Some built-in models 
+are available. For details, see the &quot;CMI Models With Frequency-Domain Assembly&quot; 
+section of the <cite>Compact Models User Guide</cite>.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_des.cmd" startExpr="Math*" lines=4 -->
+<pre>
+Math { 
+  HBPlotFilePerNewton	
+  HB { 
+    MDFT  
+</pre>
+<!-- grep end -->
+<pre>
+&nbsp;&nbsp;&nbsp;&nbsp;...
+&nbsp;&nbsp;}
+} 
+</pre>
+
+<!--==========================-->
+<h2>3.8.2 SDFT Simulations</h2>
+
+<p>Click to view primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/SDFT_des.cmd">
+SDFT_des.cmd</a>.</p>
+
+<!--============-->
+<h3>3.8.2.1 System Section</h3>
+
+<p>For SDFT simulations, the <tt>System</tt> section contains standard specifications 
+for a time periodic transient simulation. In this example, this is a sinusoidal voltage 
+source with frequency of <tt>@f1@</tt> applied across a simple p-n diode. The 
+<tt>System</tt> section reads as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/SDFT_des.cmd" startExpr="System*" lines=6 -->
+<pre>
+System {
+  PN pn (cathode=c anode=a)
+  Vsource_pset &quot;va&quot; (a  c) { sine = (0.0 0.0 @f1@ 0 0) }
+  set(c=0)
+  HBPlot &quot;n@node@_hbplot&quot; ( v(a) i(pn a))
+}
+</pre>
+<!-- grep end -->
+
+<p>The <tt>HBPlot ...</tt> command specifies the file prefix for the HB circuit 
+output of the simulation and the quantities to be saved. The syntax is the same 
+as for the corresponding <tt>Plot</tt> statement in standard mixed-mode simulations.</p>
+
+<!--============-->
+<h3>3.8.2.2 Solve Section</h3>
+
+<p>In the <tt>Solve{...}</tt> section of the example, the diode is biased to the DC 
+operation point by standard <tt>Coupled</tt> solutions first. The resulting DC 
+solution is used to initialize the subsequent HB simulation, where the AC signal 
+amplitude is ramped by a <tt>Quasistationary</tt> statement. The self-consistent 
+solution of a given set of equations by the HB simulation is triggered by the 
+<tt>HBCoupled(...){set of equations}</tt> statement:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/SDFT_des.cmd" startExpr="*Quasistationary*" endExpr="*Electron*" startOccurrence=2 -->
+<pre>
+  Quasistationary (
+    InitialStep=1e-3 Increment=1.5
+    MaxStep=@&lt;1.0/25&gt;@ Minstep=1.e-8 
+    Goal {Parameter=&quot;va&quot;.&quot;sine[1]&quot;  Value=@mag@}
+  )  
+  { HBCoupled (
+      Tone ( Frequency = &quot;va&quot;.&quot;sine[2]&quot; NumberOfHarmonics = @NumHarm@ )
+      Initialize = DCMode
+      Method = ILS
+      GMRES ( Tolerance = 1e-5 MaxIterations = 80 Restart = 20 )
+      RhsMin= 5e-3
+  ) { Poisson Electron Hole }
+</pre>
+<!-- grep end -->
+
+<p>In the <tt>HBCoupled</tt> statement, the specification of <tt>Tone</tt> is mandatory. 
+The <tt>Tone</tt> is defined by the frequency parameter of the AC signal (given by the 
+third parameter of the <tt>sine(...)</tt> statement of the voltage source <tt>va</tt> 
+in the <tt>System</tt> section) and the number of harmonics (<tt>NumberOfHarmonics</tt>) 
+to be used in the HB simulation:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/SDFT_des.cmd" startExpr="*Tone*" lines=1 -->
+<pre>
+      Tone ( Frequency = &quot;va&quot;.&quot;sine[2]&quot; NumberOfHarmonics = @NumHarm@ )
+</pre>
+<!-- grep end -->
+
+<p class="note">Typically, nonlinear convergence improves with an increasing 
+number of harmonics for one-tone HB simulations. However, only a moderate increase might 
+be advantageous in terms of convergence and simulation time.</p>
+
+<p>Then, the HB simulation is initialized for that <tt>Tone</tt> from a previous solution. 
+If that solution resulted from a standard <tt>Coupled</tt> DC solution, the HB simulation 
+is initialized from <tt>DCMode</tt>, specified by the <tt>HBCoupled</tt> option:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/SDFT_des.cmd" startExpr="*DCMode*" lines=1 -->
+<pre>
+      Initialize = DCMode
+</pre>
+<!-- grep end -->
+
+<p>Provided an HB solution is already available, a subsequent HB simulation would be 
+initialized from <tt>HBMode</tt>, that is, by:</p>
+
+<pre>
+       Initialize = HBMode
+</pre>
+
+<p>The remaining options used in the <tt>HBCoupled</tt> statement are solver-specific 
+settings. The use of the iterative linear solver GMRES (preconditioned restarted 
+generalized minimum residual method) is recommended for most applications as the memory 
+requirements for storing the HB Jacobian matrix typically become very large. If GMRES 
+is used, ILS must be selected as <tt>Method</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/SDFT_des.cmd" startExpr="*ILS*" lines=2 -->
+<pre>
+      Method = ILS
+      GMRES ( Tolerance = 1e-5 MaxIterations = 80 Restart = 20 )
+</pre>
+<!-- grep end -->
+
+<p>Alternatively, for a very small number of harmonics and a moderately sized simulation 
+grid, a direct linear solver can be used. The direct solver PARDISO is best suited for 
+such small-sized problems.</p>
+
+<!--============-->
+<h3>3.8.2.3 Outputs: Device Instance Currents, Voltages, Temperatures, and Heat Components</h3>
+
+<p>The results of each converged <tt>HBCoupled</tt> statement (contact currents and voltages, 
+temperatures, and heat components) are saved in separate <tt>.plt</tt> files for time domain 
+and frequency domain data. The names of the files for the time domain contain a substring 
+<tt>Tdom</tt>, and those for the frequency domain contain a substring <tt>Hdom</tt>. A 
+four-digit plot index is used to label the files consecutively, for example:</p>
+
+<pre>
+...
+pn_n9_0009_Hdom_des.plt
+pn_n9_0009_Tdom_des.plt
+...
+</pre>
+
+<p>Amplitudes for the harmonics can be extracted from these files and are plotted in 
+Figure&nbsp;9 for the anode current of the diode versus AC-signal amplitude. To reproduce 
+the figures in the project, select the corresponding Sentaurus Visual node and then click 
+the <strong>Run Selected Visualizer Nodes Together</strong> toolbar button of 
+Sentaurus Workbench.</p>
+
+<p>Click to view the corresponding 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/harmonics_vis.tcl">
+Sentaurus Visual script</a>.</p>
+
+<p><img src="images/sd_hb_harmonics_fwd.png" width="525" height="483" alt="Harmonics of anode current" /></p>
+
+<p class="caption">Figure 9. Harmonics of the anode current for increasing sinusoidal 
+amplitude of the anode voltage. The DC anode voltage is V<sub>ac</sub>&nbsp;=&nbsp;2&nbsp;V. 
+Solid lines are calculated by the SDFT mode, and symbols refer to MDFT simulations.</p>
+
+<p>Amplitudes for the harmonics taken from these files can be used to reconstruct the 
+time-dependent current for the given time period. This is performed by Sentaurus Visual 
+in the <tt>timedomain</tt> tool instance. Figure&nbsp;10 shows the plot of the 
+resulting anode current with the applied voltage versus time under forward bias. For that 
+bias condition, the anode current of the diode is almost in phase with the applied bias.</p>
+
+<p>Click to view the corresponding 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/timedomain_vis.tcl">
+Sentaurus Visual script</a>.</p>
+
+<p><a href="images/sd_hb_IV_fwd_time.png"><img src="images/sd_hb_IV_fwd_time.png" width="550" 
+alt="Anode current versus time" /></a></p>
+
+<p class="caption">Figure 10. Anode current and anode voltage versus time under 
+forward bias conditions. Time dependency is calculated from the Fourier series 
+obtained from the harmonic coefficients calculated by the SDFT mode. (Click image 
+for full-size view.)</p>
+
+<!--============-->
+<h3>3.8.2.4 Output: Circuit Currents and Voltages</h3>
+
+<p>The keyword <tt>HBPlot</tt> in the <tt>System</tt> section allows you to plot 
+circuit quantities in the same way as the keyword <tt>Plot</tt> in standard mixed-mode 
+simulations. In the SDFT mode, Sentaurus Device writes the following four files:</p>
+
+<ul>
+<li>A file with the name component <tt>Fdomain</tt> containing Fourier coefficients</li>
+<li>A file with the name component <tt>Tdomain</tt> containing time domain data</li>
+<li>A file with the name component <tt>Hmag</tt> containing harmonic magnitudes</li>
+<li>A file with the name component <tt>Hphase</tt> containing harmonic phases</li>
+</ul>
+
+<p>Next to the plot index used to number the device <tt>.plt</tt> files, the files for 
+circuit quantities are labeled additionally with an integer index that is increased 
+by one for each <tt>Coupled</tt> statement or <tt>HBCoupled</tt> <tt>Solve</tt> statement. 
+An example set of file names is:</p>
+
+<pre>
+n9_hbplot_Coupled_3_0009_Fdomain_des.plt
+n9_hbplot_Coupled_3_0009_Fmag_des.plt
+n9_hbplot_Coupled_3_0009_Fphase_des.plt
+n9_hbplot_Coupled_3_0009_Tdomain_des.plt
+</pre>
+
+<!--============-->
+<h3>3.8.2.5 Output: Solution Variables</h3>
+
+<p>Plotting solution variables is supported only for one-tone HB simulations. 
+This is implicitly performed if the <tt>HB</tt> section in the <tt>Math</tt> 
+section is present. Sentaurus Device will plot the coefficients of the one-sided 
+Fourier series representation up to the first <tt>h=3</tt> harmonics as real-valued 
+vector components with names composed of a prefix <tt>HB</tt>, a suffix 
+<tt>_C&lt;i&gt;</tt>, and the names of the solution variables.</p>
+
+<p>Odd values <tt>&lt;i&gt;=2h-1</tt> correspond to the <tt>cos</tt> terms, and 
+even values <tt>&lt;i&gt;=2h</tt> correspond to the <tt>sin</tt> terms. The zero component 
+describes the DC value. In addition, the magnitude and phase are plotted, with the 
+prefixes <tt>Mag</tt> and <tt>Phase</tt> to the variable names and suffixes 
+<tt>_C&lt;h&gt;</tt>. Figure 11 shows an example of the second harmonic magnitude of 
+the electrostatic potential.</p>
+
+<p><a href="images/sd_hb_magpot_c2.png"><img src="images/sd_hb_magpot_c2.png" width="550" 
+alt="Magnitude of the second harmonic electrostatic potential" /></a></p>
+
+<p class="caption">Figure 11. Magnitude of the electrostatic potential in the 
+second harmonic obtained by SDFT calculation. (Click image for full-size view.)</p>
+
+<!--==========================-->
+<h2>3.8.3 MDFT One-Tone Simulations</h2>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_des.cmd">
+MDFT_des.cmd</a>.</p>
+
+<!--============-->
+<h3>3.8.3.1 System Section</h3>
+
+<p>The MDFT mode requires compact models that support assembly routines in the frequency 
+domain, that is, the CMI-HB-MDFT function set as described in the &quot;Sentaurus Device 
+Analysis Methods&quot; section of the <cite>Compact Models User Guide</cite>. Only such 
+models are allowed in the <tt>System</tt> section of MDFT HB simulations. Sentaurus Device 
+provides a basic set of compact models that support this functional behavior.</p>
+
+<p>For the p-n diode simulation demonstrated for the SDFT mode, the <tt>System</tt> section 
+for one-tone HB simulations in MDFT mode is given by:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_des.cmd" startExpr="System*" lines=6 -->
+<pre>
+System {
+  PN pn (cathode=c anode=a)
+  sd_hb_vsource_pset &quot;va&quot; (a  c) { dc= 0.0 
+    freq= @f1@ mag= 0.0 phase= -90.
+  }
+  set(c=0)
+</pre>
+<!-- grep end -->
+
+<p>Here, the compact model <tt>sd_hb_vsource</tt> represents a harmonic voltage source 
+that supports assembly routines in the frequency domain. The parameters used are the DC 
+voltage, the frequency <tt>freq</tt> of the AC voltage, and its magnitude (<tt>mag</tt>) 
+and phase. Next to these specialized compact models, the <tt>System</tt> 
+section is the same as for standard mixed-mode simulations.</p>
+
+<!--============-->
+<h3>3.8.3.2 Math Section</h3>
+
+<p>For MDFT simulations, scaling factors are available for the residuum and the update 
+error. In the <tt>Math</tt> section, the factors <tt>RhsScale</tt> and <tt>UpdateScale</tt> 
+can be used to scale the residuum and the update error of individual equations, which are 
+used as Newton convergence criteria. This is often necessary for the electron and hole 
+continuity equations, and values differ for different applications and devices. Examples 
+of such settings are used in this project as shown here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_des.cmd" startExpr="*Math*" endExpr="*}*" -->
+<pre>
+Math { 
+  HBPlotFilePerNewton	
+  HB { 
+    MDFT  
+    LogDensity
+    
+    UpdateScale(Electron) = 1.e-0 
+    UpdateScale(Hole)     = 1.e-2 
+    UpdateScale(Poisson)  = 1.e-0
+    UpdateScale(Contact)  = 1.e-0
+    UpdateScale(Circuit)  = 1.e-0
+    
+    RhsScale(Electron)    = 1.e-6  
+    RhsScale(Hole)        = 1.e-6 
+    RhsScale(Poisson)     = 1.e-1  
+    RhsScale(Circuit)     = 1.e-6
+    RhsScale(Contact)     = 1.e-8
+    
+  }
+</pre>
+<!-- grep end -->
+<pre>
+&nbsp;&nbsp;...
+} 
+</pre>
+
+<p>For a complete list with defaults, you can examine the log file of an MDFT simulation 
+without explicit specifications in the <tt>Math</tt> section.</p>
+
+<!--============-->
+<h3>3.8.3.3 Solve Section</h3>
+
+<p>In the <tt>Solve{...}</tt> section of the one-tone MDFT simulation, first the 
+project is cleaned up to remove some node files that might exist from a previous run. 
+Then, the diode is biased to the DC operation point by standard <tt>Coupled</tt> 
+solutions:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_des.cmd" startExpr="*Solve*" endExpr="*Electron*" endOccurrence=2 -->
+<pre>
+Solve {
+  System(&quot;rm *n@node@_*_Hdom_des.plt *n@node@_*_Tdom_des.plt&quot;)
+  
+  Coupled { Poisson }
+  Coupled { Poisson Electron Hole }
+  Quasistationary (
+    InitialStep=1e-3 Increment=1.5
+    MaxStep=@&lt;1.0/20&gt;@ Minstep=1.e-8 
+    Goal { Parameter=&quot;va&quot;.&quot;dc&quot; Voltage=@Vdc@}
+  )  
+  {Coupled  { Poisson Electron Hole } }
+</pre>
+<!-- grep end -->
+
+<p>The resulting DC solution is used to initialize the subsequent HB simulation. Then, 
+the AC-signal amplitude for the MDFT HB analysis is ramped by a <tt>Quasistationary</tt> 
+statement, whereby the MDFT HB simulation is performed at each bias step by the 
+<tt>HBCoupled(...){set of equations}</tt> statement:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_des.cmd" startExpr="*Quasistat*" startOccurrence=2 endExpr="*}*" endOccurrence=2 -->
+<pre>
+  Quasistationary (
+    InitialStep=1e-3 Increment=1.5
+    MaxStep=@&lt;1.0/25&gt;@ Minstep=1.e-8 
+    Goal { Parameter=&quot;va&quot;.&quot;mag&quot;  Value= @mag@ }
+  )  
+  {HBCoupled (
+      Tone ( Frequency = &quot;va&quot;.&quot;freq&quot;  NumberOfHarmonics = @NumHarm@ )
+      Initialize = DCMode
+      Method = ILS
+      GMRES ( Tolerance = 1e-5 MaxIterations = 80 Restart = 20 )
+  ) { Poisson Electron Hole }
+</pre>
+<!-- grep end -->
+
+<p>Like SDFT simulations, the <tt>Tone</tt> specification in the <tt>HBCoupled</tt> 
+statement is mandatory. Here, it specifies the frequency parameter of the AC signal 
+of the HB voltage source <tt>va</tt> in the <tt>System</tt> section and the number of 
+harmonics (<tt>NumberOfHarmonics</tt>) to be used in the HB simulation:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_des.cmd" startExpr="*Tone*" lines=1 -->
+<pre>
+      Tone ( Frequency = &quot;va&quot;.&quot;freq&quot;  NumberOfHarmonics = @NumHarm@ )
+</pre>
+<!-- grep end -->
+
+<p>The remaining <tt>HBCoupled</tt> specifications are solver specifics with the 
+same meaning as discussed for SDFT simulations.</p>
+
+<!--============-->
+<h3>3.8.3.4 Outputs: Device Instance Currents, Voltages, Temperatures, and Heat Components</h3>
+
+<p>The results of each converged <tt>HBCoupled</tt> (contact currents and voltages, 
+temperatures, and heat components if solved for) are saved in separate <tt>.plt</tt> 
+files for time domain and frequency domain data. The names of the files for the time 
+domain contain a substring <tt>Tdom</tt>, and those for the frequency domain contain 
+a substring <tt>Hdom</tt>. A four-digit plot index is used to label the files 
+consecutively, for example:</p>
+
+<pre>
+...
+pn_n12_0009_Hdom_des.plt
+pn_n12_0009_Tdom_des.plt
+...
+</pre>
+
+<p>Amplitudes for the harmonics can be extracted from these files and are plotted 
+in Figure&nbsp;12 for the anode current of the diode versus the AC-signal amplitude.</p>
+
+<p>Click to view the corresponding 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/harmonics_vis.tcl">
+Sentaurus Visual script</a>.</p>
+
+<p><img src="images/sd_hb_harmonics_rev.png" width="525" height="483" alt="Harmonics of anode current" /></p>
+
+<p class="caption">Figure 12. Harmonics of the anode current for increasing 
+sinusoidal amplitude of the anode voltage. The DC anode voltage is 
+V<sub>ac</sub>&nbsp;=&nbsp;&ndash;2&nbsp;V. Solid lines are calculated by the 
+SDFT mode and symbols refer to MDFT simulations.</p>
+
+<p>Amplitudes for the harmonics taken from these files can be used to reconstruct the 
+time-dependent current for the given time period. This is performed by Sentaurus Visual in 
+the <tt>timedomain</tt> tool instance. Figure&nbsp;13 shows the plot of the resulting 
+anode current with the applied voltage versus time under reverse bias. For that 
+bias condition, the anode current of the diode is almost 90&deg; out of phase with the 
+applied bias according to the capacitive charging and decharging of the diode.</p>
+
+<p>Click to view the corresponding 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/timedomain_vis.tcl">
+Sentaurus Visual script</a>.</p>
+
+<p><a href="images/sd_hb_IV_rev_time.png"><img src="images/sd_hb_IV_rev_time.png" width="550" 
+alt="Anode current versus time" /></a></p>
+
+<p class="caption">Figure 13. Anode current and anode voltage versus time under 
+reverse bias conditions. Time dependency is calculated from the Fourier series 
+obtained from the harmonic coefficients calculated by the MDFT mode. (Click image 
+for full-size view.)</p>
+
+<!--============-->
+<h3>3.8.3.5 Outputs: Circuit Currents and Voltages</h3>
+
+<p>In MDFT simulations, the keyword <tt>HBPlot</tt> in the <tt>System</tt> section 
+allows you to plot HB circuit quantities. It triggers <tt>Hdom</tt> and <tt>Tdom</tt> 
+files to be written for the circuit.</p>
+
+<p>Next to the plot index used to number the circuit <tt>.plt</tt> files, the circuit 
+files are labeled additionally with an integer index that is increased by one for each 
+<tt>Coupled</tt> statement or <tt>HBCoupled</tt> <tt>Solve</tt> statement. An example 
+set of file names is:</p>
+
+<pre>
+n12_hbplot_Coupled_3_0015_Hdom_des.plt
+n12_hbplot_Coupled_3_0015_Tdom_des.plt
+</pre>
+
+<!--===============================-->
+<h2>3.8.4 MDFT Two-Tone Simulations</h2>
+
+<p>Harmonic balance is computationally more efficient for problems with time constants 
+that differ by many orders of magnitude. As an example, two high-frequency AC signals 
+that are close to each other in frequency are applied to the p-n diode used so far. 
+This results in a high-frequency component that would have to be resolved in the time domain, 
+while the simulation requires simultaneously much longer times corresponding to the 
+beating frequency. Figure&nbsp;14 shows the voltage waveform resulting from two such 
+AC voltages for a half period.</p>
+
+<p><a href="images/sd_hb_Va_time_rev_2tone.png"><img src="images/sd_hb_Va_time_rev_2tone.png" 
+width="550" alt="Anode voltage versus time" /></a></p>
+
+<p class="caption">Figure 14. Applied anode voltage versus time under 
+reverse bias conditions. (Click image for full-size view.)</p>
+
+<!--============-->
+<h3>3.8.4.1 System Section: Two-Tone Simulation</h3>
+
+<p>The voltage signal in Figure 14 can be simulated by a two-tone HB calculation 
+in MDFT mode. The MDFT mode is activated again in the <tt>Math</tt> section by 
+the keyword <tt>MDFT</tt>. The <tt>System</tt> section contains the device 
+<tt>sd_hb_vsource2</tt>, which represents a multitone voltage source with two tones. 
+It allows the specification of two independent tones of oscillation with a 
+DC component:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_2Tone_des.cmd" startExpr="*System*" endExpr="*}*" endOccurrence=2 -->
+<pre>
+System {
+  PN pn (cathode=c anode=a)
+  sd_hb_sRL_pset &quot;rp&quot;      (a  c) { R=5meg }
+  sd_hb_vsource2_pset &quot;va&quot; (a  c) { dc= 0.0 
+    freq=  @f1@ mag=  0.0 phase=  -90.
+    freq2= @f2@ mag2= 0.0 phase2= -90.
+  }
+</pre>
+<!-- grep end -->
+
+<p>The frequencies <tt>freq</tt> and <tt>freq2</tt> of the two tones are taken to be 
+f1&nbsp;=&nbsp;100&nbsp;kHz and f2&nbsp;=&nbsp;101&nbsp;kHz for this project. In 
+addition to the HB voltage source, a resistor of type <tt>sd_hb_sRL_pset</tt> is defined 
+in parallel to the diode as another example for a compact model that supports assembly 
+routines in the frequency domain, as required by the MDFT mode.</p>
+
+<p class="note">The two base frequencies and their harmonics must not coincide 
+with each other in MDFT simulations.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_2Tone_des.cmd">
+MDFT_2Tone_des.cmd</a>.</p>
+
+<!--============-->
+<h3>3.8.4.2 Solve Section</h3>
+
+<p>In the <tt>Solve{...}</tt> section of this two-tone MDFT simulation, before 
+solving for any equation, the project is cleaned up to remove some node files that might 
+exist from a previous run. Then, the diode is biased to the DC operation point 
+of &plusmn;2&nbsp;V by standard <tt>Coupled</tt> solutions:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_2Tone_des.cmd" startExpr="*Solve*" endExpr="*Electron*" endOccurrence=2 -->
+<pre>
+Solve {
+  System(&quot;rm *n@node@_*_Hdom_des.plt *n@node@_*_Tdom_des.plt&quot;)
+  
+  Coupled { Poisson }
+  Coupled { Poisson Electron Hole }
+  Quasistationary (
+    InitialStep=1e-3 Increment=1.5
+    MaxStep=@&lt;1.0/20&gt;@ Minstep=1.e-8 
+    Goal { Parameter=&quot;va&quot;.&quot;dc&quot; Voltage=@Vdc@}
+  )  
+  {Coupled  { Poisson Electron Hole } }
+</pre>
+<!-- grep end -->
+
+<p>The resulting DC solution is used to initialize the subsequent HB simulation. 
+Then, the AC-signal amplitudes for the two tones of the MDFT HB analysis 
+are ramped by a <tt>Quasistationary</tt> statement to <tt>mag1</tt> = <tt>mag2</tt> = 0.5&nbsp;V 
+for each tone:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_2Tone_des.cmd" startExpr="*Quasistat*" startOccurrence=2 endExpr="*}*" endOccurrence=3 -->
+<pre>
+  Quasistationary (
+    InitialStep=1e-3 Increment=1.5
+    MaxStep=@&lt;1.0/25&gt;@ Minstep=1.e-8 
+    Goal { Parameter=&quot;va&quot;.&quot;mag&quot;  Value= @mag1@ }
+    Goal { Parameter=&quot;va&quot;.&quot;mag2&quot; Value= @mag2@ }
+  )
+  {HBCoupled (
+      Tone ( Frequency = &quot;va&quot;.&quot;freq&quot;  NumberOfHarmonics = @NumHarm@ )
+      Tone ( Frequency = &quot;va&quot;.&quot;freq2&quot; NumberOfHarmonics = @NumHarm@ )
+      Initialize = DCMode
+      Method = ILS
+      GMRES ( Tolerance = 1e-5 MaxIterations = 80 Restart = 20 )
+  ) { Poisson Electron Hole } 
+</pre>
+<!-- grep end -->
+
+<p>The <tt>Tone</tt> keyword in the <tt>HBCoupled</tt> statement is mandatory for both 
+tones. Each tone is identified by the HB voltage source name, here <tt>va</tt>, and the 
+frequency parameter name <tt>freq</tt> or <tt>freq2</tt>. The number of harmonics 
+(<tt>NumberOfHarmonics</tt>) to be used in the HB simulation is specified for each tone 
+individually:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/MDFT_2Tone_des.cmd" startExpr="*Tone*" lines=2 -->
+<pre>
+      Tone ( Frequency = &quot;va&quot;.&quot;freq&quot;  NumberOfHarmonics = @NumHarm@ )
+      Tone ( Frequency = &quot;va&quot;.&quot;freq2&quot; NumberOfHarmonics = @NumHarm@ )
+</pre>
+<!-- grep end -->
+
+<p>The remaining <tt>HBCoupled</tt> specifications used in this two-tone simulation 
+are the same solver specifics used for the one-tone simulations.</p>
+
+<p class="note">If only one of the two tones is specified in the <tt>HBCoupled</tt> 
+statement, a corresponding one-tone simulation is performed.</p>
+
+<!--============-->
+<h3>3.8.4.3 Outputs: Device Instance Currents, Voltages, Temperatures, and Heat Components</h3>
+
+<p>The results of each converged <tt>HBCoupled</tt> (contact currents and voltages, 
+temperatures, and heat components) are saved as for the  one-tone simulations in separate 
+<tt>.plt</tt> files for time domain and frequency domain data. In addition, the same 
+naming convention for the files apply.</p>
+
+<p>Amplitudes for the frequencies taken from the final <tt>Hdom</tt> files can 
+be used to reconstruct the time-dependent current for the given time period. This 
+is performed by Sentaurus Visual in the <tt>beat</tt> tool instance. Figure&nbsp;15 
+shows the plot of the resulting anode current versus time under reverse bias.</p>
+
+<p>Click to view the corresponding 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/beat_vis.tcl">
+Sentaurus Visual script</a>.</p>
+
+<p><a href="images/sd_hb_I_time_rev_2tone.png"><img src="images/sd_hb_I_time_rev_2tone.png" 
+width="550" alt="Anode current versus time" /></a></p>
+
+<p class="caption">Figure 15. Beating of anode current versus time under 
+reverse bias conditions. Time dependency is calculated from the coefficients 
+calculated by the two-tone MDFT HB simulation with 100&nbsp;kHz and 101&nbsp;kHz. 
+Only half of the beating period is shown. (Click image for full-size view.)</p>
+
+<p>Figure 16 shows the anode current versus anode voltage for the same data as in 
+Figure&nbsp;15. For that bias condition, the anode current of the diode is 
+almost fully out of phase with the high-frequency components of the applied bias.</p>
+
+<p>Click to view the corresponding 
+<a href="../../Applications_Library/GettingStarted/sdevice/HarmonicBalance_pn/beat_vis.tcl">
+Sentaurus Visual script</a>.</p>
+
+<p><a href="images/sd_hb_I_V_rev_2tone.png"><img src="images/sd_hb_I_V_rev_2tone.png" 
+width="550" alt="Anode current versus voltage under reverse DC bias" /></a></p>
+
+<p class="caption">Figure 16. Anode current versus anode voltage for a half-period
+of the 1&nbsp;kHz beating frequency under reverse DC bias. Time dependency is 
+calculated from the coefficients calculated by the two-tone MDFT HB simulation with 
+100&nbsp;kHz and 101&nbsp;kHz. (Click image for full-size view.)</p>
+
+<p>Under forward bias conditions, the anode current of the diode is almost in phase 
+with the high-frequency components of the applied bias as demonstrated by the anode 
+current versus anode voltage plot in Figure&nbsp;17.</p>
+
+<p><a href="images/sd_hb_I_V_fwd_2tone.png"><img src="images/sd_hb_I_V_fwd_2tone.png" 
+width="550" alt="Anode current versus voltage under forward DC bias" /></a></p>
+
+<p class="caption">Figure 17. Anode current versus anode voltage for a half-period 
+of the 1&nbsp;kHz beating frequency under forward DC bias of 2&nbsp;V. Time 
+dependency is calculated from the coefficients calculated by the two-tone MDFT HB 
+simulation with 100&nbsp;kHz and 101&nbsp;kHz. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

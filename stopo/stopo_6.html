@@ -1,0 +1,631 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+ 
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>    
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 6. Particle Monte Carlo Examples</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_7.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />6. Particle Monte Carlo Examples</h1>
+
+<p>
+ <a href="#1">6.1 Example: PMC Simple Etching</a><br />
+ <a href="#2">6.2 Example: PMC Simple Deposition</a><br />
+ <a href="#3">6.3 Example: PMC Ion-Assisted Etching</a><br />
+ <a href="#4">6.4 References</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To provide examples to help you start using PMC reaction modeling.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>6.1 Example: PMC Simple Etching</h1>
+
+<p>This example demonstrates a simplified chemical etching case of silicon by fluorine. 
+The example uses four reactions to model the oxidation reactions of 
+silicon and SiF<sub>x</sub> by fluorine that eventually yield the SiF<sub>4</sub> 
+molecule that is volatile and leaves the surface, resulting in the etching of silicon.</p>
+
+<p>In PMC, the surface coverage by different materials plays a major role on the effect 
+of the reactions in the model. Here, for example, the amount of etching achieved at the 
+end depends on the surface coverage by the SiF<sub>3</sub> species, which also 
+depends on the probabilities of the adsorption reactions named <tt>SiF</tt>, <tt>SiF2</tt>, 
+and <tt>SiF3</tt>.</p>
+
+<p>The model can be defined as follows:</p>
+
+<a name="1_reactions"></a>
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Etch/pmc_simple_etch_t3d.cmd" startExpr="##start*-*pmc*simple*etch*model*definition*" endExpr="##end*-*pmc*simple*etch*model*definition*" excludelines="#*" -->
+<pre>
+define_model name=F_etch_Si description=&quot;Silicon chemical etch by Fluorine&quot;
+add_source_species model=F_etch_Si name=F
+
+add_reaction model=F_etch_Si name=SiF  expression=&quot;F&lt;g&gt; + Silicon&lt;s&gt; = SiF&lt;s&gt;&quot;
+add_reaction model=F_etch_Si name=SiF2 expression=&quot;F&lt;g&gt; + SiF&lt;s&gt; = SiF2&lt;s&gt;&quot;  
+add_reaction model=F_etch_Si name=SiF3 expression=&quot;F&lt;g&gt; + SiF2&lt;s&gt; = SiF3&lt;s&gt;&quot; 
+add_reaction model=F_etch_Si name=etch_SiF3 expression=&quot;F&lt;g&gt; + SiF3&lt;s&gt; =SiF4&lt;v&gt;&quot;
+   
+finalize_model model=F_etch_Si
+</pre>
+<!-- grep end -->
+
+<!--===============================-->
+<a name="1_distr_mach"></a>
+<h2>6.1.1 Defining the Etching Species and Machine</h2>
+
+<p>The next steps define the distribution for the gas species <tt>F</tt> 
+and also define a machine:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Etch/pmc_simple_etch_t3d.cmd" startExpr="##start*-*define*distribution*" endExpr="##end*-*define*machine*" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+define_species_distribution name=F_distribution exponent=1 species=F flux=3.0e-3
+define_etch_machine model=F_etch_Si species_distribution=F_distribution
+</pre>
+<!-- grep end -->
+
+<p>Note that no name is given to the machine as this will be the only machine 
+defined in this project. A default name is given tacitly to this machine. 
+Nevertheless, it is a good practice to use a unique machine name every time you 
+define a new machine.</p>
+
+<!--===============================-->
+<a name="1_reaction_props"></a>
+<h2>6.1.2 Defining the Simple Etch Reaction Properties</h2>
+
+<p>Fluorine has an isotropic character (<tt>exponent=1</tt>) and a flux of 
+0.003&nbsp;mol&nbsp;s<sup>-1</sup>&nbsp;m<sup>-2</sup>. As you have already defined 
+the machine, the next step is to define the reaction probabilities. If you use 
+Sentaurus Workbench for experiment design, then you can easily parameterize all the 
+parameters of the PMC process. For example, the probability of the etch reaction 
+<tt>SiF3</tt> could be parameterized using the Sentaurus Workbench parameter 
+<tt>@probability@</tt> as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Etch/pmc_simple_etch_t3d.cmd" startExpr="##start*-*reaction*properties*" endExpr="##end*-*reaction*properties*" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+add_reaction_properties reaction=SiF p=0.7
+add_reaction_properties reaction=SiF2 p=0.05
+add_reaction_properties reaction=SiF3 p=0.05
+add_reaction_properties reaction=etch_SiF3 p=@probability@
+</pre>
+<!-- grep end -->
+
+<p><img src="images/tp_pmc_swb_simple_etch.png"  width="348" height="266" 
+alt="Sentaurus Workbench project of the PMC silicon etching process" /></p>
+
+<p class="caption">Figure 1. Sentaurus Workbench project of the PMC silicon etching 
+process by fluorine. The parameter <tt>@probability@</tt> is used to define the 
+probability of the reaction <tt>etch_SiF3</tt>.</p>
+
+<!--===============================-->
+<a name="1_run_pmc"></a>
+<h2>6.1.3 Running the PMC Simple Etching Simulation </h2>
+
+<p>After defining all the reaction properties of your PMC etching model, you can 
+run the simulation with the <tt>etch</tt> command. You can speed up the PMC engine 
+by using multithreading, and its performance scales almost linearly with the number of
+threads used:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Etch/pmc_simple_etch_t3d.cmd" startExpr="##start*-*multi-threading*" endExpr="##end*-*script*" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+let parallel=true
+let num_threads=20
+etch spacing=0.001 time=1.0 method=pmc
+save type=dc dc_version=2 file=n@node@_prob_@probability@_t3d.tdr
+</pre>
+<!-- grep end -->
+
+<p>The <tt>etch</tt> command is used without a machine name as there is only one 
+machine defined in the project. In Figure&nbsp;2, you can observe the effect 
+of the probability for the reaction <tt>etch_SiF3</tt>. Increasing its probability 
+means more silicon is etched. Note the lateral etching of silicon as the fluorine 
+particles have an isotropic angular distribution when they are emitted from the source 
+(<tt>exponent=1</tt>). The masking material (Photoresist) has no reactions defined in 
+the PMC model and it remains intact. Of course, you could add reactions for this material 
+as well.</p>
+
+<a name="1_results"></a>
+<p><a href="images/tp_pmc_simple_etch_results.png"><img src="images/tp_pmc_simple_etch_results.png" 
+width="570" alt="Increasing the etching rate with different pprobabilities" /></a></p>
+
+<p class="caption">Figure 2. Increasing the etching rate with the probability of the 
+reaction <tt>etch_SiF3</tt>. Note the lateral etching (mask undercut) due to the 
+isotropic nature of the source species and due to their isotropic reemission from 
+the surface (default event) in case they do not react. (Click image for full-size view.)</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Etch</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>6.2 Example: PMC Simple Deposition</h1>
+
+<p>This section presents a simple example of deposition of a polymer on silicon. Taking 
+advantage of the reflective boundary conditions (BCs) that are used by default in PMC, 
+you can create only 1/4 of the real structure. This saves simulation time and resources, 
+and it is strongly advised for problems with symmetry.</p>
+
+<!--===============================-->
+<a name="2_pmc_model"></a>
+<h2>6.2.1 Running the PMC Simple Etching Simulation</h2>
+
+<p>The initial structure (see Figure 3) contains only one material 
+(silicon), so you only need two reactions for deposition, one &quot;nucleation&quot; reaction 
+and one &quot;growth&quot; reaction as follows:</p>
+
+<a name="2_reactions"></a>
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Deposition/pmc_simple_deposition_t3d.cmd" startExpr="##start*-*pmc*simple*deposition*model*definition*" endExpr="##end*-*pmc*simple*deposition*model*definition*" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+define_model name=m description=&quot;simple deposition model&quot;
+add_source_species model=m name=P
+add_reaction model=m name=nucleation_Si \
+   expression=&quot;P&lt;g&gt; + Silicon&lt;s&gt; = Polymer&lt;s&gt; + Silicon&lt;b&gt;&quot;
+add_reaction model=m name=growth_Polymer \
+   expression=&quot;P&lt;g&gt; + Polymer&lt;s&gt; = Polymer&lt;s&gt; + Polymer&lt;b&gt;&quot;
+finalize_model model=m
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_pmc_simple_deposition_structs.png"><img src="images/tp_pmc_simple_deposition_structs.png" 
+width="570" alt="Initial structure for deposition and entire structure" /></a></p>
+
+<p class="caption">Figure 3. (Left) Initial silicon structure before polymer deposition 
+that will be simulated with 1/4 symmetry and (right) the entire structure that corresponds 
+to the applied reflective BCs of the 1/4 structure. (Click image for full-size view.)</p>
+
+<!--===============================-->
+<a name="2_distr_mach"></a>
+<h2>6.2.2 Defining the Deposition Species and Machine</h2>
+
+<p>The second step is the definition of the distribution for the source species <tt>P</tt> 
+and the definition of the machine. Again, note that although the PMC model contains 
+only deposition reactions, an <tt>etch</tt> machine has been defined as this is the 
+convention in PMC. Here are the commands for this step:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Deposition/pmc_simple_deposition_t3d.cmd" startExpr="##start*-*define*distribution*" endExpr="##end*-*define*machine*" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+define_species_distribution name=P_distribution exponent=1 species=P flux=1e-3
+define_etch_machine name=depo_machine model=m \
+  species_distribution=P_distribution
+</pre>
+<!-- grep end -->
+
+<!--===============================-->
+<a name="2_reaction_props"></a>
+<h2>6.2.3 Defining the Simple Deposition Reaction Properties</h2>
+
+<p>The reaction probabilities for the deposition model can be simply set using the 
+Sentaurus Workbench parameter <tt>@sticking@</tt>. As for a real process (LPCVD for 
+example), when the sticking probability is small, the deposited layer is more conformal 
+because the reemission rate of the precursor species (<tt>P</tt> here) is higher. On 
+the other hand, for small sticking coefficients, the deposition time needs to increase 
+to achieve the required deposition thickness.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Deposition/pmc_simple_deposition_t3d.cmd" startExpr="##start*-*reaction*properties*" endExpr="##end*-*reaction*properties*" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+add_reaction_properties machine=depo_machine reaction=nucleation_Si p=@sticking@
+add_reaction_properties machine=depo_machine reaction=growth_Polymer \
+  p=@sticking@
+</pre>
+<!-- grep end -->
+
+<!--===============================-->
+<a name="2_run_pmc"></a>
+<h2>6.2.4 Running the PMC Simple Deposition Simulation</h2>
+
+<p>To run the PMC simulation, you use the <tt>etch</tt> command with an additional 
+parameter, <tt>top_gas_thickness</tt>, that adds a gas layer to the top of the structure. 
+The thickness of the added gas layer is equal to the value defined by 
+<tt>top_gas_thickness</tt> (in &mu;m) measured from the topmost point of the boundary 
+structure.</p>
+
+<p>During deposition processes, material is added to the top of an existing structure, 
+and the simulator must have enough empty gas cells above the exposed surface to add 
+this material. Otherwise, the simulation stops if not enough gas is found at the top.</p>
+
+<p>Here, 1&nbsp;&mu;m of gas is added to the top to ensure that no error occurs. 
+A rough estimation of the necessary gas thickness can be made by calculating the 
+deposition rate on a flat surface by taking into account the sticking coefficient, 
+the flux of the precursor, and the density of the material.</p>
+
+<p>In PMC, the density &rho; for all materials is set to be 50 atoms per
+nm<sup>3</sup>, so for a sticking coefficient \(σ = 1.0\) and a flux of \(Γ =
+0.001\: \text"mol"\html"&nbsp;" \text"s"^{-1}\html"&nbsp;" \text"m"^{-2} \), the deposition rate on a
+flat unobstructed surface would be:</p>
+
+<p>\[R_{\text"depo"} =  {σ Γ} / { ρ} ≅ 722 \html"&nbsp;" [\text"nm" \html"&nbsp;" \text"min"^{-1}] \] </p> 
+
+<p>So, after estimating roughly the thickness of the gas that needs to be added 
+(~1&nbsp;&mu;m), you can write the <tt>etch</tt> command as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Deposition/pmc_simple_deposition_t3d.cmd" startExpr="##start*- run pmc" endExpr="##end - script" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+etch machine=depo_machine spacing=0.005 time=1.0 method=pmc \
+  top_gas_thickness=1.0 
+save type=dc dc_version=2
+</pre>
+<!-- grep end -->
+
+<p>Figure 4 shows the resulting structures for four different values of the 
+<tt>@sticking@</tt> parameter. The structure has a 1/4 symmetry as the BCs are set 
+by default to <tt>reflected</tt>, so there is a trench in the middle with a square 
+cross-section.</p>
+
+<p>You can clearly observe the geometric effect on the flux of species inside and 
+outside the trench that occurs automatically with the PMC method (as well as with 
+the level-set method). There is less material deposited inside the trench than outside 
+and, for high sticking probabilities, a void is eventually formed in the trench due 
+to the high differential deposition rate.</p>
+
+<a name="2_results"></a>
+<p><a href="images/tp_pmc_simple_deposition_sticking.png"><img src="images/tp_pmc_simple_deposition_sticking.png" 
+width="570" alt="Three-dimensional images of structure after deposition for various sticking probabilities" /></a></p>
+
+<p class="caption">Figure 4. Three-dimensional images of the structure after 1 minute 
+deposition for various sticking probabilities. For small sticking coefficients, the 
+deposited thickness is smaller but the filling of the trench in the middle of the 
+structure is more conformal. For high sticking values, you can clearly see the formation 
+of the void in the trench. Remember that the boundary conditions on the simulation 
+domain sidewalls are set to &quot;reflected&quot; by default, so here you are dealing 
+with a structure with 1/4 symmetry. (Click image for full-size view.)</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sptopo3d/PMC_Simple_Deposition</tt>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>6.3 Example: PMC Ion-Assisted Etching</h1>
+
+<p>This section presents a PMC model of an ion-assisted etching process of silicon 
+with the XeF<sub>2</sub> molecule and Ar<sup>+</sup> ions. The example is inspired 
+by one of the most classical publications on the subject 
+<a href="#coburn-1979">[Ref.&nbsp;1]</a> that brought to light the synergy between 
+ion bombardment and chemical etching of a material in a process that is also known 
+as <em>reactive ion etching</em>.</p>
+
+<p>You need to introduce two species for this model: <tt>XeF2</tt> and 
+<tt>Ar+</tt> for the corresponding species XeF<sub>2</sub> and Ar<sup>+</sup>. 
+On the one hand, the XeF<sub>2</sub> molecule carries the highly reactive atoms of 
+fluorine (F) that can be adsorbed on silicon and forms SiF<sub>x</sub>. At room 
+temperature, the etching process of Si only with XeF<sub>2</sub> is quite slow as 
+there is a significant activation energy in order to produce the volatile SiF<sub>4</sub> 
+species from SiF<sub>x</sub>.</p>
+
+<p>On the other hand, using only Ar<sup>+</sup> plasma for etching of silicon requires 
+high-energy particles (for physical sputtering). In most cases, these energetic 
+particles (ions) erode the masks, and the selectivity with respect to other 
+materials is reduced to almost 1:1. At low ion energies, the etching rate of silicon 
+by sputtering is very slow.</p>
+
+<p>In the early investigations into plasma etching in the 1970s, it was observed 
+that you could multiply the etching rate of silicon by more than an order of magnitude 
+by combining a molecule of XeF<sub>2</sub> with relatively low-energy Ar<sup>+</sup> ions. 
+This synergy of species was demonstrated in the publication of Coburn and Winters 
+<a href="#coburn-1979">[Ref.&nbsp;1]</a>. There, first XeF<sub>2</sub> was 
+introduced in the reactor during the first 200&nbsp;s of the process and then 
+Ar<sup>+</sup> was activated with an energy of ~450&nbsp;eV. After a total time of 
+~660&nbsp;s, the XeF<sub>2</sub> flow stopped, leaving only the Ar<sup>+</sup> ions 
+to interact with polysilicon. When both XeF<sub>s</sub> and Ar<sup>+</sup> are present 
+in the reactor, argon ions provide the necessary energy to remove SiF<sub>x</sub> 
+from the surface, thereby greatly increasing the etching rate of silicon.</p>
+
+<p>See Figure 2 in <a href="#coburn-1979">[Ref.&nbsp;1]</a>, which shows the 
+original experiment demonstrating the synergy between A<sup>+</sup> and XeF<sub>2</sub> 
+for silicon etching.</p>
+ 
+<!--=============================-->
+<a name="3_timedep_distr"></a>
+<h2>6.3.1 PMC Time-Dependent Species Distributions</h2>
+
+<p>To replicate the switching of species flows in PMC, it is possible to render 
+the parameters in the <tt>define_species_distribution</tt> command time-dependent. 
+In this case, the fluxes of Ar<sup>+</sup> and XeF<sub>2</sub> need to become dependent 
+on time. For example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch/pmc_ion_assisted_etch_t3d.cmd" startExpr="##start - define distribution" endExpr="##end - define distribution" excludelines="#*" format="wrap" -->
+<pre>
+define_species_distribution name=my_distr species=Ar+ exponent=2.0e3 \
+  flux=&quot;square_pulse(t&lt;s&gt;, 0.0, @flux_Ar+@, 1000.0, 0.2)&quot; \
+  sampling_time_step=0.01
+
+define_species_distribution name=my_distr species=XeF2 exponent=1.0 \
+  flux=&quot;square_pulse(t&lt;s&gt;, @flux_XeF2@, 0.0, 1000.0, 0.7)&quot; \
+  sampling_time_step=0.01
+
+save species_distribution=my_distr output_type=parameters \
+  file=n@node@_distribution.tdr time=1000&lt;s&gt;
+</pre>
+<!-- grep end -->
+
+<p>A square pulse is used for the two species. The arguments of the <tt>square_pulse</tt> 
+function are (from left to right) the function of time <tt>f(t)</tt>, the value of the pulse 
+when it is switched on, the value of the pulse when it is switched off, the pulse period, 
+and the duty cycle. Here, the function of time is linear, directly proportional to <tt>t</tt>.</p>
+
+<p>The convention is that the time during which the pulse is switched on is the product of the 
+duty cycle and the period. For Ar<sup>+</sup> during the first 200&nbsp;s 
+(1000&nbsp;x&nbsp;0.2), the value is set to 0.0 (no argon ions), and then it is switched on. 
+The <tt>XeF2</tt> species are switched on when <tt>t</tt>=700&nbsp;s. For both species, 
+the period is set to 1000&nbsp;s.</p>
+
+<p>As you can observe, the parameters of the distributions (in this case, the flux) 
+can be saved in a TDR file and then visualized with Sentaurus Visual as shown in Figure&nbsp;5.</p>
+
+<p><a href="images/tp_pmc_ion_assisted_etch_fluxes.png"><img src="images/tp_pmc_ion_assisted_etch_fluxes.png" 
+width="400" alt="Plots of time-dependent fluxes" /></a></p>
+
+<p class="caption">Figure 5. Time-dependent fluxes of species 
+XeF<sub>2</sub> and Ar<sup>+</sup>. (Click image for full-size view.)</p>
+
+<!--=============================-->
+<a name="3_pmc_model"></a>
+<h2>6.3.2 PMC Ion-Assisted Etching Model</h2>
+
+<p>Now, you concentrate on the surface reactions that will reproduce the effect 
+of ion-assisted etching. You can find the full PMC model here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch/pmc_ion_assisted_etch_t3d.cmd" startExpr="##start - pmc ion-assisted etch model definition" endExpr="##end - pmc ion-assisted etch model definition" excludelines="#*" format="wrap" -->
+<pre>
+define_model name=rie_pmc description=&quot;pmc ion-assisted etch of Silicon&quot;
+
+add_source_species model=rie_pmc name=Ar+
+add_source_species model=rie_pmc name=XeF2
+
+add_reaction model=rie_pmc name=sput_Si \
+  expression=&quot;Ar+&lt;g&gt; + Silicon&lt;s&gt; = Silicon&lt;q&gt;&quot;
+add_reaction model=rie_pmc name=refl_Si \
+  expression=&quot;Ar+&lt;g&gt; + Silicon&lt;s&gt; = Silicon&lt;s&gt; + Ar+&lt;r&gt;&quot;
+
+add_reaction model=rie_pmc name=sput_SiFx \
+  expression=&quot;Ar+&lt;g&gt; + SiFx&lt;s&gt; = SiFx&lt;q&gt;&quot;
+add_reaction model=rie_pmc name=refl_SiFx \
+  expression=&quot;Ar+&lt;g&gt; + SiFx&lt;s&gt; = SiFx&lt;s&gt; + Ar+&lt;r&gt;&quot;
+
+add_reaction model=rie_pmc name=sput_PR \
+  expression=&quot;Ar+&lt;g&gt; + Photoresist&lt;s&gt; = Photoresist&lt;q&gt;&quot;
+add_reaction model=rie_pmc name=refl_PR \
+  expression=&quot;Ar+&lt;g&gt; + Photoresist&lt;s&gt; = Photoresist&lt;s&gt; + Ar+&lt;r&gt;&quot;
+
+add_reaction model=rie_pmc name=adsorb_F_Si \
+  expression=&quot;XeF2&lt;g&gt; + Silicon&lt;s&gt; = SiFx&lt;s&gt;&quot;
+add_reaction model=rie_pmc name=etch_F_Si \
+  expression=&quot;XeF2&lt;g&gt; + SiFx&lt;s&gt; = SiF4&lt;v&gt;&quot;
+
+finalize_model model=rie_pmc
+</pre>
+<!-- grep end -->
+
+<p>The model describes the adsorption of <tt>F</tt> on <tt>Silicon</tt> to form 
+<tt>SiFx</tt>, and the contributions to etching by further fluorination of 
+<tt>SiFx</tt> to create the volatile species <tt>SiF4</tt> (slow) as well as 
+the physical sputtering of silicon  (slow) and the sputtering of <tt>SiFx</tt> 
+(fast) by argon ions <tt>Ar+</tt>.</p>
+
+<p>There are reactions for sputtering of the mask material (<tt>Photoresist</tt>) 
+and reflection reactions on <tt>Silicon</tt>, <tt>Photoresist</tt>, and <tt>SiFx</tt>.</p>
+
+<p>It is important to note that, in this model, the task of removing <tt>SiFx</tt> 
+from the surface is attributed to the sputtering reaction with <tt>Ar+</tt>. This 
+is a simplification of the &quot;real&quot; mechanism where in fact <tt>Ar+</tt> 
+gives, by ion bombardment, the necessary energy in order for <tt>XeF2</tt> to further 
+fluorinate <tt>SiFx</tt> and render it volatile (etching).</p>
+
+<!--=============================-->
+<a name="3_distr_yields_mach"></a>
+<h2>6.3.3 Defining the Ion-Assisted Etching Species and Machine</h2>
+
+<p>After the model definition, you must add the species distributions 
+(already discussed in <a href="#3_timedep_distr">
+Section&nbsp;6.3.1 PMC Time-Dependent Species Distributions</a>) as well as the 
+mandatory yield functions for the sputtering reactions. The <tt>Ar+</tt> species 
+are anisotropic (high <tt>exponent</tt>), so you need to discard them if they do 
+not react. Finally, you need to define the etching machine for the PMC model, 
+so your configuration should look like the following:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch/pmc_ion_assisted_etch_t3d.cmd" startExpr="##start - define distribution" endExpr="##end - define machine" excludelines="#*" format="wrap" -->
+<pre>
+define_species_distribution name=my_distr species=Ar+ exponent=2.0e3 \
+  flux=&quot;square_pulse(t&lt;s&gt;, 0.0, @flux_Ar+@, 1000.0, 0.2)&quot; \
+  sampling_time_step=0.01
+
+define_species_distribution name=my_distr species=XeF2 exponent=1.0 \
+  flux=&quot;square_pulse(t&lt;s&gt;, @flux_XeF2@, 0.0, 1000.0, 0.7)&quot; \
+  sampling_time_step=0.01
+
+save species_distribution=my_distr output_type=parameters \
+  file=n@node@_distribution.tdr time=1000&lt;s&gt;
+
+define_yield name=my_yield energy=0 species=Ar+ material=Silicon \
+  yield_at_zero=1.2 yield_max=2.4 theta_max=60
+define_yield name=my_yield energy=0 species=Ar+ material=SiFx \
+  yield_at_zero=1.0 yield_max=1.05 theta_max=50
+define_yield name=my_yield energy=0 species=Ar+ material=Photoresist \
+  yield_at_zero=1.0 yield_max=1.5 theta_max=50
+
+save yield=my_yield file=n@node@_yield.tdr
+
+define_species_properties name=my_props species=Ar+ default_event=discard
+
+define_etch_machine name=rie_machine model=rie_pmc \
+  species_distribution=my_distr yield=my_yield species_properties=my_props
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_pmc_ion_assisted_etch_yields.png"><img src="images/tp_pmc_ion_assisted_etch_yields.png" 
+width="400" alt="Plots of the yield of the species Ar+" /></a></p>
+
+<p class="caption">Figure 6. Plots of the yield of species Ar<sup>+</sup> for 
+the sputtering reactions with <tt>Silicon</tt>, <tt>Photoresist</tt>, and <tt>SiFx</tt>. 
+(Click image for full-size view.)</p>
+
+<!--=============================-->
+<a name="3_reaction_props"></a>
+<h2>6.3.4 PMC Ion-Assisted Etching Reaction Properties</h2>
+
+<p>Now that you have defined the machine and the properties of the source species, 
+it is time to add the properties of the surface reactions of your model. The direct 
+physical sputtering of <tt>Silicon</tt> and <tt>Photoresist</tt> by <tt>Ar+</tt> has 
+a low probability for the low ion energy assumed here. A relatively slow reaction is 
+the further fluorination of <tt>SiFx</tt>, so you can put a very low probability 
+there as well.</p>
+
+<p>On the other hand, the sputtering reaction of <tt>SiFx</tt> by <tt>Ar+</tt> has 
+the maximum probability (this can be adjusted to fit experimental observations), 
+and the adsorption reaction of fluorine on silicon has also a high probability with 
+a typical value of 0.7. The reflection probability is adjusted using the Mizuno formula 
+(refer to the <cite>Sentaurus&trade; Topography 3D User Guide</cite>) with the parameter 
+<tt>mizuno_k</tt>. Here are the properties of the surface reactions:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch/pmc_ion_assisted_etch_t3d.cmd" startExpr="##start - define probability" endExpr="##end - reaction properties" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+define_probability name=refl_prob mizuno_k=0.01 energy=0
+add_reaction_properties machine=rie_machine reaction=sput_Si p=0.001 
+add_reaction_properties machine=rie_machine reaction=refl_Si \
+  probability=refl_prob
+add_reaction_properties machine=rie_machine reaction=sput_SiFx p=1.0
+add_reaction_properties machine=rie_machine reaction=refl_SiFx \
+  probability=refl_prob
+add_reaction_properties machine=rie_machine reaction=sput_PR p=0.001
+add_reaction_properties machine=rie_machine reaction=refl_PR \
+  probability=refl_prob
+add_reaction_properties machine=rie_machine reaction=adsorb_F_Si p=0.7
+add_reaction_properties machine=rie_machine reaction=etch_F_Si p=1.0e-5
+</pre>
+<!-- grep end -->
+
+<!--=============================-->
+<a name="3_run_pmc"></a>
+<h2>6.3.5 Running the PMC Ion-Assisted Etching Simulation</h2>
+
+<p>Your PMC setup for ion-assisted etching is ready to be simulated. The Sentaurus 
+Workbench project, which is available in the <tt>GettingStarted</tt> directory of the 
+<tt>Applications_Library</tt>, has an option to simulate two structures: one without 
+any mask (<tt>@PR_mask@=OFF</tt>) to monitor the silicon etching rate on a flat unobstructed 
+surface and one with a Photoresist to test the model in a more realistic case.</p>
+
+<p><a href="images/tp_pmc_ion_assisted_etch_swb.png"><img src="images/tp_pmc_ion_assisted_etch_swb.png" 
+width="400" alt="Sentaurus Workbench project used for ion-assisted etching" /></a></p>
+
+<p class="caption">Figure 7. Sentaurus Workbench project used for the ion-assisted 
+etching example. The parameters <tt>@flux_Ar+@</tt> and <tt>@flux_XeF2@</tt> are 
+introduced to set the maximum fluxes of <tt>Ar+</tt> and <tt>XeF2</tt>, respectively. 
+The parameter <tt>@PR_mask@</tt> is used to select between two structures to be 
+simulated, one with a Photoresist mask (<tt>@PR_mask@=ON</tt>) and one without. 
+(Click image for full-size view.)</p>
+
+<p>As you can see in the following code block, the <tt>define_extraction</tt> command 
+is used to extract the silicon thickness in the middle of the flat surface. This 
+extraction can then be called by the <tt>etch</tt> command, and it will be executed 
+with a certain interval (<tt>extraction_interval=10.0&lt;s&gt;</tt>). The results 
+will be saved in a separate TDR file, to observe etching evolution during runtime or 
+as a postprocessing task.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch/pmc_ion_assisted_etch_t3d.cmd" startExpr="##start - etch depth extraction definition" endExpr="##end - PR_mask OFF" excludelines="#*" format="excludeEmpty_wrap" -->
+<pre>
+define_extraction name=my_extraction type=probe property=length \
+  materials= {Silicon} axis=z point= {-0.025 -0.025 0.0} \
+  file=n@node@_Si_Thickness.tdr
+etch machine=rie_machine spacing=0.002 time=1000.0&lt;s&gt; method=pmc \
+  extraction=my_extraction extraction_interval=10.0&lt;s&gt;
+</pre>
+<!-- grep end -->
+
+<p>In Figure 8, you can observe the silicon etching rate as calculated from the 
+thickness of silicon extracted during the etching process by using the defined 
+extraction. The synergy between the two source species 
+comes into play when both fluxes of <tt>XeF2</tt> and <tt>Ar+</tt> are switched on, 
+so that the etching rate increases by more than an order of magnitude.</p>
+
+<p><a href="images/tp_pmc_ion_assisted_etch_flat.png"><img src="images/tp_pmc_ion_assisted_etch_flat.png" 
+width="570" alt="Time-dependent fluxes and ion-assisted etching rate" /></a></p>
+
+<p class="caption">Figure 8. Silicon etching rate (flat surface) on the right. 
+You can observe the &quot;jump&quot; of the etching rate when both XeF<sub>2</sub> 
+and Ar<sup>+</sup> are switched on (reference on the left). The etching 
+rate when only XeF<sub>2</sub> or Ar<sup>+</sup> is used is about one order of 
+magnitude lower, a similar behavior as in Figure 2 in 
+<a href="#coburn-1979">[Ref.&nbsp;1]</a>. (Click image for full-size view.)</p>
+
+<p>When the second structure is used with the <tt>Photoresist</tt> mask, you can 
+observe the anisotropic etching profile in silicon. In Figure&nbsp;9, you can also 
+observe the effect of the reflection of the Ar<sup>+</sup> species on <tt>Photoresist</tt>, 
+<tt>Silicon</tt>, and <tt>SiFx</tt>. When the reflection is deactivated 
+(<tt>mizuno_k=0</tt>), the etching depth is less than with the reflection of Ar<sup>+</sup> 
+particles, and the shape of the hole differs slightly.</p>
+
+<p><a href="images/tp_pmc_ion_assisted_etch_masks.png"><img src="images/tp_pmc_ion_assisted_etch_masks.png" 
+width="570" alt="Anisotropic etching of silicon with mizuno_k=0.01 and mizuno_k=0.0" /></a></p>
+
+<p class="caption">Figure 9. Anisotropic etching of silicon using the ion-assisted 
+etching PMC model with a Photoresist mask. The amount of reflection is adjusted with 
+the <tt>mizuno_k</tt> parameter for the probabilities of the reflection reactions. 
+You can observe the microtrenching effect at the bottom of the hole in silicon due 
+to the reflection (<tt>mizuno_k=0.01</tt>, right) of Ar<sup>+</sup> particles on the 
+sidewalls. It is often necessary to use finer spacing (here 2&nbsp;nm) to observe 
+effects like microtrenching, especially for small feature sizes. 
+(Click image for full-size view.)</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sptopo3d/PMC_Ion_Assisted_Etch</tt>.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>6.4 References</h1>
+
+<dl class="ref">
+<dt>Ref. 1</dt>
+<dd><a name="coburn-1979"></a>J. W. Coburn and H. F. Winters, &quot;Ion- and electron-assisted 
+gas-surface chemistry&mdash;An important effect in plasma etching,&quot; 
+<cite>Journal of Applied Physics</cite>, vol.&nbsp;50, no.&nbsp;5, pp. 3189&ndash;3196, 1979 
+(<a href="https://aip.scitation.org/doi/10.1063/1.326355">https://aip.scitation.org/doi/10.1063/1.326355</a>).</dd>
+</dl> 
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_7.html">next section &gt;&gt;</a>
+
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

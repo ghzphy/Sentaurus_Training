@@ -1,0 +1,292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Tips &amp; Tricks 3. Process Simulation of Stress Effects in Front-End-of-Line Structures</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Tips &amp; Tricks<br />3. Process Simulation of Stress Effects in Front-End-of-Line Structures</h1>
+
+<p>
+<a href="#1">3.1 Advanced Calibration for Mechanics Simulations</a><br />
+<a href="#2">3.2 Modeling Stress Induced by CESL and Epitaxial SiGe Layers in Sentaurus Process</a><br />
+<a href="#3">3.3 Specifying NoBulkRelax for Accurate Viscoelastic Stress Analysis in Sentaurus Process</a><br />
+<a href="#4">3.4 Lattice Mismatch Stress</a><br />
+<a href="#5">3.5 Thermal Mismatch Stress</a><br />
+<a href="#6">3.6 Intrinsic Stress</a><br />
+<a href="#7">3.7 References</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To address common questions and issues related to modeling the 
+impact of stress in process simulations.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Advanced Calibration for Mechanics Simulations</h1>
+
+<p>It is recommended to switch on <tt>AdvancedCalibration</tt> for mechanics simulations. 
+The Advanced Calibration file (in section&nbsp;2.15) includes a set of recommended 
+mechanical parameters for the materials of the most common electronics as well as 
+appropriate settings for mechanics simulations. These parameters are loaded automatically 
+(see <a href="../sp/sp_6.html">Section&nbsp;6. Working With Advanced Calibration</a>).</p>
+
+<p>For more information, see the <cite>Advanced Calibration for Process Simulation 
+User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Modeling Stress Induced by CESL and Epitaxial SiGe Layers in Sentaurus Process</h1>
+
+<p>To model the impact of built-in stress in a material upon its deposition, 
+the normal stresses along all three axes with identical components must be 
+specified. When the stress-rebalancing calculation is performed, the initial 
+isotropic normal stress will change according to the particular geometry. 
+For example, isotropic built-in stress in a very thin film will vanish in the 
+normal direction to the surface; whereas, the lateral stress components will 
+change and remain nonzero.</p>
+
+<p>For accurate calculation of the stress introduced by <em>amorphous stress sources</em> 
+such as a strained nitride contact etch stop layer (CESL), deposition must be split 
+into several substeps. After each substep, stress rebalancing must be performed. 
+When the number of substeps is large enough, the calculated stress values saturate 
+to their correct levels. Practically, the number of substeps is in the range 
+from 5 to 10, limited by the CPU time and  the mesh size. One of the first descriptions 
+of this approach was by Loiko <em>et al.</em> <a href="#loiko-2006">[Ref. 1]</a>. 
+See <a href="#6">Section&nbsp;3.6 Intrinsic Stress</a> for the syntax using 
+&quot;fields&quot; to introduce intrinsic stress at deposition steps.</p>
+
+<p>From a physics perspective, this is caused by the interatomic bonds in amorphous 
+material adjusting under the changing stress and geometry during deposition. 
+This happens almost instantly, in a matter of picoseconds. Such adjustments of the 
+interatomic bonds translate into local stress and should be updated after absorption 
+of each atom for  ultimate accuracy. However, for practical purposes, it is sufficient 
+to do the updates in several substeps per deposition.</p>
+
+<p>The requirement for the film thickness deposited per each substep is such that 
+it is much less than the feature sizes of the surface on which it is being deposited. 
+Considering that deposition typically makes the surfaces increasingly smooth during 
+the deposition, it might be reasonable to start with smaller substeps and continue 
+with increasing substeps until the entire film thickness is deposited.</p>
+
+<p>For accurate calculation of the stress introduced by <em>epitaxial films with 
+lattice mismatch</em>, a different approach is necessary. Specifically, 
+<em>stress rebalancing should be done only after depositing the entire film</em>. 
+To calculate the lattice mismatch stress, you can either:</p>
+
+<ul>
+<li>Use the lattice mismatch feature (see <a href="#4">Section 3.4 Lattice Mismatch Stress</a>); 
+default is on for SiGe.</li>
+<li>Use isotropic intrinsic stress (see <a href="#6">Section 3.6 Intrinsic Stress</a>).</li>
+</ul> 
+
+<p>For SiGe, you must switch off the lattice mismatch feature if you choose to use 
+the intrinsic stress approach to avoid double-counting the effect by specifying:</p>
+
+<pre>
+pdbUnSetDoubleArray Silicon Germanium Conc.Strain
+</pre>
+
+<p>If multiple deposition steps are needed, you must switch off stress 
+balance between these deposition steps. That is, add the following commands before 
+the first SiGe deposition step:</p>
+
+<pre>
+pdbSet Mechanics EtchDepoRelax 0
+pdbSet Mechanics StressHistory 0
+</pre>
+
+<p>After all SiGe deposition steps are completed, switch on the above two
+parameters by setting them to 1, and do a short diffusion to rebalance the stress.</p>
+
+<p>From a physics perspective, this is caused by the entire epitaxial film having the 
+same perfect crystal lattice as the substrate on which it is grown. Therefore, during the 
+epitaxy, there are no irreversible adjustments of the interatomic bonds, which means 
+that the final stress distribution is determined by the final shape of the epitaxial 
+film (unless the stress is so high that dislocations are formed).</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Specifying NoBulkRelax for Accurate Viscoelastic Stress Analysis in Sentaurus Process</h1>
+
+<p>Viscoelastic materials such as amorphous SiO<sub>2</sub> exhibit viscous 
+behavior by relaxing the deviatoric stress components. For accurate modeling of 
+stress evolution in such materials, specify <tt>NoBulkRelax</tt>:</p>
+
+<pre>
+pdbSet mechanics NoBulkRelax 1
+</pre>
+
+<p>For example, stress in a narrow shallow trench isolation filled with 
+a spin-on-glass oxide or flowable chemical vapor deposition(CVD) oxide 
+can be quite different if <tt>NoBulkRelax</tt> is not switched on.</p>
+
+<p class="note"><strong>WARNING</strong> This parameter affects the oxidation shape, 
+thickness, and stress inside the oxide. You must do a calibration accordingly. For 
+LOCOS structures, this parameter changes the shape, especially when stress-dependent 
+oxidation is switched on.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>3.4 Lattice Mismatch Stress</h1>
+
+<p>To simulate lattice mismatch stress, two flags control the automatic updating of 
+strain and lattice spacing:</p>
+
+<pre>
+pdbSet Silicon Mechanics UpdateStrain 1
+pdbSet Mechanics LatticeHistory 1
+</pre>
+
+<p>These flags are switched on by default and should remain switched on for the 
+calculation of the lattice mismatch stress.</p>
+
+<p>To activate lattice mismatch stress, you also need to define the strain profile 
+by specifying:</p>
+
+<pre>
+pdbSetDoubleArray Silicon &lt;dopant_name&gt; Conc.Strain {0 0 1 &lt;n&gt;}
+</pre>
+
+<p>Only the germanium strain profile is defined by default internally by:</p>
+
+<pre>
+pdbSetDoubleArray Silicon Germanium Conc.Strain {0 0 1 0.0425}
+</pre>
+
+<p>For other species such as carbon, you must set them yourself. The strain profile 
+can be calculated approximately, based on the lattice constants of the materials. 
+For example, the germanium strain profile can be calculated by:</p>
+
+<p>(<em>L</em><sub>Ge</sub> &ndash; <em>L</em><sub>Si</sub>)/<em>L</em><sub>Si</sub> = (5.66 &ndash; 5.43)/5.43 = 0.042</p>
+
+<p>The reference relaxed position is set to the bottom of the Si substrate by default. 
+This works for the SiGe source/drain on a Si substrate. However, there are cases where 
+you need to redefine the reference position such as for multiple-graded SiGe-strained layers. 
+In those cases, you can set the top relaxed node coordinate accordingly by:</p>
+
+<pre>
+pdbSetDouble Silicon Mechanics TopRelaxedNodeCoord &lt;n&gt;
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>3.5 Thermal Mismatch Stress</h1>
+
+<p>By default internally, the coefficients of thermal expansion (CTEs) of the materials 
+are recalculated relative to silicon when simulating thermal mismatch stress. 
+This is due to the assumption that the substrate is very large compared to devices, 
+so thermal expansion is dominated by the thick silicon substrate, and no thermal 
+expansion stress or wafer bending occurs in the thick substrate.</p>
+
+<p>For substrate materials other than silicon, you must tag it with the keyword 
+<tt>substrate</tt> in the <tt>region</tt> command, so that the CTEs are calculated 
+relative to the tagged substrate material instead. To overwrite the reference CTE 
+by a user-specified value, use:</p>
+
+<pre>
+pdbSetDouble Mechanics RefThExpCoeff &lt;n&gt;
+</pre>
+
+<p>Relaxation of thermal mismatch stress is calculated when a temperature ramp is 
+defined at diffusion by default in two dimensions. However, in three dimensions, the 
+keyword <tt>stress.relax</tt> must be set in the <tt>diffuse</tt> command explicitly.</p>
+
+<p>When automatic tracing of stress history is needed, ensure that you set:</p>
+
+<pre>
+pdbSet Mechanics StressHistory 1
+pdbSet Mechanics EtchDepoRelax 1
+</pre>
+
+<p>With stress history switched off, the thermal mismatch stress is calculated 
+only when a <tt>temp_ramp</tt> is defined in the <tt>diffuse</tt> command. In that 
+case, remember to define the complete temperature ramp cycle. Otherwise, excess thermal 
+mismatch stress might remain. For example, when a ramp-up from 25&deg;C to 1000&deg;C is 
+simulated, at the following steps, there should be a ramp-down step to cycle the temperature 
+back to 25&deg;C. However, if stress history is switched on, Sentaurus Process will handle 
+this automatically.</p>
+
+<p>In 3D simulations, to speed up the simulation, you usually do not switch on stress 
+history unless accurate stress history information is required.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>3.6 Intrinsic Stress</h1>
+
+<p>Typically, intrinsic stress is applied using the <tt>stressdata</tt> command, 
+which sets intrinsic stress for existing materials or regions, such as:</p>
+
+<pre>
+stressdata nitride sxxi=1e10 syyi=1e10 szzi=1e10   <em>(unit is dyn/cm<sup>2</sup>)</em>
+</pre>
+
+<p>Usually, a <tt>diffuse</tt> command follows a <tt>stressdata</tt> command, 
+so that the intrinsic stress can rebalance due to the geometry. However, when 
+using multiple steps for one deposition to rebalance stress after each sub-deposition 
+step, the <tt>stressdata</tt> command is not a good choice. For this condition, in the 
+<tt>deposit</tt> command, you can define stress in <tt>fields</tt> (unit is Pa), 
+for example:</p>
+
+<pre>
+deposit nitride thickness=0.2&lt;um&gt; \
+  fields= {StressELXX StressELYY StressELZZ} \
+  values= {1e9 1e9 1e9} steps=5
+</pre>
+
+<p>Then, when stress is rebalanced after each substep, the intrinsic stress is 
+applied accordingly.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>3.7 References</h1>
+
+<dl class="ref">
+<dt>Ref. 1</dt>
+<dd><a name="loiko-2006"></a>K. V. Loiko <em>et al.</em>, &quot;Multi-Layer Model for Stressor 
+Film Deposition,&quot; in <cite>International Conference on Simulation of Semiconductor 
+Processes and Devices (SISPAD)</cite>, Monterey, CA, USA, September 2006.</dd>
+</dl> 
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="tips_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

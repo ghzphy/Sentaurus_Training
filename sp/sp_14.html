@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 14. Special Focus: Using Mask Information From GDSII Files</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_13.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_15.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />14. Special Focus: Using Mask Information From GDSII Files</h1>
+
+<p>
+ <a href="#1">14.1 Overview</a><br />
+ <a href="#2">14.2 Reading the Layout Information</a><br />
+ <a href="#3">14.3 Using Layout Information in the Process Flow</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To illustrate how mask information from a GDSII file can be used in Sentaurus Process.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>14.1 Overview</h1>
+
+<p>In an efficient process simulation setup flow, mask information is separated 
+from the process simulation flow. This allows for the simulation of different 
+devices in one layout, and an easy exchange of layout. To facilitate such a workflow, 
+Sentaurus Process can read mask information from a GDSII file.</p>
+
+<p>See the <a href="../ic/ic_menu.html">Silicon WorkBench Interface module</a> 
+for an alternative way of working with GDSII files.</p>
+
+<p>The example project used in this section can be investigated from within 
+Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sprocess/GDSreader</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>14.2 Reading the Layout Information</h1>
+
+<p>Sentaurus Process reads the GDSII file using the <tt>icwb</tt> command, in which 
+you must specify the file name, the cell name, the mapping of cell names and cell 
+numbers, and the coordinates of the simulation domain:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/GDSreader/sprocess_fps.cmd" startExpr="icwb*" Lines=6 -->
+<pre>
+icwb gds.file= @pwd@/BICMOSinverter.gds cell= Inverter \
+layer.numbers= {1:0 2:0 3:0 4:0 5:0 6:0 7:0 8:0 9:0} \
+layer.names= {NWELL NPDIFF PPDIFF NPLUG POLY PBASE EMIT METAL CONT}\
+stretches= {nmosstretch = {229.0 4744.0 1531.0 4744.0} \
+            pmosstretch = {683.0 8629.0 2749.0 8629.0} } \
+sim2d= &quot;$xmin $ymin $xmax $ymax&quot; scale= 1e-3
+</pre>
+<!-- grep end -->
+
+<p>Here, the name <tt>NWELL</tt> is assigned to layer <tt>1:0</tt>, the name 
+<tt>NPDIFF</tt> is assigned to layer <tt>2:0</tt>, and so on. There must be as 
+many layer names as layer numbers. Stretches are optional and are used to 
+parameterize the layout. In this example, the stretches parameterize the gate 
+lengths for an NMOS device and a PMOS device. For stretches to be used in a 
+given simulation, they must cross the simulation domain given by <tt>sim2d</tt> 
+or <tt>sim3d</tt> for two-dimensional and three-dimensional domains, respectively.</p>
+
+<p>The <tt>simd2d</tt> option indicates that the process simulation will be performed 
+for a cutline given by the coordinates <tt>$xmin...$ymax</tt>, which are defined 
+earlier in the process simulation input as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/GDSreader/sprocess_fps.cmd" startExpr="set*" Lines=4 -->
+<pre>
+set xmin 1000.0
+set ymin 4100.0
+set xmax 1000.0
+set ymax 6200.0
+</pre>
+<!-- grep end -->
+
+<p class="note">The coordinate system here is the layout coordinate system, 
+where <tt>x</tt> points to the right-hand side and <tt>y</tt> points up. 
+The <tt>scale</tt> argument in the command scales from the layout units 
+(nanometer) to the units used in Sentaurus Process (micrometer).</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>14.3 Using Layout Information in the Process Flow</h1>
+
+<p>To use the layout information, you need to create masks from the GDS layers. 
+You can do this for all layers using the <tt>icwb.create.all.masks</tt> command, 
+which creates two masks for each layer: one with positive polarity and one with 
+negative polarity.</p>
+
+<p>The mask names are the same as the layer names, with either <tt>_p</tt> or 
+<tt>_n</tt> appended to indicate the polarity. All masks are stored in a TDR 
+file when such a file is written, and the file can be used at a later step.</p>
+
+<p>See the <a href="../ic/ic_menu.html">Silicon WorkBench Interface module</a> 
+for an interactive way of transferring mask information to Sentaurus Process.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_13.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_15.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

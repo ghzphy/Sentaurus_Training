@@ -1,0 +1,444 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Process 13. Special Focus: Lattice Kinetic Monte Carlo</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_12.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_14.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Process<br />13. Special Focus: Lattice Kinetic Monte Carlo</h1>
+
+<p>
+ <a href="#1">13.1 General Considerations</a><br />
+ <a href="#2">13.2 LKMC Settings for the Simulation</a><br />
+ <a href="#3">13.3 Choosing an LKMC Model</a><br />
+ <a href="#4">13.4 Solid Phase Epitaxial Regrowth</a><br />
+ <a href="#5">13.5 Epitaxial Deposition</a><br />
+ <a href="#6">13.6 Understanding Information in the Log File</a><br />
+ <a href="#7">13.7 Using Advanced Calibration</a><br />
+ <a href="#8">13.8 References</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to use the lattice kinetic Monte Carlo method.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>13.1 General Considerations</h1>
+
+<p>The lattice kinetic Monte Carlo (LKMC) method simulates on the atomistic scale the epitaxy of silicon and germanium, and simulates the solid phase epitaxial regrowth (SPER) of amorphous silicon to silicon. In this section, the term <em>surface</em> is used for the growing surface during epitaxy as well as the interface that separates crystalline and amorphous silicon in SPER. All such surfaces are represented by possible atom positions at and near that surface, with these positions being occupied or empty. The possible atom positions are arranged in a zinc-blende lattice (therefore, the term <em>lattice KMC</em>) and contain perfect lattice sites as well as possible defect sites (as in the case of twin defects).</p>
+
+<p>The models of the LKMC method describe the interactions of atoms and molecules on such surfaces. For epitaxial growth, for example, the models describe how silane molecules interact with surface silicon atoms and then disintegrate, leaving new silicon atoms adsorbed to the surface. For SPER, the models describe how silicon atoms in an amorphous phase change their positions such that the crystalline region grows. In both cases, dopant diffusion can be modeled as well using the KMC diffusion method.</p>
+
+<p>While in the LKMC method, all atoms at and near the surface are considered, the KMC diffusion method considers only defects and dopants (only atoms that do not belong to a perfect silicon or SiGe lattice).</p>
+ 
+<p class="note"> Because the crystal structure and atom positions must be represented, all KMC and LKMC simulations are performed in three dimensions.</p>
+
+<p>The LKMC method and the KMC diffusion method share some parameters, which are set with the command:</p>
+
+<pre>
+pdbSet KMC &lt;parameter&gt; &lt;value&gt;
+</pre>
+
+<p>Some of these settings are explained in this module. For more details, see <a href="sp_12.html">
+Section&nbsp;12. Special Focus: Kinetic Monte Carlo</a>.</p>
+
+<p>The examples chosen in this module are relatively simple to run within a reasonable time, yet they still illustrate the method.</p>
+
+<p>For epitaxy, the growth of silicon from a silane-containing ambient, including doping, is used. Another epitaxy example grows a doped elevated source/drain region of a FinFET. For SPER, an example of recrystallization after ion implantation is demonstrated. A second example shows how an amorphous region with a fin-like structure is recrystallized.
+</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>13.2 LKMC Settings for the Simulation</h1>
+
+<p>For epitaxial deposition, the LKMC method can be used in full atomistic mode or in hybrid mode. <em>Full atomistic</em> means dopants are modeled using the KMC method, while the growing surface is modeled using the LKMC method. To use the full atomistic mode, specify:</p>
+
+<pre>
+SetAtomistic
+pdbSet LKMC Epitaxy true
+</pre>
+
+<p>To use the hybrid mode, specify the option <tt>lkmc</tt> in the <tt>diffuse</tt> command. With that, the epitaxial growth is modeled atomistically during this diffusion step, and dopant diffusion is modeled in continuum mode. The hybrid mode can be used if you are interested only in the shape of the grown region.</p>
+
+<p>SPER is modeled using the KMC method if <tt>SetAtomistic</tt> is specified. 
+The KMC method uses a simple isotropic model. To use the LKMC method, you must 
+specify one of the LKMC models as follows:</p>
+
+<pre>
+pdbSet Silicon KMC damage SPER.model &lt;model&gt;
+</pre>
+
+<p>where <tt>&lt;model&gt;</tt> is one of the SPER models listed in 
+<a href="sp_13.html#3">Section&nbsp;13.3 Choosing an LKMC Model</a> (see <a href="#table1">
+Table&nbsp;1</a>).</p>
+
+<a name="table1"></a>
+<table> 
+<caption>Table 1. Options for the models of the LKMC method.</caption>
+
+<tr>
+<th>Model</th>	
+<th>Method</th>
+<th>Switch on using</th>
+<th>Dopant diffusion</th>
+<th>Use for</th>
+</tr>
+
+<tr>
+<td>Epitaxy</td>
+<td>Hybrid</td>
+<td><tt>diffuse ... lkmc</tt></td>
+<td>Continuum</td>
+<td>Si or SiGe elevated source/drain shape</td>
+</tr>
+
+<tr>
+<td>Epitaxy</td>
+<td>Full atomistic</td>
+<td><tt>SetAtomistic</tt><br />
+<tt>pdbSet KMC Epitaxy true</tt></td>
+<td>Using KMC</td>
+<td>Si or SiGe elevated source/drain with accurate doping</td>
+</tr>
+
+<tr>
+<td>SPER</td>
+<td>Simple KMC </td>
+<td><tt>SetAtomistic</tt></td>	
+<td>Using KMC</td>
+<td>Full atomistic flow with simple SPER model</td>
+</tr>
+
+<tr>
+<td>SPER</td>
+<td>KMC and LKMC</td>
+<td><tt>SetAtomistic</tt><br />
+<tt>pdbSet Silicon KMC Damage SPER.model &lt;model&gt;</tt></td>
+<td>Using KMC</td>
+<td>Full atomistic flow</td>
+</tr>
+</table>
+
+<p>As noted in <a href="sp_13.html#1">Section&nbsp;13.1 General Considerations</a>, LKMC simulations are always performed in three dimensions. You must specify the depth of the simulation domain, that is, the thickness of the substrate to be simulated. For the lateral directions, the following default settings can be overwritten:</p>
+
+<pre>
+pdbSet KMC MaxYum 0.04
+pdbSet KMC MaxZum 0.04
+</pre>
+
+<p><tt>MaxYum</tt> is the size of the KMC or LKMC simulation domain (in &mu;m) in the y-direction. 
+Similarly, <tt>MaxZum</tt> is the size of the simulation domain in the z-direction.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>13.3 Choosing an LKMC Model</h1>
+
+<p>The models implemented for LKMC SPER are:</p>
+
+<ul>
+<li>The <tt>Planes</tt> model is a basic LKMC model parameterized using the crystal orientation.</li>
+<li>The <tt>Coordinations.Planes</tt> model can be extended to account for the local atomic configuration. Currently, it is parameterized using only crystal planes.</li>
+</ul>
+
+<p>The model for SPER is selected by specifying:</p>
+
+<pre>
+pdbSet &lt;material&gt; KMC Damage SPER.Model &lt;model&gt;
+</pre>
+
+<p class="note">The <tt>Planes</tt> model is used, in this section, for SPER.</p>
+
+<p>The models implemented for epitaxial deposition are:</p>
+
+<ul>
+<li>The <tt>Coordinations.Reactions</tt> model and the <tt>Coordinations</tt> model are based on atomic bonding energies.</li>
+<li>The <tt>Planes</tt> model and the <tt>Coordination.Planes</tt> model are based on the local surface orientation.</li>
+</ul>
+
+<p>The growth rates and the reaction rates in the <tt>Coordinations.Reactions</tt> and <tt>Coordinations</tt> models are determined by the coordination, that is, the number and the type of bonds between the depositing species and those on the surface. In addition, the <tt>Coordinations.Reactions</tt> model considers reactions that occur during chemical vapor deposition. Examples of such reactions include the decomposition of source gases, the site blocking effects of a carrier gas such as H<sub>2</sub>, and the desorption of source gas molecules. The <tt>Coordinations</tt> model does not consider reactions, but it includes the growth rate dependency on the composition and the crystal orientation of the deposition surface.</p>
+
+<p>The model for epitaxial deposition is selected by specifying;</p>
+
+<pre>
+pdbSet LKMC Epitaxy.Model &lt;model&gt;
+</pre>
+
+<p>where <tt>&lt;model&gt;</tt> can be one of the following:</p>
+
+<ul>
+<li><tt>Coordinations</tt></li> 
+<li><tt>Coordinations.Planes</tt></li> 
+<li><tt>Coordinations.Reactions</tt></li> 
+<li><tt>Planes</tt></li> 
+</ul>
+
+<p class="note">The <tt>Coordinations.Reactions</tt> model is used, in this section, for epitaxial deposition.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>13.4 Solid Phase Epitaxial Regrowth</h1>
+
+<p>The easiest way to start with SPER in the LKMC method is to use an existing KMC simulation setup. With that, you can use all the KMC framework (data extraction and so on) of the KMC simulation. The only additional line needed is:</p>
+
+<pre>
+pdbSet Silicon KMC Damage SPER.Model Planes
+</pre>
+
+<p>which couples the LKMC recrystallization to the KMC simulation. Such a derived example is located in 
+<tt>Applications_Library/GettingStarted/sprocess/LKMC_SPER_snowplough</tt>.</p>
+
+<p>The present example is based on the KMC simulation in <a href="sp_12.html">Section&nbsp;12. Special Focus: Kinetic Monte Carlo</a>. Here, an amorphizing germanium implantation step is followed by indium implantation. The subsequent diffusion step is performed with the LKMC method switched on. At the end of the simulation, two TDR files are written:</p>
+
+<pre>
+kmc extract tdrWrite filename=n@node@_anneal
+...
+struct tdr=n@node@
+</pre>
+
+<p>The first file is written using the KMC method and contains all the information discussed in 
+<a href="sp_12.html">Section&nbsp;12. Special Focus: Kinetic Monte Carlo</a>.</p>
+
+<p>The second file contains all the atomistic information at the end of the simulation (see Figure&nbsp;1). The top part of the silicon is still amorphous (indicated in light red). It is separated from the crystallized region (light blue) by the crystallization front (silicon atoms shown in green). All individual silicon atoms at the crystallization front are modeled explicitly. Recrystallization starts also from the surface. The green islands on the top are silicon atoms at the amorphous/crystalline interface. Immediately below the amorphous interface, there are few defects. The amorphous silicon has recrystallized to an almost perfect silicon lattice containing some indium atoms (purple spheres) and a few point defects (red spheres).</p>
+
+<p>Further down, a region with a high number of interstitials, vacancies, and extended defects (red and green spheres) starts at the location up to which the silicon was amorphized due to the germanium implantation.</p>
+
+<p><a href="images/sp_lkmc_sper.png"><img src="images/sp_lkmc_sper.png" width="250" 
+alt="SPER after indium ion implantation" /></a></p>
+
+<p class="caption">Figure 1. SPER after indium ion implantation. (Click image for full-size view.)</p>
+
+<p>For the second SPER example (<tt>Applications_Library/GettingStarted/sprocess/LKMC_SPER-2Dfin</tt>), a simple 2D structure is used that represents a cross section of a fin in FinFET technology. A high concentration of Frenkel pairs is defined to make the silicon amorphous in the fin. The <tt>Coordinations.Planes</tt> model is switched on to model SPER. With that, the diffusion step is performed with the LKMC method. Figure&nbsp;2 shows several snapshots taken during the diffusion. Because of the orientation dependency of the growth rates (the 111 direction has the slowest rate), you can observe the characteristic facet formation.</p>
+	
+<p><a href="images/sp_lkmc_sper_snapshots.png"><img src="images/sp_lkmc_sper_snapshots.png" width="570" 
+alt="Snapshots taken during SPER" /></a></p> 
+
+<p class="caption">Figure 2. Snapshots taken during SPER after (left to right) 5 s, 15 s, 50 s 100 s, and 200 s: interstitials (red), vacancies (green), and silicon atoms (purple) at the recrystallization front, and twin defects (yellow). (Click image for full-size view.)</p>
+
+<p>The regrown crystalline silicon is not completely defect free. During the crystallization, several defects can form. In the LKMC method, you take into account the formation of twin defects on the 111 plane as described in <a href="#martin-bragado-2012">[Ref.&nbsp;1]</a>. As mentioned in <a href="sp_13.html#1">Section&nbsp;13.1 General Considerations</a>, the simulator represents the volume around a growing surface by lattice sites being occupied during growth. Here, lattice sites are perfect lattice sites and twin-defect sites. The local atomistic configuration of a twin defect is shown in Figure 3. The probability to form such a twin defect is set using:</p>
+
+<tt>pdbSet KMC Si Damage probability.SPER.defect &lt;n&gt;</tt> 
+
+<p><a href="images/sp_lkmc_lattice.png"><img src="images/sp_lkmc_lattice.png" width="350" 
+alt="Silicon lattice" /></a></p> 
+
+<p class="caption">Figure 3. Perfect silicon lattice is highlighted in green (A) and twin 
+defect is highlighted in red (B). (Click image for full-size view.)</p>	
+
+<p>In the LKMC or KMC method, twin defects do not interact with other defects. They are mainly an indication where and under which conditions defective silicon forms. You can find the number of twin defects using the <tt>kmc extract</tt> command, for example:</p>
+
+<pre>
+set NDefect [kmc extract defects name=I
+defectname=TwinDefect countparticles]
+puts "DOE: twins $NDefect"
+</pre>
+
+<p>Here, the second command puts the extracted number into the Sentaurus Workbench table.</p>
+
+<!--=========================-->
+<a name="5"></a>
+<h1>13.5 Epitaxial Deposition</h1>
+
+<p>For epitaxial deposition, you first use a simple 1D example, 
+<tt>Applications_Library/GettingStarted/sprocess/LKMC_Depo_SiP</tt>. 
+The gas flows and the annealing steps are defined by the following commands:</p>
+
+<pre>
+gas_flow name= SiP epi flowHGas=1000 flowDichlorosilane=50 \
+         flowPhosphine=30 pressure= 20&lt;torr&gt;
+temp_ramp name= SiPEpi gas.flow= SiP epi.model=1 \
+          time= 1.0 temp=700
+diffuse temp.ramp=SiPEpi info=0
+</pre>
+
+<p>With this, an epitaxial deposition step for 1 minute at 700&deg;C is simulated. Hydrogen is used as the carrier gas, 
+and the gas contains SiH<sub>2</sub>Cl<sub>2</sub> to grow silicon and PH<sub>3</sub> for the silicon doping. The units 
+for the gas flows follow the Sentaurus Process convention. There are more predefined gases available, and you can define 
+a new gas as well.</p>
+
+<p>You want to model the reactions explicitly on the surface, so you use the <tt>Coordinations.Reactions</tt> model. 
+At any given time during the simulation, several atomic and molecular species can be found on the surface, as shown in Figure&nbsp;4.</p>
+ 
+<p><a href="images/sp_lkmc_atoms.png"><img src="images/sp_lkmc_atoms.png" width="500" 
+alt="Epitaxial deposition" /></a></p>
+ 
+<p class="caption">Figure 4. (Top) A top view during the simulation showing Si surface atoms (green), 
+HStar on the surface (red), SiCl2Star (purple), and phosphorus (yellow); (bottom) view along the 110 
+direction with silicon lattice atoms shown as dots. (Click image for full-size view.)</p>
+
+<p>The second example <tt>Applications_Library/GettingStarted/sprocess/LKMC_25nmFinFET</tt> for epitaxial growth is a 3D FinFET in which the deposition of the highly doped source and drain areas is modeled using the LKMC method. The epitaxial step is embedded into a continuum diffusion process flow.</p>
+
+<p>To start the epitaxial growth in the LKMC method, you switch on the atomistic mode and chose the model as follows:</p>
+
+<pre>
+SetAtomistic
+pdbSet LKMC Epitaxy.Model Coordinations.Planes
+</pre>
+
+<p>With this, the growth is modeled using the LKMC method. Existing dopant concentrations are converted to individual atoms. These and the dopants introduced during the growth are modeled using the KMC method. Figure&nbsp;5 shows the time evolution of this simulation.</p>
+ 
+<p>The simulation is performed in full atomistic mode. It is recommended to stay in this 
+mode until the end of the simulation.</p>
+
+<p>After the LKMC growth, the atomistic structure of the grown surface must be converted into a continuous boundary. 
+The accuracy of this conversion is controlled by the following parameter:</p>
+
+<pre>
+pdbSet KMC Simplify.Geometry 1.0E-4
+</pre>
+
+<p>Higher values will lead to smoother surfaces, and lower values lead to better resolution. Better resolution typically leads to more mesh nodes.</p>
+
+<p><a href="images/sp_lkmc_deposit.png"><img src="images/sp_lkmc_deposit.png" width="570" 
+alt="Time evolution of the LKMC deposition" /></a></p>
+ 
+<p class="caption">Figure 5. Time evolution of the LKMC deposition: the structure is shown after (left to right) 1&nbsp;minute, 2 minutes, 3 minutes, 4 minutes, and 5 minutes; purple spheres represent the surface, colored dots are dopant ions, and (far right) structure shows the conversion to continuum dopants and boundary. (Click image for full-size view.)</p>
+
+<!--=========================-->
+<a name="6"></a>
+<h1>13.6 Understanding Information in the Log File</h1>
+
+<p>The log file contains information about the models used:</p>
+
+<pre>
+SPER model |  Lattice KMC
+</pre>
+
+<p>For the epitaxial growth, it reads:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/LKMC_Epitaxy_SiP/n93_fps.out" startExpr="*LKMC *" Lines=1 -->
+<pre>
+pdbSet LKMC Epitaxy.Model Coordinations.Reactions
+</pre>
+<!-- grep end -->
+
+<p>Since you are using the <tt>Coordination.Reactions</tt> model, the list of possible reactions is printed, for example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/LKMC_Epitaxy_SiP/n93_fps.out" startExpr="Name: PH2Star_sr" Lines=9 -->
+<pre>
+Name: PH2Star_sr
+              type: SurfaceReaction
+         prefactor: 100(1/s)
+            energy: 0(eV)
+    max separation: 0.41(nm)
+          ambients: *0
+         reactants: 1*PH2Star
+          products: 1*Phosphorus
+       segregating: 
+</pre>
+<!-- grep end -->
+
+<p>The name of the reaction is <tt>PH2Star_sr</tt>, where the <tt>sr</tt> suffix indicates it is a surface reaction. Other possible suffixes for built-in reactions are <tt>ads</tt> (adsorption), <tt>des</tt> (desorption), and <tt>etch</tt> (etching). All reactions describe the reaction of a reactant (here, <tt>PH2Star</tt>) with the surface. The product here is one phosphorus atom (on the surface) and two hydrogen atoms released to the ambient gas. Atoms released to the gas are removed from the simulation.</p>
+
+<p>At the end of the diffusion step, the KMC and LKMC reports are written to the log file. The KMC reports 
+are explained in <a href="sp_12.html">Section 12. Special Focus: Kinetic Monte Carlo</a>.</p>
+
+<p>The LKMC method writes an activity report and an event report. The activity report looks like:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/LKMC_Epitaxy_SiP/n93_fps.out" startExpr="*LKMC activ*" Lines=7 -->
+<pre>
+--            LKMC activity report                        --
+First:  Time Events   Temp |  Last: Time     Events Temp  Cleaned    Label
+       0.000 0.00e+00  700 |   110555 here                     0     Silicon
+5.322274e-03 2.66e+03  700 |      997 here                     0  Phosphorus
+1.030382e-06 1.00e+00  700 |     1291 here                  7958       HStar
+1.904441e-04 1.81e+02  700 |        59.956 7.74e+05  700       7     PH2Star
+2.061115e-06 2.00e+00  700 |        9 here                   489   SiCl2Star
+</pre>
+<!-- grep end -->
+
+<p>The first column prints the time at which a particular LKMC atom is observed. Here, you have silicon at the initialization of the LKMC method (time=0). The first phosphorus atom was observed at 5.32e-3&nbsp;s.</p>
+
+<p>At the end of the diffusion, there are 110555 silicon atoms and 997 phosphorus atoms, and the HStar, PH2Star, and SiCl2Star reactants are listed. The Cleaned column lists the species that are discarded from the simulation, for example, 7958 HStar ions were discarded when they were found to be buried inside the silicon.</p>
+
+<p>The LKMC event report looks like:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/LKMC_Epitaxy_SiP/n93_fps.out" startExpr="*LKMC event*" Lines=1 -->
+<pre>
+--            LKMC event report                            --
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sprocess/LKMC_Epitaxy_SiP/n93_fps.out" startExpr="*Name: Phosphine_ads        #Ev*" Lines=4 -->
+<pre>
+Name: Phosphine_ads        #Events:     1004
+      Type: Adsorption
+      Ambients:  Phosphine 1
+      Products:  1 PH2Star
+</pre>
+<!-- grep end -->
+
+<p>This report lists the number of events performed for each species during the simulation. Here, 1004 events of phosphine adsorption on the surface were simulated, involving phosphine from the ambient and resulting in a PH2Star being adsorbed on the silicon surface.</p>
+
+<!--=========================-->
+<a name="7"></a>
+<h1>13.7 Using Advanced Calibration</h1>
+
+<p>The best generally available parameter set for the KMC method and the LKMC method is contained 
+in the file <tt>AdvCal_KMC_2022.12.fps</tt>.</p>
+
+<p>For a simulation flow that starts with continuum diffusion and later switches to use the KMC or LKMC method, it is recommended to set the following:</p>
+
+<pre>
+AdvancedCalibration    ;# loads the Advanced Calibration file for continuum
+SetAtomistic
+AdvancedCalibration    ;# loads the Advanced Calibration file for KMC/LKMC
+UnsetAtomistic
+&lt;continuum process flow&gt;
+SetAtomistic
+&lt;KMC or LKMC flow&gt;
+</pre>
+
+<!--=========================-->
+<a name="8"></a>
+<h1>13.8 References</h1>
+
+<dl class="ref">
+<dt>Ref. 1</dt>
+<dd><a name="martin-bragado-2012"></a>I. Martin-Bragado and B. Sklenard, 
+&quot;Understanding Si(111) solid phase epitaxial regrowth using Monte Carlo modeling: Bi-modal 
+growth, defect formation, and interface topology,&quot; <em>Journal of Applied Physics</em>, 
+vol. 112, no. 2, p.&nbsp;024327, 2012.</dd>
+</dl>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_12.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sp_14.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

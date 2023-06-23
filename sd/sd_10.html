@@ -1,0 +1,496 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 10. Running Sentaurus Device in Sentaurus Workbench</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_9.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_11.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />10. Running Sentaurus Device in Sentaurus Workbench</h1>
+
+<p>
+ <a href="#1">10.1 Overview</a><br />
+ <a href="#2">10.2 File Section</a><br />
+ <a href="#3">10.3 Using Sentaurus Workbench Parameters</a><br />
+ <a href="#4">10.4 Arithmetic Expressions</a><br />
+ <a href="#5">10.5 Including Files</a><br />
+ <a href="#6">10.6 Parameterized Sentaurus Device Parameter Files</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To understand how Sentaurus Device runs in Sentaurus Workbench.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>10.1 Overview</h1>
+
+<p>This section discusses running Sentaurus Device in Sentaurus Workbench, 
+which is the framework tool where parameterized simulation projects using 
+various TCAD tools, including Sentaurus Device, are organized and executed.</p>
+
+<p>For more information, see the <a href="../swb/swb_menu.html">
+Sentaurus Workbench module</a>.</p>
+      
+<p>This section highlights the changes that a Sentaurus Device standalone command file 
+requires to use the most relevant Sentaurus Workbench preprocessing capabilities.</p>
+      
+<p>The example in this section, <tt>sdevice_des.cmd</tt>, represents a typical command 
+file of Sentaurus Device to be executed in Sentaurus Workbench.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sdevice/SOI_IdVg</tt>.</p>
+
+<p>To check out the project, start Sentaurus Workbench and copy the 
+<tt>SOI_IdVg</tt> project to a local directory. The target directory must 
+reside under the Sentaurus Workbench working directory to which the environment 
+variable <tt>$STDB</tt> points. For details about this environment variable, see 
+<a href="../swb/swb_01.html#2">Section 1.2 Starting Sentaurus Workbench</a>.</p>
+
+<p>In this section, the parts of the command file specific to Sentaurus Workbench 
+preprocessing are highlighted in red and discussed. See 
+<a href="sd_1.html#2">Section 1.2 Command File</a> for a detailed description 
+of most of the file.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>10.2 File Section</h1>
+
+<p>In standalone applications, the <tt>File</tt> section specifies the input 
+and output files of the simulation (see <a href="sd_1.html#File">Section&nbsp;1.2.1 File Section</a>). 
+When Sentaurus Device runs in Sentaurus Workbench, these specifications are 
+performed using the predefined Sentaurus Workbench file-name placeholders, such as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="File {*" endExpr="}*" -->
+<pre>
+File {
+  *-Predefined SWB parameters
+  Grid    = &quot;@tdr@&quot;
+  Plot    = &quot;@tdrdat@&quot;
+  Current = &quot;@plot@&quot;
+  Output  = &quot;@log@&quot;
+  Param   = &quot;@parameter@&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>During preprocessing, Sentaurus Workbench replaces these placeholders with 
+actual file names that are determined by the following rules.</p>
+
+<p>For the input file <tt>@tdr@</tt>, Sentaurus Workbench searches the simulation tree 
+for a previous node in which a device structure is generated, typically by Sentaurus Structure 
+Editor or Sentaurus Mesh. Sentaurus Workbench then replaces the placeholders in the current 
+node with the device structure found in the previous node. These structures are, in general, 
+named <tt>nNR_msh.tdr</tt>, where <tt>NR</tt> is the node number at which the structure 
+was generated. In this project, the meshed structure <tt>n2_msh.tdr</tt> is generated 
+at node number 2 (Sentaurus Mesh output).</p>
+
+<p class="note">If Sentaurus Device is the first tool in the tool flow, the input 
+files must be specified explicitly.</p>
+
+<p>For the output files <tt>@tdrdat@</tt>, <tt>@plot@</tt>, and <tt>@log@</tt>, Sentaurus 
+Workbench uses the current node number to expand these placeholders to, for example, 
+<tt>n10_des.tdr</tt>, <tt>n10_des.plt</tt>, and <tt>n10_des.log</tt> (here, 10 represents 
+one of the actual node numbers for Sentaurus Device in the project).</p>
+
+<p>For the <tt>@parameter@</tt> file, Sentaurus Workbench looks for a parameter file with the 
+name <tt>sdevice.par</tt>. Sentaurus Workbench preprocesses this file into, for example, 
+<tt>pp10_des.par</tt> and then expands the <tt>@parameter@</tt> placeholder accordingly.</p>
+
+<p class="note">In standalone simulations, the parameter file can have any name. 
+When running under Sentaurus Workbench, however, you must use the name 
+<tt>sdevice.par</tt>. Otherwise, the parameter file is not preprocessed.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>10.3 Using Sentaurus Workbench Parameters</h1>
+
+<p>Sentaurus Workbench parameters are defined in the tool flow (see the 
+<a href="../swb/swb_menu.html">Sentaurus Workbench module</a>). To refer to a Sentaurus 
+Workbench parameter in the Sentaurus Device command file, enclose the parameter name 
+in double @ signs.</p>
+      
+<!--========================-->
+<h2>10.3.1 Numeric Sentaurus Workbench Parameters</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="Solve {*" endExpr="}*" -->
+<pre>
+Solve {
+  NewCurrentPrefix=&quot;init&quot;
+  Coupled(Iterations=100){ Poisson }
+  Coupled{ Poisson Electron Hole }
+  
+  Quasistationary(
+    InitialStep=1e-1 Increment=1.2
+    Minstep=1e-5 MaxStep=0.1
+    Goal{ Name=&quot;drain&quot; Voltage= @Vd@ }
+  ){ Coupled{ _EQUATIONS_ } }
+  
+  NewCurrentPrefix=&quot;&quot;
+  Quasistationary(
+    DoZero
+    InitialStep=5e-2 Increment=1.5
+    Minstep=1e-5 MaxStep=0.05
+    Goal{ Name=&quot;gate&quot; Voltage= @Vdd@ }
+  ){ Coupled{ _EQUATIONS_ }
+    *-Arithmetic with variables: enforcing ~0.1V steps for all values of Vdd
+    CurrentPlot( Time=(Range=(0 1) Intervals=@&lt;int(Vdd/0.1)&gt;@ )
+    )
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>The Sentaurus Workbench project is set up to simulate the I<sub>d</sub>&ndash;V<sub>g</sub> 
+characteristics of an SOI MOSFET for low-drain bias (<tt>Vd</tt> = 0.05 V) and for high-drain bias 
+(<tt>Vd</tt> = 1.5 V). In Sentaurus Workbench, the parameter <tt>Vd</tt> is introduced in the tool 
+flow, and the values 0.05 V and 1.5 V are assigned to this parameter.</p>
+
+<p>In the command file of Sentaurus Device, this parameter is used in the initial 
+<tt>Quasistationary</tt> section to bias the drain to the respective bias. During preprocessing, 
+Sentaurus Workbench replaces this parameter with the real nodal value of the parameter as 
+assigned in the tool flow.</p>
+
+<!--========================-->
+<h2>10.3.2 String-Valued Sentaurus Workbench Parameters</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="Electrode*" endExpr="}*"-->
+<pre>
+Electrode {
+  { Name=&quot;source&quot;    Voltage= 0.0 Resistor= 40 }
+  { Name=&quot;drain&quot;     Voltage= 0.0 Resistor= 40 }
+  { Name=&quot;gate&quot;      Voltage=-0.1 }
+  { Name=&quot;substrate&quot; Voltage= 0.0 }
+  *-Conditional inclusion of code:
+  #if [string compare @Body@ &quot;Tied&quot;] == 0
+  { Name=&quot;bodytie&quot;   Voltage=0.0 eRecVelocity=0 }
+  #endif
+}
+</pre>
+<!-- grep end -->
+
+<p>The Sentaurus Workbench project is set up to simulate both body-tied and floating-body SOI 
+devices. In Sentaurus Workbench, a parameter <tt>Body</tt> is introduced in the tool flow and 
+is assigned one of two possible values: <tt>Tied</tt> and <tt>Floating</tt>.</p>
+
+<p>In the command file of Sentaurus Device, a conditional statement <tt>#if/#endif</tt> is included 
+in the <tt>Electrode</tt> section, which checks the assigned value of the parameter using the 
+<tt>[string compare ...]</tt> Tcl function and includes the <tt>body</tt> contact in the 
+<tt>Electrode</tt> section only for the body-tied device simulations.</p>
+
+<!--========================-->
+<h2>10.3.3 Conditional Local Variables</h2>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="\*-Conditional*" endExpr="#endif*" -->
+<pre>
+*-Conditional setting of local variables:
+#if @Vd@ &lt; 0.1
+#define _TRANSMOD_     * DriftDiffusion
+#define _DRIVINGFORCE_ GradQuasiFermi
+#define _B2BAVAL_      * No band-to-band and impact ionization
+#define _EQUATIONS_    Poisson Electron Hole
+#else 
+#define _TRANSMOD_     Hydrodynamics( eTemperature )
+#define _DRIVINGFORCE_ CarrierTempDrive
+#define _B2BAVAL_      Band2Band(E2) Avalanche(CarrierTempDrive)
+#define _EQUATIONS_    Poisson Electron Hole eTemperature 
+#endif
+</pre>
+<!-- grep end -->
+*...
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="Physics*" endExpr="}*" endOccurrence=2 -->
+<pre>
+Physics {
+  *-Using local variables:
+  _TRANSMOD_
+  eQCvanDort
+  EffectiveIntrinsicDensity( OldSlotboom )     
+  Recombination( SRH(DopingDep) )           
+}
+
+Physics(Material=&quot;Silicon&quot;) {
+  Mobility(
+    PhuMob
+    eHighFieldsaturation( _DRIVINGFORCE_ )
+    hHighFieldsaturation( GradQuasiFermi )
+    Enormal
+  )
+  Recombination(
+    SRH( DopingDep )
+    _B2BAVAL_
+  )  
+}
+</pre>
+<!-- grep end -->
+*...
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="Solve *" endExpr="}*" -->
+<pre>
+Solve {
+  NewCurrentPrefix=&quot;init&quot;
+  Coupled(Iterations=100){ Poisson }
+  Coupled{ Poisson Electron Hole }
+  
+  Quasistationary(
+    InitialStep=1e-1 Increment=1.2
+    Minstep=1e-5 MaxStep=0.1
+    Goal{ Name=&quot;drain&quot; Voltage= @Vd@ }
+  ){ Coupled{ _EQUATIONS_ } }
+  
+  NewCurrentPrefix=&quot;&quot;
+  Quasistationary(
+    DoZero
+    InitialStep=5e-2 Increment=1.5
+    Minstep=1e-5 MaxStep=0.05
+    Goal{ Name=&quot;gate&quot; Voltage= @Vdd@ }
+  ){ Coupled{ _EQUATIONS_ }
+    *-Arithmetic with variables: enforcing ~0.1V steps for all values of Vdd
+    CurrentPlot( Time=(Range=(0 1) Intervals=@&lt;int(Vdd/0.1)&gt;@ )
+    )
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>The command file is parameterized such that a drift-diffusion simulation is performed 
+for low-drain bias, and a hydrodynamic simulation is used for high-drain bias.</p>
+
+<p>The <tt>#if ... #else ... #endif</tt> preprocessor directives assign different values to the 
+local variables, depending on the nodal value of the Sentaurus Workbench parameter <tt>Vd</tt>.</p>
+
+<p>Then, macro variables <tt>_TRANSMOD_</tt>, <tt>_DRIVINGFORCE_</tt>, <tt>_B2BAVAL_</tt>, and 
+<tt>_EQUATIONS_</tt> are used in various sections of the command file of Sentaurus Device. 
+Note that the preprocessor performs a simple string-replacing operation.</p>
+
+<p>To avoid unintended replacements, the local variables are protected by underscores, which are 
+not required but are recommended.</p>
+
+<!--========================-->
+<h2>10.3.4 Global Parameters</h2>
+      
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="\*-Setting *" lines=2-->
+<pre>
+*-Setting global variable:
+#set Vdd 1.5
+</pre>
+<!-- grep end -->
+
+<pre>
+...
+</pre>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="Solve *" endExpr="}*" -->
+<pre>
+Solve {
+  NewCurrentPrefix=&quot;init&quot;
+  Coupled(Iterations=100){ Poisson }
+  Coupled{ Poisson Electron Hole }
+  
+  Quasistationary(
+    InitialStep=1e-1 Increment=1.2
+    Minstep=1e-5 MaxStep=0.1
+    Goal{ Name=&quot;drain&quot; Voltage= @Vd@ }
+  ){ Coupled{ _EQUATIONS_ } }
+  
+  NewCurrentPrefix=&quot;&quot;
+  Quasistationary(
+    DoZero
+    InitialStep=5e-2 Increment=1.5
+    Minstep=1e-5 MaxStep=0.05
+    Goal{ Name=&quot;gate&quot; Voltage= @Vdd@ }
+  ){ Coupled{ _EQUATIONS_ }
+    *-Arithmetic with variables: enforcing ~0.1V steps for all values of Vdd
+    CurrentPlot( Time=(Range=(0 1) Intervals=@&lt;int(Vdd/0.1)&gt;@ )
+    )
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Global variables (for example, <tt>Vdd</tt>) are defined using the
+<tt>#set</tt> preprocessor directive. While local variables (defined by
+<tt>#define</tt>) are visible inside the given tool input file only, global
+variables are accessible from any tool in the tool flow, when they are
+declared.</p>
+
+<p>For example, the <tt>Vdd</tt> global variable defined at the start of the
+file is used both here in the Sentaurus Device input and later in the Sentaurus 
+Visual input. When defined, global variables can be used like standard Sentaurus
+Workbench variables.</p>
+
+<p>Global variables also can be changed at runtime. See 
+<a href="../swb/swb_08.html#2">Section&nbsp;8.2 Project Variables</a> for details
+on how to work with Sentaurus Workbench global variables.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>10.4 Arithmetic Expressions</h1>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice_des.cmd" startExpr="Solve *" endExpr="}*" -->
+<pre>
+Solve {
+  NewCurrentPrefix=&quot;init&quot;
+  Coupled(Iterations=100){ Poisson }
+  Coupled{ Poisson Electron Hole }
+  
+  Quasistationary(
+    InitialStep=1e-1 Increment=1.2
+    Minstep=1e-5 MaxStep=0.1
+    Goal{ Name=&quot;drain&quot; Voltage= @Vd@ }
+  ){ Coupled{ _EQUATIONS_ } }
+  
+  NewCurrentPrefix=&quot;&quot;
+  Quasistationary(
+    DoZero
+    InitialStep=5e-2 Increment=1.5
+    Minstep=1e-5 MaxStep=0.05
+    Goal{ Name=&quot;gate&quot; Voltage= @Vdd@ }
+  ){ Coupled{ _EQUATIONS_ }
+    *-Arithmetic with variables: enforcing ~0.1V steps for all values of Vdd
+    CurrentPlot( Time=(Range=(0 1) Intervals=@&lt;int(Vdd/0.1)&gt;@ )
+    )
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Arithmetic expressions of Sentaurus Workbench are enclosed in <tt>@&lt;...&gt;@</tt> pairs, 
+for example, <br />
+<tt>@&lt;int(Vdd/0.1)&gt;@</tt>.</p> 
+
+<p>Arithmetic expressions can contain variables. They are evaluated automatically 
+during Sentaurus Workbench preprocessing.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>10.5 Including Files</h1>
+
+<p>As previously mentioned, Sentaurus Workbench preprocesses the Sentaurus Device parameter 
+file only if it is called <tt>sdevice.par</tt>. However, it might be advantageous to maintain a 
+separate parameter file for each material or region for better readability and then to include all 
+the parameter files in the <tt>sdevice.par</tt> file using the <tt>#include</tt> preprocessor 
+directive.</p>
+
+<p>Click to view the parameter file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice.par">
+sdevice.par</a>.</p>
+
+<p>For example, the parameter file <tt>sdevice.par</tt> includes 
+the following <tt>#include</tt> clause:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/sdevice.par" startExpr="Material*" lines=3-->
+<pre>
+Material = &quot;Silicon&quot; {
+#include &quot;@pwd@/Silicon.par&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>When multiple Sentaurus Device instances are used in a single project, it is
+sometimes useful to have an individual parameter file for each tool instance. 
+Sentaurus Workbench supports individual parameter files whose file names are formed 
+by the tool instance name, followed by the standard extension <tt>&lt;tool_name&gt;_des.par</tt>.</p>
+
+<p>To create a new Sentaurus Device instance parameter file, the Create Parameter 
+File dialog box is available, where you can select materials for inclusion in the 
+parameter file, available in the Sentaurus Device material database 
+(<tt>MaterialDB</tt>), to be used in simulations.</p>
+
+<p>For a detailed description, see the Sentaurus Workbench module, 
+<a href="../swb/swb_07.html#Key">Section&nbsp;7.2 Customizing Tool Input File</a>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>10.6 Parameterized Sentaurus Device Parameter Files</h1>
+
+<p>All the techniques discussed regarding parameterization in Sentaurus Workbench 
+also can be applied to the Sentaurus Device parameter file.</p>
+      
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/Silicon.par" startExpr="AvalancheFactors*" endExpr="}*" -->
+<pre>
+AvalancheFactors
+{ *  Coefficients for avalanche generation with hydro
+  *  Factors n_l_f, p_l_f for energy relaxation length in the expressions
+  *  for effective electric field for avalanche generation
+  *  eEeff = eEeff / n_l_f  ( or b = b*n_l_f ) 
+  *  hEeff = hEeff / p_l_f  ( or b = b*p_l_f ) 
+  *  Additional coefficients n_gamma, p_gamma, n_delta, p_delta 
+  *	n_l_f	= 1	# [1]
+  *	p_l_f	= 1	# [1]
+	n_l_f	= @AvalFac@	# [1]
+	p_l_f	= @AvalFac@	# [1]
+	n_gamma	= 1	# [1]
+	p_gamma	= 1	# [1]
+	n_delta	= 1.5	# [1]
+	p_delta	= 1.5	# [1]
+}
+</pre>
+<!-- grep end -->
+
+<p>The Sentaurus Workbench parameter <tt>AvalFac</tt> is defined in 
+the tool flow and is used in the parameter file <tt>Silicon.par</tt>.</p>
+
+<p>Click to view the parameter file 
+<a href="../../Applications_Library/GettingStarted/sdevice/SOI_IdVg/Silicon.par">
+Silicon.par</a>.</p>
+
+<p>Two values, <tt>1</tt> and <tt>1.5</tt>, are assigned to the parameters and are used in 
+the simulation of the high-drain bias I<sub>d</sub>&ndash;V<sub>g</sub> characteristics of an SOI 
+MOSFET.</p>
+
+<p>Like other Sentaurus Workbench parameters used in the command file, these parameters 
+are replaced with their assigned values during Sentaurus Workbench preprocessing.</p>
+
+<p><img src="images/sd_soi_idvg.png" width="436" height="386" 
+alt="Drain current as function of drain voltage" /></p>
+
+<p class="caption">Figure 1. Drain current as a function of drain voltage at V<sub>ds</sub> = 1.5 V 
+for different Sentaurus Workbench simulation splits: floating-body SOI NMOSFET (red curves) 
+and corresponding body-tied device (blue line and green dots). Changing the AvalFac 
+value from 1 (solid lines) to 1.5 (dashed line and green dots) does not affect the body-tied 
+device. However, for the floating-body SOI, a change in the impact ionization rate alters the 
+body potential and the current level.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_9.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_11.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,713 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Workbench 7. Advanced Features</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_06.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_08.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Workbench<br />7. Advanced Features</h1>
+
+<p>
+ <a href="#NodeSel">7.1 Node Selection by Expression</a><br />
+ <a href="#Key">7.2 Customizing Tool Input File</a><br />
+ <a href="#Files">7.3 Files Associated With Sentaurus Workbench Simulation Nodes</a><br />
+ <a href="#Editable">7.4 Runtime Editing Mode</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To provide deeper insight into the advanced features of Sentaurus Workbench.</li> 
+</ul>
+
+<!--================================================-->
+<a name="NodeSel"></a>
+<h1>7.1 Node Selection by Expression</h1>
+
+<p>For large design-of-experiments projects, selecting a restricted set of nodes 
+by a given criterion might be a tedious task. This is where node selection by 
+expression can help.</p>
+
+<p>The project <tt>Applications_Library/GettingStarted/sdevice/MultiValleyMOS</tt> 
+demonstrates how to use node selection by expressions.</p>
+
+<p>To select nodes by an expression:</p>
+
+<ol>
+<li>Open the project.</li>
+<li>Choose <strong>Nodes</strong> &gt; <strong>Select</strong> &gt; 
+<strong>By Expression</strong>.<br />
+The Select Nodes By Expression dialog box opens.</li>
+<li>Enter the selection expression, as shown here.<br />
+<p><img src="images/swb_nodeselect.png" width="460" height="126" 
+alt="Select Nodes By Expression dialog box" /></p></li>
+<li>Click <strong>OK</strong>.</li>
+<li>Choose <strong>Nodes</strong> &gt; <strong>Extend Selection To</strong> &gt; 
+<strong>Root</strong>.<br />
+You should see the corresponding experiments are highlighted, as shown in Figure&nbsp;1.</li>
+</ol>
+
+<p><a href="images/swb_nodeselect2.png"><img src="images/swb_nodeselect2.png" width="570"
+alt="Highlighted nodes after selection" /></a></p>
+
+<p class="caption">Figure 1. Selected experiments after being extended to roots. 
+(Click image for full-size view.)</p>
+
+<p>The general expression template consists of <tt>&lt;scenario_name&gt;&#58;{&lt;expression&gt;}</tt>,
+where <tt>&lt;scenario_name&gt;</tt> represents the name of the experimental scenario 
+(<tt>&quot;all&quot;</tt>, for example), and <tt>&lt;expression&gt;</tt> consists of 
+a single or multiple logical expressions.</p>
+
+<p>The following examples demonstrate a variety of cases:</p>
+
+<ul>
+<li>Select all nodes in scenario &quot;all&quot; with the stress parameter value &gt; 1:<br />
+<pre>all:{$stress > 1}</pre>
+</li>
+
+<li>Select nodes in scenario &quot;all&quot; for the channel orientation != &lt;100&gt;:<br />
+<pre>all:{$channel != 100}</pre>
+</li>
+
+<li>Inside a single expression, the Boolean logical AND operand (&amp;&amp;) is supported.<br />
+Select all nodes in scenario &quot;all&quot; with stress &gt; 1 and the channel orientation &lt;100&gt;:<br />
+<pre>all:{$stress > 1 &amp;&amp; $channel == 100}</pre>
+</li>
+
+<li>Instead of <tt>&lt;scenario_name&gt;</tt>, the tool label can be used as follows:<br />
+<pre>sde:{$stress > 1}</pre>
+</li>
+
+<li>Combine a scenario name with a tool label:<br />
+<pre>all|IdVg:{$channel == 100}</pre>
+</li>
+
+<li>Superposition of expressions using binary operators is possible, for example:<br />
+&ndash; AND (intersection) operation:<br />
+<pre>all|IdVg:{$channel == 100} * all:{$Type == &quot;nMOS&quot;}</pre>
+&ndash; OR (union) operation:<br />
+<pre>all|IdVg:{$channel == 100} + all:{$Type == &quot;nMOS&quot;}</pre>
+&ndash; Difference operation:<br />
+<pre>all|IdVg:{$channel == 100} - all:{$Type == &quot;nMOS&quot;}</pre>
+</li>
+</ul>
+
+<p>A similar method can be used to add selected experiments by expression to a new scenario.</p>
+
+<p><img src="images/swb_nodeselect3.png" width="526" height="142" 
+alt="Add Scenario dialog box with experiments" /></p>
+
+<p class="caption">Figure 2. Add Scenario dialog box with experiments 
+to be included by expression.</p>
+
+<!--================================================-->
+<a name="Key"></a>
+<h1>7.2 Customizing Tool Input File</h1>
+
+<p>All tool inputs can be accessed from the graphical user interface of Sentaurus Workbench 
+by either choosing <strong>Tool</strong> &gt; <strong>Edit Input</strong>, 
+or right-clicking a tool icon and choosing <strong>Edit Input</strong>.</p>
+
+<p>The corresponding tool inputs in the menu are tool oriented, and their 
+definitions are specified in the global <tt>tooldb.tcl</tt> file, 
+which is accessible by choosing <strong>Edit</strong> &gt; <strong>Tool DB</strong> 
+&gt; <strong>Global</strong>.</p>
+
+<p>For example, as shown in Figure 3, right-click the Sentaurus Device tool icon, 
+choose <strong>Edit Input</strong>, and then choose one of the available options.</p>
+
+<p><img src="images/swb_au_inputsd.png" width="462" height="411"
+alt="Options of Edit Input for Sentaurus Device" /></p>
+
+<p class="caption">Figure 3. Options of Edit Input for Sentaurus Device.</p>
+
+<p>Each Sentaurus Device tool instance uses a unique command file. On the other 
+hand, by default, all Sentaurus Device tool instances in a project share the 
+same material parameter file <tt>sdevice.par</tt>.</p>
+
+<p>If multiple Sentaurus Device instances are used in a project, then Sentaurus 
+Workbench also allows individual Sentaurus Device parameter files. To activate 
+an individual parameter file, you must indicate it in the corresponding tool 
+properties, as shown in Figure&nbsp;4.</p>
+
+<p><a href="images/swb_parfile.png"><img src="images/swb_parfile.png" width="570" 
+alt="Customization of individual parameter files for multiple Sentaurus Device tools" /></a></p>
+
+<p class="caption">Figure 4. Diagram showing customization of individual parameter files 
+for multiple Sentaurus Device tools in a project. (Click image for full-size view.)</p>
+
+<p>To create a project from the beginning and to include different 
+material parameters in your parameter file that does not yet exist:</p>
+
+<ol>
+<li>Choose <strong>Tool</strong> &gt; <strong>Edit Input</strong> &gt; <strong>Parameter</strong>.<br />
+The Create Parameter File dialog box opens.</li>
+<li>Select <strong>Choose Materials</strong> to see the list of supported materials.<br />
+Materials shown in green exist in the Sentaurus Device material database (<tt>MaterialDB</tt>), 
+supplied with the release.<br />
+<p class="aligncenter"><img src="images/swb_matpar.png" width="447" height="626" 
+alt="Create Parameter File dialog box" /></p></li>
+<li>Select the materials required.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<p>The corresponding material parameter files will be copied to the current project directory
+and referred to in the actual parameter file, as shown in the following example (a warning 
+message is displayed for a non-existent material):</p>
+
+<pre>
+#define ParFileDir .
+
+Material=&quot;4HSiC&quot; {
+  #includeext &quot;ParFileDir/4HSiC.par&quot;
+}
+Material=&quot;HgTe&quot; {
+  # WARNING: no parameter file found for material HgTe in the material database
+}
+</pre>
+
+<p>As already mentioned, the input listed in the <strong>Edit Input</strong> 
+submenu of each tool is defined in the global <tt>tooldb.tcl</tt>.</p>
+
+<p>If you need to modify the submenu (input list), then you can customize it by 
+introducing the necessary corrections in a local project <tt>gtooldb.tcl</tt> 
+file. The following example shows how you can do this.</p>
+
+<p>Look at the <tt>Applications_Library/GettingStarted/swb/HSpice_bsim4</tt> project, 
+which consists of one Sentaurus Device tool instance and one project parameter 
+<tt>tox</tt> (see Figure&nbsp;5).</p>
+
+<p class="aligncenter"> <img src="images/swb_au_testproject.png" alt="customizing input"/> </p>
+
+<p class="caption">Figure 5. Example showing how to customize the input file list 
+for the Sentaurus Device tool instance.</p>
+
+<p>In this project, the CMOS inverter behavior is simulated on a circuit 
+level using the Synopsys PrimeSim&trade; HSPICE&reg; BSIM4 circuit model. The BSIM4 model 
+parameters for the NMOS and PMOS transistors are loaded from the external file 
+<a href="../../Applications_Library/GettingStarted/swb/HSpice_bsim4/circuit.scf">
+circuit.scf</a>, where the parameter <tt>tox</tt> is referred.</p>
+
+<p>To ensure that this file can be parameterized, the local project 
+<a href="../../Applications_Library/GettingStarted/swb/HSpice_bsim4/gtooldb.tcl">
+gtooldb.tcl</a> file has been modified.</p>
+
+<p>The first three commands add a new object (<tt>circuit</tt>) to the 
+file type list, define its standard file extension (<tt>scf</tt>), and add 
+the new object to the Sentaurus Device input file list:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/HSpice_bsim4/gtooldb.tcl" startExpr="*file_types*" endExpr="*sdevice,input*" format="wrap" -->
+<pre>
+set WB_tool(file_types) [list circuit]
+set WB_tool(circuit,ext) scf
+set WB_tool(sdevice,input) [list commands parameter config grid doping edit \
+  tdr circuit]
+</pre>
+<!-- grep end -->
+
+<p>The next four commands specify the full circuit file name, which must be 
+opened when selecting the corresponding item from the <strong>Edit Input</strong> 
+submenu, select the label in the tool <strong>Edit Input</strong> submenu, 
+activate the possibility to parameterize this file, and indicate that 
+a default text editor must be used to edit this input:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/HSpice_bsim4/gtooldb.tcl" startExpr="*circuit,file*" endExpr="*circuit,editor*" -->
+<pre>
+set WB_tool(sdevice,input,circuit,file)  circuit.scf
+set WB_tool(sdevice,input,circuit,label)  &quot;Circuit...&quot;
+set WB_tool(sdevice,input,circuit,parametrized)  1
+set WB_tool(sdevice,input,circuit,editor)  text
+</pre>
+<!-- grep end -->
+
+<p>This makes it possible for:</p>
+
+<ul>
+<li>The circuit file to appear in the list of Sentaurus Device inputs</li>
+<li>The <tt>circuit.scf</tt> file to be parameterized</li>
+</ul>
+
+<p><img src="images/swb_au_listmodified.png" width="520" height="433" 
+alt="Modified input file list for Sentaurus Device" /></p>
+
+<p class="caption">Figure 6. Modified input file list for Sentaurus Device, 
+introducing the possibility to edit the circuit file description (compare 
+with Figure&nbsp;3).</p>
+
+<p>Preprocess the project to see how the <tt>@tox@</tt> statement 
+is replaced by its actual values.</p>
+
+<p>At the end of the 
+<a href="../../Applications_Library/GettingStarted/swb/HSpice_bsim4/gtooldb.tcl">
+gtooldb.tcl</a> file of the project, you can see an additional command, instructing 
+Sentaurus Workbench that the prologue commands must be executed before the execution 
+of a Sentaurus Device node:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/HSpice_bsim4/gtooldb.tcl" startExpr="*sdevice,prologue*" Lines=2 -->
+<pre>
+set WB_tool(sdevice,prologue) { catch {os_mkdir_rel n@node@ @nodedirpath@}; \
+  os_cp @nodedirpath@/pp@node@_des.scf @nodedirpath@/n@node@/pp@node@_des.scf}
+</pre>
+<!-- grep end -->
+
+<p>The purpose of these commands is to create a subdirectory in the project 
+directory and to copy a preprocessed circuit file there. This is performed 
+to overcome a Sentaurus Device limitation, which is always to read the 
+first-found circuit file in the directory specified using the <tt>SPICEPath</tt> 
+keyword.</p>
+
+<p>Correspondingly, Sentaurus Device is instructed to read the circuit file 
+from a specific <tt>&quot;./n@node@&quot;</tt> path to avoid any misuse of 
+the circuit file:</p>
+
+<pre>
+File {
+  ...
+  SPICEPath= &quot;./n@node@&quot;
+}
+</pre>
+
+<!--================================================-->
+<a name="Files"></a>
+<h1>7.3 Files Associated With Sentaurus Workbench Simulation Nodes</h1>
+
+<p>Primary input files &ndash; the input files that you write and that, 
+in general, contain variables &ndash; are named 
+<tt>&lt;tool_label&gt;_&lt;tool_acronym&gt;.cmd</tt>. For each tool, a 
+default <tt>tool_label</tt> is assigned to a tool instance. You can specify 
+your own <tt>tool_label</tt> in the Tool Properties dialog box. The name 
+<tt>tool_acronym</tt> is assigned automatically to the generic input file.</p>
+
+<p>Table 1 lists the most commonly used tools, their default tool label, 
+and tool acronym.</p>
+
+<table>
+<caption>Table 1. Tools, default tool labels, and tool acronyms used 
+in Sentaurus Workbench.</caption>
+
+<tr>
+ <th>Tool</th>
+ <th>Default tool label</th>
+ <th>Tool acronym</th>
+</tr>
+
+<tr>
+ <td>Sentaurus Process</td>
+ <td>sprocess</td>
+ <td>fps</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Topography</td>
+ <td>sptopo, sptopo3d</td>
+ <td>tpg, t3d</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Interconnect</td>
+ <td>sinterconnect</td>
+ <td>sis</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Structure Editor</td>
+ <td>sde</td>
+ <td>dvs</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Lithography</td>
+ <td>slitho</td>
+ <td>slt</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Process Explorer</td>
+ <td>spx</td>
+ <td>spx</td>
+</tr>
+
+<tr>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+</tr>
+ 
+<tr>
+ <td>Sentaurus Mesh</td>
+ <td>snmesh</td>
+ <td>msh</td>
+</tr>
+
+<tr>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+</tr>
+ 
+<tr>
+ <td>Sentaurus Device</td>
+ <td>sdevice</td>
+ <td>des</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Band Structure</td>
+ <td>sband</td>
+ <td>epm*</td>
+</tr>
+ 
+<tr>
+ <td>Sentaurus Device Electromagnetic Wave Solver</td>
+ <td>emw</td>
+ <td>eml</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Device QTX (Subband-BTE solver)</td>
+ <td>sbte</td>
+ <td>bte</td>
+</tr>
+
+<tr>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+</tr>
+
+<tr>
+ <td>Inspect</td>
+ <td>inspect</td>
+ <td>ins</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Visual</td>
+ <td>svisual</td>
+ <td>vis</td>
+</tr>
+
+<tr>
+ <td>Sentaurus Data Explorer</td>
+ <td>tdx</td>
+ <td>tdx*</td>
+</tr>
+
+<tr>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+</tr>
+
+<tr>
+ <td>C Shell</td>
+ <td>cshell</td>
+ <td>csh</td>
+</tr>
+
+<tr>
+ <td>Bash Shell</td>
+ <td>bash</td>
+ <td>bsh</td>
+</tr>
+
+<tr>
+ <td>Tcl Shell</td>
+ <td>gtclsh</td>
+ <td>tcl</td>
+</tr>
+
+</table>
+
+<p>* Sentaurus Band Structure and Sentaurus Data Explorer use input files with 
+the extension <tt>.tcl</tt>.</p>
+
+<p>The primary input files with their default tool labels are, for example, 
+<tt>sprocess_fps.cmd</tt> and <tt>sdevice_des.cmd</tt>. If there are multiple instances 
+of the same tool, then a number is added automatically to the default tool label (for 
+example, <tt>sprocess1_fps.cmd</tt>).</p>
+
+<p>A simulation project is launched in two steps:</p>
+
+<ul>
+<li>First, the Sentaurus Workbench preprocessor generates parameterized 
+input files from the generic input files. This means that, for each 
+value a variable or parameter can assume, a unique simulator input file 
+is generated.</li>
+
+<li>Second, for each unique simulator input, the appropriate simulator 
+is launched.</li>
+</ul>
+
+<p>The simulator is launched using the utility <tt>gjob</tt>, which 
+produces two output files per simulation node: <tt>n@node@_&lt;tool_acronym&gt;.job</tt> 
+and <tt>n@node@_sge.err</tt>. Information about the preprocessing of a 
+project can be found in the <tt>preprocessor.log</tt> file.</p>
+
+<p>The simulator output files are named <tt>n@node@_&lt;tool_acronym&gt;.&lt;extension&gt;</tt> 
+and <tt>pp@node@_&lt;tool_acronym&gt;.&lt;extension&gt;</tt>. For example, all the 
+files <tt>n3_fps.&lt;extension&gt;</tt> belong to node number&nbsp;3 
+that performs a process simulation using Sentaurus Process.</p>
+
+<p>Table 2 lists the most commonly generated files belonging to simulation nodes. 
+These files are listed in the Node Explorer.</p>
+
+<table>
+<caption>Table 2. File extensions in a Sentaurus Workbench project.</caption>
+
+<tr>
+ <th>File extension</th>
+ <th>Description</th>
+ <th>Remarks</th>
+</tr>
+
+<tr>
+ <td>cmd</td>
+ <td>Preprocessed simulation input command file</td>
+ <td>Sentaurus Workbench variables are replaced by their actual values.</td>
+</tr>
+ 
+<tr>
+ <td>err</td>
+ <td>File containing simulator error messages</td>
+ <td>Error messages generated by Tcl procedures or licensing 
+can be found here as well.</td>
+</tr>
+ 
+<tr>
+ <td>sge.err</td>
+ <td>Error messages from <tt>gjob</tt></td>
+ <td>Contains error messages from <tt>gsub</tt> if the job failed.</td>
+</tr>
+
+<tr>
+ <td>job</td>
+ <td>Information from <tt>gjob</tt></td>
+ <td>Contains information from the preprocessor and the simulation 
+job submission. Look here for error messages if a simulation node is not executed.</td>
+</tr>
+
+<tr>
+ <td>out, log</td>
+ <td>Simulation log file</td>
+ <td>Information about the progress of the simulation.</td>
+</tr>
+
+<tr>
+ <td>par</td>
+ <td>Preprocessed parameter file</td>
+ <td>Used in Sentaurus Device and Sentaurus Device Electromagnetic Wave Solver.</td>
+</tr>
+
+<tr>
+ <td>plt</td>
+ <td>Device simulation current file</td>
+ <td>Contains solution variables at device terminals 
+(such as voltages and currents).</td>
+</tr>
+
+<tr>
+ <td>sta</td>
+ <td>Status of the simulation</td>
+ <td>The status is indicated by the color of the simulation node, which also 
+contains information about the execution host.</td>
+</tr>
+
+<tr>
+ <td>tdr</td>
+ <td>The structure with simulation results</td>
+ <td>Contains field data such as doping distribution and electrostatic potential.</td>
+</tr>
+</table>
+
+<p>For some extensions, there can be more than one file, 
+depending on the simulation task. Additional files are written by 
+the simulators if users specify them in the simulator input file.</p>
+
+<!--================================================-->
+<a name="Editable"></a>
+<h1>7.4 Runtime Editing Mode</h1>
+
+<p>A project can be configured to have different runtime editing modes:</p>
+
+<ul>
+<li>In the Editable mode (default):<br />
+ <ul>
+  <li>Sentaurus Workbench deactivates all safeguards.</li>
+  <li>Users have maximum flexibility when running projects.</li>
+  <li>Users are wholly responsible for maintaining project consistency.</li>
+ </ul>
+</li>
+ 
+<li>In the Locked mode:<br />
+ <ul>
+  <li>Sentaurus Workbench handles projects as in earlier releases (before K-2015.06).</li>
+  <li>Sentaurus Workbench activates safeguards to keep overall project consistency.</li>
+ </ul>
+</li>
+</ul>
+
+<p>The Editable mode is the default for a newly created project. For projects created 
+with earlier Sentaurus Workbench releases, the mode is taken according to the 
+preferences.</p>
+
+<p>To change the runtime editing mode:</p>
+
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>Preferences</strong>, or press the F12 key.</li>
+<li>In the SWB Preferences dialog box, expand <strong>Project</strong> &gt; 
+<strong>Runtime Editing Mode</strong> &gt; <strong>Default Mode</strong>.</li>
+<li>Change the mode.</li>
+<li>Click <strong>Apply</strong>.</li>
+</ol>
+
+<p>For an already loaded project, to change the runtime editing mode, 
+you can either:</p>
+
+<ul>
+<li>Choose <strong>Project</strong> &gt; <strong>Runtime Editing Mode</strong> &gt; <strong>Locked</strong>.</li>
+<li>Choose <strong>Project</strong> &gt; <strong>Runtime Editing Mode</strong> &gt; <strong>Editable</strong>.</li>
+</ul>
+
+<p>Every time a project is loaded, its mode is taken according 
+to the setup from the previous session.</p>
+
+<p>The runtime editing mode is shown in the title bar of the main window 
+of Sentaurus Workbench, where the full project name is shown.</p>
+
+<p>Table 3 summarizes the differences between the two modes in terms of user ability 
+to control the execution of project nodes.</p>
+
+<table>
+<caption>Table 3. Summary of differences between runtime editing modes.</caption>
+
+<tr>
+<th>Running project criteria</th>
+<th>Editable mode</th>
+<th>Locked mode</th>
+</tr>
+
+<tr>
+<td>Running project is locked for changes.</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+
+<tr>
+<td>Automatic checks of project consistency, file timestamps, and 
+execution dependencies.</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+
+<tr>
+<td>Modifications to tool input files on a node level are allowed.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>Nodes are forced to be preprocessed when they are run.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>Modifications to tool input files and tool database files are allowed.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>Parameterization table accepts changes:<br />
+1. Add or remove tools, parameters, and variables.<br />
+2. Add or remove experiments or parameter values.<br />
+3. Change a parameter value on a node.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>Modifications can remove or affect already running nodes.</td>
+<td>No</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>Preprocessing the entire project or selected nodes is allowed.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>Adding additional nodes to run, or terminating a project or nodes, is allowed.</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+
+</table>
+
+<p>When you run a project in Editable mode, the Run Project 
+dialog box opens (see Figure&nbsp;7).</p>
+
+<p><img src="images/swb_au_concur.png" width="458" height="431" alt="Run Project dialog box" /></p>
+
+<p class="caption">Figure 7. Run Project dialog box when project is in Editable mode.</p>
+
+<p>By default, the <strong>Preprocess, then run</strong> option is selected,
+which instructs Sentaurus Workbench to preprocess the selected nodes before 
+the execution. This ensures clean nodes are preprocessed before being run. 
+If all nodes are already preprocessed, select the 
+<strong>Just run, do not preprocess</strong> option to save time when preprocessing.</p>
+
+<p>To preprocess or not preprocess nodes before they are run can be changed in the 
+preferences as follows:</p>
+
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>Preferences</strong>, or press the F12 key.</li>
+<li>In the SWB Preferences dialog box, expand <strong>Project</strong> &gt; 
+<strong>Runtime Editing Mode</strong> &gt; <strong>Settings for Editable Mode</strong> 
+&gt; <strong>How to run nodes by default</strong>.</li>
+<li>Change the value.</li>
+<li>Click <strong>Apply</strong>.</li>
+</ol>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_06.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_08.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

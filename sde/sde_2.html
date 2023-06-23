@@ -1,0 +1,617 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Structure Editor 2. Generating 2D Boundaries</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Structure Editor<br />2. Generating 2D Boundaries</h1>
+
+<p>
+ <a href="#1">2.1 Overview</a><br />
+ <a href="#2">2.2 Reinitializing Sentaurus Structure Editor</a><br />
+ <a href="#3">2.3 Exact Coordinates and Auto Region Naming Modes</a><br />
+ <a href="#4">2.4 Selecting Materials</a><br />
+ <a href="#5">2.5 Selecting the Default Boolean Expression</a><br />
+ <a href="#6">2.6 Creating Rectangular Regions</a><br />
+ <a href="#7">2.7 Rounding Edges</a><br />
+ <a href="#8">2.8 Defining Contacts</a><br />
+ <a href="#9">2.9 Setting Contacts at Existing Edges</a><br />
+ <a href="#10">2.10 Adding Vertices</a><br />
+ <a href="#11">2.11 Defining a Region as a Contact</a><br />
+ <a href="#12">2.12 Saving the Model</a><br />
+ <a href="#13">2.13 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To generate 2D boundaries.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Overview</h1>
+
+<p>This section is intended to familiarize you with some fundamental functions that 
+Sentaurus Structure Editor supports. For this  purpose, a 2D SOI MOSFET device, similar 
+to the one shown in Figure 1, will be created using basic 2D geometric operations.</p>
+
+<p><a href="images/se_2d_mosfet.png"><img src="images/se_2d_mosfet.png" width="570" 
+alt="2D SOI MOSFET device" /></a></p>
+
+<p class="caption">Figure 1. Two-dimensional SOI MOSFET device. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Reinitializing Sentaurus Structure Editor</h1>
+
+<p>To start a new object and discard all objects that have been previously 
+defined:</p>
+
+<ul>
+<li>Choose <strong>File</strong> &gt; <strong>New</strong>, or press Ctrl+N, 
+or click the <img class="imgline" src="images/icons/new.png" width="13" height="15" 
+alt="New button" /> toolbar button.</li>
+</ul>
+
+<p>The corresponding Scheme command is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/geometry_dvs.cmd" startLine=2 endLine=2 -->
+<pre>
+(sde:clear)
+</pre>
+<!-- grep end -->
+
+<p class="note">This command restarts the Sentaurus Structure Editor environment 
+and resets most of the internal variables to their default values. However, some 
+internal variables might remain defined at their previously set values.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 Exact Coordinates and Auto Region Naming Modes</h1>
+
+<p>In Sentaurus Structure Editor, geometric objects can be drawn manually. 
+However, for most applications, it is convenient (and sometimes necessary) 
+to specify explicitly the coordinates of the object, for example, to allow 
+for precise alignment of different regions.</p> 
+
+<p>To do this, you must activate the Exact Coordinates mode. This mode 
+is deactivated by default when Sentaurus Structure Editor initially starts.</p> 
+
+<p>To activate the mode, choose <strong>Draw</strong> &gt; <strong>Exact Coordinates</strong>.</p>
+
+<p>A check mark now precedes the <strong>Exact Coordinates</strong> command 
+indicating the mode is active. When the mode is active, all subsequent command operations 
+that involve the placement of any object will display a dialog box in which exact coordinate 
+values can be entered for the object being edited.</p>
+
+<p>By default, Sentaurus Structure Editor assigns a default name to a drawn object. 
+You can assign a different name, by changing the default behavior, by choosing 
+<strong>Draw</strong> &gt; <strong>Auto Region Naming</strong>.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>2.4 Selecting Materials</h1>
+
+<p>All materials used by Sentaurus Structure Editor are accessible from the Material list.</p> 
+
+<p>To set the material to be used for new objects:</p>
+
+<ul>
+<li>From the Material list, select the required material, for example, <tt>Silicon</tt>.</li>
+</ul>
+
+<p><img src="images/se_2d_matlist.png" width="145" height="283" 
+alt="Material list showing available materials" /></p>
+
+<p class="caption">Figure 2. Material list showing available materials.</p>
+
+<p>Until a new material type is selected, all newly added regions consist of the material 
+type that is currently being selected.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>2.5 Selecting the Default Boolean Expression</h1>
+
+<p>In some applications, a device has only one region. In most other 
+cases, a device has multiple regions. When you use the user interface to build 
+a device with multiple regions, the later-added regions might intersect 
+existing regions. If this occurs, a predefined scheme is required to 
+resolve the overlapping region.</p>
+
+<p>Sentaurus Structure Editor includes several predefined schemes. For example, 
+to select the <strong>New Replaces Old</strong> scheme in which newly added 
+regions replace old regions where they overlap:</p>  
+ 
+<ul>
+<li>Choose <strong>Draw</strong> &gt; <strong>Overlap Behavior</strong> &gt; <strong>New Replaces Old</strong>, 
+or click the <img class="imgline" src="images/icons/newrold.png" width="16" height="15" 
+alt="New replaces old button" /> toolbar button.</li>
+</ul>
+
+<p>The corresponding Scheme command is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/geometry_dvs.cmd" startExpr="(sdegeo:set-default-boo*" Lines=1 -->
+<pre>
+(sdegeo:set-default-boolean &quot;ABA&quot;)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="6"></a>
+<h1>2.6 Creating Rectangular Regions</h1>
+
+<p>To create a rectangular, silicon substrate region:</p>
+
+<ol>
+<li>Choose <strong>Draw</strong> &gt; <strong>2D Create Tools</strong> &gt; <strong>Rectangular Region</strong>,  
+or click the <img class="imgline" src="images/icons/rectangle.png" width="17" height="12" 
+alt="Rectangle region button" /> toolbar button.</li>
+
+<li>Drag the pointer to draw a rectangle in the view window.</li>
+
+<li>In the Exact Coordinates dialog box, enter <tt>(-0.5 0.2), (0.5 1.0)</tt> in 
+the corresponding fields and click <strong>OK</strong>.<br />
+
+<p><img src="images/se_2d_exactcoord.png" width="298" height="193" alt="Exact Coordinates dialog box" /></p></li>
+
+<li>If <strong>Auto Region Naming</strong> is not activated, then a dialog box opens, where 
+you can enter the name of a region. Enter <tt> R.Substrate</tt>.<br />
+
+<p><img src="images/se_2d_exactregionname.png" width="400" height="170" alt="Region Naming dialog box" /></p></li>
+
+<li>If the rectangle does not fit the view window, then choose <strong>View</strong> &gt; 
+<strong>Zoom to Extents</strong> to rescale the view.</li>
+</ol>
+
+<p>The corresponding Scheme command for the drawing operation is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdegeo:create-rectangle*" endExpr="*Substrate*" -->
+<pre>
+(sdegeo:create-rectangle
+  (position -0.5  0.2   0.0) (position 0.5  1.0   0.0) 
+  &quot;Silicon&quot; &quot;R.Substrate&quot; ) 
+</pre>
+<!-- grep end -->
+
+<p>Other device regions can be created in a similar way as the substrate region. 
+However, different regions often consist of different material types. Therefore, before 
+drawing a region, select the required material type from the Material list 
+(see <a href="#4">Section&nbsp;2.4 Selecting Materials</a>).</p> 
+
+<p>Follow these rules to create the gate oxide region, the nitride spacer region, the polysilicon 
+gate region, and the buried oxide region. Use the coordinates as follows:</p>
+
+<table width="500">
+<tr>
+ <th>Region</th>
+ <th>Material</th>
+ <th>Coordinates</th>
+</tr>
+<tr>
+ <td>Gate oxide</td>
+ <td><tt>SiO2</tt></td>
+ <td><tt>(-0.2 -40e-4), (0.2 0.0)</tt></td>
+</tr>
+<tr>
+ <td>Nitride spacer</td>
+ <td><tt>Si3N4</tt></td>
+ <td><tt>(-0.2 -0.2), (0.2 -40e-4)</tt></td>
+</tr>
+<tr>
+ <td>Polysilicon gate</td>
+ <td><tt>PolySi</tt></td>
+ <td><tt>(-0.1 -0.2), (0.1 -40e-4)</tt></td>
+</tr>
+<tr>
+ <td>Buried oxide</td>
+ <td><tt>SiO2</tt></td>
+ <td><tt>(-0.5 0.1), (0.5 0.2)</tt></td>
+</tr>
+</table>
+
+<p>After these steps, the device structure is shown as in Figure 3.</p>
+
+<p><img src="images/se_2d_exact_device.png" width="376" height="450" alt="Device structure" /></p>
+
+<p class="caption">Figure 3. Device structure.</p>
+
+<p>The corresponding Scheme commands are:</p>
+
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdegeo:create-rectangle*" lines=8 -->
+<pre>
+(sdegeo:create-rectangle
+  (position -0.5  0.2   0.0) (position 0.5  1.0   0.0) 
+  &quot;Silicon&quot; &quot;R.Substrate&quot; ) 
+(sdegeo:create-rectangle
+  (position -0.5  0.1   0.0) (position 0.5  0.2  0.0) 
+  &quot;Oxide&quot; &quot;R.Box&quot; )
+(sdegeo:create-rectangle
+  (position -0.5  0.0   0.0) (position 0.5  0.1   0.0) 
+</pre>
+<!-- grep end -->
+
+<p class="note">In this example, the later-defined polysilicon gate region 
+overlaps the previously defined spacer region. Since the <strong>New Replaces Old</strong> 
+option has been set to be the default Boolean, the overlap is resolved in such a way that 
+the gate region replaces the spacer region where the two regions overlap. Likewise, the later-defined 
+buried oxide takes up the overlapped substrate region. Although this given structure also can be 
+defined precisely without any overlap, the process would take more steps as more regions would 
+have to be defined.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>2.7 Rounding Edges</h1>
+
+<p>Sentaurus Structure Editor includes functions that round the corners and 
+the edges of a structure.</p> 
+
+<p>To round the two outside corners of the nitride spacers:</p>
+
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>Parameters</strong>.<br />
+The Parameters dialog box opens.<br />
+
+<p><img src="images/se_2d_parameters.png" width="480" height="367" alt="Parameters dialog box" /></p></li>
+
+<li>In the <strong>Variable</strong> field, enter <tt>fillet-radius</tt>, and 
+in the <strong>Value</strong> field, enter <tt>0.08</tt>.</li> 
+<li>Click <strong>Set</strong>.</li>
+<li>Click <strong>Close</strong>.</li>
+<li>From the Selection Level list, choose <strong>Select Vertex</strong>.</li> 
+<li>Click the Select (<img class="imgline" src="images/icons/select.png" width="11" height="17" alt="Select button" />) 
+toolbar button.</li>
+<li>Click the upper-left corner of the spacer to highlight the vertex.</li>
+<li>Choose <strong>Edit</strong> &gt; <strong>2D Edit Tools</strong> &gt; <strong>Fillet</strong>.<br />
+The selected corner is now rounded.</li>
+<li>Repeat the last two steps for the upper-right corner of the spacer.</li>
+</ol>
+
+<p>Figure 4 shows the result.</p>
+
+<p><img src="images/se_2d_rounded.png" width="376" height="448" alt="Rounded corners of spacer" /></p>
+
+<p class="caption">Figure 4. Rounded corners of the spacers using the fillet-radius parameter.</p>
+
+<p>The corresponding Scheme commands for the rounding operations are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sde:define-parameter*" lines=3 -->
+<pre>
+(sde:define-parameter &quot;fillet-radius&quot; 0.08 0.0 0.0 )
+(sdegeo:fillet-2d (find-vertex-id (position -0.2 -0.2 0.0)) fillet-radius)
+(sdegeo:fillet-2d (find-vertex-id (position  0.2 -0.2 0.0)) fillet-radius)
+</pre>
+<!-- grep end -->
+
+<p class="note">In the command-line window, the displayed rounding command is 
+<tt>(sdegeo:fillet-2d (list(car(find-vertex-id (position -0.2 -0.2 0.0)))) 0.08)</tt>. 
+In the above commands, a simplified expression applicable for a single vertex 
+is used. The vertex to be rounded is selected using the command 
+<tt>(find-vertex-id (position x y z))</tt> instead of using mouse operations.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>2.8 Defining Contacts</h1>
+
+<p>Contacts can be defined to allow the constructed device to be connected to 
+outside power sources.</p>
+
+<p>To define a contact:</p>
+
+<ol>
+<li>Choose <strong>Contacts</strong> &gt; <strong>Contact Sets</strong>.<br />
+The Contact Sets dialog box opens (see Figure 5).</li>
+<li>In the <strong>Contact Name</strong> field, enter the name of the contact.</li> 
+<li>In the <strong>Edge Color</strong> fields, specify RGB colors.</li>
+<li>In the <strong>Edge Thickness</strong> field, modify the value to mark the contact.<br />
+The <strong>Face Pattern</strong> field is effective only for marking 3D contacts.</li>
+<li>Click <strong>Set</strong>.<br />
+The contact is added to the Defined Contact Sets pane.</li>
+<li>Define additional contacts as required.</li>
+<li>When all the contacts have been defined, click <strong>Close</strong>.</li>
+</ol>
+
+<p><img src="images/se_2d_contactsets.png" width="587" height="265" alt="Contact Sets dialog box" /></p>
+  
+<p class="caption">Figure 5. Contact Sets dialog box.</p>
+
+
+<!--================================================-->
+<a name="9"></a>
+<h1>2.9 Setting Contacts at Existing Edges</h1>
+
+<p>Contacts become effective only after they are associated with part of the 
+device structure. To associate a contact with a particular edge of a device:</p>
+
+<ol>
+<li>Choose <strong>Contacts</strong> &gt; <strong>Contact Sets</strong>.<br />
+The Contact Sets dialog box opens (see Figure 5).</li>
+<li>Select the required contact from the Defined Contact Sets pane, 
+for example, <tt>source</tt>.</li>
+<li>Click <strong>Activate</strong> to activate the selected contact.</li>
+<li>Alternatively, a contact can be activated from the Contact list.<br /><br />
+
+<img src="images/se_2d_contactlist.png" width="122" height="141" alt="Contact list" /><br /><br /></li>   
+
+<li>In the Selection Level list, choose <strong>Select Edge</strong> to ensure 
+that only edges of the device can be selected in the next steps.</li>
+<li>Click the Select (<img class="imgline" src="images/icons/select.png" width="11" height="17" alt="Select button" />) 
+toolbar button.</li>
+<li>Click the edge of the structure where the contact, for example, <tt>source</tt>, 
+will be defined. The selected edge is now highlighted.<br /><br />
+
+<img src="images/se_2d_selectedge.png" width="368" height="100" alt="Selected edge highlighted" />
+
+<p class="caption">Figure 6. Selecting edges of the source with left 
+edge highlighted in orange.</p></li>
+
+<li>Choose <strong>Contacts</strong> &gt; <strong>Set Edges</strong>.<br />
+This defines the selected contact, for example, <tt>source</tt>, at the highlighted 
+edge. The edge is now characterized by the color and line styles previously set for 
+the contact.</li>
+
+<li>Repeat the above operations to associate the <tt>drain</tt> contact with the silicon 
+epilayer edge to the right of the gate stack and the <tt>substrate</tt> contact with the 
+bottom substrate edge.</li>
+</ol>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdegeo:set-contact*" lines=2 -->
+<pre>
+(sdegeo:set-contact (find-edge-id (position -0.4  0.0 0.0)) &quot;source&quot;)
+(sdegeo:set-contact (find-edge-id (position  0.4  0.0 0.0)) &quot;drain&quot;)
+</pre>
+<!-- grep end -->
+
+<p>The script version allows edges to be selected using explicit coordinates with the 
+<tt>(find-edge-id (position x y z))</tt> command instead of using mouse operations.</p>
+
+<!--================================================-->
+<a name="10"></a>
+<h1>2.10 Adding Vertices</h1>
+
+<p>For the simulation of 2D SOI MOSFETs, artificial body-tied contacts are sometimes useful. 
+These contacts are placed typically at the interface between the silicon epilayer and the 
+buried oxide near the source side of the gate corner. Before such a contact can be defined, 
+two additional vertices must be introduced.</p>
+
+<p>To add vertices:</p>
+
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>2D Edit Tools</strong> &gt; 
+<strong>Add Vertex</strong>, or click the <img class="imgline" src="images/icons/addvertex.png" width="16" height="15" 
+alt="Add vertex button" /> toolbar button.</li>
+<li>Click a location in the view window where the vertex is to be inserted.<br /> 
+The Exact Coordinates dialog box opens.</li>
+<li>Enter the coordinates <tt>(-0.1 0.1)</tt> to define the location of the vertex, 
+and click <strong>OK</strong>.</li>
+<li>Repeat the steps to add another vertex at <tt>(-0.05 0.1)</tt>.</li>
+<li>In the 2D default rendering mode (Gouraud shaded), the newly added vertices are 
+difficult to see. To change the rendering mode, choose <strong>View</strong> &gt; <strong>Render</strong> 
+&gt; <strong>Wireframe</strong>, or click the 
+<img class="imgline" src="images/icons/wireframe.png" width="16" height="17" alt="Wireframe button" /> 
+toolbar button.</li>
+<li>Associate the <tt>bodytie</tt> contact with the edge defined by the two newly added 
+vertices. Follow the procedure described in 
+<a href="#9">Section 2.9 Setting Contacts at Existing Edges</a>.</li>
+</ol>
+
+<p>Figure 7 shows the device viewed in the Wireframe mode with all the contacts that have 
+been defined.</p>
+
+<p><a href="images/se_2d_wireframeview.png"><img src="images/se_2d_wireframeview.png" 
+width="570" alt="2D SOI MOSFET viewed in Wireframe mode" /></a></p>
+
+<p class="caption">Figure 7. Two-dimensional SOI MOSFET viewed in Wireframe mode with several 
+contacts defined. (Click image for full-size view.)</p>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdegeo:insert-vertex*"  lines=3 -->
+<pre>
+(sdegeo:insert-vertex (position -0.1  0.1 0.0))
+(sdegeo:insert-vertex (position -0.05 0.1 0.0))
+(sdegeo:set-contact (find-edge-id (position -0.07 0.1 0.0)) &quot;bodytie&quot;)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="11"></a>
+<h1>2.11 Defining a Region as a Contact</h1>
+
+<p>In some applications, a contact can cover the entire body of a (2D) region of the device. 
+For example, the metal and polysilicon regions of a MOS device are often treated, as a whole, 
+as ideal contacts.</p>
+
+<p>To define such a contact:</p>
+
+<ol>
+<li>Select the contact, for example, <tt>gate</tt>, from the Contact list.</li>
+<li>From the Selection Level list, choose <strong>Select Body</strong>.</li>
+<li>Click the Select toolbar button.</li>
+<li>Click the region where the contact is to be defined, for example, the poly gate 
+region. The selected region is highlighted.<br /><br />
+
+<img src="images/se_2d_selectpolygate.png" width="366" height="89" alt="Selecting polygate region" />
+
+<p class="caption">Figure 8. Selecting the polygate region, highlighted in orange.</p>
+</li>
+
+<li>Choose <strong>Contacts</strong> &gt; <strong>Set Region Boundary Edges</strong>.<br />
+This converts the selected region into a contact. The edges of the region change to 
+the color and style of the selected contact.</li>
+<li>To remove the gate region, select the region and then choose <strong>Edit</strong> &gt; 
+<strong>2D Edit Tools</strong> &gt; <strong>Delete Region</strong>.</li>
+</ol>
+    
+<p><img src="images/se_2d_removepolygate.png" width="368" height="86" alt="Removing polygate region" /></p>
+
+<p class="caption">Figure 9. Removing the polygate region.</p>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/soifet_dvs.cmd" startExpr="(sdegeo:set-contact*gate*"  lines=1 -->
+<pre>
+(sdegeo:set-contact (find-body-id (position 0.0 -0.1 0.0)) &quot;gate&quot; &quot;remove&quot;)
+</pre>
+<!-- grep end -->
+
+
+<!--================================================-->
+<a name="12"></a>
+<h1>2.12 Saving the Model</h1>
+    
+<p>To save a model, choose <strong>File</strong> &gt; <strong>Save Model</strong>, 
+or press Ctrl+S, or click the corresponding toolbar button.</p>
+
+<p>If the model has not been saved up to this point, the command displays a standard 
+dialog box in which you can enter the file name for the output. Only the root name 
+is required. Sentaurus Structure Editor appends implicitly all the extensions 
+corresponding to different file formats.</p>
+
+<p>The corresponding Scheme command is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/soifet/geometry_dvs.cmd" startExpr="(sde:save-model*"  lines=1 -->
+<pre>
+(sde:save-model &quot;n@node@_geo&quot;)
+</pre>
+<!-- grep end -->
+    
+<p>This command saves the model geometry in the native ACIS format file <tt>n@node@_geo.sat</tt>,
+according to the specified file name <tt>n@node@_geo</tt>, where <tt>@node@</tt> is
+replaced by the corresponding node number of Sentaurus Workbench. The Ref/Eval
+windows and parameters are saved in the Scheme script file
+<tt>n@node@_geo.scm</tt>, the mesh-related refinement and doping-related
+information is saved in the file <tt>n@node@_geo_msh.cmd</tt>, and the TDR boundary
+representation is saved in the file <tt>n@node@_geo_bnd.tdr</tt>.</p>
+
+<p class="note">In this example, no Ref/Eval windows have been created, so only 
+the setting of the variable <tt>fillet-radius</tt> appears in the file <tt>n@node@_geo.scm</tt>.</p>
+
+<p>Click to view all the commands discussed in this section in the command file 
+<a href="../../Applications_Library/GettingStarted/sde/soifet/geometry_dvs.cmd">
+geometry_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sde/soifet</tt>.</p>
+
+<!--================================================-->
+<a name="13"></a>
+<h1>2.13 Assignment</h1>
+
+<p>In this assignment, you are encouraged to build a bipolar transistor structure as shown in 
+Figure&nbsp;10.</p>
+
+<p><img src="images/se_2d_hbt.png" width="557" height="308" 
+alt="2D bipolar transistor structure" /></p>
+
+<p class="caption">Figure 10. Two-dimensional bipolar transistor structure: SiGe HBT.</p>
+
+<p>The tools discussed so far should allow you to work out most of the structure. 
+However, to complete the assignment, you might need to be familiar with some 
+additional tools that are explained here.</p>
+ 
+<!--=========================-->
+<h2>2.13.1 Moving Vertices</h2>
+
+<p>To move a vertex:</p>
+
+<ol>
+<li>Choose <strong>Draw</strong> &gt; <strong>Move Vertex</strong> or click the <img class="imgline" src="images/icons/movevertex.png" width="14" height="9" alt="Move vertex button" /> toolbar button.</li>
+<li>In the view window, drag the vertex to its new location.<br />
+If the Exact Coordinates mode is active, use the Exact Coordinates dialog box to enter 
+precisely the final location of the vertex.</li>
+</ol>
+
+<p>The corresponding Scheme command is:</p>
+
+<pre>
+(sdegeo:move-vertex (car (find-vertex-id (position Xold Yold Zold)))
+  (position Xnew Ynew Znew))
+</pre>
+
+<!--=========================-->
+<h2>2.13.2 Creating Polygonal Regions</h2>
+
+<p>To create a polygonal region:</p>
+
+<ol>
+<li>Choose <strong>Draw</strong> &gt; <strong>Create 2D Regions</strong> &gt; 
+<strong>Polygon</strong>, or click the <img class="imgline" src="images/icons/polygon.png" width="12" height="13" 
+alt="Polygon button" /> toolbar button.</li>
+<li>Click a location in the view window where the first vertex of the polygon is 
+to be placed.<br />
+If the Exact Coordinates mode is active, use the Exact Coordinates dialog box to enter the exact 
+coordinates for the vertex.</li>
+<li>Repeat the previous steps for all of the other vertices except the last vertex 
+of the polygon.</li> 
+<li>For the final vertex, click the middle mouse button to place it.</li>
+</ol>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/sigehbt/sigehbt_dvs.cmd" startExpr="(sdegeo:create-polygon*" Lines=3 footer="        ...)" -->
+<pre>
+(sdegeo:create-polygon 
+ (list  (position 0.6 -0.45  0.0)
+        (position 0.6  1.2   0.0)
+        ...)
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/sde/sigehbt/sigehbt_dvs.cmd" startExpr="*Substate*" Lines=1  -->
+<pre>
+ &quot;Silicon&quot; &quot;Substate&quot;) 
+</pre>
+<!-- grep end -->
+
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/sde/sigehbt/sigehbt_dvs.cmd">
+sigehbt_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/sigehbt</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

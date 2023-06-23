@@ -1,0 +1,397 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Interconnect 5. Example: Electrostatic, Electrical, and Thermal Analyses (3D)</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Interconnect<br />5. Example: Electrostatic, Electrical, and Thermal Analyses (3D)</h1>
+
+<p>
+<a href="#1">5.1 Overview</a><br />
+<a href="#2">5.2 Building the 3D Structure</a><br />
+<a href="#3">5.3 Electrostatic, Electrical, and Thermal Analyses</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To create a 3D interconnect structure.</li>
+ <li>To show how to perform electrostatic, electrical, and thermal analyses.</li>
+ <li>To demonstrate how to extract the capacitance, resistance, and thermal resistance matrices.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Overview</h1>
+
+<p>In this example, you will use Sentaurus Interconnect for electrostatic, 
+electrical, and thermal analyses to calculate the capacitance, resistance, 
+and thermal resistance matrices of the equivalent circuits.</p>
+
+<p>To better understand all steps of this project, you are strongly encouraged to 
+study the example in <a href="si_4.html">
+Section&nbsp;4. Example: Thermoelectromechanical Analysis of an Interconnect (3D)</a>. 
+The model is built in the same way, based on a layout that has been extended adding 
+a third metal layer. The meshing strategy is also the same. The main difference is the 
+solution part, where three subsequent analyses are performed (electrostatic, electrical, 
+and thermal), and the corresponding matrices are extracted.</p>
+
+<p>As for the previous example, a basic knowledge of Sentaurus Workbench and 
+Silicon WorkBench is required. For details about these tools, 
+see the <a href="../swb/swb_menu.html">Sentaurus Workbench module</a> and 
+<a href="../ic/ic_menu.html">Silicon WorkBench Interface module</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sinterconnect/3D_Matrix_Calculation</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Building the 3D Structure</h1>
+
+<p>The methodology to create the 3D model for this example is exactly the same 
+as in <a href="si_4.html">Section&nbsp;4. Example: Thermoelectromechanical Analysis 
+of an Interconnect (3D)</a>. A layout is used for patterning all the metal layers and 
+the dielectric. In this example, a third level of metallization has been added on top of 
+the previous ones in <a href="si_4.html">Section&nbsp;4</a>.
+<a href="#Fig1">Figure 1</a> shows the general view of the layout with the defined 
+simulation domain <tt>SIM3D1</tt>.</p>
+
+<a name="Fig1"></a>
+<p><a href="images/si_matrix_layout.png"><img src="images/si_matrix_layout.png" 
+width="570" alt="General view of the layout" /></a></p>
+
+<p class="caption">Figure 1. General view with all layers of the layout used to create 
+the masks for patterning metal 1 (green), SiO<sub>2</sub> (yellow), metal 2 (blue), 
+and metal 3 (cyan). The contacts on the pads of metal 1 and metal 2 also are defined 
+in the layout (magenta). The layout is a modified version of the one used in 
+<a href="si_4.html">Section&nbsp;4</a> (see <a href="si_4.html#Fig1">Figure 1</a>). 
+(Click image for full-size view.)</p>
+
+<!--===================-->
+<a name="2.1"></a>
+<h2>5.2.1 Process</h2>
+
+<p>All the processing steps up to the patterning of metal 2 are identical to the 
+ones described in <a href="si_4.html#2.2">Section&nbsp;4.2.2 Process Sequence</a>. 
+The modified layout <tt>Model2_lyt.mac</tt> also is imported 
+into Sentaurus Interconnect in the same way:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Matrix_Calculation/sinterconnect_sis.cmd" startExpr="##start - icwb import" endExpr="##end - icwb import" excludelines="##*" format="wrap"-->
+<pre>
+icwb gds.file= &quot;@pwd@/Model2.gds&quot; cell= &quot;base&quot; scale= 1e-2 \
+	layer.numbers= {0:0 1:0 2:0 3:0 4:0 5:0 6:0} \
+	layer.names=   {0:0 1:0 2:0 3:0 4:0 5:0 6:0} \
+	domain.name= SIM3D1 sim3d= &quot;-220.0 -170.0 1380.0 1190&quot;
+</pre>
+<!-- grep end -->
+
+<p>The Sentaurus Workbench project used here has an extra split named <tt>M3_DEPO_LITHO</tt> 
+after <tt>M2_LITHO</tt> that combines the deposition of the second layer of oxide and 
+the patterning of metal 3 (see <a href="#Fig2">Figure 2</a>) using the mask <tt>6:0_n</tt>. 
+The split <tt>MATRICES</tt> contains the definitions of the required solutions for the 
+capacitance, resistance, and thermal resistance matrices.</p>
+
+<a name="Fig2"></a>
+<p><img src="images/si_matrix_swb.png" width="306" height="278" 
+alt="Sentaurus Workbench setup of project"/></p>
+
+<p class="caption">Figure 2. Sentaurus Workbench setup of the project, similar to the 
+setup of the previous example (see <a href="si_4.html#Fig4">Section 4, Figure 4</a>).</p>
+  
+<p>All the process steps before the split <tt>M3_DEPO_LITHO</tt> are identical 
+to Steps 1&ndash;3 of <a href="si_4.html#2.2">Section&nbsp;4.2.2 Process Sequence</a>.
+The last deposition of oxide and the patterning of metal 3 (copper) are performed 
+using the following<tt>deposit</tt>, <tt>photo</tt>, and <tt>etch</tt> commands:</p>
+    
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Matrix_Calculation/sinterconnect_sis.cmd" startExpr="##start - M3" endExpr="##end - M3" excludelines="##*" format="wrap"-->
+<pre>
+#split M3_DEPO_LITHO
+deposit region.name=Oxide2 Oxide type= fill coord=-2.500 
+deposit region.name=Metal3 @METAL2@ anisotropic thickness=0.6
+photo mask= {6:0_n}
+etch @METAL2@ thickness= 1.000 aniso
+strip photo
+</pre>
+<!-- grep end -->
+
+<p>Note that you have given names to the regions created with the <tt>deposit</tt> 
+command. This will be helpful in the analyses that follow because you can easily read 
+the solution outputs and find the corresponding extracted values for each region. 
+The subregions created after etching a layer inherit the parent region 
+name followed by a number depending on their position in space (for example, 
+<tt>Metal3.1</tt>, <tt>Metal3.2</tt>). In your model, the three lines of metal 3 have 
+been given names according to the <tt>Z</tt>-coordinate value, ranked from the smallest 
+<tt>Z</tt> to the highest: <tt>Metal3.1</tt>, <tt>Metal3.2</tt>, and <tt>Metal3.3</tt>, 
+respectively.</p>
+
+<p>For more information about region-naming, see the 
+<cite>Sentaurus&trade; Interconnect User Guide</cite>, &quot;Regionwise Parameters and 
+Region Name-Handling&quot;.</p>
+
+<p><a href="#Fig3">Figure 3</a> shows the final structure without the oxide layers for clarity. 
+Regions outlined in orange are identical to those of <a href="si_4.html#Fig9">
+Section&nbsp;4.2.2, Figure&nbsp;9</a>.</p>
+
+<a name="Fig3"></a>
+<p><a href="images/si_matrix_model_3rdmetal.png"><img src="images/si_matrix_model_3rdmetal.png" 
+width="500" alt="Final 3D model" /></a></p>
+
+<p class="caption">Figure 3. Finalized 3D model. The oxide layers are rendered 
+transparent for clarity, and the regions outlined in orange are identical to those in 
+<a href="si_4.html#Fig9">Section 4.2.2, Figure 9</a>. (Click image for full-size view.)</p>
+
+<!--===================-->
+<a name="5.2"></a>
+<h2>5.2.2 Remeshing the Model</h2>
+
+<p>Before moving to the solution of the problem, it is recommended to refine the mesh 
+of the final model to improve the accuracy of the results. You can use the mask layers 
+<tt>1:0_n</tt>, <tt>2:0_n</tt>, and <tt>6:0_n</tt> for the refinement of the metal 
+lines as follows:</p>
+  
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Matrix_Calculation/sinterconnect_sis.cmd" startExpr="##start - remesh" endExpr="##end - remesh" excludelines="##*" format="wrap"-->
+<pre>
+line clear
+
+refinebox clear
+
+refinebox name= all min= $gbbox_min max= $gbbox_max xrefine= 1.0 yrefine= 1.0 \
+  zrefine= 1.0
+
+refinebox name= Dielectric min= $gbbox_min max= $gbbox_max xrefine= 0.5 \
+  materials= {Oxide}
+
+refinebox name= Metals min= $gbbox_min max= $gbbox_max xrefine= 0.35 \
+  materials= {Aluminum Copper}
+
+refinebox Aluminum name= metal1 mask= {1:0_n} mask.edge.refine.extent= 0.5 \
+  mask.edge.mns= 0.250 mask.edge.ngr= 1.500 min= -0.600 max= -0.000
+
+refinebox Copper name= metal2 mask= {2:0_n} mask.edge.refine.extent= 0.5 \
+  mask.edge.mns= 0.250 mask.edge.ngr= 1.500  min= -1.800 max= -1.200
+
+refinebox Copper name= metal3 mask= {6:0_n} mask.edge.refine.extent= 0.5 \
+  mask.edge.mns= 0.250 mask.edge.ngr= 1.500  min= $gbbox_min max= -2.500
+
+refinebox remesh
+</pre>
+<!-- grep end -->
+
+<p>You can find more information about the refinement method in 
+<a href="si_4.html#2.3">Section&nbsp;4.2.3 Remeshing the Model</a> and 
+<a href="../ic/ic_2.html#3">Section&nbsp;2.3 Layout-Driven Mesh Refinement</a>.</p>
+
+<p><a href="#Fig4">Figure 4</a> shows the meshed model after the refinement 
+(oxide layers are rendered transparent for clarity).</p>
+
+<a name="Fig4"></a>  
+<p><a href="images/si_matrix_model_mesh2.png"><img src="images/si_matrix_model_mesh2.png" 
+width="500" alt="Meshed model after refinement" /></a></p>
+
+<p class="caption">Figure 4. Meshed model after the layout-driven refinement of the 
+metal lines. (Click image for full-size view.)</p>
+  
+<!--===================-->
+<a name="2.3"></a>
+<h2>5.2.3 Contact Definition</h2>
+  
+<p>The contacts on the pads for metal 1 and metal 2 are created using the layers 
+<tt>4:0</tt> and <tt>5:0</tt> of the layout. The command <tt>icwb.contact.mask</tt> 
+is used for this reason, and a third contact is added for the substrate region as follows:</p>
+  
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Matrix_Calculation/sinterconnect_sis.cmd" startExpr="##start - contacts" endExpr="##end - contacts" excludelines="##*" format="wrap"-->
+<pre>
+#split CONTACT
+icwb.contact.mask layer.name= 4:0 name= cont1 box @METAL1@ xlo= 0.100 \
+  xhi=-0.100 !cut.mesh
+
+icwb.contact.mask layer.name= 5:0 name= cont2 box @METAL2@ xlo=-1.700 \
+  xhi=-1.800  !cut.mesh 
+
+contact bottom name=substrate
+</pre>
+<!-- grep end -->
+
+<p><a href="#Fig5">Figure 5</a> shows the final 3D model with the contacts defined. 
+For more information about the contact definition based on masks, see 
+<a href="../ic/ic_2.html#4">Section&nbsp;2.4 Layout-Driven Contact Definition</a> 
+and <cite>Sentaurus&trade; Interconnect User Guide</cite>.</p>
+
+<a name="Fig5"></a>
+<p><a href="images/si_matrix_model_contacts.png"><img src="images/si_matrix_model_contacts.png" 
+width="500" alt="3D model with contacts" /></a></p>
+
+<p class="caption">Figure 5. Contacts (magenta) defined on the final 3D model. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>5.3 Electrostatic, Electrical, and Thermal Analyses</h1>
+
+<p>Sentaurus Interconnect can perform different types of analysis to extract 
+useful information that can be further used to model equivalent circuits. 
+The available analyses are:</p>
+
+<ul>
+<li>Electrostatic: Capacitance matrix extraction</li>
+<li>Electrical: Resistance matrix extraction</li>
+<li>Thermal: Thermal resistance matrix extraction</li>
+</ul>
+
+<p>These analyses are mutually exclusive, that is, only one type of analysis can be 
+performed at one time. To select an analysis, use the <tt>mode</tt> command followed 
+by the argument <tt>capacitance</tt>, or <tt>resistance</tt>, or 
+<tt>thermal.resistance</tt> for electrostatic, or electrical, or thermal analysis, 
+respectively.</p>
+
+<!--===================-->
+<a name="3.1"></a>
+<h2>5.3.1 Calculating the Capacitance Matrix</h2>
+
+<p>The electrostatic analysis is the first that you run in the <tt>MATRICES</tt> split. 
+The selection, the solution, and the postprocessing are performing using the following 
+commands:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Matrix_Calculation/sinterconnect_sis.cmd" startExpr="##start - capacitance" endExpr="##end - capacitance" excludelines="##*" format="wrap"-->
+<pre>
+mode capacitance 
+
+solve
+
+printCapacitanceMatrix {cont1 substrate}
+</pre>
+<!-- grep end -->
+
+<p>The <tt>printCapacitanceMatrix</tt> command prints all the extracted values for the 
+capacitance using all the conducting layers present in the structure. If you have attributed 
+a charge or a charge density on a conductor, it is considered a floating one and is not 
+taken into account in the capacitance calculations. To specify a charge or a charge density 
+on a contact, use the following commands respectively:</p>
+
+<pre>
+supply contact.name= C2 charge= 1.0e-18&lt;Coulomb&gt;
+supply contact.name= C2 charge.density= 2.5e17&lt;C/cm3&gt;
+</pre>
+
+<p class="note"><strong>IMPORTANT</strong> Floating conductors or contacts are omitted
+from the capacitance matrix.</p>
+
+<p>The output for your 3D model is available in the <tt>capacitance_matrix.txt</tt> file.</p>
+
+<p>Click to view the file <a href="files/capacitance_matrix.txt">capacitance_matrix.txt</a>.</p>
+
+<p>If conducting regions are in contact, Sentaurus Interconnect issues a warning 
+message, and this is also visible in the capacitance extraction tables and matrices. 
+Here, metal 1 and metal 2 are in contact through the oxide via, so their SPICE model 
+capacitance is zero. You can see that the naming of all the conducting regions during 
+the process steps is important to distinguish them in the extracted matrices.</p>
+
+<!--===================-->
+<a name="3.2"></a>
+<h2>5.3.2 Calculating the Resistance Matrix</h2>
+
+<p>The resistance matrix is extracted based on the defined contacts in the structure. 
+In the example, two contacts are retained for the analysis: <tt>cont1</tt> and <tt>cont2</tt>. 
+The <tt>substrate</tt> contact is not used because it is not attached to a conductor 
+(silicon is considered an insulator here). The resulting resistance matrix can be obtained 
+using the following commands:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Matrix_Calculation/sinterconnect_sis.cmd" startExpr="##start - resistance" endExpr="##end - resistance" excludelines="##*" format="wrap"-->
+<pre>
+mode resistance 
+
+solve
+
+printResistanceMatrix
+</pre>
+<!-- grep end -->
+
+<p>You can find the resistance and conductance values associated with the contacts 
+<tt>cont1</tt> and <tt>cont2</tt> in the tables in the <tt>resistance_matrix.txt</tt> file.</p>
+
+<p>Click to view the file <a href="files/resistance_matrix.txt">resistance_matrix.txt</a>.</p>
+
+<p>In the tables, you can see that there is only one element in the resistance 
+matrix, and this represents the overall resistance of the metal line between 
+<tt>cont1</tt> and <tt>cont2</tt> consisting of metal 1, metal 2, and the via.</p>
+
+<!--===================-->
+<a name="3.3"></a>
+<h2>5.3.3 Calculating the Thermal Resistance Matrix</h2>
+
+<p>By default, the thermal resistances that are calculated during the thermal analysis 
+in Sentaurus Interconnect are based on the defined contacts in the structure. Here, the 
+<tt>substrate</tt> contact also is considered because silicon has a defined thermal 
+conductivity value in the parameter database. Calculating the thermal resistances 
+and printing out of the matrix are performed in a similar way as for the previous analyses:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sinterconnect/3D_Matrix_Calculation/sinterconnect_sis.cmd" startExpr="##start - thermal resistance" endExpr="##end - thermal resistance" excludelines="##*" format="wrap"-->
+<pre>
+mode thermal.resistance 
+
+solve
+
+printThermalResistanceMatrix
+</pre>
+<!-- grep end -->
+
+<p>The resulting output of the analysis, available in the 
+<tt>thermal_resistance_matrix.txt</tt> file, gives the thermal resistance matrix for the 
+defined contacts <tt>cont1</tt>, <tt>cont2</tt>, and <tt>substrate</tt>.</p>
+
+<p>Click to view the file <a href="files/thermal_resistance_matrix.txt">
+thermal_resistance_matrix.txt</a>.</p>
+
+<p>As expected, you can see that the resistance between <tt>cont1</tt> and 
+<tt>substrate</tt> is lower than the resistance between <tt>cont1</tt> and 
+<tt>cont2</tt> as silicon has a lower thermal resistivity than SiO<sub>2</sub>.</p>
+
+<p>It is possible to choose the printout in the <tt>printThermalResistanceMatrix</tt> command 
+by specifying only the contacts of interest. For example, if you only need the thermal 
+resistance between <tt>cont1</tt> and the <tt>substrate</tt>, use the command:</p>
+
+<pre>printThermalResistanceMatrix cont1 substrate resistance.matrix</pre>
+
+<p>There are similar options for the electrostatic and electrical analyses. Refer to the
+<cite>Sentaurus&trade; Interconnect User Guide</cite> for details.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_6.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

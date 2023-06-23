@@ -1,0 +1,889 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Structure Editor 6. Three-Dimensional Structures</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_7.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Structure Editor<br />6. Three-Dimensional Structures</h1>
+
+<p>
+ <a href="#1">6.1 Overview</a><br />
+ <a href="#2">6.2 Reinitializing Sentaurus Structure Editor</a><br />
+ <a href="#3">6.3 Automatic Region-Naming Mode</a><br />
+ <a href="#4">6.4 Selecting Materials</a><br />
+ <a href="#5">6.5 Selecting the Default Boolean Expression</a><br />
+ <a href="#6">6.6 Creating a Cuboid Region</a><br />
+ <a href="#7">6.7 Changing the View and Zooming</a><br />
+ <a href="#8">6.8 Poly Reoxidation</a><br />
+ <a href="#9">6.9 Nitride Spacers</a><br />
+ <a href="#10">6.10 Defining the Contacts</a><br />
+ <a href="#11">6.11 Setting the Contacts at Existing Faces</a><br />
+ <a href="#12">6.12 Setting the Contacts at New Faces</a><br />
+ <a href="#13">6.13 Defining Constant Doping Levels in a Region</a><br />
+ <a href="#14">6.14 Defining Analytic Doping Profiles</a><br />
+ <a href="#15">6.15 Defining a Meshing Strategy in a Window</a><br /> 
+ <a href="#16">6.16 Defining a Multibox Mesh Strategy in a Refinement Window</a><br />
+ <a href="#17">6.17 Saving the Model</a><br />
+ <a href="#18">6.18 Meshing the Device Structure</a><br />
+ <a href="#19">6.19 Assignment</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To create three-dimensional structures using Sentaurus Structure Editor.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>6.1 Overview</h1>
+
+<p><a href="sde_2.html">Section 2. Generating 2D Boundaries</a> demonstrates 
+the steps for building a 2D SOI MOSFET. Sentaurus Structure Editor also can 
+construct 3D structures.</p>
+
+<p>This section introduces the procedure to build a 3D MOSFET as shown 
+in Figure&nbsp;1.</p>
+
+<p><a href="images/se_3d_mosfet.png"> <img src="images/se_3d_mosfet.png" width="300" alt="3D MOSFET" /></a></p>
+
+<p class="caption">Figure 1. Three-dimensional MOSFET. 
+(Click image for full-size view.)</p>
+
+<p class="note">Due to the similarity of 2D and 3D operations, many commands 
+and operations executed in this section are identical to those described in the 2D case. 
+Therefore, cross references to relevant sections will be given to avoid duplication of text.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>6.2 Reinitializing Sentaurus Structure Editor</h1>
+
+<p>See <a href="sde_2.html#2">Section 2.2 Reinitializing Sentaurus Structure Editor</a>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>6.3 Automatic Region-Naming Mode</h1>
+
+<p>By default, Sentaurus Structure Editor automatically assigns region names such as 
+<tt>region_1</tt> and <tt>region_2</tt> to newly created regions. This is useful in some 
+applications but, in most cases, you might prefer to use your own names, which are more 
+descriptive and easier to remember.</p>
+
+<p>To switch off the automatic region-naming mode, choose <strong>Draw</strong> &gt; 
+<strong>Auto Region Naming</strong> (ensure there is no check mark next to the command).</p>
+
+<p>When the mode has been switched off, you will be prompted to enter the region name 
+whenever a new region is created.</p>
+
+<p>The corresponding Scheme command is:</p>
+
+<pre>
+(sdegeo:set-auto-region-naming OFF)
+</pre>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>6.4 Selecting Materials</h1>
+
+<p>See <a href="sde_2.html#4">Section 2.4 Selecting Materials</a>.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>6.5 Selecting the Default Boolean Expression</h1>
+
+<p>See <a href="sde_2.html#5">Section 2.5 Selecting the Default Boolean Expression</a>.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>6.6 Creating a Cuboid Region</h1>
+
+<p>To create a cuboidal silicon substrate region:</p>
+
+<ol>
+<li>Switch off the automatic region-naming mode by choosing <strong>Draw</strong> 
+&gt; <strong>Auto Region Naming</strong>.</li>
+<li>Choose <strong>Draw</strong> &gt; <strong>Exact Coordinates</strong>.</li>
+<li>Choose <strong>Draw</strong> &gt; <strong>Overlap Behavior</strong> &gt; 
+<strong>New Replaces Old</strong> or click the 
+<img class="imgline" src="images/icons/newrold.png" width="16" height="15" 
+alt="New replaces old button" /> toolbar button to select the default 
+Boolean expression for resolving overlapping.</li>
+<li>Select the Isometric View (<img class="imgline" src="images/icons/isoview.png" width="19" height="17" 
+alt="Isometric view button" />).</li>
+<li>Choose <strong>Draw</strong> &gt; <strong>3D Create Tools</strong> &gt; <strong>Create Cuboid</strong>.</li>
+<li>Select <strong>Silicon</strong> from the Material list.</li>
+<li>Draw the cuboid in the view window:<br /> 
+  <ul>
+  <li>Click to place the first corner of the cuboid and drag the pointer to the location 
+      of the opposite corner of the upper face of the cuboid (or lower face depending on the final 
+      placement of the cuboid).</li>
+  <li>Finally, move the pointer (without pressing any button) to extend the face in the 
+      third direction. Click once to define the cuboid.</li>
+  </ul></li>
+
+<li>When the drawing is completed, the Cuboid Coordinates dialog box is 
+displayed.<br /> 
+Enter <tt>(-0.25 -0.2 0), (0.25 0.2 -1.0)</tt> to define the two opposite corners of the 
+cuboid and click <strong>OK</strong>.<br />
+
+<p><img src="images/se_3d_cuboidef.png" width="481" height="278" alt="Cuboid Coordinates dialog box" /></p></li>
+
+<li>Since the automatic region-naming mode is switched off, a dialog box opens for the 
+name of the region. Enter <tt>SubsSilicon</tt>.</li>
+<li>Click <strong>OK</strong>.<br />
+
+<p><img src="images/se_3d_regioname.png" width="440" height="165" alt="Dialog box to enter name of region" /></p></li>
+
+<li>If the cuboid does not fit the view, choose <strong>View</strong> &gt; <strong>Zoom to Extents</strong>.</li>
+</ol>
+
+<p>Other regions of the device, that is, the isolation trenches, the gate oxide, and the 
+polysilicon gate can be created in a similar way. Use the following coordinates.</p>
+
+<table width="570">
+<tr>
+ <th>Region</th>
+ <th>Name</th>
+ <th>Material</th>
+ <th>Coordinates</th>
+</tr>
+
+<tr>
+ <td>Substrate</td>
+ <td><tt>SubsSilicon</tt></td>
+ <td><tt>Silicon</tt></td>
+ <td><tt>(-0.25 -0.2 0), (0.25 0.2 -1.0)</tt></td>
+</tr>
+
+<tr>
+ <td>Right trench</td>
+ <td><tt>TrenchOxide_Right</tt></td>
+ <td><tt>SiO2</tt></td>
+ <td> <tt>(-0.2 -0.2 0), (0.2 -0.1 -0.2)</tt></td>
+</tr>
+
+<tr>
+ <td>Left trench</td>
+ <td><tt>TrenchOxide_Left</tt></td>
+ <td><tt>SiO2</tt></td>
+ <td><tt>(-0.2 0.1 0), (0.2 0.2 -0.2)</tt></td>
+</tr>
+
+<tr>
+ <td>Gate oxide</td>
+ <td><tt>GateOxide</tt></td>
+ <td><tt>SiO2</tt></td>
+ <td><tt>(-0.15 -0.2 0), (0.15 0.2 0.002)</tt></td>
+</tr>
+
+<tr>
+ <td>Poly gate</td>
+ <td><tt>PolyGate</tt></td>
+ <td><tt>PolySi</tt></td>
+ <td><tt>(-0.1 -0.1 0.002), (0.1 0.2 0.1)</tt></td>
+</tr>
+</table>
+
+<p>The corresponding Scheme commands for creating these regions are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(sdegeo:create-cuboid*" endExpr="*PolyGate*" -->
+<pre>
+(sdegeo:create-cuboid (position -0.25 -0.2 0) (position 0.25 0.2 -1.0)  
+ &quot;Silicon&quot; &quot;SubsSilicon&quot;)
+ 
+(sdegeo:create-cuboid (position -0.15 -0.1 0) (position 0.15 0.1 0.002)  
+ &quot;Oxide&quot; &quot;GateOxide&quot;)
+
+(sdegeo:create-cuboid (position -0.2 -0.2 0) (position 0.2 -0.1 -0.2)  
+ &quot;Oxide&quot; &quot;TrenchOxide_Right&quot;)
+
+(sdegeo:create-cuboid (position -0.2  0.1 0) (position 0.2  0.2 -0.2)  
+ &quot;Oxide&quot; &quot;TrenchOxide_Left&quot;)
+
+(sdegeo:create-cuboid (position -0.1 -0.1 0.002) (position 0.1 0.2 0.1)  
+ &quot;PolySi&quot; &quot;PolyGate&quot;)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="7"></a>
+<h1>6.7 Changing the View and Zooming</h1>
+
+<p>Sentaurus Structure Editor supports functions that allow the structure 
+in the view window to be seen from different perspectives:</p>
+ 
+<ul>
+<li>To view the structure from any of the axis directions, select one of these toolbar buttons:<br /><br />
+
+<img src="images/se_3d_viewbuttons.png" width="19" height="118" alt="3D view buttons" /><br /><br /></li>
+    
+<li>To rotate the structure, click the Orbit 
+(<img class="imgline" src="images/icons/orbit.png" width="23" height="22" alt="Orbit button" />) 
+button. Drag one point of the structure to rotate it in any direction.</li>
+    
+<li>To zoom in or out, click the Zoom button. To zoom in, drag the pointer upwards to the left. 
+To zoom out, drag the pointer downwards to the right.</li>   
+</ul>
+
+<p>Figure 2 shows the current status of the structure viewed from different angles.</p>
+
+<p><a href="images/se_3d_diffview.png"> <img src="images/se_3d_diffview.png" width="570" 
+alt="Current status of 3D MOSFET structure and status of 3D MOSFET after using Orbit tool" /></a></p>
+
+<p class="caption">Figure 2. (Left) Current status of 3D MOSFET structure and (right) status 
+of 3D MOSFET after using the Orbit button to change the angle. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>6.8 Poly Reoxidation</h1>
+
+<p>To create a poly reoxidation region:</p>
+
+<ol>
+<li>Change the default Boolean expression to Old Replaces New 
+(<img class="imgline" src="images/icons/oldrnew.png" width="15" height="15" alt="Old replaces new" />).<br />
+This ensures that the old regions of the structure remain intact while new regions 
+are defined and placed.</li> 
+<li>Create a cuboid that overlaps the polysilicon gate region and another on top 
+of the substrate surface. Follow the steps in 
+<a href="#6">Section&nbsp;6.6 Creating a Cuboid Region</a> 
+and use the following parameter values.<br /><br />
+
+<table width="550">
+<tr>
+ <th>Region</th>
+ <th>Name</th>
+  <th>Material</th>
+<th>Coordinates</th>
+</tr>
+
+<tr>
+<td>Poly reoxidation 1</td>
+<td><tt>PolyReOxide1</tt></td>
+<td><tt>SiO2</tt></td>
+<td><tt>(-0.103 -0.103 0) (0.103 0.2 0.1)</tt></td>
+</tr>
+
+<tr>
+<td>Poly reoxidation 2</td>
+<td><tt>PolyReOxide2</tt></td>
+<td><tt>SiO2</tt></td>
+<td><tt>(-0.15 -0.103 0) (0.15 0.2 0.005)</tt></td>
+</tr>
+</table>
+</li>
+</ol>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(sdegeo:set-default-boolean*" startoccurrence=2 endExpr="*PolyReOxide2*"-->
+<pre>
+(sdegeo:set-default-boolean &quot;BAB&quot;)
+(sdegeo:create-cuboid (position -0.103 -0.103 0) (position 0.103 0.2 0.1)  
+ &quot;Oxide&quot; &quot;PolyReOxide1&quot;)
+
+(sdegeo:create-cuboid (position -0.15 -0.15 0) (position 0.15 0.2 0.005)
+  &quot;Oxide&quot; &quot;PolyReOxide2&quot;)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="9"></a>
+<h1>6.9 Nitride Spacers</h1>
+
+<p>To add nitride spacers:</p>
+
+<ol>
+<li>Click the Old Replaces New button.</li>
+<li>Create a cuboid using the following parameter values.<br /><br />
+
+<table width="550">
+<tr>
+<th>Region</th>
+<th>Name</th>
+<th>Material</th>
+<th>Coordinates</th>
+</tr>
+
+<tr>
+<td>Nitride spacers</td>
+<td><tt>NiSpacer</tt></td>
+<td><tt>Si3N4</tt></td>
+<td><tt>(-0.15 -0.15 0), (0.15 0.2 0.08)</tt></td>
+</tr>
+</table>
+</li>
+</ol>
+
+<p>To round the spacer corners and edges:</p>
+
+<ol>
+<li>From the Selection Level list, choose <strong>Select Vertex</strong>.</li> 
+<li>Click the Select 
+(<img class="imgline" src="images/icons/select.png" width="11" height="17" alt="Select button" />) 
+toolbar button.</li>
+      
+<li>Select the corner vertices of the spacer.<br />
+Multiple vertices can be selected simultaneously by holding the Ctrl key when selecting.<br /><br />
+
+<a href="images/se_3d_selectvertex.png"><img src="images/se_3d_selectvertex.png" 
+width="300" alt="Selecting corner vertices of spacer" /></a>
+
+<p class="caption">Figure 3. Selecting corner vertices 
+of the spacer. (Click image for full-size view.)</p></li>
+
+<li>Choose <strong>Edit</strong> &gt; <strong>2D Edit Tools</strong> &gt; <strong>Fillet</strong>.<br />
+A dialog box opens for input of the fillet radius.</li> 
+<li>Enter <tt>0.03</tt>, and click <strong>OK</strong>.</li>
+</ol>
+
+<p><a href="images/se_3d_roundcorner.png"><img src="images/se_3d_roundcorner.png" 
+width="300" alt="Rounded corners of spacer after using the parameter fillet-edges" /></a></p>
+
+<p class="caption">Figure 4. Rounded corners of the spacer after using the fillet-radius 
+parameter. (Click image for full-size view.)</p>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="*NiSpacer*" startOffset=-1 endExpr="*fillet-radius)*"-->
+<pre>
+(sdegeo:create-cuboid (position -0.15 -0.15 0) (position 0.15 0.2 0.08)  
+ &quot;Nitride&quot; &quot;NiSpacer&quot;)
+
+(sde:define-parameter &quot;fillet-radius&quot; 0.03 0.0 0.0 )
+
+(sdegeo:fillet 
+ (list (car (find-vertex-id (position -0.15 -0.15 0.08))) 
+       (car (find-vertex-id (position  0.15 -0.15 0.08))) ) fillet-radius)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="10"></a>
+<h1>6.10 Defining the Contacts</h1>
+
+<p>To define a contact:</p>
+
+<ol>
+<li>Choose <strong>Contacts</strong> &gt; <strong>Contact Sets</strong>.<br />
+The Contact Sets dialog box opens.<br />
+
+<p><a href="images/se_3d_contactsets.png"><img src="images/se_3d_contactsets.png" 
+width="540" alt="Contact Sets dialog box" /></a></p></li>
+
+<li>In the <strong>Contact Name</strong> field, enter <tt>gate</tt>.</li>
+<li>In the <strong>Edge Color</strong> fields, enter <tt>1, 0, 0</tt>.</li>
+<li>In the <strong>Edge Thickness</strong> field, leave the default as <tt>4</tt>.</li>
+<li>In the <strong>Face Pattern</strong> field, select <tt>##</tt>.</li>
+<li>Click <strong>Set</strong>.</li>
+<li>Define the other contacts,<tt>drain</tt>, <tt>source</tt>, and <tt>substrate</tt>, 
+in the same way using the specifications in the corresponding Scheme commands.</li>
+<li>When all contacts have been defined, click <strong>Close</strong>.</li>
+</ol>
+
+<!--================================================-->
+<a name="11"></a>
+<h1>6.11 Setting the Contacts at Existing Faces</h1>
+
+<p>As in the 2D case, contacts do not become effective unless they are associated with 
+part of the device structure. In 3D applications, contacts are typically defined on the 
+faces of the device.</p>
+
+<p>To place a substrate contact:</p>
+
+<ol>
+<li>From the Contact list, select <strong>substrate</strong>.<br />
+
+<p><img src="images/se_3d_contactlist.png" width="117" height="98" alt="3D contact list" /></p></li>
+    
+<li>From the Selection Level list, choose <strong>Select Face</strong>.</li>
+<li>Click the Select 
+(<img class="imgline" src="images/icons/select.png" width="11" height="17" alt="Select button" />) button.</li>
+<li>Select the bottom face of the silicon substrate.</li>    
+<li>Choose <strong>Contacts</strong> &gt; <strong>Set Faces</strong> to associate the <tt>substrate</tt> 
+with the bottom of the substrate.<br />
+(The bottom face is now decorated with the pattern set previously for the <tt>substrate</tt> 
+contact.)</li>
+<li>Repeat the previous steps and define the <tt>gate</tt> contact on top of the polysilicon 
+surface.<br />
+The <tt>source</tt> and <tt>drain</tt> contacts are, however, slightly different and require 
+new faces to be created before they can be defined, which will be explained in the next section.</li>
+</ol>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(sdegeo:set-contact*" endExpr="*gate*" -->
+<pre>
+(sdegeo:set-contact (find-face-id (position 0 0 -1) ) &quot;substrate&quot;)  
+(sdegeo:set-contact (find-face-id (position 0 0 0.1)) &quot;gate&quot;)  
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="12"></a>
+<h1>6.12 Setting the Contacts at New Faces</h1>
+ 
+<p>The <tt>source</tt> and <tt>drain</tt> only occupy part of an existing face (the top 
+silicon substrate face). Therefore, new faces must be created before these two contacts 
+can be placed.</p>
+
+<p>To create a new face, create a metal cuboid to imprint the face:</p>
+
+<ol>
+<li>Create a cuboid metal region for the <tt>source</tt> and one for the <tt>drain</tt> as 
+discussed in <a href="#6">Section&nbsp;6.6 Creating a Cuboid Region</a>. Use the following 
+parameter values.<br /><br />
+
+<table width="500">
+<tr>
+<th>Region</th>
+<th>Name</th>
+<th>Material</th>
+<th>Coordinates</th>
+</tr>
+
+<tr>
+<td>Source cuboid</td>
+<td><tt>Source</tt></td>
+<td><tt>Metal</tt></td> 
+<td><tt>(0.17  -0.1 0) (0.25 0.1 0.05)</tt></td>
+</tr> 
+
+<tr>
+<td>Drain cuboid</td>
+<td><tt>Drain</tt></td>
+<td><tt>Metal</tt></td>
+<td><tt>(-0.25 -0.1 0) (-0.17 0.1 0.05)</tt></td>
+</tr>
+</table><br />
+</li>
+
+<li>Remember these two regions are created only for the purpose of generating new faces 
+on the device and are not a real part of the device structure. To remove them:<br />
+
+<ul>
+<li>From the Selection Level list, choose <strong>Select Body</strong>.</li>
+<li>Click the Select button.</li>
+<li>Select the two metal regions. To allow multiple regions to be selected at one time, 
+hold the Ctrl key when selecting. All the selected regions are highlighted.</li>
+<li>Choose <strong>Edit</strong> &gt; <strong>2D Edit Tools</strong> &gt; 
+<strong>Delete Region</strong>.</li> 
+</ul>
+</li>
+
+<li>Although the two newly created metal regions have been removed immediately, the new 
+faces created by the intersection of the two metal regions with the silicon top surface 
+remain. The association of the <tt>source</tt> and <tt>drain</tt> contacts with these 
+new faces now can be established using the technique from 
+<a href="#11">Section 6.11 Setting the Contacts at Existing Faces</a>.</li>    
+</ol>
+
+<p>The corresponding Scheme commands for creating the two metal regions and replacing them with contacts are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(define SOURCE*" endExpr="*drain*remove*" -->
+<pre>
+(define SOURCE 
+	(sdegeo:create-cuboid (position -0.25 -0.1 0) (position -0.17  0.1 0.05)
+	&quot;Metal&quot; &quot;Source&quot;))
+(sdegeo:set-contact SOURCE &quot;source&quot; &quot;remove&quot;)  
+
+(define DRAIN 
+	(sdegeo:create-cuboid (position  0.17  -0.1 0) (position  0.25 0.1 0.05)
+	&quot;Metal&quot; &quot;Drain&quot;))
+(sdegeo:set-contact DRAIN &quot;drain&quot; &quot;remove&quot;)  
+</pre>
+<!-- grep end -->
+
+
+<!--================================================-->
+<a name="13"></a>
+<h1>6.13 Defining Constant Doping Levels in a Region</h1>
+
+<p>Defining a constant doping level in a 3D region is similar to that for a 2D region 
+(see <a href="sde_3.html#3">Section 3.3 Defining Analytic Doping Profiles</a>).</p>
+
+<p>To define a constant doping level of 1x10<sup>17</sup> cm<sup>-3</sup> in the 
+silicon substrate:</p>
+  
+<ol>
+<li>Choose <strong>Device</strong> &gt; <strong>Constant Profile Placement</strong>.<br />
+The Constant Profile Placement dialog box opens.<br />
+
+<p><img src="images/se_3d_constantprofile.png" width="519" height="520" 
+alt="Constant Profile Placement dialog box" /></p></li>
+   
+<li>Enter <tt>PlaceCD.Bulk</tt> in the <strong>Placement Name</strong> field.</li>
+<li>Under Placement Type, select <strong>Region</strong> as the type, and 
+select <tt>SubsSilicon</tt> from the list.</li>
+<li>Under Constant Profile Definition, enter <tt>Const.Bulk</tt> in the 
+<strong>Name</strong> field.</li>
+<li>Select <tt>BoronActiveConcentration</tt> from the <strong>Species</strong> list.</li>
+<li>Enter <tt>1e17</tt> in the <strong>Concentration</strong> field.</li>
+<li>Click <strong>Add Placement</strong>.</li>      
+<li>Repeat these steps to define an <tt>ArsenicActiveConcentration</tt> of 
+10<sup>20</sup> cm<sup>-3</sup> in the polysilicon gate region.</li>
+<li>Click <strong>Close</strong>.</li>      
+</ol>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(sdedr:define-constant-profile*Const.Bulk*" endExpr="*PolyGate*" -->
+<pre>
+(sdedr:define-constant-profile &quot;Const.Bulk&quot; &quot;BoronActiveConcentration&quot; 1e17)
+(sdedr:define-constant-profile-region &quot;PlaceCD.Bulk&quot;
+  &quot;Const.Bulk&quot; &quot;SubsSilicon&quot;)
+
+(sdedr:define-constant-profile &quot;Const.Poly&quot; &quot;ArsenicActiveConcentration&quot; 1e20)
+(sdedr:define-constant-profile-region &quot;PlaceCD.Poly&quot;
+  &quot;Const.Poly&quot; &quot;PolyGate&quot;)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="14"></a>
+<h1>6.14 Defining Analytic Doping Profiles</h1>
+
+<p>Defining an analytic doping profile in a 3D region is comparable to the 2D case. 
+The only difference is that, in the 3D case, the reference for the profile is a 2D plane. 
+In the 2D case, it is a 1D edge.</p>
+
+<p>As in the 2D case, the definition of a profile in a 3D region involves two steps. 
+The first step defines the baseline window and the second step defines the profile itself. 
+The baseline window determines the lateral extent of the profile and serves as the reference 
+point for the depth of the peak position of the profile.</p>
+
+<p>The following instructions define the source and drain implantations, both in Gaussian shape, 
+with a peak concentration of 10<sup>19</sup> cm<sup>-3</sup>, a junction depth of 0.1 &mu;m, 
+and a lateral straggle/diffusion factor of 0.8.</p>
+
+<p>To define a baseline window:</p>
+
+<ol>
+<li>Choose <strong>Draw</strong> &gt; <strong>Exact Coordinates</strong>.</li> 
+<li>Choose <strong>Mesh</strong> &gt; <strong>Define Ref/Eval Window</strong> &gt; 
+<strong>Rectangle</strong>.</li>
+<li>In the view window, draw a rectangle.</li>
+<li>In the Exact Coordinates dialog box, enter <tt>(0.30 -0.25)</tt> and 
+<tt>(0.15 0.25)</tt> to define the rectangle.</li>
+<li>In the <strong>Ref/Eval Window Name</strong> field, type <tt>BaseLine.Source</tt> 
+for the baseline name.</li>
+<li>Click <strong>OK</strong>.</li>
+<li>Repeat these steps for the drain baseline definition. Use the following parameter 
+values.<br /><br />
+
+<table width="500">
+<tr>
+<th>Junction</th>
+<th>Baseline name</th>
+<th>Start point</th>
+<th>End point</th>
+</tr>
+
+<tr>
+<td>Source</td>
+<td><tt>BaseLine.Source</tt></td>
+<td><tt>(0.30 -0.25)</tt></td>
+<td><tt>(0.15 0.25)</tt></td>
+</tr>
+
+<tr>
+<td>Drain</td>
+<td><tt>BaseLine.Drain</tt></td>
+<td><tt>(-0.15 -0.25)</tt></td>
+<td><tt>(-0.30 0.25)</tt></td>
+</tr>
+</table></li>
+</ol>
+
+<p>The corresponding Scheme commands for these two definitions are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(sdedr:define-refeval-window*" endExpr="*BaseLine.Drain*" endOffset=1 -->
+<pre>
+(sdedr:define-refeval-window &quot;BaseLine.Source&quot; &quot;Rectangle&quot;  
+ (position  0.30 -0.25 0.0)  (position 0.15 0.25 0.0) )
+
+(sdedr:define-refeval-window &quot;BaseLine.Drain&quot; &quot;Rectangle&quot; 
+ (position -0.30 -0.25 0.0)  (position -0.15 0.25  0.0) )
+</pre>
+<!-- grep end -->
+
+<p>To define and place the Gaussian doping profiles:</p>
+
+<ol>
+<li>Choose <strong>Device</strong> &gt; <strong>Analytical Profile Placement</strong>.<br />
+The Analytical Profiles dialog box opens.<br />
+
+<p><img src="images/se_3d_analytprofile.png" width="520"  
+alt="Analytical Profiles dialog box" /></p></li>
+
+<li>Enter <tt>PlaceAP.Source</tt> in the <strong>Placement Name</strong> field.</li>
+<li>Select <tt>BaseLine.Source</tt> from the <strong>Ref/Win</strong> list.</li>
+<li>Under Profile Definition, enter <tt>Gauss.SourceDrain</tt> in the 
+<strong>Name</strong> field.</li>
+<li>Select <tt>ArsenicActiveConcentration</tt> from the <strong>Species</strong> list.</li>
+<li>Enter <tt>1e19</tt> in the <strong>Peak Concentration</strong> field.</li> 
+<li>Enter <tt>0</tt> in the <strong>Peak Position</strong> field.</li>
+<li>Enter <tt>1e17</tt> in the <strong>Junction</strong> field and <tt>0.1</tt> in the 
+<strong>Depth</strong> field.</li>
+<li>Enter <tt>0.8</tt> in the <strong>Lateral Diffusion Factor</strong> field.</li>
+<li>Click <strong>Add Placement</strong>.</li>
+<li>Repeat these steps and define the drain implant.<br />
+Note that the profile definition <tt>Gauss.SourceDrain</tt> can be reused but the baseline 
+must change to <tt>BaseLine.Drain</tt>.</li>
+<li>Click <strong>Close</strong>.</li>
+</ol>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(sdedr:define-gaussian-profile*" endExpr="*BaseLine.Drain*" -->
+<pre>
+(sdedr:define-gaussian-profile &quot;Gauss.SourceDrain&quot;
+  &quot;ArsenicActiveConcentration&quot; &quot;PeakPos&quot; 0.0 &quot;PeakVal&quot; 1e19
+  &quot;ValueAtDepth&quot; 1e17 &quot;Depth&quot; 0.1 &quot;Gauss&quot; &quot;Factor&quot; 0.8)
+
+(sdedr:define-analytical-profile-placement &quot;PlaceAP.Source&quot;
+ &quot;Gauss.SourceDrain&quot; &quot;BaseLine.Source&quot; &quot;Both&quot; &quot;NoReplace&quot; &quot;Eval&quot;)
+
+(sdedr:define-analytical-profile-placement &quot;PlaceAP.Drain&quot;
+ &quot;Gauss.SourceDrain&quot; &quot;BaseLine.Drain&quot; &quot;Both&quot; &quot;NoReplace&quot; &quot;Eval&quot;)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="15"></a>
+<h1>6.15 Defining a Meshing Strategy in a Window</h1>
+
+<p>To generate a meshing strategy that is globally effective, first create a refinement 
+window covering the entire device area, then define a meshing strategy, and apply it to 
+the window.</p>
+
+<p>To generate a meshing strategy:</p>
+
+<ol>
+<li>Switch on the Exact Coordinates mode by choosing <strong>Draw</strong> &gt; 
+<strong>Exact Coordinates</strong>.</li>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Define Ref/Eval Window</strong> &gt; <strong>Cuboid</strong>.<br />
+A dialog box opens for the name of the refinement box.</li>
+<li>Enter <tt>RefWin.Global</tt>.</li>
+<li>Click <strong>OK</strong>.</li>
+<li>In the Cuboid Coordinates dialog box, enter <tt>(-0.25 -0.2 -0.5), (0.25 0.2 0.1)</tt> 
+for the location of the refinement window.</li>
+<li>Click <strong>OK</strong>.</li>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Refinement Placement</strong>.<br />
+The Refinement Specification dialog box opens.<br />
+
+<p><a href="images/se_3d_refinespec.png"><img src="images/se_3d_refinespec.png" width="520" 
+alt="Refinement Specification dialog box" /></a></p></li>
+
+<li>Enter <tt>Place.Global</tt> as the <strong>Placement Name</strong>.</li>
+<li>From the <strong>Ref/Eval Window</strong> list, select <tt>RefWin.Global</tt> 
+as the refinement window.</li>
+<li>Under Refinement Definition, enter <tt>RefDef.Global</tt> in the 
+<strong>Name</strong> field.</li>
+<li>Enter the <strong>Max Element Size</strong> and <strong>Min Element Size</strong> 
+for all directions: Xmax = Ymax = Zmax = 0.1 and Xmin = Ymin = Zmin = 0.05.</li>
+<li>Click <strong>Add Placement</strong>.</li>
+<li>Repeat these steps and define a tighter refinement strategy in the top active region 
+of the device. Use <tt>RefWin.Active</tt> as the refinement box name and the coordinates 
+<tt>(-0.25 -0.2 -0.15) (0.25 0.2 0.0)</tt> for the refinement window. Use <tt>Place.Active</tt> 
+as the placement name and set Xmax = Ymax = Zmax = 0.025 and Xmin = Ymin = Zmin = 0.0125.</li>
+<li>Click <strong>Close</strong>.</li>     
+</ol>
+
+<p>The corresponding Scheme commands are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(sdedr:define-refeval-window*RefWin.Global*"  endExpr="*RefDef.Active*RefWin.Active*" -->
+<pre>
+(sdedr:define-refeval-window &quot;RefWin.Global&quot; &quot;Cuboid&quot;
+  (position -0.25 -0.2 -1.0) (position 0.25 0.2 0.1))
+
+(sdedr:define-refinement-size &quot;RefDef.Global&quot;
+  0.1  0.1  0.1
+  0.05 0.05 0.05 )
+
+(sdedr:define-refinement-placement &quot;Place.Global&quot;
+ &quot;RefDef.Global&quot; &quot;RefWin.Global&quot; )
+
+(sdedr:define-refeval-window &quot;RefWin.Active&quot; &quot;Cuboid&quot;
+ (position -0.25 -0.2 -0.15) (position 0.25 0.2 0.0))
+
+(sdedr:define-refinement-size &quot;RefDef.Active&quot;
+  0.025  0.025  0.025
+  0.0125 0.0125 0.0125 )
+
+(sdedr:define-refinement-placement &quot;Place.Active&quot;
+&quot;RefDef.Active&quot; &quot;RefWin.Active&quot;)
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="16"></a>
+<h1>6.16 Defining a Multibox Mesh Strategy in a Refinement Window</h1>
+
+<p>To add a multibox refinement strategy in the channel region:</p>
+
+<ol>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Multibox Placement</strong>.<br />
+The Multibox Specification dialog box opens.<br />
+
+<p><a href="images/se_3d_multibox.png"><img src="images/se_3d_multibox.png" width="520" 
+alt="Multibox Specification dialog box" /></a></p></li>
+
+<li>Enter <tt>PlaceMB.Channel</tt> in the <strong>Placement Name</strong> field.</li>
+<li>Select the option <strong>Define Ref/Eval Window</strong>, 
+enter the coordinates <tt>(-0.12 -0.1 -0.05)</tt> and <tt>(0.12 0.1 0.0)</tt> 
+for the cuboid window definition, and click <strong>Define</strong>.</li>
+<li>Enter the window name <tt>RefWin.Channel</tt> in the dialog box that 
+opens, and click <strong>OK</strong>.</li>
+<li>Under Placement Type, select <tt>RefWin.Channel</tt> from the list.</li>
+<li>Under Multibox Definition, enter <tt>MB.Channel</tt> in the 
+<strong>Name</strong> field.</li>
+<li>Enter the values for the maximum and minimum grid spacing for the directions:<br /> 
+Xmax = Ymax = 0.1 and Zmax = 0.01, Xmin = Ymin = 0.05 and Zmin = 0.001.</li>
+<li>For the <strong>X</strong> and <strong>Y</strong> ratios, enter <tt>1</tt>. 
+For the <strong>Z</strong> ratio, enter <tt>-1.5</tt>.</li>
+<li>Click <strong>Add Placement</strong>.</li>
+<li>Click <strong>Close</strong>.</li>
+</ol>
+
+<p>Figure 5 shows the device after these steps with refinement windows.</p>
+
+<p><a href="images/se_3d_refwindows.png"><img src="images/se_3d_refwindows.png" width="300" 
+alt="3D MOSFET with refinement windows" /></a></p>
+
+<p class="caption">Figure 5. Three-dimensional MOSFET with 
+refinement windows. (Click image for full-size view.)</p>
+
+<p>The corresponding Scheme commands for placing the multibox are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd" startExpr="(sdedr:define-refeval-window*RefWin.Channel*" endExpr="*RefDefMB*RefWin.Channel*" -->
+<pre>
+(sdedr:define-refeval-window &quot;RefWin.Channel&quot;
+ &quot;Cuboid&quot; (position -0.12 -0.1 -0.05) (position 0.12 0.1 0))
+ 
+(sdedr:define-multibox-size &quot;RefDefMB.Channel&quot;
+ 0.1  0.1  0.01
+ 0.05 0.05 0.001
+ 1    1   -1.5 )
+
+(sdedr:define-multibox-placement &quot;PlaceMB.Channel&quot;
+  &quot;RefDefMB.Channel&quot; &quot;RefWin.Channel&quot; )
+</pre>
+<!-- grep end -->
+
+<!--================================================--> 
+<a name="17"></a>
+<h1>6.17 Saving the Model</h1>
+    
+<p>To save the model for later use, choose <strong>File</strong> &gt; 
+<strong>Save Model</strong>, or press Ctrl+S, or click the corresponding toolbar button.</p>
+
+<p>The corresponding Scheme command is:</p>
+
+<pre>
+(sde:save-model &quot;3dmos_sde&quot;)
+</pre>
+
+<p>where <tt>3dmos_sde</tt> is the saved file name. See 
+<a href="sde_2.html#12">Section 2.12 Saving the Model</a> for 
+the various file types saved.</p>
+
+<!--================================================-->
+<a name="18"></a>
+<h1>6.18 Meshing the Device Structure</h1>
+
+<p>To create the mesh and save the device structure:</p>
+
+<ol>
+<li>Choose <strong>Mesh</strong> &gt; <strong>Build Mesh</strong>.<br />
+The Build Mesh dialog box opens.<br />
+
+<p><img src="images/se_3d_buildmesh.png" width="549" height="239" alt="Build Mesh dialog box" /></p></li>
+
+<li>Enter <tt>n1_MOSFET3D</tt> in the <strong>Save Grid to File</strong> field.</li>     
+<li>Select <strong>SVisual</strong> as the mesh viewer.</li>
+<li>Click <strong>Build Mesh</strong>.</li>
+</ol>
+
+<p>The structure with its doping conditions is saved in a TDR file <tt>n1_MOSFET3D_msh.tdr</tt>, 
+which can be loaded into, for example, Sentaurus Device simulations.</p>
+
+<p>Figure 6 shows the device after the meshing step.</p>
+
+<p><a href="images/se_3d_mosfet2.png"><img src="images/se_3d_mosfet2.png" width="500" 
+alt="3D MOSFET with doping and meshing conditions" /></a></p>
+
+<p class="caption">Figure 6. Three-dimensional MOSFET with its doping and meshing conditions. 
+(Click image for full-size view.)</p>
+
+<p>The corresponding Scheme command is:</p>
+
+<pre>
+(sde:build-mesh &quot;&quot; &quot;n1_MOSFET3D&quot;)
+</pre>
+
+<p>Click to view all the commands discussed in this section in the command file 
+<a href="../../Applications_Library/GettingStarted/sde/MOSFET3d/MOSFET3d_dvs.cmd">
+MOSFET3d_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/MOSFET3D</tt>.</p>
+
+<!--================================================-->
+<a name="19"></a>
+<h1>6.19 Assignment</h1>
+
+<p>Create a FinFET structure similar to the one shown in Figure 7.</p>
+
+<p><a href="images/se_3d_assign.png"><img src="images/se_3d_assign.png" width="500" 
+alt="3D FinFET structure with doping and meshing conditions" /></a></p>
+
+<p class="caption">Figure 7. Three-dimensional FinFET structure with its 
+doping and meshing conditions. (Click image for full-size view.)</p>
+
+<p>Click to view a solution of the command file 
+<a href="../../Applications_Library/GettingStarted/sde/FinFET/FinFET_dvs.cmd">FinFET_dvs.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sde/FinFET</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_5.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sde_7.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

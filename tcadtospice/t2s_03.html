@@ -1,0 +1,2580 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+    <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+    <title>TCAD Sentaurus Tutorial &ndash; TCAD to SPICE 3. Mystic SPICE Model Extraction</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_02.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_04.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">TCAD to SPICE<br />3. Mystic SPICE Model Extraction</h1>
+
+<p>
+ <a href="#1">3.1 Using Mystic in the TCAD to SPICE Framework</a><br />
+ <a href="#2">3.2 Mystic Extraction Strategy</a><br />
+ <a href="#3">3.3 BSIM-CMG Model Extraction</a><br />
+ <a href="#4">3.4 Mystic Graphical User Interface</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to set up and execute Mystic SPICE model extractions.</li>
+ <li>To run a Mystic uniform and a response surface model extraction using Mystic with Sentaurus Workbench 
+(SWB) Python.</li>
+ <li>To demonstrate how to use the Mystic graphical user interface for SPICE model extraction.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Using Mystic in the TCAD to SPICE Framework</h1>
+
+<p>Mystic can be used to extract individual SPICE compact models against TCAD data using a predefined 
+extraction strategy. The SWB Python shell (&quot;gpythonsh&quot;) can extend this capability to produce either an 
+array of SPICE models or a compound response surface model (RSM) to represent a range of process splits 
+and variability conditions, which can correspond to a wide range of device behavior.</p>
+
+<p>Mystic links directly to the SWB Python database, which can be used to control the propagation of data, 
+metadata, and fitted SPICE model parameters throughout a multistage extraction flow.</p>
+
+<p>This section covers the usage of Mystic in the TCAD to SPICE framework, looking 
+at the flow of information between multiple extraction stages. For details about the Mystic extraction 
+strategies, see <a href="#1.3">Section&nbsp;3.1.3 Uniform Extraction</a>.</p>
+
+<p>The example provided here is a TCAD to SPICE process variation design-of-experiments (DoE) for a 
+14&nbsp;nm FinFET device, using BSIM-CMG as the underlying SPICE compact model. The workflow contains 
+two sequential Mystic extractions:</p>
+
+<ul>
+<li>A uniform model extraction, which extracts NMOS and PMOS SPICE models at the nominal process point 
+of the DoE</li>
+<li>A response surface model extraction, which uses the fitted nominal model as a starting point and 
+extracts one SPICE model per DoE process split, using a subset of SPICE model parameters</li>
+</ul>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial</tt>.</p>
+
+<p>A pre-executed project is also included, which contains input data for the above project, 
+and can be found in the directory
+<tt>Applications_Library/GettingStarted/tcadtospice/mystic/ 14nmFinFETSentaurus_PltOnly</tt>.</p>
+
+<p>This section covers the following topics:</p>
+
+<ul>
+<li><a href="#1.1">Section 3.1.1 Uploading Data</a></li>
+<li><a href="#1.2">Section 3.1.2 Setting Up Mystic in Sentaurus Workbench</a></li>
+<li><a href="#1.3">Section 3.1.3 Uniform Extraction</a></li>
+<li><a href="#1.4">Section 3.1.4 Response Surface Model Extraction</a></li>
+<li><a href="#1.5">Section 3.1.5 Extraction Results</a></li>
+</ul>
+
+<!--========================-->
+<a name="1.1"></a>
+<h2>3.1.1 Uploading Data</h2>
+
+<p>To extract a SPICE model using Mystic, you must first upload the target data to the 
+SWB Python database. This ensures consistency between the data and its associated 
+instance parameters and bias conditions throughout the extraction flow. Uploading all the data 
+upfront simplifies user interaction with the data in the various extraction stages.</p>
+
+<p>When performing a response surface model extraction on a process DoE, you must supply 
+the process axes and midpoints as Sentaurus Workbench variables. The axes for the example 
+described here are shown in Table&nbsp;1.</p>
+
+<table>
+<caption>Table 1. Required Sentaurus Workbench parameters for Upload_Data tool instance.</caption>
+
+<tr>
+<th>Parameter name</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>axis1</tt></td>
+<td>l</td>
+<td>Fin length</td>
+</tr>
+
+<tr>
+<td><tt>axis1_midpoint</tt></td>
+<td>25e-9</td>
+<td>Nominal fin length value</td>
+</tr>
+
+<tr>
+<td><tt>axis2</tt></td>
+<td>hfin</td>
+<td>Fin height</td>
+</tr>
+
+<tr>
+<td><tt>axis2_midpoint</tt></td>
+<td>40e-9</td>
+<td>Nominal fin height value</td>
+</tr>
+
+<tr>
+<td><tt>axis3</tt></td>
+<td>wfin</td>
+<td>Fin width</td>
+</tr>
+
+<tr>
+<td><tt>axis3_midpoint</tt></td>
+<td>8e-9</td>
+<td>Nominal fin width value</td>
+</tr>
+
+<tr>
+<td><tt>vaxis4</tt></td>
+<td>afin</td>
+<td>Fin angle parameter</td>
+</tr>
+
+<tr>
+<td><tt>axis4_midpoint</tt></td>
+<td>88</td>
+<td>Nominal fin slope parameter</td>
+</tr>
+
+<tr>
+<td><tt>axis5</tt></td>
+<td>tspacer</td>
+<td>Spacer thickness</td>
+</tr>
+
+<tr>
+<td><tt>axis5_midpoint</tt></td>
+<td>8e-9</td>
+<td>Nominal spacer thickness value</td>
+</tr>
+</table>
+
+<p>The targets used in this example are I<sub>d</sub>&ndash;V<sub>g</sub> curves at low and 
+high V<sub>dd</sub> drain bias, three I<sub>d</sub>&ndash;V<sub>d</sub> curves at different 
+gate biases above V<sub>t</sub>, and C<sub>gg</sub>&ndash;V<sub>g</sub> curves at zero and 
+V<sub>dd</sub> drain bias.</p>
+
+<p>For more information about why these targets are used, see 
+<a href="#3">Section&nbsp;3.3 BSIM-CMG Model Extraction</a>.</p>
+
+<p>The gpythonsh scripting environment provides several Python objects and classes that are  
+injected automatically into the environment at runtime. The objects and classes relevant 
+to the data upload stage are described in Table&nbsp;2.</p>
+
+<table>
+<caption>Table 2. Python objects and classes used in the Upload_Data script.</caption>
+
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>node_prj</tt></td>
+<td>The database project object, which is precreated by gpythonsh to be used as a container for 
+data stored by the current Sentaurus Workbench node.</td>
+</tr>
+
+<tr>
+<td><tt>dbi</tt></td>
+<td>The global interface API to the SWB Python database. In this context, it is used to create a 
+dataset inside <tt>node_prj</tt> in which to store the target data objects. For more 
+information about the <tt>dbi</tt> object, see the API documentation.</td>
+</tr>
+
+<tr>
+<td><tt>Data</tt></td>
+<td>The <tt>Data</tt> class provides an interface for creating Python objects from <tt>.plt</tt> 
+and <tt>.csv</tt> files. It also has an underlying connection to the SWB Python database, so data objects 
+can be upload directly to a dataset on creation. For a full description of the <tt>Data</tt> class, 
+see the API documentation.</td>
+</tr>
+</table>
+
+<p>Before uploading the data, the upload stage also identifies the midpoints of the DoE, based 
+on the supplied axis midpoint variables, and tags each row with a midpoint flag as shown in the 
+following code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/UploadData_eng.py" startExpr="# get the*" endExpr="node_prj.add*" -->
+<pre>
+# Get the DoE coordinate of this point
+doe = {&quot;@axis1@&quot;: @lgate@,
+       &quot;@axis2@&quot;: @hfin@,
+       &quot;@axis3@&quot;: @tfin@,
+       &quot;@axis4@&quot;: @afin@,
+       &quot;@axis5@&quot;: @tspacer@ }
+
+# Check whether you are at a midpoint
+if (doe[&quot;@axis1@&quot;] == @axis1_midpoint@) and \
+    (doe[&quot;@axis2@&quot;] == @axis2_midpoint@) and \
+    (doe[&quot;@axis3@&quot;] == @axis3_midpoint@) and \
+    (doe[&quot;@axis4@&quot;] == @axis4_midpoint@) and \
+    (doe[&quot;@axis5@&quot;] == @axis5_midpoint@):
+    midpoint=True
+    print(&quot;DOE: midpoint True&quot;)
+else:
+    midpoint=False
+    print(&quot;DOE: midpoint False&quot;)
+
+# Update project metadata
+node_prj.add_metadata(doe=doe, midpoint=midpoint)
+</pre>
+<!-- grep end -->
+
+<p>The <tt>@axis#@</tt> and <tt>@axis#_midpoint@</tt> variables are supplied by users, based 
+on the number of DoE axes, axes labels, and axes values. Axes labels must be simple alphanumeric 
+strings (no special characters) as they will be used later in Synopsys PrimeSim&trade; HSPICE&reg; 
+simulations.</p>
+
+<p>A midpoint variable is pushed to the end of the Sentaurus Workbench project with a 
+<tt>True</tt> or <tt>False</tt> value. This is used to decide which nodes are executed later 
+in the flow. The DoE coordinates are also attached to the project as metadata, which gives it a unique 
+identity that is easily identifiable with regard to database queries.</p>
+
+<p>The absolute paths to the target data PLT files are constructed based on the path to the parent 
+TCAD project, represented by <tt>@ppwd@</tt>. Lists of these files are then converted into common 
+<tt>Data</tt> objects using the <tt>from_plt</tt> method. At this point, they need to be attached 
+with metadata required by Mystic. The terminal names and bias values are picked up automatically from 
+the static voltage columns of the PLT file. However, for PrimeSim HSPICE to correctly apply the order of these 
+terminals to the underlying subcircuit or model instance in the PrimeSim HSPICE netlist, a nodes list must be 
+attached to the metadata.</p>
+
+<p>The terminal names in this list must match the terminal names coming from the PLT file; 
+otherwise, Mystic fails. Instance parameters can be applied as an <tt>instances</tt> 
+keyword&ndash;value dictionary. These should be compatible with the model or subcircuit 
+that is being used for the extraction; otherwise, they will have no effect.</p>
+
+<p>The <tt>Data</tt> objects can be created and uploaded to a precreated dataset in the same command 
+by adding the <tt>upload_ds</tt> argument to the <tt>from_plt</tt> call. The process of uploading 
+the target data is shown in the following code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/UploadData_eng.py" startExpr="*create_dataset*" endExpr="*# upload cv*" -->
+<pre>
+ds = dbi.create_dataset(node_prj, &quot;ivs&quot;, clean=True)
+metadata = {&quot;temperature&quot;: @temp@,
+            &quot;instances&quot;: {&quot;l&quot;: @lgate@}}
+
+upload_data_iv = [&quot;@ppwd@/IdVg_0_n@pnode|IdVg@_des.plt&quot;,
+                  &quot;@ppwd@/IdVg_1_n@pnode|IdVg@_des.plt&quot;,
+                  &quot;@ppwd@/IdVd_0_n@pnode|IdVd@_des.plt&quot;,
+                  &quot;@ppwd@/IdVd_1_n@pnode|IdVd@_des.plt&quot;,
+                  &quot;@ppwd@/IdVd_2_n@pnode|IdVd@_des.plt&quot;]
+
+Data.from_plt(upload_data_iv,
+              metadata=dict(metadata, nodes=[&quot;@drain_con@&quot;, &quot;@gate_con@&quot;,
+                                             &quot;@source_con@&quot;, &quot;@bulk_con@&quot;]),
+              upload_ds=ds)  # upload IVs
+
+upload_data_cv = [&quot;@ppwd@/C_0_n@pnode|CV@_ac_des.plt&quot;,
+                  &quot;@ppwd@/C_1_n@pnode|CV@_ac_des.plt&quot;]
+
+Data.from_plt(upload_data_cv,
+              metadata=dict(metadata, nodes=[&quot;@acdrain_con@&quot;, &quot;@acgate_con@&quot;,
+                                             &quot;@acsource_con@&quot;, &quot;@acbulk_con@&quot;]),
+              upload_ds=ds)  # upload cv
+</pre>
+<!-- grep end -->
+
+<p>The data saved to the database in this tool instance, or any other TCAD to SPICE tool 
+instance in the flow, can be exported to a CSV file, from Sentaurus Workbench, 
+using the <strong>Extract Node Data From Project Database</strong> command as 
+shown in Figure&nbsp;1.</p>
+
+<p><a href="images/mystic_dumpdb.png"><img src="images/mystic_dumpdb.png" width="285" 
+alt="Export data from project database" /></a></p>
+
+<p class="caption">Figure 1. The Extract Node Data From Project Database command exports all data 
+associated with a particular node to a CSV file. (Click image for full-size view.)</p>
+
+<p>The CSV file can be found in the Node Explorer as <tt>@node@_eng.csv</tt>. Figure&nbsp;2 shows 
+the partial content of the database CSV file produced by the <strong>Extract Node Data From Project 
+Database</strong> command for one of the <tt>Upload_Data</tt> nodes.</p>
+
+<p><a href="images/mystic_dbcsv.png"><img src="images/mystic_dbcsv.png" width="570" 
+alt="CSV representation of database contents" /></a></p>
+
+<p class="caption">Figure 2. CSV representation of the database contents for a particular 
+Upload_Data node. (Click image for full-size view.)</p>
+
+<p>Click to view the UploadData Python file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/UploadData_eng.py">
+UploadData_eng.py</a>.</p>
+
+<!--========================-->
+<a name="1.2"></a>
+<h2>3.1.2 Setting Up Mystic in Sentaurus Workbench</h2>
+
+<p>Mystic can be added to a Sentaurus Workbench project like other tools as follows:</p>
+
+<ol>
+<li>From Sentaurus Workbench, choose <strong>Tool</strong> &gt; <strong>Add</strong>.<br />
+The Add Tool dialog box opens.</li>
+<li>On the <strong>Tool Properties</strong> tab, select Mystic from the <strong>Name</strong> 
+list or click the <strong>Tools</strong> button to select the tool from the Select DB Tool dialog box 
+as shown in Figure&nbsp;3.</li>
+</ol>
+
+<p><img src="images/mystic_toolselect1.png" width="313" height="96" 
+alt="Mystic tool shown in Select DB Tool dialog box" /></p>
+
+<p class="caption">Figure 3. Mystic tool shown in Select DB Tool dialog box.</p>
+
+<p>Sentaurus Workbench adds the Mystic tool at the current project location and automatically provides 
+seven possible input files (see Figure&nbsp;4):</p>
+
+<ul>
+<li>The Python input file (recalling that gpythonsh manages the TCAD to SPICE tools), which is 
+referred to as the <em>template file</em></li>
+<li>Up to five <em>Mystic strategy files</em>, each potentially containing a Mystic extraction strategy</li>
+<li>A <em>model card file</em> represents the initial SPICE model or subcircuit that will form the basis 
+of the extraction</li>
+</ul>
+
+<p>Sentaurus Workbench preprocesses all of these files by using standard Sentaurus Workbench preprocessor 
+syntax. Usage of these files is discussed in detail in the next section.</p>
+
+<p><img src="images/mystic_toolselect.png" width="462" height="479" 
+alt="Selecting input files from Edit Input command" /></p>
+
+<p class="caption">Figure 4. Selecting input files from the Edit Input command.</p>
+
+<!--========================-->
+<a name="1.3"></a>
+<h2>3.1.3 Uniform Extraction</h2>
+
+<p>The capability of attaching five individual Mystic extraction strategies to any one tool instance 
+is provided in Sentaurus Workbench. The flow of execution of these strategies is 
+controlled by the Python template file, which can be accessed from the <strong>Edit Input</strong> command 
+as shown in Figure&nbsp;4. The tool instance for the uniform extraction in this example is composed 
+of three stages:</p>
+
+<ul>
+<li>Low-drain bias I<sub>d</sub>&ndash;V<sub>g</sub> fitting</li>
+<li>High-drain bias I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub></li>
+<li>C&ndash;V</li>
+</ul>
+
+<p>Three extraction strategies are required to run sequentially as they have a linear 
+dependency on each other. This is done by setting <tt>mystic.wait=True</tt>, as shown 
+near the start of the following template code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_eng.py" startExpr="#setdep*" endExpr="*{node}-cv*" -->
+<pre>
+#setdep @node|UploadData@
+
+#if &quot;@midpoint@&quot; == &quot;True&quot;
+
+mystic_inputfile1 = &quot;@pwd@/@nodedir@/pp@node@_mys.py1&quot;
+mystic_inputfile2 = &quot;@pwd@/@nodedir@/pp@node@_mys.py2&quot;
+mystic_inputfile3 = &quot;@pwd@/@nodedir@/pp@node@_mys.py3&quot;
+mystic_inputfile4 = &quot;@pwd@/@nodedir@/pp@node@_mys.py4&quot;
+mystic_inputfile5 = &quot;@pwd@/@nodedir@/pp@node@_mys.py5&quot;
+initial_modelcard = &quot;@pwd@/@nodedir@/pp@node@_mys.mod&quot;
+
+# Set up flow-specific parameters
+mystic.wait   = True
+
+### ---------------------------------------------------------------- ###
+node_prj.copy_metadata(dbi.get_project(&quot;@node|UploadData@&quot;))
+### ---------------------------------------------------------------- ###
+
+# Stage 1 (LD)
+mystic.inputfile  = mystic_inputfile1
+mystic.args.model = initial_modelcard
+mystic(previous=None,   dataset=f&quot;{node}-low-drain&quot;)
+
+# Stage 2 (HD)
+mystic.inputfile  = mystic_inputfile2
+mystic.args.model = None
+mystic(previous=f&quot;{node}-low-drain&quot;, dataset=f&quot;{node}-high-drain&quot;)
+
+# Stage 3 (CV)
+mystic.inputfile  = mystic_inputfile3
+mystic.args.model = None
+mystic(previous=f&quot;{node}-high-drain&quot;, dataset=f&quot;{node}-cv&quot;)
+</pre>
+<!-- grep end -->
+
+<p>With <tt>mystic.wait=True</tt>, gpythonsh submits a Mystic job to the queue, then waits for 
+a successful return code from the job. After the return code has been received, gpythonsh continues 
+the script execution.</p>
+
+<p>Before submitting the first Mystic job, the low-drain strategy and initial model card files 
+must be attached to the object using the <tt>inputfile</tt> and <tt>args.model</tt> properties, 
+respectively. The attributes of the <tt>mystic</tt> object can best be understood by thinking 
+about them in terms of the Mystic command-line execution:</p>
+
+<pre>
+&gt; Mystic <strong>filename</strong> -d <strong>DBFile</strong> -m <strong>Modelcard</strong> -ds <strong>dataset</strong>
+</pre>
+
+<p>where <tt>filename</tt> is represented by <tt>mystic.inputfile</tt>, <tt>DBFile</tt> is attached 
+automatically by gpythonsh, and <tt>Modelcard</tt> is represented by <tt>mystic.args.model</tt>. A 
+description of all the <tt>mystic</tt> object properties can be found in the Mystic Object API section 
+of the API documentation.</p>
+
+<p>After the files have been attached, the low-drain extraction commences by calling the 
+<tt>mystic</tt> object. When a tool is called by gpythonsh, a dataset is created automatically inside 
+the current node project. You can explicitly control the name of this dataset by using the 
+<tt>dataset</tt> argument.</p>
+
+<p>In this example, the first dataset is named <tt>{node}-low-drain</tt>. Datasets inside the database 
+can also be linked by using the previous argument in the tool call. Doing this at the SWB Python database level 
+sets up the propagation direction of the fitted SPICE model parameters, so you do not have to set up 
+the link explicitly in the Mystic strategy files themselves. The overall execution flow performed by the 
+Mystic uniform extraction tool instance is shown in Figure&nbsp;5.</p>
+
+<p><a href="images/mystic_uniform_flow.png"><img src="images/mystic_uniform_flow.png" width="570" 
+alt="Mystic uniform execution flow" /></a></p>
+
+<p class="caption">Figure 5. Mystic uniform execution flow. Black lines denote database 
+operations performed by gpythonsh, and purple lines denote database operations performed by Mystic. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the Mystic_Uniform Python file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_eng.py">
+Mystic_Uniform_eng.py</a>.</p>
+
+<!--========================-->
+<a name="1.4"></a>
+<h2>3.1.4 Response Surface Model Extraction</h2>
+
+<p>The setup for the response surface model extraction is very similar to that 
+of the uniform extraction. The <tt>mystic</tt> object is configured near the start of 
+the script and is then used to launch Mystic extractions. However, this time, the fitted 
+model must be retrieved from the uniform extraction database project instead of being 
+passed in through the <tt>args.model</tt> property. The last dataset of the uniform 
+extraction is identified as shown here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Response_Surface_eng.py" startExpr="# calculate*" endExpr="*-1*name*" -->
+<pre>
+# Calculate the midpoint node to use as &quot;previous&quot;
+mid_prj_node = dbi.get_project(metadata__swb__Type=&quot;@Type@&quot;, \
+                     metadata__swb__tool_label=&quot;Mystic_Uniform&quot;, \
+                     metadata__midpoint=True)
+
+previous_dataset=list(mid_prj_node.datasets)[-1].name
+</pre>
+<!-- grep end -->
+
+<p>The correct uniform project is obtained by querying for projects based on type, tool label, 
+and midpoint flag, which are metadata attributes added to and propagated through projects in 
+the earlier stages of the flow by using the <tt>node_prj.add_metadata</tt> and 
+<tt>node_prj.copy_metadata</tt> methods. Using the database in this way allows you to perform 
+the fan-out operation between sequential tool instances as shown in Figure&nbsp;6. The previous 
+dataset name can then be passed in to the <tt>previous</tt> argument of the Mystic tool.</p>
+
+<p><img src="images/mystic_fanout.png" width="527" height="987" alt="Mystic fan-out" /></p>
+
+<p class="caption">Figure 6. Single uniform extraction to multiple response surface extractions 
+across sequential Sentaurus Workbench tool instances.</p>
+
+<p>Each node in the <tt>Mystic_Response_Surface</tt> tool instance will produce an individual 
+set of optimized SPICE model parameters that represents the electrical device behavior at that 
+process point in the DoE. The flow of execution for this  tool instance is shown in Figure&nbsp;7.</p>
+
+<p><a href="images/mystic_RSM_flow.png"><img src="images/mystic_RSM_flow.png" width="570" 
+alt="Mystic response surface execution flow" /></a></p>
+
+<p class="caption">Figure 7. Mystic response surface execution flow. Black lines denote database 
+operations performed by gpythonsh, and purple lines denote database operations performed by Mystic. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the Mystic_Response_Surface Python file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Response_Surface_eng.py">
+Mystic_Response_Surface_eng.py</a>.</p>
+
+
+<!--========================-->
+<a name="1.5"></a>
+<h2>3.1.5 Extraction Results</h2>
+
+<p>Upon completion of the response surface extraction, the SWB Python database contains one set of fitted 
+model parameters per row in the Sentaurus Workbench project. The <tt>Plot_SPICE_Surfaces</tt> 
+tool instance gathers the fitting data from the database and produces a range of 3D surface plots for 
+the device figures of merit (FoMs).</p>
+
+<p>Due to the high dimensionality of the project, if all of the possible 3D axes combinations were 
+output, the number of PNG files would become unmanageable, so plots for each FoM are produced only 
+if the maximum error in that characteristic is above a certain threshold value. In this example, the 
+maximum I<sub>on</sub> saturation error is above the threshold of 1%. Thirty PNG files are produced 
+showing the TCAD surfaces, the fitted Mystic surfaces, and the relative percentage error surfaces. 
+Surfaces for the afin, wfin, and tspacer axis combination, where the maximum error point occurs, are 
+shown in Figure&nbsp;8.</p>
+
+<p><a href="images/mystic_rsmIonsat.png"><img src="images/mystic_rsmIonsat.png" width="570" 
+alt="Mystic RSM Ion Sat" /></a></p>
+
+<p class="caption">Figure 8. TCAD, Mystic, and error surfaces for the saturation current of the NMOS 
+device for the afin, wfin, and tspacer axis combination. afin and wfin are shown on the x- and 
+y-axis, while each suface represents a different value of tspacer. (Click image for full-size view.)</p>
+
+<p>After the points of the worst error have been identified from the surfaces, the actual fitting at 
+those points can be viewed in the <tt>Plot_Resp_Extraction</tt> tool instance of Sentaurus Visual. 
+The I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> fits from the point of 
+maximum saturation current error are shown in Figure 9.</p>
+
+<p><a href="images/mystic_worstfit.png"><img src="images/mystic_worstfit.png" width="570" 
+alt="Mystic worst fit" /></a></p>
+
+<p class="caption">Figure 9. I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> 
+Mystic fitting results at the DoE point with the maximum saturation current error. 
+(Click image for full-size view.)</p>
+
+<p>Identifying the points of maximum error and analyzing them this way can negate the need to look 
+through each of the fits individually and assess their quality.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Mystic Extraction Strategy</h1>
+
+<p>This section provides a guided tutorial of a multistage Mystic extraction strategy, describing 
+the common features of the Mystic extraction environment.</p>
+
+<p>The script breakdown focuses on the <tt>Mystic_Uniform</tt> tool instance, which extracts 
+a single NMOS and PMOS SPICE model from Sentaurus Device TCAD data.</p>
+
+<p>This section covers the following topics:</p>
+
+<ul>
+<li><a href="#2.1">Section 3.2.1 Extraction Overview</a></li>
+<li><a href="#2.2">Section 3.2.2 Mystic Environment</a></li>
+<li><a href="#2.3">Section 3.2.3 Low-Drain Extraction</a></li>
+<li><a href="#2.4">Section 3.2.4 High-Drain and I<sub>d</sub>&ndash;V<sub>d</sub> Extraction</a></li>
+<li><a href="#2.5">Section 3.2.5 C&ndash;V Extraction</a></li>
+<li><a href="#2.6">Section 3.2.6 Final Results</a></li>
+</ul>
+
+<!--========================-->
+<a name="2.1"></a>
+<h2>3.2.1 Extraction Overview</h2>
+
+<p>The uniform model extraction strategy is split into three individual tool instances:</p>
+
+<ul>
+<li>Low-drain I<sub>d</sub>&ndash;V<sub>g</sub> extracts the workfunction, low-field 
+mobility, and vertical field dependence parameters.</li>
+<li>High-drain I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> extracts 
+drain-bias dependence, high field, and output resistance parameters.</li>
+<li>C&ndash;V extracts C&ndash;V fitting parameters that do not affect the I&ndash;V behavior.</li>
+</ul>
+
+<p>This allows the fitting results and model parameters to be check-pointed during development 
+when a satisfactory fit is obtained at each tool instance. The extraction can be restarted at any of these 
+tool instances without disturbing the fit of the previous tool instances.</p>
+
+<p>A single Mystic tool instance can have up to five strategy files as shown in 
+Figure&nbsp;4. gpythonsh can link these tool instances by using the template file, previously described.</p>
+
+<p>The initial SPICE model card is also attached to the Mystic tool instance. Before running Mystic, 
+this must be populated with base model parameters for the chosen SPICE model for the device. These 
+typically include setup flags for the model equations in the SPICE model and some physical parameters 
+based on process information from the device. Note that this can also be a subcircuit definition that 
+contains one or more SPICE compact models. The SPICE model selected in this example is BSIM-CMG, which 
+is the standard FinFET compact model for advanced circuit design. This is wrapped in a subcircuit to 
+include parasitic source, drain, and gate resistances that can be switched on or off with instance 
+parameter flags.</p>
+
+<!--========================-->
+<a name="2.2"></a>
+<h2>3.2.2 Mystic Environment</h2>
+
+<p>Before looking at the extraction strategy itself, it is important to understand the tools available 
+in the Mystic extraction environment and the general flow of operation of a strategy. The core of Mystic 
+is a Python interpreter with a range of special modules, classes, and objects that provide a framework 
+for flexible SPICE compact model extraction.</p>
+
+<p>This section provides an overview of some of the main components of the environment 
+and their most common uses in this example. For detailed descriptions of these, see the 
+<cite>Mystic API Reference</cite>.</p>
+
+<!--=============-->
+<a name="model"></a>
+<h3>3.2.2.1 Model Object</h3>
+
+<p>The <tt>Model</tt> object provides a Python representation of the SPICE compact model supplied 
+to Mystic from the base model card. It has a fully functional API for setting and retrieving model 
+parameter values.</p>
+
+<table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>GetModelParameter(name)</tt></td>
+<td>Returns the current value of a parameter in the <tt>Model</tt>.</td>
+</tr>
+
+<tr>
+<td><tt>SetModelParameter(name, value)</tt></td>
+<td>Sets a <tt>Model</tt> parameter to a value.</td>
+</tr>
+</table>
+
+<p>During the extraction, the objective function manages the <tt>Model</tt> object, such that the 
+optimal final values are written back into the <tt>Model</tt>.</p>
+
+<!--=============-->
+<a name="optimizer"></a>
+<h3>3.2.2.2 Optimizer Object</h3>
+
+<p>The <tt>Optimizer</tt> object provides an interface to the TCAD to SPICE <tt>Optimizer</tt> library 
+used by Mystic.</p>
+
+<table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>SetOptimizationParameter(name, value)</tt></td>
+<td>Explicitly sets the value of a configurable option in the <tt>Optimizer</tt> library. For more 
+information about these options, see the API documentation.</td>
+</tr>
+
+<tr>
+<td><tt>write_parameter_csv(filename)</tt></td>
+<td>During an optimization, the <tt>Optimizer</tt> object tracks the values of all parameters fed to 
+its objective function, along with the current root mean square (RMS) error against the target of the 
+objective function. At the end of an extraction, this can be written out to a CSV file and visualized 
+with Sentaurus Visual.</td>
+</tr>
+</table>
+
+<!--=============-->
+<a name="optparam-linkedoptparam"></a>
+<h3>3.2.2.3 OptParam and LinkedOptParam Classes</h3>
+
+<p>The <tt>OptParam</tt> and <tt>LinkedOptParam</tt> classes are used to define parameters that will 
+be optimized during the extraction. The <tt>OptParam</tt> initializer includes a default value, lower 
+and upper bounds, and a scaling factor that can be used to adjust the effective step size in the 
+gradient calculation of the objective function of the optimizer (when using a derivative-based optimizer).</p>
+
+<p><tt>LinkedOptParam</tt> can be used to tie the value of two parameters together during the extraction, 
+for example, source and drain capacitance parameters in a symmetric device.</p>
+
+<p>The objects generated by these classes will be used in the <tt>ExtractionUtils</tt> module as arguments.</p>
+
+<table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>OptParam(name, default, lower_bound, upper_bound, scale_factor)</tt></td>
+<td>Standard optimization parameter.</td>
+</tr>
+
+<tr>
+<td><tt>LinkedOptParam(name, OptParam)</tt></td>
+<td>An optimization parameter that has a value linked to another parameter.</td>
+</tr>
+</table>
+
+<!--=============-->
+<a name="simulator"></a>
+<h3>3.2.2.4 Simulator Object</h3>
+
+<p>The <tt>Simulator</tt> object provides an interface for setting up and submitting PrimeSim HSPICE simulations 
+based on the supplied model and target data. The objective function of the <tt>Optimizer</tt> takes care 
+of this in the background, so user interaction with this object is minimal.</p>
+
+<table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>EnableDebugMode()</tt></td>
+<td>Enables verbose output from the simulator.</td>
+</tr>
+
+<tr>
+<td><tt>KeepTemporaryData()</tt></td>
+<td>Does not clear the temporary directory that Mystic launches PrimeSim HSPICE simulations from after the 
+extraction has completed.</td>
+</tr>
+</table>
+
+<!--=============-->
+<a name="simdata"></a>
+<h3>3.2.2.5 SimData Class</h3>
+
+<p>The <tt>SimData</tt> class provides the main data storage container in Mystic. In general, you should 
+never need to build these objects from the beginning, as they are returned by database queries through 
+the <tt>mdb</tt> interface.</p>
+
+<p><tt>SimData</tt> objects contain a list of two-column data objects that represent the simulation target 
+data. During the optimization, fit and error columns are populated based on the current fit of the SPICE 
+model against the target. They also provide a functional API for filtering, resampling, and creating figure 
+of merit targets for the data, as well as the capability for writing data to a PLT file.</p>
+
+<table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>resample(points=None, step=None)</tt></td>
+<td>Resamples data with either a uniform step or a fixed number of uniformly sampled points. 
+This can help to remove unwanted bias from more densely sampled parts of the curve during optimization.</td>
+</tr>
+
+<tr>
+<td><tt>FilterData(op, value, dtype)</tt></td>
+<td>Filters out a subset of the data based on the independent variable, the dependent variable, 
+or a terminal bias value.</td>
+</tr>
+
+<tr>
+<td><tt>WritePLTFile(filename)</tt></td>
+<td>Writes the contents of the <tt>SimData</tt> object to a PLT file. Both target and fit columns are 
+written to the file, along with all of the terminal biases.</td>
+</tr>
+</table>
+
+<!--=============-->
+<a name="mdb"></a>
+<h3>3.2.2.6 mdb Interface</h3>
+
+<p>Mystic is fully integrated to the SWB Python database through the <tt>mdb</tt> interface. This allows 
+you to load and store target data and fit data, and to propagate fitted model parameters through 
+sequential extractions.</p>
+
+<p>The <tt>mdb.Load</tt> method extracts data from the database, based on a set of arbitrary filters.</p>
+
+<table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>StoreInitialModel(Model)</tt></td>
+<td>Stores the contents of the initial model in the database at the start of the extraction. Changes to 
+model parameters made during the extraction are tracked against this snapshot of the initial model.<br />
+Storing the contents of the initial model should only be called in the first stage of a multistage extraction 
+(once per node). As a multistage extraction progresses, this allows for automated detection of modified or 
+optimized model parameters through the full extraction flow.</td>
+</tr>
+
+<tr>
+<td><tt>GetFitModel()</tt></td>
+<td>Loads a fitted version of the model from an earlier extraction.</td>
+</tr>
+
+<tr>
+<td><tt>Load(**filters)</tt></td>
+<td>Loads target simulation data from the database. Arbitrary keyword arguments can be used to filter 
+the data based on the project name, the independent or dependent variable name, terminal bias values, 
+or any extra metadata attributed to the data during the upload stage. Returns <tt>SimData</tt> objects 
+ready for extraction.</td>
+</tr>
+
+<tr>
+<td><tt>GetFitData(**filters)</tt></td>
+<td>Like <tt>Load,</tt> but it can be used to reload data from earlier stages of the extraction that 
+has been saved to the database using <tt>StoreFitData</tt>. By default, the previous dataset in the 
+extraction flow is searched for data. A dataset keyword argument can be used to override this if necessary.</td>
+</tr>
+
+<tr>
+<td><tt>StoreFitData(data, Model)</tt></td>
+<td>Stores the fitted simulation data and model parameters in the database, including the final RMS 
+curve error. The model will be compared to the initial model to establish which parameters have changed 
+during the extraction. The fitted data can be loaded back out at later stages by using <tt>GetFitModel</tt> 
+and <tt>GetFitData.</tt></td>
+</tr>
+</table>
+
+<!--=============-->
+<a name="extractionutils"></a>
+<h3>3.2.2.7 ExtractionUtils Module</h3>
+
+<p>The <tt>ExtractionUtils</tt> module provides helper functions to perform standard operations that 
+involve several different objects in the environment interacting with each other. For example, 
+<tt>DoStage</tt> combines the <tt>Model</tt>, <tt>Optimizer</tt>, <tt>Simulator</tt>, <tt>OptParam</tt> 
+list, and <tt>SimData</tt> list to set up a backend PrimeSim HSPICE objective function, to run an optimization of 
+the parameters, and to apply the optimal parameter values back to the <tt>Model</tt>.</p>
+
+<table>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>DoStage(name, Model, Simulator, params, Optimizer, data, weights)</tt></td>
+<td>Runs an optimization of the parameters (<tt>OptParam</tt>s) against the target data 
+(<tt>SimData</tt>), and applies the optimal parameter values back to the <tt>Model</tt>. 
+Weighting factors can be used to give extra priority to a subset of target data.</td>
+</tr>
+
+<tr>
+<td><tt>PrintErrors(name, data, Simulator, Model, error_method)</tt></td>
+<td>Performs a single PrimeSim HSPICE evaluation of the <tt>Model</tt> and calculates a single RMS error value 
+against the target. The <tt>error_method</tt> is a string that defines the methodology of combining the 
+pointwise errors into a single error value. Options are:<br />
+
+<ul>
+<li><tt>mean</tt> is the mean error.</li>
+<li><tt>rsmd</tt> is the root mean square deviation (RSMD).</li>
+<li><tt>nrsmd</tt> is the normalized RSMD.</li>
+</ul></td>
+</tr>
+</table>
+
+<!--================================================-->
+<a name="2.3"></a>
+<h2>3.2.3 Low-Drain Extraction</h2>
+
+<p>The first stage in the Mystic uniform extraction calibrates the BSIM-CMG subcircuit model to the 
+low-drain I<sub>d</sub>&ndash;V<sub>g</sub> behavior of the 14&nbsp;nm FinFET device in this example. 
+Before running this extraction, the initial model should have been set up with physical parameters 
+representative of the device. See <a href="#3">Section&nbsp;3.3 BSIM-CMG Model Extraction</a>, 
+which provides detailed descriptions of all the SPICE parameters being extracted in this example.</p>
+
+<p>The target simulation data produced by Sentaurus Device should also have been uploaded to the 
+database at this point, along with all relevant metadata.</p>
+
+<p>This section provides a step-by-step guide through the low-drain extraction strategy, highlighting 
+the usage of all functions previously described. You can find the Python script at
+<tt>Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/ Mystic_Uniform_s1_mys.py</tt>.</p>  
+
+<p>The first part in any Mystic extraction strategy is to cast any required variables from the Sentaurus 
+Workbench project to Python variables that can be used throughout the strategy. The following code shows 
+the parameterization of the low-drain extraction strategy:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s1_mys.py" startExpr="*PARAMETERIZATION*" endExpr="modstr*=*" -->
+<pre>
+# -------- PARAMETERIZATION FROM GLOBAL AND SPLIT OPTIONS, OR DEFAULTS --------
+
+# Set data masks and log interpolation globally
+from libfromage.data import Data
+Data.set_options(data_mask=True)
+
+# Device split parameters
+tfin    = @tfin@    # Physical fin thickness [m]
+hfin    = @hfin@    # Physical fin height [m]
+wf0     = @workfn@    # Workfunction
+
+# Bias parameters
+vdd_lin = @Vdd_lin@   # Linear drain bias [V]
+
+# Set defaults for optional parameters
+mystic_verbose = False
+
+# Set Mystic project and output label for this stage of the flow
+# Name of target data project in database
+targetDataProject = &quot;@node|UploadData@&quot; 
+
+# Terminal mapping
+drain_con   = &quot;@drain_con@&quot;
+gate_con  = &quot;@gate_con@&quot;
+source_con  = &quot;@source_con@&quot;
+bulk_con  = &quot;@bulk_con@&quot;
+
+modstr    = &quot;mosmod.&quot;
+</pre>
+<!-- grep end -->
+
+<p>This part defines device split parameters, biases, contact names, and so on that can be used 
+for loading target data and setting up the <tt>Model</tt> object.</p>
+
+<p>The next part takes care of some general setups for the extraction. The initial model is stored 
+in the database using <tt>mdb.StoreInitialModel</tt>. The <tt>Optimizer</tt> object is configured 
+with some standard options. The example uses the default Mystic optimizer, 
+<tt>&quot;BOUNDED_TRUST_REGION&quot;</tt>. Finally, device split parameters from the Sentaurus Workbench 
+project are applied to the <tt>Model</tt> object using <tt>SetModelParameter</tt>.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s1_mys.py" startExpr="*MYSTIC*SCRIPT*" endExpr="*{modstr}CGSL*" -->
+<pre>
+#--------------------------- MYSTIC EXECUTION SCRIPT ---------------------------
+
+# Store the initial model to the project
+# This will always be the first stage here, so set overwrite to True
+mdb.StoreInitialModel(Model, overwrite=True)
+
+Simulator.spiceargs = [&quot;-C&quot;]
+
+# Use mean percentage error over the range of data
+ErrorMethod = &quot;rmsd&quot;
+# Switch on the fast Jacobian calculation
+Optimizer.SetOptimizationParameter(&quot;jac&quot;, True)
+
+eps=1e-3
+Optimizer.SetOptimizationParameter(&quot;eps1&quot;,eps)
+Optimizer.SetOptimizationParameter(&quot;eps2&quot;,eps)
+Optimizer.SetOptimizationParameter(&quot;eps3&quot;,eps)
+Optimizer.SetOptimizationParameter(&quot;eps4&quot;,eps)
+Optimizer.SetOptimizationParameter(&quot;eps5&quot;,eps)
+Optimizer.SetOptimizationParameter(&quot;eps6&quot;,eps)
+Optimizer.SetOptimizationParameter(&quot;jacobian_eps&quot;,1e-3)
+Optimizer.SetOptimizationParameter(&quot;kwargs&quot;,{&quot;eps&quot;:1e-3,\
+                                             &quot;step_type&quot;:&quot;abs&quot;,
+                                             &quot;step_method&quot;:&quot;cd&quot;})
+
+# Set up the fin geometry parameters
+Model.SetModelParameter(f'{modstr}TFIN',tfin)
+Model.SetModelParameter(f'{modstr}HFIN',hfin)
+Model.SetModelParameter(f'{modstr}PHIG',wf0)
+Model.SetModelParameter('r_sc',@rcx@)
+Model.SetModelParameter('r_dc',@rcx@)
+
+# Some strategy defaults
+Model.SetModelParameter(f'{modstr}ETA0', 0.0)
+Model.SetModelParameter(f'{modstr}DVTP1',1.0)
+Model.SetModelParameter(f'{modstr}CGSL', 1e-20)
+</pre>
+<!-- grep end -->
+
+<p>The optimizer used in this example is based on an implementation of the bounded trust region 
+algorithm from the Intel MKL library (the default optimization algorithm initialized in the 
+<tt>Optimizer</tt> object). It is one of several algorithms available in the TCAD to SPICE optimization 
+library. The set of options applied here have been well established to give 
+stable convergence to the complicated optimization problems addressed in SPICE compact model parameter 
+extraction. For more information about the optimization routines provided in TCAD to SPICE flows, 
+see the API documentation.</p>
+
+<p>After the general setup is completed, you must load the target data from the database and filter it 
+down to the important regions that you are going to fit against. The following code shows how the 
+target data is loaded and processed in the low-drain extraction:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s1_mys.py" startExpr="IdVg*=*" endExpr="#endif" -->
+<pre>
+IdVg   = mdb.Load(dvar=f'i{drain_con}',  ivar=f'v{gate_con}',  \
+                  project=targetDataProject, combine=True).resample(step=0.025)
+IsVg   = mdb.Load(dvar=f'i{source_con}', ivar=f'v{gate_con}',  \
+                  project=targetDataProject, combine=True).resample(step=0.025)
+IsVd   = mdb.Load(dvar=f'i{source_con}', ivar=f'v{drain_con}', \
+                  project=targetDataProject, combine=True).resample(step=0.025)
+
+IdVgld        = IdVg.FilterData('eq', vdd_lin, dtype=f&quot;bias.{drain_con}&quot;)
+vt_gm_val = float(IdVgld.VtGmMaxFinal())
+
+# Apply filters
+#if &quot;@Type@&quot; == &quot;nMOS&quot;
+IsVg         = IsVg.FilterData(  'gt', 1e-13,          dtype=&quot;dvar&quot;, mask=False)
+IsVgld         = IsVg.FilterData(  'eq', vdd_lin,    dtype=f&quot;bias.{drain_con}&quot;)
+IsVgld_BelowVt = IsVgld.FilterData('le', vt_gm_val-0.05, dtype=&quot;ivar&quot;)
+IsVgld_AboveVt = IsVgld.FilterData('ge', vt_gm_val+0.05, dtype=&quot;ivar&quot;)
+IsVd         = IsVd.FilterData(  'gt', 1e-13,    dtype=&quot;dvar&quot;, mask=False)
+#elif &quot;@Type@&quot; == &quot;pMOS&quot;
+IsVg         = IsVg.FilterData(  'lt', -1e-13,   dtype=&quot;dvar&quot;, mask=False)
+IsVgld         = IsVg.FilterData(  'eq', vdd_lin,    dtype=f&quot;bias.{drain_con}&quot;)
+IsVgld_BelowVt = IsVgld.FilterData('ge', vt_gm_val+0.05, dtype=&quot;ivar&quot;)
+IsVgld_AboveVt = IsVgld.FilterData('le', vt_gm_val-0.05, dtype=&quot;ivar&quot;)
+IsVd         = IsVd.FilterData(  'lt', -1e-13,   dtype=&quot;dvar&quot;, mask=False)
+#endif
+</pre>
+<!-- grep end -->
+
+<p>All I<sub>d</sub>&ndash;V<sub>g</sub>, I<sub>s</sub>&ndash;V<sub>g</sub>, and 
+I<sub>s</sub>&ndash;V<sub>d</sub> data is loaded from the upload data stage of the flow based on the 
+<tt>targetDataProject</tt> project name, and the independent variable (<tt>ivar)</tt> and dependent 
+variable (<tt>dvar)</tt> filters.</p>
+
+<p>In this example, the SPICE model parameters are always extracted against source current data as 
+the BSIM-CMG gate-induced drain leakage (GIDL) models are switched off (this is done in the initial 
+SPICE model card external to the flow), and any GIDL in the drain current target data might negatively 
+affect the extraction.</p>
+
+<p>The <tt>Load</tt> method returns a <tt>SimData</tt> object, which is then resampled with a uniform 
+gate bias step of 25&nbsp;mV using <tt>resample</tt> to eliminate any unwanted bias in the error 
+calculation due to clustering in the target data.</p>
+
+<p>A low-current threshold filter of 1e-13 is applied to all data objects using <tt>FilterData</tt> 
+to eliminate extremely low current values. These can be unreliable and result in large and dominant 
+error values in the subthreshold part of the curve.</p>
+
+<p>V<sub>t</sub> of the device is determined based on the maximum transconductance of the device instead 
+of a current criterion. This gives a consistent threshold criteria for devices with different workfunctions, 
+meaning that the curve will always be divided in the same way.</p>
+
+<p>For the low-drain extraction strategy, the only target you care about is the low-drain 
+I<sub>s</sub>&ndash;V<sub>g</sub> data. This is separated into subthreshold and above-threshold regions 
+based on the calculated V<sub>t</sub>. The full set of I&ndash;V data is only loaded here for calculating 
+an initial error against the uncalibrated <tt>Model</tt>, resampling the data, and uploading it to the database 
+for use in the later stages of the extraction.</p>
+
+<p>The next part of the strategy, shown in the following code, defines the SPICE model parameters to be 
+extracted during this stage and groups them into sets:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s1_mys.py" startExpr="# Set up parameters*" endExpr="Stage3Parameters=*" -->
+<pre>
+# Set up parameters
+phigval = Model.GetModelParameter(f'{modstr}PHIG')
+PHIG    = OptParam(f'{modstr}PHIG',   phigval, phigval-0.5, phigval+0.5, 1)
+CDSC    = OptParam(f'{modstr}CDSC',   0.001,   0.0,     10.0,  1)
+U0      = OptParam(f'{modstr}U0',     0.02,    0.006,     1.0,   0.02)
+UA      = OptParam(f'{modstr}UA',     0.3,     0.0,     100.0,   1.0)
+ETAMOB  = OptParam(f'{modstr}ETAMOB', 2,       0,     10,    2)
+EU      = OptParam(f'{modstr}EU',     2.5,     0.1,     10.0,  2)
+UD      = OptParam(f'{modstr}UD',     0.1,     0.0,     1,     0.1)
+UCS     = OptParam(f'{modstr}UCS',    1.0,     0.0,     10,    1)
+
+Simulator.SetSimulationGMIN(1e-18)
+
+Stage1Parameters=[PHIG,CDSC]
+Stage2Parameters=[U0,UA,EU,UD,UCS,ETAMOB]
+Stage3Parameters=[PHIG,CDSC,U0,UA,EU,UD,ETAMOB,UCS]
+</pre>
+<!-- grep end -->
+
+<p><tt>OptParam</tt> objects are defined based on five inputs:</p>
+
+<ul>
+<li>The name, supplied as the first argument, is a string that must match the name of a valid SPICE 
+model parameter (either model parameter or PrimeSim HSPICE <tt>.PARAM</tt> statement), in the model being used. 
+PrimeSim HSPICE ignores incorrect parameter names and this has no effect on the model behavior. When working 
+with a subcircuit, a MOSFET parameter name must be prepended with the name of the subcircuit by using 
+a dot separator. For example, <tt>PHIG</tt> in this mode of operation become <tt>mosmod.PHIG</tt>.</li>
+
+<li>The four numeric arguments correspond to the default parameter value, the lower and upper parameter 
+bounds, and the scaling factor of the parameter, which are used by the objective function of the optimizer. 
+In general, a sensible scaling value is the default parameter value. If the SPICE model parameter already 
+exists in the model, the default parameter value supplied here will be ignored in favor of the current 
+value stored in the model.</li>
+</ul>
+
+<p>This <tt>OptParam</tt> behavior is intended to avoid situations where new <tt>OptParam</tt>s introduced 
+into the extraction process cause step changes in behavior of an already partially fitted mode.</p>
+
+<p>The three parameter groups defined in the previous example code map to below V<sub>t</sub>, above V<sub>t</sub>, 
+and full low-drain I<sub>s</sub>&ndash;V<sub>g</sub> target data. Parameters should be targeted against 
+the region of operation where they have the largest impact. For details about parameter selection for this 
+example, see <a href="#3">Section&nbsp;3.3 BSIM-CMG Model Extraction</a>.</p>
+
+<p>The next part of the strategy is the core of the low-drain extraction. It performs the optimization 
+of SPICE parameters against the target data using the utility function <tt>ExtractionUtils.DoStage</tt>. 
+A <tt>while</tt> loop with a maximum of five iterations and an early exit criterion of a 2% RMS error across 
+the full curve controls the optimization as illustrated in Figure 10 and shown in the following code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s1_mys.py" startExpr="fit_error=1000" endExpr="*x+=1*" -->
+<pre>
+fit_error=1000
+x=0
+while (x &lt; 5 and fit_error&gt;2.0):
+    ExtractionUtils.DoStage(&quot;LD_step1&quot;, Model, Simulator, Stage1Parameters, \
+                            Optimizer, [IsVgld_BelowVt],verbose=mystic_verbose)
+    ExtractionUtils.DoStage(&quot;LD_step2&quot;, Model, Simulator, Stage2Parameters, \
+                            Optimizer, [IsVgld_AboveVt],verbose=mystic_verbose)
+    ExtractionUtils.DoStage(&quot;LD_step3&quot;, Model, Simulator, Stage3Parameters, \
+                            Optimizer, [IsVgld_BelowVt,IsVgld_AboveVt], [1,2],\
+                            verbose=mystic_verbose)
+    fit_error=ExtractionUtils.PrintErrors(&quot;LD_step3_error&quot;, \
+                                          IsVgld, Simulator, Model, ErrorMethod)
+    x+=1
+</pre>
+<!-- grep end -->
+
+<p><img src="images/mystic_ldflowchart.png" width="381" height="608"
+alt="Flowchart of Is&ndash;Vg low-drain extraction" /></p>
+
+<p class="caption">Figure 10. Flowchart of the I<sub>s</sub>&ndash;V<sub>g</sub> low-drain SPICE 
+model parameter extraction.</p>
+
+<p><tt>ExtractionUtils.DoStage</tt> is a wrapper function that sets up and starts the optimization. 
+It combines the <tt>Model</tt> object, the <tt>Simulator</tt> object, parameter sets defined by 
+<tt>OptParam</tt>, the <tt>Optimizer</tt> object, and list of <tt>SimData</tt> objects to find the 
+parameter values that best fit the target data.</p>
+
+<p>On completion of a stage, the optimal parameter values are accumulated in the <tt>Model</tt> 
+object and the best-fitted result of the SPICE simulation is stored on the <tt>SimData</tt> objects. 
+The output of the optimization is printed to the Mystic log file, which can be found in the Node 
+Explorer in <tt>n@node@_/Mystic/@node@-low-drain/1.log</tt>.</p>
+
+<p>In step 3 of the loop (<tt>LD_step3</tt>), weights are also supplied to <tt>ExtractionUtils.DoStage</tt> 
+to give extra priority to the above-V<sub>t</sub> data in the error calculation of the optimizer. 
+In this example, above V<sub>t</sub> has double the weight of below V<sub>t</sub> &ndash; the intention 
+of this weighting is to offset the natural weighting of the RMS error where the logarithmic subthreshold 
+region naturally dominates.</p>
+
+<p>After the three substeps have been completed, an overall RMS percentage error is calculated on the 
+low-drain I<sub>s</sub>&ndash;V<sub>g</sub> curve using <tt>ExtractionUtils.PrintErrors</tt> and is 
+used to determine whether the parameters are sufficiently well fitted to the data. If the target error 
+has not yet been achieved and there have been less than five iterations of the loop, the optimization 
+continues.</p>
+
+<p>On completion of the main extraction loop, the <tt>Model</tt> object will contain the fitted SPICE 
+parameter values, and the final I<sub>s</sub>&ndash;V<sub>g</sub> low-drain error will be stored in 
+<tt>fit_error</tt>.</p>
+
+<p>The only operation remaining is to output and propagate the information to the later extraction 
+stages in a sensible fashion. The following code shows the remaining operations in the low-drain 
+extraction strategy:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s1_mys.py" startExpr="*LD_step_IsVgld_err*" endExpr="*WritePLTFile*" -->
+<pre>
+ExtractionUtils.PrintErrors(&quot;LD_step_IsVgld_error&quot;, \
+                           IsVg, Simulator, Model, ErrorMethod)
+ExtractionUtils.PrintErrors(&quot;LD_step_IsVd_error&quot;, \
+                           IsVd,   Simulator, Model, ErrorMethod)
+
+mdb.StoreFitData(IsVg, Model, error=fit_error)
+mdb.StoreFitData(IsVd, Model, error=fit_error)
+
+Optimizer.write_parameter_csv('@pwd@/@nodedir@/n@node@-idvg-ld-pars')
+ExtractionUtils.PrintErrors(&quot;LD_step_IdVgld_error&quot;, \
+                           IdVgld, Simulator, Model, ErrorMethod)
+
+IdVgld.WritePLTFile('@pwd@/@nodedir@/n@node@-idvg-ld')
+</pre>
+<!-- grep end -->
+
+<p>First, the final error values for this stage for the entire I<sub>s</sub>&ndash;V<sub>g</sub> 
+and I<sub>s</sub>&ndash;V<sub>d</sub> curves are calculated and stored in the database along with 
+the fitted SPICE parameters in the <tt>Model</tt> object. Then, the history of the SPICE parameters 
+is written to a CSV file from the <tt>Optimizer</tt> object using the <tt>write_parameter_csv</tt> 
+function. This can be opened in Sentaurus Visual and used to analyze the convergence pattern of the 
+parameters against the RMS error of the current fit as seen by the objective function of the optimizer.</p>
+
+<p>Finally, the fitted low-drain I<sub>d</sub>&ndash;V<sub>g</sub> data is written to a PLT file for 
+visualization of the fit. Figure&nbsp;11 shows the output PLT file from the low-drain extraction.</p>
+
+<p><img src="images/mystic_nodeoutput.png" width="287" height="355" 
+alt="Output PLT file from low-drain extraction" /></p>
+
+<p class="caption">Figure 11. Output PLT file from the low-drain extraction as viewed in Node Explorer.</p>
+
+<p>Click to view the low-drain extraction Mystic file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s1_mys.py">
+Mystic_Uniform_s1_mys.py</a>.</p>
+
+<!--================================================-->
+<a name="2.4"></a>
+<h2>3.2.4 High-Drain and I<sub>d</sub>&ndash;V<sub>d</sub> Extraction</h2>
+
+<p>This stage of the Mystic uniform extraction calibrates a new set of SPICE model parameters 
+to the high-drain I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> device 
+behavior. This section covers the important aspects of this strategy, highlighting where it differs 
+from the low-drain extraction and how the two extractions are linked.</p>
+
+<p>The high-drain extraction uses the fitted model and data from the low-drain extraction 
+as a starting point. You can find the Python script at
+<tt>Applications_Library/GettingStarted/ tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s2_mys.py</tt>.</p>  
+
+<p>The parameterization and <tt>Optimizer</tt> setup sections are identical to those of the 
+low-drain extraction (see <a href="#2.3">Section&nbsp;3.2.3 Low-Drain Extraction</a>).</p>
+
+<p>To pick up the fitted <tt>Model</tt> object from the low-drain extraction stage, you use 
+<tt>mdb.GetFitModel</tt> as shown here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s2_mys.py" startExpr="*previous*" endExpr="*GetFitModel*" -->
+<pre>
+# Load the model from the previous stage
+Model = mdb.GetFitModel()
+</pre>
+<!-- grep end -->
+
+<p>No arguments are required for this method call as the Mystic datasets have been linked 
+in the Python template file. If you want to pick up the model from another arbitrary dataset in 
+the database instead of the previous stage, a dataset keyword argument can be added to this method call. 
+The <tt>Model</tt> object returned from this call will be identical to the one at the end of the low-drain
+extraction.</p>
+
+<p>The fitted data, which is a combination of the original target data and the most up-to-date 
+SPICE model fit at the time of saving, can then be loaded from the previous stage as well by using 
+<tt>mdb.GetFitData</tt> as shown in the following code snippet. Note that there is no need to resample 
+the data this time because this was already done in the low-drain extraction.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s2_mys.py" startExpr="*GetFitData*" endExpr="Ioff_sat*=*" -->
+<pre>
+IsVg     = mdb.GetFitData(ivar=f&quot;v{gate_con}&quot;,  dvar=f&quot;i{source_con}&quot;)
+IsVd     = mdb.GetFitData(ivar=f&quot;v{drain_con}&quot;, dvar=f&quot;i{source_con}&quot;)
+IdVg     = mdb.Load(dvar=f&quot;i{drain_con}&quot;, ivar=f&quot;v{gate_con}&quot;, \
+                  project=targetDataProject, combine=True).resample(step=0.025)
+IdVd     = mdb.Load(dvar=f&quot;i{drain_con}&quot;, ivar=f&quot;v{drain_con}&quot;, \
+                  project=targetDataProject, combine=True).resample(step=0.025)
+
+IsVgld   = IsVg.FilterData('eq', vdd_lin,       dtype=f&quot;bias.{drain_con}&quot;)
+IsVghd   = IsVg.FilterData('eq', vdd_nom,       dtype=f&quot;bias.{drain_con}&quot;)
+IdVgld   = IdVg.FilterData('eq', vdd_lin, dtype=f&quot;bias.{drain_con}&quot;)
+IsVd_vdd = IsVd.FilterData('eq', vdd_nom,       dtype=f&quot;bias.{gate_con}&quot;)
+
+# Calculate VtGmMax
+vt_gm_val = float(IdVgld.VtGmMaxFinal())
+ivt       = float(IdVgld[0](vt_gm_val))
+
+#if &quot;@Type@&quot; == &quot;nMOS&quot;
+IsVgld_BelowVt = IsVgld.FilterData(&quot;lt&quot;, vt_gm_val-0.02, dtype=&quot;ivar&quot;)
+IsVgld_AboveVt = IsVgld.FilterData(&quot;gt&quot;, vt_gm_val-0.02, dtype=&quot;ivar&quot;)
+IsVghd_BelowVt = IsVghd.FilterData(&quot;lt&quot;, vt_gm_val-0.02, dtype=&quot;ivar&quot;)
+IsVghd_AboveVt = IsVghd.FilterData(&quot;gt&quot;, vt_gm_val-0.02, dtype=&quot;ivar&quot;)
+off = 0.1
+#else
+IsVgld_BelowVt = IsVgld.FilterData(&quot;gt&quot;, vt_gm_val+0.02, dtype=&quot;ivar&quot;)
+IsVgld_AboveVt = IsVgld.FilterData(&quot;lt&quot;, vt_gm_val+0.02, dtype=&quot;ivar&quot;)
+IsVghd_BelowVt = IsVghd.FilterData(&quot;gt&quot;, vt_gm_val+0.02, dtype=&quot;ivar&quot;)
+IsVghd_AboveVt = IsVghd.FilterData(&quot;lt&quot;, vt_gm_val+0.02, dtype=&quot;ivar&quot;)
+off = -0.1
+#endif
+
+# Set up FoM extraction targets
+Ion_sat  = IsVghd.MakeFoMTarget('ion',  vdd_nom)
+Ioff_sat = IsVghd.MakeFoMTarget(&quot;ioff&quot;, off)
+</pre>
+<!-- grep end -->
+
+<p>At the bottom of the data-processing section, two device figure of merit (FoM) targets 
+are extracted from the high-drain I<sub>s</sub>&ndash;V<sub>g</sub> data using 
+<tt>MakeFoMTarget</tt>. When using these objects as targets, the <tt>Optimizer</tt> 
+calculates the error only on the specific FoM rather than the entire curve. The underlying 
+data is still retained, as it is required to generate the equivalent fit curve, and then 
+the FoM is calculated and compared as a postprocessing operation.</p>
+
+<p>As a result, users cannot directly supply a FoM because the FoM simulation conditions 
+would not be known.</p>
+
+<p>The <tt>OptParam</tt> objects and lists of optimization parameters for the high-drain 
+extraction are shown in the next code segment (these are defined in the same way as in 
+the low-drain extraction):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s2_mys.py" startExpr="# Set up parameters*" endExpr="Stage3Parameters*=*" -->
+<pre>
+# Set up parameters
+phigval  = Model.GetModelParameter(f'{modstr}PHIG')
+PHIG     = OptParam(f'{modstr}PHIG',   phigval, phigval-0.5, phigval+0.5, 1)
+ETA0     = OptParam(f'{modstr}ETA0',   2,       0,       100,   0.1)
+CDSC     = OptParam(f'{modstr}CDSC',   7e-3,  0.0,       10.0,    1)
+CDSCD    = OptParam(f'{modstr}CDSCD',  7e-3,  0,       1,     1)
+U0       = OptParam(f'{modstr}U0',     0.02,  0.001,       10.0,    0.001)
+UA       = OptParam(f'{modstr}UA',     0.3, 0.0,       100.0,   0.01)
+ETAMOB   = OptParam(f'{modstr}ETAMOB', 2, 0,       100,   2)
+EU       = OptParam(f'{modstr}EU',     2.5, 0.1,       10.0,    0.1)
+VSAT     = OptParam(f'{modstr}VSAT',   100000,  20000,       600000,    10000)
+PTWG     = OptParam(f'{modstr}PTWG',   0, 0,       100,   0.1)
+KSATIV   = OptParam(f'{modstr}KSATIV', 1, -5,      5,     1)
+MEXP     = OptParam(f'{modstr}MEXP',   4, 2,       10,    4)
+PVAG     = OptParam(f'{modstr}PVAG',   1, 0,       100,   1)
+PDIBL2   = OptParam(f'{modstr}PDIBL2', 1e-3,  1e-16,       1,     0.0001)
+DVTP0    = OptParam(f'{modstr}DVTP0',  -0.01,   -0.5,        0.1,     0.005)
+UD       = OptParam(f'{modstr}UD',     0.1, 0.0,       1,     0.1)
+UCS      = OptParam(f'{modstr}UCS',    1.0, 0.0,       10,    1)
+
+Simulator.SetSimulationGMIN(1e-18)
+
+# Compact model parameter sets for initial fit
+Stage1aParameters = [DVTP0]
+Stage1bParameters = [CDSCD]
+Stage1Parameters  = [DVTP0,CDSCD]
+Stage2aParameters = [VSAT]
+Stage2Parameters  = [KSATIV,MEXP,PVAG,PDIBL2,DVTP0,CDSCD]
+Stage3Parameters  = [PHIG,KSATIV,MEXP,PVAG,CDSC,U0,ETAMOB,\
+</pre>
+<!-- grep end -->
+
+<p>This part of the extraction optimizes against a much larger dataset, meaning you need a 
+significantly large number of parameters. Again, the parameters are grouped per the subset 
+of the data where they have the strongest impact.</p>
+
+<p>The core of the optimization in this part, shown in Figure 12 and in the following code, 
+is also more complex because of more data and more parameters:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s2_mys.py" startExpr="isvg_error=1000.0" endExpr="*IsVg,IsVd,IsVd_vdd*" -->
+<pre>
+isvg_error=1000.0
+isvd_error=1000.0
+x=0.0
+# Extraction strategy
+
+while (x &lt; 5 and  (isvg_error &gt; 3.5 or isvd_error &gt; 3.5)):
+    ExtractionUtils.DoStage(&quot;HD_step1&quot;, Model, Simulator, Stage1aParameters, \
+                           Optimizer, [Ioff_sat], verbose=mystic_verbose)
+    ExtractionUtils.DoStage(&quot;HD_step2&quot;, Model, Simulator, Stage1bParameters, \
+                           Optimizer, [IsVghd_BelowVt], verbose=mystic_verbose)
+    ExtractionUtils.DoStage(&quot;HD_step3&quot;, Model, Simulator, Stage1Parameters, \
+                           Optimizer, [IsVghd_BelowVt], verbose=mystic_verbose)
+    ExtractionUtils.DoStage(&quot;HD_step4&quot;, Model, Simulator, Stage2aParameters, \
+                           Optimizer, [Ion_sat], verbose=mystic_verbose)
+    ExtractionUtils.DoStage(&quot;HD_step5&quot;, Model, Simulator, Stage2Parameters, \
+                           Optimizer, [IsVghd,IsVd], verbose=mystic_verbose)
+    isvg_error = ExtractionUtils.PrintErrors(&quot;HD_step5_err&quot;, IsVg, Simulator,\
+                           Model, ErrorMethod)
+    isvd_error = ExtractionUtils.PrintErrors(&quot;HD_step5_err&quot;, IsVd, Simulator,\
+                           Model, ErrorMethod)
+    x+=1
+
+ExtractionUtils.DoStage(&quot;HD_step6&quot;, Model, Simulator, Stage3Parameters, \
+                Optimizer, [IsVg,IsVd,IsVd_vdd], [1,1,2],verbose=mystic_verbose)
+</pre>
+<!-- grep end -->
+
+<p><img src="images/mystic_hdflowchart.png" width="381" height="788"
+alt="Flowchart for high-drain extraction" /></p>
+
+<p class="caption">Figure 12. Core optimization strategy of the high-drain extraction.</p>
+
+<p>The exit criterion of the loop in this extraction is now based on the fit of both the 
+I<sub>s</sub>&ndash;V<sub>g</sub> and I<sub>s</sub>&ndash;V<sub>d</sub> data at all drain 
+and gate biases. This means you must use a slightly relaxed RMS error exit criterion of 3.5% 
+for each data object, which is more achievable for the complex problem.</p>
+
+<p>Outside the loop, there is a final optimization stage that groups all the parameters and 
+performs a high-dimension optimization against the full set of target data. The idea behind this 
+is to make small adjustments to the parameters to smooth the RMS error across all the target data 
+and hopefully achieve a better fit.</p>
+
+<p>On completion of the strategy, final RMS error values are calculated for 
+I<sub>s</sub>&ndash;V<sub>d</sub> and I<sub>s</sub>&ndash;V<sub>d</sub>, and are stored 
+in the database along with the fitted <tt>Model</tt> object, as shown in the following code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial//Mystic_Uniform_s2_mys.py" startExpr="*HD_IsVg_err*" endExpr="IdVd.WritePLTFile*" -->
+<pre>
+isvg_error = ExtractionUtils.PrintErrors(&quot;HD_IsVg_err&quot;, IsVg, Simulator, \
+                                         Model, ErrorMethod)
+isvd_error = ExtractionUtils.PrintErrors(&quot;HD_IsVd_err&quot;, IsVd, Simulator, \
+                                         Model, ErrorMethod)
+
+mdb.StoreFitData(IsVg, Model, error=isvg_error)
+mdb.StoreFitData(IsVd, Model, error=isvd_error)
+
+Optimizer.write_parameter_csv('@pwd@/@nodedir@/n@node@-idvg-hd-pars')
+ExtractionUtils.PrintErrors(&quot;HD_IdVg_err&quot;, IdVg, Simulator, Model, ErrorMethod)
+ExtractionUtils.PrintErrors(&quot;HD_IdVd_err&quot;, IdVd, Simulator, Model, ErrorMethod)
+IdVg.WritePLTFile('@pwd@/@nodedir@/n@node@-idvg-hd')
+IdVd.WritePLTFile('@pwd@/@nodedir@/n@node@-idvd-hd')
+</pre>
+<!-- grep end -->
+
+<p>PLT files for I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> data 
+are written to disk for visualization with Sentaurus Visual. The Mystic output log file for this 
+extraction can be found in <tt>n@node@_/Mystic/@node@-high-drain/1.log</tt>.</p>
+
+<p>Click to view the high-drain extraction Mystic file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s2_mys.py">
+Mystic_Uniform_s2_mys.py</a>.</p>
+
+<!--==============================-->
+<a name="2.5"></a>
+<h2>3.2.5 C&ndash;V Extraction</h2>
+
+<p>The final part of the Mystic uniform extraction extracts gate capacitance characteristics 
+of the 14&nbsp;nm FinFET device.</p>
+
+<p>This section provides an overview of the contents of the C&ndash;V extraction strategy, 
+as most functions used here have already been covered in previous sections. You can find 
+the Python script at
+<tt>Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/ Mystic_Uniform_s3_mys.py</tt>.</p>  
+
+<p>The parameterization and optimizer initialization sections are the same as in the 
+previous two sections.</p>
+
+<p>Before the C&ndash;V extraction, you must set up some sensible defaults for the capacitance 
+SPICE model parameters used during the extraction as shown here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s3_mys.py" startExpr="*Load the model*" endExpr="*cgdl',1e-10*" -->
+<pre>
+# Load the model from the previous stage
+Model = mdb.GetFitModel()
+# ------------------------------------------------------------------- #
+Model.SetModelParameter(f'{modstr}cgso',1e-10)
+Model.SetModelParameter(f'{modstr}cgdo',1e-10)
+Model.SetModelParameter(f'{modstr}cgsl',1e-10)
+Model.SetModelParameter(f'{modstr}cgdl',1e-10)
+</pre>
+<!-- grep end -->
+
+<p>The C&ndash;V parameters are likely to change over multiple orders of magnitude during the 
+optimization, which can be difficult for the gradient-based optimization routine to handle, so 
+setting some sensible defaults at the start is essential.</p>
+
+<p>The data loading and processing for the C&ndash;V extraction is shown in the next code excerpt. 
+In this example, filtering conditions such as <tt>AboveAccu</tt> are predefined as Python tuples, 
+which can then be passed into <tt>FilterData</tt> using the star (*) operator:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s3_mys.py" startExpr="# Load data*" endExpr="CV_AboveInv_ld*=*" -->
+<pre>
+# Load data
+CV_raw    = mdb.Load(dvar=f'c({gate_con},{gate_con})', \
+                           project=targetDataProject).resample(step=0.05)
+
+# Filter out high-drain C-V data as only the low-drain C-V data is used
+CV_raw_ld = CV_raw.FilterData('eq', vdd_cgg, dtype=f&quot;bias.{drain_con}&quot;)
+
+# Filter out extra data using the Vt of the device
+IdVg      = mdb.Load(dvar=f'i{drain_con}', ivar=f'v{gate_con}',  \
+                           project=targetDataProject).resample(step=0.025)
+IdVg_ld   = IdVg.FilterData('eq', vdd_lin, dtype=f&quot;bias.{drain_con}&quot;)
+vt_gm_val   = float(IdVg_ld.VtGmMaxFinal())
+
+#if &quot;@Type@&quot; == &quot;nMOS&quot;
+AboveAccu   = ('ge', -0.15,   &quot;ivar&quot;)
+BelowInv1   = ('le', vt_gm_val-0.1, &quot;ivar&quot;)
+BelowInv2   = ('le', vt_gm_val, &quot;ivar&quot;)
+AboveInv    = ('ge', vt_gm_val+0.1, &quot;ivar&quot;)
+HighGate    = ('le', 1.0,     &quot;ivar&quot;)
+#else if &quot;@Type@&quot; == &quot;pMOS&quot;
+AboveAccu   = ('le', 0.1,     &quot;ivar&quot;)
+BelowInv1   = ('ge', vt_gm_val+0.1, &quot;ivar&quot;)
+BelowInv2   = ('ge', vt_gm_val,   &quot;ivar&quot;)
+AboveInv    = ('le', vt_gm_val-0.1, &quot;ivar&quot;)
+HighGate    = ('ge', -1.0,    &quot;ivar&quot;)
+#endif
+
+CV_filtered_ld = CV_raw_ld.FilterData(*HighGate)
+CV_BelowInv1_ld = CV_filtered_ld.FilterData(*BelowInv1)
+CV_BelowInv2_ld = CV_filtered_ld.FilterData(*BelowInv2)
+CV_AboveInv_ld = CV_filtered_ld.FilterData(*AboveInv)
+</pre>
+<!-- grep end -->
+
+<p>The <tt>OptParam</tt> and parameter group definitions for the C&ndash;V extraction are shown here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s3_mys.py" startExpr="* Set up C-V *" endExpr="*cgdl,deltawcv*" -->
+<pre>
+# Set up C-V parameters 
+cgso     = OptParam(f'{modstr}cgso',  1e-11,  1e-20,  1e-8, 1e-10)
+qmtcencv = OptParam(f'{modstr}qmtcencv',0.5,  1e-3, 20, 1.0) 
+ckappas  = OptParam(f'{modstr}ckappas', 0.6,  0.05, 200,  0.2)
+qm0      = OptParam(f'{modstr}qm0', 0.001,  1e-4, 10, 1.0) 
+cgsl     = OptParam(f'{modstr}cgsl',  1e-11,  1e-20,  1e-8, 1e-10)
+deltawcv = OptParam(f'{modstr}deltawcv',0,  -30e-9, 30e-9,  1e-8)
+
+cgdo     = LinkedOptParam(f'{modstr}cgdo',cgso)
+ckappad  = LinkedOptParam(f'{modstr}ckappad',ckappas) 
+cgdl     = LinkedOptParam(f'{modstr}cgdl',cgsl)
+
+# Set up parameter sets
+CVParameters_BelowInv_1 = [cgso,cgdo]
+CVParameters_BelowInv_2 = [ckappas,cgsl,cgdl]
+CVParameters_AboveInv   = [deltawcv,qmtcencv,qm0]
+AllPars                 = [cgso,cgdo,ckappas,ckappad,\
+                           cgsl,cgdl,deltawcv,qmtcencv,qm0]
+</pre>
+<!-- grep end -->
+
+<p>The C&ndash;V extraction utilizes <tt>LinkedOptParams</tt>, which can be used to tie the value 
+of two or more parameters together during the optimization. In this case, you want the source and 
+drain parameters (<tt>CGSO, CGDO</tt> and <tt>CGSL, CGDL</tt>) to have the same value because you 
+are working with a symmetric device.</p>
+
+<p>The core optimization strategy is shown in Figure 13 and in the following code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s3_mys.py" startExpr="x=0" endExpr="*AllPars*CV_filtered_ld*" -->
+<pre>
+x=0
+fit_error=1e9
+# Run extraction
+while (x&lt;2 and fit_error&gt;1):
+    for j in range(1): ExtractionUtils.DoStage(&quot;CV_step1&quot;, Model, \
+                       Simulator, CVParameters_BelowInv_1, Optimizer, 
+                       [CV_BelowInv1_ld])
+    for j in range(1): ExtractionUtils.DoStage(&quot;CV_step2&quot;, Model, \
+                       Simulator, CVParameters_BelowInv_2, Optimizer, 
+                       [CV_BelowInv2_ld])
+    for j in range(1): ExtractionUtils.DoStage(&quot;CV_step3&quot;, Model, \
+                       Simulator, CVParameters_AboveInv, Optimizer, \
+                       [CV_AboveInv_ld])
+    fit_error = ExtractionUtils.PrintErrors(&quot;CV_step3_error&quot;, 
+                        CV_filtered_ld, Simulator, Model, ErrorMethod)
+    x+=1
+
+for j in range(3): ExtractionUtils.DoStage(&quot;CV_step4&quot;, Model, Simulator, \
+                   AllPars, Optimizer, [CV_filtered_ld])
+</pre>
+<!-- grep end -->
+
+<p><img src="images/mystic_cvflowchart.png" width="381" height="608" 
+alt="Flowchart of C&ndash;V SPICE model parameter extraction" /></p>
+
+<p class="caption">Figure 13. Flowchart of C&ndash;V SPICE model parameter extraction.</p>
+
+<p>The core strategy itself has a similar structure to that of high-drain and 
+I<sub>d</sub>&ndash;V<sub>d</sub> extraction, with an exit criterion&ndash;controlled 
+<tt>while</tt> loop and a final smoothing stage to try and obtain the best fit possible.</p>
+
+<p>The final fitting results and SPICE model parameters are saved to the database and written 
+to a PLT file as in the previous two extractions, as shown in the following code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s3_mys.py" startExpr="*Final Errors*" endExpr="*WriteModel*" -->
+<pre>
+print(&quot;\n Final Errors: &quot;)
+fit_error = ExtractionUtils.PrintErrors(&quot;CV_step4_error&quot;, CV_filtered_ld, \
+            Simulator, Model, ErrorMethod)
+
+
+# Store fit data and parameters in the database
+mdb.StoreFitData(CV_filtered_ld, Model, error=fit_error)
+
+Optimizer.write_parameter_csv('@pwd@/@nodedir@/n@node@-cv-pars')
+CV_filtered_ld.WritePLTFile('@pwd@/@nodedir@/n@node@-cv')
+Model.WriteModel(&quot;@pwd@/@nodedir@/n@node@_final_model.mod&quot;)
+</pre>
+<!-- grep end -->
+
+<p>Since this is the final part of the extraction, the final fitted model object is also written 
+to the project directory by using <tt>WriteModel</tt>. The model card can be opened from Node Explorer 
+and compared to the initial model. It can also now be included as part of any SPICE-compatible netlist.</p>
+
+<p>Click to view the C&ndash;V extraction Mystic file 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/Mystic_Uniform_s3_mys.py">
+Mystic_Uniform_s3_mys.py</a>.</p>
+
+<!--==============================-->
+<a name="2.6"></a>
+<h2>3.2.6 Final Results</h2>
+
+<p>The results of the Mystic uniform extraction can be visualized by running the Sentaurus Visual 
+tool instance <tt>plot_Unif_Extract</tt> in the project. The final fitting results for both NMOS 
+and PMOS devices are shown in Figure 14 and Figure 15, respectively.</p>
+
+<p><a href="images/mystic_nmosfit.png"><img src="images/mystic_nmosfit.png" width="570" 
+alt="NMOS fitting result" /></a></p>
+
+<p class="caption">Figure 14. I&ndash;V and C&ndash;V fitting results for the 
+NMOS device. (Click image for full-size view.)</p>
+
+<p><a href="images/mystic_pmosfit.png"><img src="images/mystic_pmosfit.png" width="570" 
+alt="PMOS fitting result" /></a></p>
+
+<p class="caption">Figure 15. I&ndash;V and C&ndash;V fitting results for the 
+PMOS device. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 BSIM-CMG Model Extraction</h1>
+
+<p>This section provides general guidelines for SPICE model parameter extraction, with an emphasis 
+on the general principle of parameter extraction strategy development. For details about the Mystic 
+syntax, which is used to construct the Mystic input files, see 
+<a href="#2">Section 3.2 Mystic Extraction Strategy</a>. As it is a prerequisite of this example, 
+it is not included here.</p>
+
+<p>This example covers the following parts of SPICE model parameter extraction:</p>
+
+<ol>
+<li>Device characteristics required for SPICE modeling</li>
+<li>Initial model card setup</li>
+<li>Parameter extraction strategy</li>
+</ol>
+
+<p>In standard SPICE modeling applications, there are two different SPICE model parameter extraction 
+strategies: single (or point)-device parameter extraction and global-device parameter extraction.</p>
+
+<p>The SPICE model card generated through single-device parameter extraction can fit the single geometry 
+device well, but it cannot fit other devices with different geometries. The SPICE model card generated 
+through global-device parameter extraction might not be able to fit every single device perfectly, but 
+it can be used to represent a wide range of devices with reasonable accuracy.</p>
+
+<p>In TCAD to SPICE flows, a response surface modeling approach is used to capture multirange device 
+characteristics, and the SPICE model cards used to construct the response surface model are generated 
+through single-device parameter extraction.</p>
+
+<p>This section focuses on the methodology used for single-device parameter extraction. The 
+global-device parameter extraction is not included. The example provided uses the industry-standard 
+FinFET model BSIM-CMG as the underlying SPICE compact model.</p>
+
+<p>This section covers the following topics:</p>
+
+<ul>
+<li><a href="#3.1">Section 3.3.1 BSIM-CMG Setup</a></li>
+<li><a href="#3.2">Section 3.3.2 Parameter Extraction Strategy</a></li>
+</ul>
+
+<!--================================-->
+<a name="3.1"></a>
+<h2>3.3.1 BSIM-CMG Setup</h2>
+
+<p>This section provides details of how to set up the BSIM-CMG model.</p>
+
+<!--===================-->
+<a name="3.1.1"></a>
+<h3>3.3.1.1 Target Data Requirements</h3>
+
+<p>Using a FinFET device as an example, the following minimum set of I&ndash;V data is required 
+to extract DC BSIM-CMG model at a fixed temperature:</p>
+
+<ul>
+<li>I<sub>d</sub>&ndash;V<sub>gs</sub> at low-drain bias condition, typically 50 mV</li>
+<li>I<sub>d</sub>&ndash;V<sub>gs</sub> at high-drain bias condition, typically under supply 
+voltage condition (an extra intermediate drain bias at V<sub>ds</sub> around V<sub>t</sub> 
+can also help improve the quality of a fitting, but is not included in this strategy)</li>
+<li>I<sub>d</sub>&ndash;V<sub>ds</sub> under different gate bias conditions (must be in the 
+inversion region, with typically three or four gate bias conditions)</li>
+<li>C<sub>gg</sub>&ndash;V<sub>gs</sub> from weak inversion to strong inversion, under 
+zero or low-drain bias conditions</li>
+</ul>
+
+<p>BSIM-CMG has built-in models for device capacitances. As gate capacitance is the dominant 
+device capacitance component, this example illustrates the parameter extraction of total gate 
+capacitance.</p>
+
+<p>It is ideal to have the bias condition go beyond the V<sub>dd</sub> range. Typically, 1.2 times 
+V<sub>dd</sub> is a good range to cover overdrive conditions happening in the circuit operation.</p>
+
+<p>To extract a SPICE model by using Mystic, the target data must be uploaded to the SWB Python database.
+This ensures consistency between the data and its associated instance parameters and bias conditions 
+throughout the extraction flow. See <a href="#1.1">Section&nbsp;3.1.1 Uploading Data</a> for 
+instructions on data uploading.</p>
+
+<!--===================-->
+<a name="3.1.2"></a>
+<h3>3.3.1.2 Initial Model Card Setup</h3>
+
+<p>You can set up the initial SPICE model card in one of the following ways:</p>
+
+<ul>
+<li>Native SPICE model format, which only contains SPICE model parameters defined by the SPICE model itself</li>
+<li>Subcircuit model format, which, in addition to the native SPICE model card, can also contain external 
+components such as additional parasitic R and C components</li>
+</ul>
+
+<p>As the subcircuit model format is an extension of the native SPICE model format, it provides 
+an easy way to include parasitic or additional electrical components into the SPICE modeling. 
+Due to its flexibility, the subcircuit model format is used as the default SPICE model format 
+in TCAD to SPICE flows.</p>
+
+<h4>Subcircuit Model Format</h4>
+
+<p>Figure 16 shows a typical subcircuit model. It consists of three parts:</p>
+
+<ol>
+<li>Setup of subcircuit component parameters: The properties of subcircuit components can 
+be parameterized by using PrimeSim HSPICE <tt>.PARAM</tt> statements, and these parameters can be 
+directly accessed by Mystic, either as a model parameter selected for extraction (optimization) 
+or as a parameter based on the TCAD information, whose value could be predetermined before the 
+extraction. See the <cite>Mystic User Guide</cite> for details about handling SPICE model 
+parameters.</li>
+<li>Setup of subcircuit netlist: This part establishes the relations between parasitic or 
+additional components, and the native device.</li>
+<li>Setup of native SPICE model card: This part determines the behavior of the native device.</li>
+</ol>
+
+<p>For a typical CMOS logic device, most subcircuit component parameters can be 
+predetermined based on TCAD information. The essential point of SPICE model parameter 
+extraction is the native SPICE model parameters.</p>
+
+<p><a href="images/mystic_subcircuit.png"><img src="images/mystic_subcircuit.png" width="570" 
+alt="Example subcircuit model card" /></a></p>
+
+<p class="caption">Figure 16. Example subcircuit model card. (Click image for full-size view.)</p>
+
+<p>Click to view the initial subcircuit model card used in the project 
+<a href="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_tutorial/enigma_mystic.mod">
+enigma_mystic.mod</a>.</p>
+
+<!--===================-->
+<a name="3.1.3"></a>
+<h3>3.3.1.3 Setup of Native SPICE Model Parameters</h3>
+
+<p>To improve the probability of a good SPICE model fitting, it is important to set up physical 
+(non-optimized) parameter values and to assign the initial parameter values sensibly, as this will 
+establish the initial conditions of optimization.</p>
+
+<p>This section shows the minimum set of parameters that you must specify during the setup of 
+the initial model card.</p>
+
+<h4>Basic Structure and Geometry Parameters</h4>
+
+<p>The device structure and geometry parameters, listed in the following table, must be specified 
+before the extraction based on the architecture of the target device.</p>
+
+<table>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>BULKMOD</tt></td>
+<td>Substrate base selector: 0 for SOI or 1 for bulk</td>
+</tr>
+
+<tr>
+<td><tt>GEOMOD</tt></td>
+<td>Structure selector: 0 for double gate, 1 for triple gate, 2 for quadruple gate, or 3 for cylindrical gate</td>
+</tr>
+
+<tr>
+<td><tt>TFIN<sup>*</sup></tt></td>
+<td>Fin thickness for <tt>GEOMOD</tt> = 0, 1, 2</td>
+</tr>
+
+<tr>
+<td><tt>HFIN</tt></td>
+<td>Fin height for <tt>GEOMOD</tt> = 0, 1, 2</td>
+</tr>
+
+<tr>
+<td><tt>NFIN<sup>*</sup></tt></td>
+<td>Number of fins per finger</td>
+</tr>
+
+<tr>
+<td><tt>NF<sup>*</sup></tt></td>
+<td>Number of fingers</td>
+</tr>
+
+<tr>
+<td><tt>EOT</tt> (m)</td>
+<td>SiO<sub>2</sub>-equivalent gate dielectric thickness</td>
+</tr>
+</table>
+
+<p>*These are instance parameters. However, they must be predefined in the model card during 
+the Mystic extraction. This can be set in the initial model card or in the strategy file by using 
+the <tt>Model.SetModelParameter (&quot;para_name&quot;, value)</tt> command.</p>
+
+<h4>Basic Material and Doping Parameters</h4>
+
+<p>The default channel material in BSIM-CMG is relaxed silicon. As the actual channel materials might 
+differ from the default, BSIM-CMG provides model parameters that can be used to redefine the properties 
+of the device channel material as listed in the following table.</p>
+
+<p>For TCAD simulations, the device metal gate workfunction can be accurately determined. Although 
+for the best fitting, the metal gate workfunction value in the final model card might not be the same 
+as the actual physical value, they should be very close. Setting the <tt>PHIG</tt> value based on the 
+TCAD information will provide a good starting point for model parameter extraction.</p>
+
+<p>Using the TCAD information, some basic doping parameters, such as source/drain doping and channel 
+doping, can be relatively accurately defined in the initial model card as well.</p>
+
+<table>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>EPSRSUB</tt></td>
+<td>Relative dielectric constant of channel</td>
+</tr>
+
+<tr>
+<td><tt>EASUB</tt></td>
+<td>Electron affinity of the substrate material</td>
+</tr>
+
+<tr>
+<td><tt>NI0SUB</tt></td>
+<td>Intrinsic carrier concentration of the channel material at room temperature</td>
+</tr>
+
+<tr>
+<td><tt>BG0SUB</tt></td>
+<td>Band gap of the channel material at room temperature</td>
+</tr>
+
+<tr>
+<td><tt>NC0SUB</tt></td>
+<td>Conduction band density-of-states of the channel material at room temperature</td>
+</tr>
+
+<tr>
+<td><tt>PHIG</tt></td>
+<td>Metal gate workfunction</td>
+</tr>
+
+<tr>
+<td><tt>NBODY</tt> (m<sup>&ndash;3</sup>)</td>
+<td>Channel doping</td>
+</tr>
+
+<tr>
+<td><tt>NSD</tt> (m<sup>&ndash;3</sup>)</td>
+<td>Source/drain doping</td>
+</tr>
+</table>
+
+<h4>Geometry-Dependent Parameters</h4>
+
+<p>For single-device parameter extraction, there is no need to use geometry-dependent parameters. 
+You can deactivate these parameters in the initial model card as shown in the following table.</p>
+
+<table>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Value</th>
+</tr>
+
+<tr>
+<td><tt>DVT0</tt></td>
+<td>Short-channel effect parameter</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td><tt>ETA0</tt></td>
+<td>Drain-induced barrier lowering (DIBL) parameter</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td><tt>K1RSCE</tt></td>
+<td>Reverse short-channel effect parameter</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td><tt>DVTP1</tt></td>
+<td>Length-independent drain-induced V<sub>t</sub> shift parameter</td>
+<td>1</td>
+</tr>
+</table>
+
+<!--================================================-->
+<a name="3.2"></a>
+<h2>3.3.2 Parameter Extraction Strategy</h2>
+
+<p>For SPICE modeling, the general fitting quality requirements are:</p>
+
+<ul>
+<li>Good SPICE modeling accuracy for I<sub>d</sub>&ndash;V<sub>g</sub>, I<sub>d</sub>&ndash;V<sub>d</sub>, 
+and C<sub>gg</sub>&ndash;V<sub>g</sub> under normal working bias conditions (RMS error &lt; 3%)</li>
+<li>Sensible SPICE modeling results for a device biased beyond the normal operation condition</li>
+</ul>
+
+<p>The SPICE modeling strategy consists of two parts:</p>
+
+<ul>
+<li>The DC extraction strategy is divided into two stages based on the drain bias condition.</li>
+<li>For the CV part, only one extraction stage is required as C<sub>gg</sub>&ndash;V<sub>g</sub> 
+characteristics under single drain bias conditions is used as the extraction target.</li>
+</ul>
+
+<p>The SPICE modeling extraction strategy has been developed based on the underlying formulation 
+of SPICE models, which is derived from device physics. The SPICE model parameter set is divided 
+into subsets per their physical meaning. For each subset parameter extraction, a specific I&ndash;V 
+or C&ndash;V target is used. Data filters are used to generate extraction targets that match up 
+with the parameter subsets.</p>
+
+<!--=====================-->
+<h3>3.3.2.1 DC Extraction Strategy</h3>
+
+<h4>Low-Drain Extraction</h4>
+
+<p>The main purpose of the low-drain extraction strategy is to capture geometry-induced short-channel 
+effects for the fixed geometry configuration (length-dependent short-channel effects are not captured 
+here, so this is referred to as a <em>point model</em>), and the low-field transport properties.</p>
+
+<p>The parameters in Table 3 are extracted during the low-drain extraction, with the detailed steps 
+summarized in Table&nbsp;4. The initial values of parameters are based on previous extraction experience 
+or knowledge of the physical behavior of the device. Parameter boundaries can be either hard boundaries, 
+beyond which the model will cause the PrimeSim HSPICE simulation to fail, or soft boundaries, which define the 
+upper or lower limits required by users.</p>
+
+<table>
+<caption>Table 3. BSIM-CMG parameters extracted in the low-drain extraction.</caption>
+
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Initial</th>
+<th>Lower bound</th>
+<th>Upper bound</th>
+</tr>
+
+<tr>
+<td><tt>PHIG</tt> (eV)</td>
+<td>Metal gate workfunction</td>
+<td>TCAD</td>
+<td>-10% of initial</td>
+<td>+10% of initial</td>
+</tr>
+
+<tr>
+<td><tt>U0</tt> (m<sup>2</sup>/V-s)</td>
+<td>Low-field mobility</td>
+<td>0.02</td>
+<td>0.006</td>
+<td>0.14</td>
+</tr>
+
+<tr>
+<td><tt>UA</tt> (cm/MV)<sup>EU</sup></td>
+<td>Surface roughness parameter</td>
+<td>0.3</td>
+<td>0.0</td>
+<td>100</td>
+</tr>
+
+<tr>
+<td><tt>ETAMOB</tt></td>
+<td>Effective field parameter</td>
+<td>2</td>
+<td>0</td>
+<td>10</td>
+</tr>
+
+<tr>
+<td><tt>EU</tt></td>
+<td>Phonon or surface roughness scattering parameter</td>
+<td>2.5</td>
+<td>0.1</td>
+<td>10</td>
+</tr>
+
+<tr>
+<td><tt>UD</tt></td>
+<td>Coulomb scattering parameter</td>
+<td>0.1</td>
+<td>0.0</td>
+<td>1.0</td>
+</tr>
+
+<tr>
+<td><tt>UCS</tt></td>
+<td>Coulomb scattering parameter</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>10</td>
+</tr>
+
+<tr>
+<td><tt>CDSC</tt></td>
+<td>Coupling between source/drain and channel</td>
+<td>0.01</td>
+<td>0.0</td>
+<td>1.0</td>
+</tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table>
+<caption>Table 4. Low-drain extraction strategy.</caption>
+
+<tr>
+<th>Step</th>
+<th>Parameter set</th>
+<th>Target</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>1</td>
+<td><tt>PHIG, CDSC</tt></td>
+<td>Subthreshold of I<sub>d</sub>&ndash;V<sub>g</sub> at low drain</td>
+<td>Captures threshold voltage and subthreshold slope</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td><tt>U0, UA, EU, UD, UCS, ETAMOB</tt></td>
+<td>Inversion of I<sub>d</sub>&ndash;V<sub>g</sub> at low drain</td>
+<td>Captures low-drain transport properties, including mobility degradation in strong inversion</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td><tt>PHIG, CDSC, U0, UA, EU, UD, UCS, ETAMOB</tt></td>
+<td>Full I<sub>d</sub>&ndash;V<sub>g</sub> at low drain</td>
+<td>Polishing stage that links subthreshold and above-threshold regions</td>
+</tr>
+</table>
+
+<p>The extraction steps can be looped together to improve the fitting quality of SPICE modeling. 
+Figure&nbsp;17 shows typical low-drain extraction results for an n-type and a p-type FinFET.</p>
+
+<p><a href="images/mystic_ldfit.png"><img src="images/mystic_ldfit.png" width="570" 
+alt="Low-drain extraction results" /></a></p>
+
+<p class="caption">Figure 17. Low-drain extraction results for (left) logarithmic scale 
+and (right) linear scale. Red symbols represent TCAD data, and black lines show the 
+SPICE model fitting. (Click image for full-size view.)</p>
+
+<h4>High-Drain Extraction</h4>
+
+<p>The main purpose of the high-drain extraction strategy is to capture high-drain bias-induced 
+short-channel effects for the fixed geometry configuration (length-dependent short-channel effects 
+are not captured for the point model) and high-field transport properties.</p>
+
+<p>The parameters in Table 5 are extracted during the high-drain extraction, with the detailed 
+extraction steps summarized in Table&nbsp;6.</p>
+
+<table>
+<caption>Table 5. Additional BSIM-CMG parameters extracted in the high-drain extraction.</caption>
+
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Initial</th>
+<th>Lower bound</th>
+<th>Upper bound</th>
+</tr>
+
+<tr>
+<td><tt>DVTPO</tt></td>
+<td>DIBL parameter</td>
+<td>-0.01</td>
+<td>-0.5</td>
+<td>0.1</td>
+</tr>
+
+<tr>
+<td><tt>CDSCD</tt></td>
+<td>Drain bias sensitivity of CDSC</td>
+<td>7e-3</td>
+<td>0</td>
+<td>1.0</td>
+</tr>
+
+<tr>
+<td><tt>VSAT</tt></td>
+<td>Saturation velocity</td>
+<td>1.0e5</td>
+<td>2.0e4</td>
+<td>6.0e5</td>
+</tr>
+
+<tr>
+<td><tt>KSATIV</tt></td>
+<td>Drain saturation voltage parameter</td>
+<td>1.0</td>
+<td>-5.0</td>
+<td>5.0</td>
+</tr>
+
+<tr>
+<td><tt>MEXP</tt></td>
+<td>Smooth factor of drain saturation voltage</td>
+<td>4.0</td>
+<td>2.0</td>
+<td>10</td>
+</tr>
+
+<tr>
+<td><tt>PVAG</tt></td>
+<td>Gate dependence of early voltage</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>100</td>
+</tr>
+
+<tr>
+<td><tt>PDIBL2</tt></td>
+<td>Parameter for DIBL on drain output resistance</td>
+<td>1.0e-3</td>
+<td>1.0e-16</td>
+<td>1</td>
+</tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table>
+<caption>Table 6. High-drain extraction strategy.</caption>
+
+<tr>
+<th>Step</th>
+<th>Parameter set</th>
+<th>Target</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>1</td>
+<td><tt>DVTP0</tt></td>
+<td>Off-current at high drain</td>
+<td>Extracts DIBL effects initially</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td><tt>CDSCD</tt></td>
+<td>Subthreshold region of I<sub>d</sub>&ndash;V<sub>g</sub> at high drain</td>
+<td>Extracts subthreshold slope degradation effects initially</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td><tt>DVTP0, CDSCD</tt></td>
+<td>Subthreshold region of I<sub>d</sub>&ndash;V<sub>g</sub> at high drain</td>
+<td>Captures DIBL and subthreshold slope degradation effects</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td><tt>VSAT</tt></td>
+<td>On-current at high drain</td>
+<td>Extracts saturation velocity</td>
+</tr>
+
+<tr>
+<td>5</td>
+<td><tt>KSATIV, MEXP, PVAG, PDIBL2, DVTP0, CDSCD</tt></td>
+<td>I<sub>d</sub>&ndash;V<sub>g</sub> at high drain and I<sub>d</sub>&ndash;V<sub>d</sub></td>
+<td>Extracts other high-field effect parameters</td>
+</tr>
+
+<tr>
+<td>6</td>
+<td><tt>PHIG, KSATIV, MEXP, PVAG, PDIBL2, DVTP0, CDSC, U0, UA, ETAMOB, EU, VSAT</tt></td>
+<td>Full I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub></td>
+<td>Serves as a polishing stage that links the full I<sub>d</sub>&ndash;V<sub>g</sub> and 
+I<sub>d</sub>&ndash;V<sub>g</sub>, subthreshold region, and above-threshold region</td>
+</tr>
+</table>
+
+<p>Steps 1&ndash;5 can be looped together to improve the fitting quality of the SPICE model. 
+Figure 18 and Figure 19 show typical high-drain extraction results for an n-type and a 
+p-type FinFET.</p>
+
+<p><a href="images/mystic_hdfit_nmos.png"><img src="images/mystic_hdfit_nmos.png" width="570" 
+alt="High-drain extraction results for NFinFET" /></a></p>
+
+<p class="caption">Figure 18. High-drain extraction results for NFinFET: (left) 
+I<sub>d</sub>&ndash;V<sub>g</sub> and (right) I<sub>d</sub>&ndash;V<sub>d</sub>. 
+(Click image for full-size view.)</p>
+
+<p><a href="images/mystic_hdfit_pmos.png"><img src="images/mystic_hdfit_pmos.png" width="570" 
+alt="High-drain extraction results for PFinFET" /></a></p>
+
+<p class="caption">Figure 19. High-drain extraction results for PFinFET: (left) 
+I<sub>d</sub>&ndash;V<sub>g</sub> and (right) I<sub>d</sub>&ndash;V<sub>d</sub>. 
+(Click image for full-size view.)</p>
+
+<!--=====================-->
+<h3>3.3.2.2 C&ndash;V Extraction Strategy</h3>
+
+<p>In a TCAD to SPICE flow based on TCAD information, the basic device gate oxide thickness 
+parameter can be accurately determined. However, quantum confinement plays an important 
+role in the FinFET C&ndash;V characteristics.</p>
+
+<p>To improve the accuracy of C&ndash;V SPICE modeling, BSIM-CMG provides a certain freedom 
+to modeling C&ndash;V characteristics independently from the I&ndash;V modeling, by the 
+introduction of dedicated C&ndash;V quantum-correction parameters. These parameters are 
+extracted during the C&ndash;V extraction stage. Furthermore, parasitic or fringe capacitances 
+are important components of total gate capacitance, which are also extracted.</p>
+
+<p>In summary, the parameters used in the demonstration C&ndash;V extraction are shown 
+in Table&nbsp;7.</p>
+
+<p>In this example, the device source/drain structures are symmetric. To maintain this symmetric 
+property in the SPICE modeling, the drain side of C&ndash;V parameters, such as <tt>CGDO</tt>, 
+<tt>CGDL</tt>, and <tt>CKAPPD</tt>, must have the same value as the source side counterparts 
+(or the source-side parameters and drain-side parameters are linked together). See the 
+<cite>Mystic User Guide</cite> (<tt>LinkedOptParam</tt>) for details about linking two SPICE model 
+parameters.</p>
+
+<table>
+<caption>Table 7. Parameters used in C&ndash;V extraction.</caption>
+
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Initial</th>
+<th>Lower bd.</th>
+<th>Upper bd.</th>
+</tr>
+
+<tr>
+<td><tt>CGSO</tt></td>
+<td>Biased independent overlap capacitance for source side</td>
+<td>1.0e-10</td>
+<td>1.0e-21</td>
+<td>1.0e-8</td>
+</tr>
+
+<tr>
+<td><tt>CGDO</tt></td>
+<td>Biased independent overlap capacitance for drain side</td>
+<td>1.0e-10</td>
+<td>1.0e-21</td>
+<td>1.0e-8</td>
+</tr>
+
+<tr>
+<td><tt>DELTAWCV</tt></td>
+<td>Device width reduction parameter for C&ndash;V</td>
+<td>0</td>
+<td>-5.0e-9</td>
+<td>5.0e-9</td>
+</tr>
+
+<tr>
+<td><tt>QMTCENCV</tt></td>
+<td>Quantum effective parameter for C&ndash;V</td>
+<td>0.5</td>
+<td>1.0e-3</td>
+<td>20</td>
+</tr>
+
+<tr>
+<td><tt>QM0</tt></td>
+<td>Normalized parameter for quantum-mechanical charge centroid</td>
+<td>0.001</td>
+<td>1.0e-4</td>
+<td>10</td>
+</tr>
+
+<tr>
+<td><tt>CKAPPAS</tt></td>
+<td>Coefficient of bias-dependent overlap capacitance for source side</td>
+<td>0.6</td>
+<td>0.05</td>
+<td>50</td>
+</tr>
+
+<tr>
+<td><tt>CKAPPAD</tt></td>
+<td>Coefficient of bias-dependent overlap capacitance for drain side</td>
+<td>0.6</td>
+<td>0.05</td>
+<td>50</td>
+</tr>
+
+<tr>
+<td><tt>CGSL</tt></td>
+<td>Biased dependent overlap capacitance for source side</td>
+<td>1.0e-10</td>
+<td>1.0e-21</td>
+<td>5.0e-7</td>
+</tr>
+
+<tr>
+<td><tt>CGDL</tt></td>
+<td>Biased dependent overlap capacitance for drain side</td>
+<td>1.0e-10</td>
+<td>1.0e-21</td>
+<td>5.0e-7</td>
+</tr>
+</table>
+
+<p>The C&ndash;V extraction strategy is summarized in Table&nbsp;8. Steps 1&ndash;3 
+can be looped together to improve the C&ndash;V fitting quality. Figure&nbsp;20 shows 
+typical C&ndash;V extraction results for an n-type and a p-type FinFET.</p>
+
+<table>
+<caption>Table 8. C&ndash;V extraction strategy.</caption>
+
+<tr>
+<th>Step</th>
+<th>Parameter set</th>
+<th>Target</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>1</td>
+<td><tt>CGSO, CGDO</tt></td>
+<td>Total gate capacitance at depletion region</td>
+<td>Extracts bias-independent parasitic capacitance components</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td><tt>CGSL, CGDL, CKAPPAS, CKAPPAD</tt></td>
+<td>Total gate capacitance from depletion to weak inversion region</td>
+<td>Extracts the remaining parasitic capacitance components</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td><tt>DELTAWC, QM0, QMTCENCV</tt></td>
+<td>Total gate capacitance at inversion region</td>
+<td>Captures the quantum effects</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td><tt>CGSO, CGDO, CGSL, CGDL, CKAPPAS, CKAPPAD, DELTAWC, QM0, QMTCENCV</tt></td>
+<td>Total gate capacitance from depletion to strong inversion region</td>
+<td>Serves as a polishing stage to link C&ndash;V characteristics from the depletion region to the strong inversion region</td>
+</tr>
+</table>
+
+<p><a href="images/mystic_cvfit.png"><img src="images/mystic_cvfit.png" width="570" 
+alt="C&ndash;V extraction results" /></a></p>
+
+<p class="caption">Figure 20. C&ndash;V extraction results for (left) NFinFET and 
+(right) PFinFET. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>3.4 Mystic Graphical User Interface</h1>
+
+<p>The Mystic graphical user interface (GUI) is where Mystic strategies can be viewed, 
+edited, and executed. It provides a user-friendly front end to the Mystic tool for strategy 
+development, debugging,  and interactive extraction. The data used throughout the strategy 
+can be plotted in interactive plots, allowing you more visibility and control of the 
+extraction process.</p>
+
+<p>The Mystic GUI is launched automatically when the <tt>--gui</tt> option is passed 
+to Mystic on the command line. The GUI scripting environment contains the full Mystic 
+namespace, as well as extra functionality for plotting data during the extraction.</p>
+
+<p>This section demonstrates how to use the Mystic GUI to extract a nominal 
+model for a 14&nbsp;nm FinFET device using BSIM-CMG. For details about the Mystic 
+extraction strategies used in this example, see 
+<a href="#1.3">Section&nbsp;3.1.3 Uniform Extraction</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_GUI_tutorial</tt>.</p>
+
+<p>This section gives you a step-by-step demonstration and some concise explanations 
+of the Mystic GUI. It should be noted that the Mystic GUI supports several plot types 
+not covered in this tutorial, and its environment has more scripting and plotting 
+features. See the <cite>Mystic API Reference</cite> for details.</p> 
+
+<!--========================-->
+<a name="4.1"></a>
+<h2>3.4.1 Launching the Mystic GUI</h2>
+
+<p>To launch the GUI for a Mystic node in a Sentaurus Workbench project, open the 
+Tool Properties dialog box for the Mystic tool instance and enter <tt>--gui</tt> 
+in the <strong>Command Line</strong> field (see Figure 21).</p>
+
+<p><img src="images/mystic_gui_toolprop.png" width="507" height="481" 
+alt="Tool properties for a Mystic GUI instance" /></p>
+
+<p class="caption">Figure 21. Tool properties for a Mystic GUI instance.</p>
+
+<p>In the input <em>template file</em> for this Mystic instance, the GUI can be invoked 
+by adding the following code:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_GUI_tutorial/Mystic_extraction_eng.py" startExpr="mystic.args.gui*" Lines=1 -->
+<pre>
+mystic.args.gui = True
+</pre>
+<!-- grep end -->
+
+<p>You can then run this Mystic instance from Sentaurus Workbench as usual, using 
+only the local queue.</p>
+
+<!--========================-->
+<a name="4.2"></a>
+<h2>3.4.2 Mystic GUI Overview</h2>
+
+<p>When the Mystic GUI mode is invoked, the main window of the Mystic GUI opens.</p>
+
+<p><a href="images/mystic_gui.png"><img src="images/mystic_gui.png" width="570" 
+alt="Mystic GUI" /></a></p>
+
+<p class="caption">Figure 22. Main window of Mystic GUI. (Click image for full-size view.)</p>
+
+<p>As shown in Figure 22, the default layout of the Mystic GUI has the following main panels:</p>
+
+<ul>
+<li>The Editor panel is used to view the opened Mystic strategy and to edit the file.</li>
+<li>The Console panel is used to execute commands passed from the strategy.</li>
+<li>The Plot Area panel shows the generated plots.</li>
+<li>The Plot Parameters panel displays the features of each plot; here, you can adjust axis 
+and series parameters.</li>
+</ul>
+
+<p>When Mystic strategies are opened and edited in the GUI, syntax checking is applied 
+automatically. Messages from the syntax checker can be found in the Syntax Checker panel 
+in the lower-left part of the GUI. If there are errors or warnings in any open file, then 
+an asterisk appears on the <strong>Syntax Checker</strong> tab.</p>
+
+<!--========================-->
+<a name="4.3"></a>
+<h2>3.4.3 Running a Script in the Mystic GUI</h2>
+
+<p>Different run options are available:</p>
+
+<table>
+<tr>
+<th>Action</th>
+<th>Shortcut</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>Run/Continue</td>
+<td>F5 key</td>
+<td>Run from the current line until reaching a breakpoint or the end of the strategy.</td>
+</tr>
+
+<tr>
+<td>Run Next Line</td>
+<td>Shift+F5</td>
+<td>Run the next line of the strategy.</td>
+</tr>
+</table>
+
+<p>If you click the <strong>Pause</strong> button while the strategy is executing, 
+then execution stops after the current command has completed.</p>
+
+<p>You can add or remove breakpoints by using the <strong>Breakpoint</strong> button 
+(or pressing the F9 key), or by clicking the line number on the left side of the 
+Editor panel. To clear all breakpoints, press Ctrl+F9. These operations are also 
+available from the <strong>Run</strong> menu.</p>
+
+<p>The next line to be executed is highlighted in yellow, the currently executing 
+line is highlighted in green, and lines that have been executed are gray.</p>
+
+<p>After a block in the script is executed, it becomes read-only. To edit these lines 
+after they have been executed, you must reset the Editor panel, which you can do by 
+clicking the <strong>Reset</strong> button.</p>
+
+<p>Mystic model extraction is often split into several stages, which helps to check 
+the strategy and to retain partial results while working on downstream stages, as 
+shown in <a href="#2">Section 3.2 Mystic Extraction Strategy</a> and 
+<a href="#3">Section 3.3 BSIM-CMG Model Extraction</a>. When running Mystic extraction 
+in the GUI, a new Mystic GUI window opens at each stage. In this example of BSIM-CMG 
+model extraction for a nominal 14&nbsp;nm FinFET device, the extraction is separated 
+into three stages: low-drain I<sub>d</sub>&ndash;V<sub>g</sub>, high-drain 
+I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub>, and C&ndash;V.</p>
+
+<p>The next sections demonstrate running the strategy at each stage using the Mystic GUI.</p>
+
+<!--========================-->
+<a name="4.4"></a>
+<h2>3.4.4 Low-Drain I<sub>d</sub>&ndash;V<sub>g</sub> Extraction in Mystic GUI</h2>
+
+<p>The first extraction stage fits the low-drain I<sub>d</sub>&ndash;V<sub>g</sub> 
+target data. When running this stage interactively, you want to monitor the fitting 
+of the low-drain I<sub>d</sub>&ndash;V<sub>g</sub> data in the Plot Area panel of 
+the GUI as the strategy progresses.</p>
+
+<p>To monitor particular target data, it must be tagged as interactive and 
+given a name for its plot. Adding the following to the existing strategy achieves 
+this for the low-drain I<sub>d</sub>&ndash;V<sub>g</sub> extraction stage:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_GUI_tutorial/Mystic_extraction_s1_mys.py" startExpr="IdVgld._name*" endExpr="IdVgld.interactive*" -->
+<pre>
+IdVgld._name = &quot;IdVgld&quot;
+IdVgld.interactive = True
+</pre>
+<!-- grep end -->
+
+<p>When the node is executed in Sentaurus Workbench, the Mystic GUI launches with 
+the Mystic strategy opened in the Editor panel. You can run this entire extraction 
+stage by clicking the <strong>Run</strong> button, or you can step through it by 
+clicking the <strong>Run Next Line</strong> button. Alternatively, you can set a 
+breakpoint with the <strong>Breakpoint</strong> button and execute up to that line 
+by clicking <strong>Run</strong>.</p>
+
+<p>As the strategy runs, the interactive target is updated at the end of every call to 
+<tt>ExtractionUtils.DoStage</tt>, even if the interactive object is not the target 
+for that stage. A snapshot of an interactive target can be taken at any point throughout 
+the extraction by calling <tt>ExtractionUtils.PrintErrors</tt> with that target. 
+In this example, there is an initial snapshot of the low-drain I<sub>d</sub>&ndash;V<sub>g</sub> 
+target before the core optimization stages of the extraction are run. This remains on 
+the plot throughout the extraction process. The current state of the SPICE model fitting 
+is displayed in the Plot Area panel in real time as the extraction progresses. After the 
+extraction is completed, the final results are displayed in the Plot Area panel as 
+shown in Figure&nbsp;23.</p>
+
+<p><a href="images/mystic_gui_ld.png"><img src="images/mystic_gui_ld.png" width="570" 
+alt="Low-drain Id&ndash;Vg extraction results in Mystic GUI" /></a></p>
+
+<p class="caption">Figure 23. Low-drain I<sub>d</sub>&ndash;V<sub>g</sub> extraction 
+results in Mystic GUI. (Click image for full-size view.)</p>
+
+<p>When the extraction is completed, you can inspect the results in the Console panel 
+or the Variable Explorer panel, and make manual adjustments if necessary. When you 
+are satisfied with the fit of this stage, you can close the Mystic GUI window. This 
+triggers the next stage to begin and another Mystic GUI window opens.</p>  
+
+<!--========================-->
+<a name="4.5"></a>
+<h2>3.4.5 High-Drain I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> 
+Extraction in Mystic GUI</h2>
+
+<p>The high-drain I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> 
+extraction strategy uses the model card from the low-drain strategy as a starting point. 
+Again, the Mystic GUI starts with the strategy file in the Editor panel. This strategy 
+is much more complex than the low-drain strategy, fitting a larger set of parameters to 
+the full set of I&ndash;V curves.</p>
+
+<p>At this stage, you want to interactively monitor the fitting of both the 
+I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> data in the Plot 
+Area panel. To set this up, you can add the following commands to the strategy file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_GUI_tutorial/Mystic_extraction_s2_mys.py" startExpr="IdVg._name*" endExpr="IdVd.interactive*" -->
+<pre>
+IdVg._name = &quot;IdVg&quot;
+IdVg.interactive = True
+
+IdVd._name = &quot;IdVd&quot;
+IdVd.interactive = True
+</pre>
+<!-- grep end -->
+
+<p>Again, you can run this extraction stage either continuously, line by line, 
+or by using breakpoints. As the extraction progresses, you can monitor the current 
+state of the SPICE model fitting in the Plot Area panel in real time.</p> 
+
+<p><a href="images/mystic_gui_hd.png"><img src="images/mystic_gui_hd.png" width="570" 
+alt="High-drain extraction results in Mystic GUI" /></a></p>
+
+<p class="caption">Figure 24. High-drain extraction results in Mystic GUI. 
+(Click image for full-size view.)</p>
+
+<p>When this extraction stage is completed, you can close this GUI window. This triggers 
+the next stage to begin and another GUI window opens for the final extraction stage.</p>  
+
+<!--========================-->
+<a name="4.6"></a>
+<h2>3.4.6 C&ndash;V Extraction in Mystic GUI</h2>
+
+<p>The C&ndash;V extraction strategy uses the model card from the high-drain 
+I<sub>d</sub>&ndash;V<sub>g</sub> and I<sub>d</sub>&ndash;V<sub>d</sub> strategy 
+as a starting point. Again, the Mystic GUI starts with the strategy file in the 
+Editor panel. The C&ndash;V strategy has the same basic structure as the two I&ndash;V 
+strategies but operates on gate capacitance target data (C<sub>gg</sub>&ndash;V<sub>g</sub>). 
+As with the previous stages, you can modify the strategy file for interactive plotting 
+using the following commands:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/mystic/Mystic_GUI_tutorial/Mystic_extraction_s3_mys.py" startExpr="CVld._name*" endExpr="CVld.interactive*" -->
+<pre>
+CVld._name = &quot;CVld&quot;
+CVld.interactive = True
+</pre>
+<!-- grep end -->
+
+<p>The strategy can then be executed as before by clicking the <strong>Run</strong> button, 
+and you can monitor the quality of the model fitting in the Plot Area panel in real time 
+as the extraction progresses.</p>
+
+<p><a href="images/mystic_gui_cv.png"><img src="images/mystic_gui_cv.png" width="570" 
+alt="C&ndash;V extraction results in the Mystic GUI" /></a></p>
+
+<p class="caption">Figure 25. C&ndash;V extraction results in Mystic GUI. 
+(Click image for full-size view.)</p>
+
+<p>When you complete this extraction stage, close this GUI window. As this is the last 
+extraction stage, the overall Mystic extraction will change to <em>done</em> in 
+Sentaurus Workbench when the GUI window is closed.</p> 
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_02.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_04.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,274 @@
+body {	
+	font-family: Helvetica, Arial, Verdana, sans-serif;
+	font-style: normal;
+	font-size: small;
+	color: #000000;
+	line-height: 1.3em;
+	margin-bottom: 0px;
+	margin-left: 3%;
+	margin-right: 3%;
+	margin-top: 0.5%;
+}
+
+/* Link definitions */
+
+a:link	  { color: #004c88; text-decoration: none; }
+a:visited { color: #004c88; text-decoration: none; }
+a:hover   { color: red; text-decoration: none; }
+
+/* div definitions */
+
+#all {
+	width: 600px;
+	padding-top: 3px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+img {
+	margin-left: 10px;
+}
+
+.imgline {
+	margin-left: 0px;
+	vertical-align: middle;
+}
+
+.imgeq {
+	margin-left: 0px;
+	vertical-align: middle;
+}
+
+#menus th {
+	color: #888888;
+	font-size: 110%; 
+	font-weight: bold;
+	text-align: left;
+	padding-bottom: 10px;
+	margin-top: 1%;
+}
+
+#menus td {
+	font-size: 90%;
+	padding-bottom: 15px;
+}
+
+#section p {
+	border-top: thin solid #669933;
+	border-bottom: thin solid #669933;
+	padding: 2px 0px 2px 0px;
+	margin-top: 30px;
+	margin-bottom: 0px;
+	text-align: center;
+}
+
+#menutop p {
+	border-bottom: thin solid #999966;
+	padding: 0px 0px 2px 0px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	text-align: center;
+}
+
+#menutop img {
+	margin-left: 0px;
+	padding-top: 22px;
+}
+
+#copyright p {
+	font-size: 85%;
+	text-align: center;
+	margin-top: 0px;
+	padding-top: 2px;
+}
+
+.time {
+	font-style: italic;
+}
+
+/* Heading definitions */
+
+h1 {   
+	color: #669933;  
+       	font-size: 160%; 
+	line-height: 1.1em; 
+	margin-top: 30px;
+	margin-bottom: 20px;
+	padding-top: 8px;
+	padding-bottom: 5px;
+	border-top: thin solid #669933;
+}
+
+h1.title {
+	font-size: 180%;
+	padding-bottom: 20px;
+	line-height: 1.3em; 
+	margin-top: 1%;
+	border-top: none;
+}
+
+h2 { 	
+	color: #669933; 
+	font-size: 140%; 
+	font-weight: bold;
+	margin-top: 20px;
+	padding-top: 8px; 
+	padding-bottom: 5px;
+	border-top: thin solid #669933;
+}
+
+h2.obj { 	
+	font-size: 120%;	
+	font-style: italic;
+	color: #669933;
+}
+
+h3 {
+	color: #669933; 
+	font-size: 120%; 
+	font-style: italic;
+	font-weight: bold;
+	margin-top: 20px;		
+	border-top: thin solid #669933;
+	padding-top: 8px;
+	padding-bottom: 5px; 
+}
+
+p.intro {
+	text-align: center;	
+	padding: 7px;
+	border-top: 1px solid #669933;
+	border-bottom: 1px solid #669933;
+	margin-bottom: 20px;
+}
+
+.note {
+	padding: 4px;
+	border: thin solid black;
+	margin: 20px;
+}
+
+.video {
+	padding: 4px;
+	border: 2.5px solid #004c88;
+	border-style: double;
+	border-radius: 8px;
+	font-weight: bold;
+}
+
+/* Table definitions */
+
+table {
+	border: 2px solid black;
+	border-collapse: collapse;
+	background-color: #ffffff;
+	margin-top: 2px;
+	margin-bottom: 5px;
+}
+
+caption {
+	font-style: italic;
+}
+
+td, th {
+	text-align: left;
+	border: thin solid black;
+	padding: 3px;
+}
+
+.breakout {
+	border: 3px solid black;
+	border-collapse: collapse;
+	background-color: #ffffcc;
+	padding: 5px;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+.breakout td {
+	padding: 10px;
+}
+
+/* Other definitions */
+
+p.main {
+	border-top: 1px solid #669933;
+	border-bottom: 1px solid #669933;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	margin-left: 2px;
+}
+
+p.caption {
+	font-style: italic;
+	text-align: left;
+	margin-left: 30px;
+	margin-right: 30px;
+	padding-bottom: 10px;
+}
+
+ul li {
+	list-style-type: square;
+}
+
+ul li ul li {
+	list-style-type: circle;
+}
+
+tt {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 100%;
+}
+
+pre {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 95%;
+	margin-left: 5px;
+}
+
+sup, sub { vertical-align: 0;
+           position: relative; }
+sup { bottom: 1ex; }
+sub { top: 0.8ex; }
+
+dl.ref {
+    padding: 0.5em;
+}
+dl.ref > dt {
+	float: left;
+	clear: left;
+	width: 4em;
+}
+dl.ref > dt:after {
+	content: "";
+}
+dl.ref > dd {
+	margin: 0 0 0 4em;
+	padding: 0 0 0.5em 0;
+}
+
+/* Code color definitions */
+
+.blue {
+	color: #0000ff;
+}
+
+.red {
+	color: #ff0000;
+}
+
+.gray {
+	color: #808080;
+}
+
+.green {
+	color: #008000;
+}
+
+.maroon {
+	color: #800000;
+}
+
+.fuchsia {
+	color: #ff00ff;
+}

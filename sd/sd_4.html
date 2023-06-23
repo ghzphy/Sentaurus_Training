@@ -1,0 +1,640 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>   
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 4. Heterostructure Simulations</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />4. Heterostructure Simulations</h1>
+
+<p>
+ <a href="#1">4.1 Gummel Plot Simulations of GaAs/AlGaAs HBT</a><br />
+ <a href="#2">4.2 Model Parameter Definitions for Nonsilicon Material</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce heterostructure simulations in Sentaurus Device.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Gummel Plot Simulations of GaAs/AlGaAs HBT</h1>
+
+<p>Sentaurus Device can simulate devices containing arbitrary semiconductor 
+materials, including material heterojunctions.</p>
+
+<p class="note">The same carrier transport model equations as 
+specified in the global <tt>Physics</tt> section (by default, 
+drift diffusion) are solved in all semiconductor materials.</p>
+
+<p>This GaAs/AlGaAs heterojunction bipolar transistor (HBT) example, 
+which illustrates the specific aspects of heterojunction device simulation, 
+can be found in the directory <tt>Applications_Library/GettingStarted/sdevice/HBT_Gummel</tt>.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice_des.cmd">
+sdevice_des.cmd</a>.</p>
+
+<!--=========================-->
+<h2>4.1.1 Electrode Section</h2>
+
+<p>Electrode names and the initial-voltage boundary conditions are set for 
+the three terminals of the HBT in the <tt>Electrode</tt> section of the command file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice_des.cmd" startExpr="Electrode*" endExpr="}*" endOccurrence=1 -->
+<pre>
+Electrode{
+  { Name=&quot;emitter&quot;   Voltage=0 }
+  { Name=&quot;base&quot;      Voltage=0 }
+  { Name=&quot;collector&quot; Voltage=0 }
+}
+</pre>
+<!-- grep end -->
+
+<!--=========================-->
+<h2>4.1.2 Global Physics Section</h2>
+
+<p>The physical models specified in the global <tt>Physics</tt> section 
+are valid for the entire device:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice_des.cmd" startExpr="Physics*" endExpr="}*" endOccurrence=1 -->
+<pre>
+Physics {
+  Hydro(eTemperature)
+  Mobility(
+    eHighFieldsaturation(CarrierTempDrive)
+    hHighFieldSaturation
+  ) 
+  Recombination(  
+    SRH
+    Radiative
+    Auger
+  )
+  EffectiveIntrinsicDensity(Nobandgapnarrowing)
+}
+</pre>
+<!-- grep end -->
+
+<p>For most heterostructure device simulations with high-mobility materials, 
+using hydrodynamic transport is recommended. In this example, the electron 
+carrier-energy equation is solved in all semiconductor materials in addition 
+to the standard drift-diffusion carrier transport.</p>
+
+<p class="note">The <tt>Hydro(eTemperature)</tt> carrier transport model 
+can only be specified globally for the entire device.</p>
+      
+<p>For direct bandgap semiconductors, radiative recombination is a key mechanism. 
+It is activated with the keyword <tt>Radiative</tt> specified in the 
+<tt>Recombination</tt> section. The <tt>Nobandgapnarrowing</tt> option deactivates 
+the bandgap narrowing model in the simulation.</p>
+
+<p class="note">For heterostructure device simulations with abrupt interfaces, 
+typical for III&ndash;V HFET devices, it is recommended to switch on thermionic 
+interface conditions using the keyword <tt>Thermionic</tt> in the global or 
+interface-specific <tt>Physics</tt> section.</p>
+
+<!--=========================-->
+<h2>4.1.3 Materialwise Physics Section</h2>
+
+<p>A <tt>Physics</tt> section with a material qualifier activates additional 
+physical models in all the device regions containing that material. These 
+models are added to those that have been specified in the global 
+<tt>Physics</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice_des.cmd" startExpr="Physics*GaAs*" endExpr="}*" endOccurrence=1 -->
+<pre>
+Physics( Material= &quot;GaAs&quot; ) {
+  Mobility(DopingDep)
+}
+</pre>
+<!-- grep end -->
+
+<p>In this example, the doping-dependent mobility model is activated only 
+in GaAs material. This means, in all other materials, the carrier 
+mobilities are assumed to be independent of the doping concentration. 
+To have a doping-dependent mobility model activated globally, the 
+<tt>DopingDep</tt> option must be specified in the global <tt>Physics</tt> 
+mobility section.</p>
+
+<!--=========================-->
+<h2>4.1.4 Regionwise Physics Section</h2>
+
+<p>A <tt>Physics</tt> section with a region qualifier activates additional 
+physical models in the specified region in addition to those defined in 
+the global <tt>Physics</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice_des.cmd" startExpr="Physics*Emitter*" endExpr="}*" endOccurrence=1 -->
+<pre>
+Physics( Region= &quot;AlGaAs_Emitter&quot; ) {
+  MoleFraction( 
+    XFraction=0.3 
+    Grading( 
+      (RegionInterface = ( &quot;GaAs_Emitter_Cap&quot; &quot;AlGaAs_Emitter&quot; )
+      XFraction=0.0 GrDistance=0.10)
+      (RegionInterface = ( &quot;GaAs_Base&quot; &quot;AlGaAs_Emitter&quot; )
+      XFraction=0.0 GrDistance=0.025)
+    )
+  )
+}
+</pre>
+<!-- grep end -->
+
+<p class="note">A regionwise <tt>Physics</tt> section overrides a materialwise 
+<tt>Physics</tt> section if their definitions overlap.</p>
+
+<p>In the above specification, the aluminum mole fraction in the AlGaAs emitter
+region is set to 0.3 by <tt>XFraction</tt>. This indicates that the material is 
+composed as Al<sub>0.3</sub>Ga<sub>0.7</sub>As.</p>
+
+<p>The <tt>Grading</tt> statement indicates that the emitter aluminum fraction 
+reduces linearly from 0.3 to 0 towards both the emitter&ndash;base and the 
+emitter&ndash;emitter cap interfaces. The grading reaches the bulk value (0.3) 
+at a distance of 0.025&nbsp;&mu;m and 0.1 &mu;m from the two respective interfaces, 
+as specified by the keyword <tt>GrDistance</tt>.</p>
+
+<p class="note">If you specify more than one interface definition in the 
+<tt>Grading</tt> statement, as in this example, all the definitions must be 
+enclosed in separate parentheses:<br />
+
+<tt>Grading(<br />
+&nbsp;&nbsp;( interface1 )<br />
+&nbsp;&nbsp;( interface2 )<br />
+&nbsp;&nbsp;...<br />
+)</tt></p>
+
+<p><a href="images/sd_h_alfraction.png"> <img src="images/sd_h_alfraction.png" width="550" 
+alt="Aluminum mole-fraction distribution inside AlGaAs layer" /></a></p>
+
+<p class="caption">Figure 1. Aluminum mole-fraction distribution inside the AlGaAs 
+layer taken along the A-A' cross section. (Click image for full-size view.)</p>
+
+<!--=========================-->
+<h2>4.1.5 Interface Physics Section</h2>
+
+<p>The <tt>Physics</tt> section with the <tt>RegionInterface</tt> 
+qualifier activates extra physical models at the specified interfaces 
+to those defined in the global <tt>Physics</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice_des.cmd" startExpr="Physics*GaAs_Base*" endExpr="}*" endOccurrence=1 -->
+<pre>
+Physics( RegionInterface = &quot;Passivation/GaAs_Base&quot; ) {
+  Traps(
+    (Donor    Level fromCondBand
+      Conc=1e10 EnergyMid=0.61
+    eXsection=1e-12 hXsection=1e-12) 
+    (Acceptor Gaussian fromValBand
+      Conc=1e10 EnergyMid=0.59 EnergySig=0.1
+    eXsection=1e-12 hXsection=1e-12) 
+  )
+}
+</pre>
+<!-- grep end -->
+
+<p>Here, two trap types are activated at the <tt>"Passivation/GaAs_Base"</tt> 
+region interface. The donor-type level trap energy is located 0.61&nbsp;eV below 
+the conduction band edge. The acceptor-type traps are Gaussian energy distributed 
+with the energy peak located 0.59 eV above the valence band edge. For more details 
+about the traps specification, see <a href="./sd_13.html">Section 13. Special Focus: Traps</a>.</p>
+
+<!--=========================-->
+<h2>4.1.6 Math Section</h2>
+
+<p>In heterostructure simulations, it can be useful (from the convergence point 
+of view) to tighten the error control over the electron and hole continuity 
+equations by changing the corresponding <tt>ErrRef</tt> parameter values:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice_des.cmd" startExpr="Math*" endExpr="}*" endOccurrence=1 -->
+<pre>
+Math{
+  Extrapolate
+  NotDamped=200
+  Iterations=20
+  RelerrControl
+  ErReff(Electron)  = 1.e8
+  ErReff(Hole)      = 1.e8
+}
+</pre>
+<!-- grep end -->
+
+<p>A value of <tt>1.e8</tt> means that nodes with carrier concentrations greater than 
+10<sup>8</sup>&nbsp;cm<sup>-3</sup> fully contribute to the error estimate.
+Reduce the value if low-density regions are critical to the device operation.</p>
+
+<p class="note">For a wide-bandgap heterostructure device simulation, such 
+as a III&ndash;nitride HFET device, it is recommended to switch on extended precision 
+arithmetics by specifying the option <tt>ExtendedPrecision</tt> in the 
+<tt>Math</tt> section.</p>
+
+<!--=========================-->
+<h2>4.1.7 Solve Section</h2>
+
+<p>In this section, you specify the commands to perform the Gummel plot simulation 
+(for more details, see <a href="./sd_1.html#Solve">Section 1.2.6 Solve Section</a>):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice_des.cmd" startExpr="Solve*" endExpr="}*" endOccurrence=1 -->
+<pre>
+Solve{
+  Coupled ( Iterations=100 ) { Poisson }
+  Coupled { Poisson Electron Hole eTemperature }
+  
+  Plot(FilePrefix=&quot;n@node@_Ini&quot;)
+  
+  NewCurrentPrefix=n@node@_init
+  Quasistationary(
+    InitialStep=1e-2 Increment=1.5 
+    Minstep=1e-6     MaxStep=0.5 
+    Goal{ Name=&quot;base&quot;      Voltage=0.5 }
+    Goal{ Name=&quot;collector&quot; Voltage=3.0 }
+  ){ Coupled { Poisson Electron Hole eTemperature } }
+  
+  NewCurrentPrefix=&quot;&quot;
+  Quasistationary(
+    InitialStep=0.05 Increment=1.5
+    Minstep=1e-8     MaxStep=0.05
+    Goal{ Name=&quot;base&quot;      Voltage=2.0 }
+    Goal{ Name=&quot;collector&quot; Voltage=4.5 }
+  ){ Coupled{ Poisson Electron Hole eTemperature } }
+  
+}
+</pre>
+<!-- grep end -->
+
+<p>The simulation is split into two steps. In the first step, after 
+building up the initial solution, the <tt>base</tt> and <tt>collector</tt> 
+voltages are ramped up to 0.5 V and 3.0 V, respectively.</p>
+
+<p>In the second step, the <tt>base</tt> and <tt>collector</tt> voltages 
+are simultaneously increased further to 2.0 V and 4.5 V, respectively. During 
+these bias ramps, a constant reverse bias of 2.5 V is maintained across the 
+base&ndash;collector junction.</p>
+
+<p>The last Sentaurus Visual project node produces the plot (see Figure&nbsp;2) and 
+extracts the maximal gain value. When the project has been run, click the 
+<strong>Run Selected Visualizer Nodes Together</strong> toolbar button to 
+recreate the plot.</p>
+
+<p><img src="images/sd_h_gummel.png" width="437" height="387" 
+alt="Collector current and base as function of base bias" /></p>
+
+<p class="caption">Figure 2. Collector (red) current and base (blue) 
+as a function of base bias for GaAs HBT. The green-dashed line shows 
+the gain curve, calculated as I<sub>c</sub>/I<sub>b</sub> along the 
+base bias sweep.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Model Parameter Definitions for Nonsilicon Material</h1>
+
+<p>This section explains how to access and edit model parameters for 
+nonsilicon semiconductor materials, and how to set up and work with 
+a custom material library.</p>
+
+<p class="note">Material parameters for III&ndash;V and II&ndash;VI semiconductors 
+and their compounds are less well established compared to silicon. It 
+is strongly recommended to carefully check the default model parameters 
+for such materials before starting a device simulation.</p>
+
+<!--=========================-->
+<a name="Binary"></a>
+<h2>4.2.1 Model Parameters for Elementary Materials and Binary Compounds</h2>
+
+<p>The section discusses the model parameters for elementary materials and
+binary compounds.</p>
+
+<!--============-->
+<h3>4.2.1.1 Generating the Default Material Parameter File</h3>
+
+<p>To generate the default material parameter file for a given material, 
+<tt>material</tt>, type:</p>
+
+<pre>
+&gt; sdevice -L:material
+</pre>
+
+<p>The following command generates the parameter file <tt>GaAs.par</tt>, which 
+includes the default model parameters for GaAs material used by Sentaurus Device:</p>
+
+<pre>
+&gt; sdevice -L:GaAs
+</pre>
+
+<p>Click to view the parameter file <a href="files/GaAs.par">GaAs.par</a>.</p>
+
+<!--============-->
+<h3>4.2.1.2 Modifying the Default Material Parameter File</h3>
+
+<p>For a nonsilicon simulation, the default behavior of Sentaurus Device 
+is to use silicon parameters for models that are not defined for a 
+simulated nonsilicon material.</p>
+
+<p>This default behavior can lead to confusion, for example, when the 
+silicon band gap is substituted for the actual target material band gap 
+in the case when this quantity is omitted from the parameter file.</p>
+
+<p>To avoid such inconsistencies, Sentaurus Device has a list of critical 
+models for which a set of parameter values must be explicitly specified in 
+the parameter file. If such parameters are not found, the simulation will 
+stop with an error message. Refer to the <cite>Sentaurus&trade; Device User Guide</cite> 
+to see the list of critical models, whose parameters are checked out at the 
+beginning of the simulation.</p>
+
+<p class="note">To switch off this checking procedure, specify 
+<tt>-CheckUndefinedModels</tt> in the <tt>Math</tt> section of the command file.</p>
+
+<p>Parameter are grouped into sections inside a material parameter file. Each 
+section defines the parameter set used by a specific physical model. If a 
+model parameter section is missing in a material parameter file, you can add 
+it from the silicon parameter file, which can be generated with:</p>
+
+<pre>
+&gt; sdevice -P
+</pre>
+
+<p>This command generates the <tt>models.par</tt> file, which contains the full set of 
+model parameters valid for silicon material. Copy the missing section from this file 
+to your nonsilicon material parameter file and modify the parameter values accordingly.</p>
+
+<p class="note">Since the <tt>sdevice -P</tt> command generates the <tt>models.par</tt> 
+file, ensure that no file with this name exists in the current working directory 
+before executing the command. Otherwise, the file will be overwritten without warning.</p>
+
+<!--=========================-->
+<a name="Ternary"></a>
+<h2>4.2.2 Model Parameters for Ternary Compounds</h2>
+
+<p>The parameters for certain physical models, such as carrier mobility, 
+semiconductor band structure, and density-of-states, are mole fraction 
+dependent. Refer to the <cite>Sentaurus&trade; Device User Guide</cite> for a 
+complete list of such models.</p>
+
+<!--============-->
+<h3>4.2.2.1 General Format</h3>
+
+<p>For ternary compounds such as Al<sub>x</sub>Ga<sub>1&ndash;x</sub>As, the mole fraction dependency 
+of each parameter is represented as a piecewise cubic polynomial, that is, the mole fraction interval 
+x&nbsp;&isin;&nbsp;[0,1] is divided into several sub-intervals as needed:</p>
+
+<p>\[ x_{0} = 0,\html"&nbsp;" x_{1}, x_{2}, ..., x_{n} = 1 \]</p>
+
+<p>Then, for each interval, the parameter is calculated as a function of the mole fraction 
+x according to the following polynomial:</p>
+
+<p>\[ P(x) = P_{i-1} + A Δx + B_{i} Δx^{2} + C_{i} Δx^{3} \]</p>
+
+<p>where:</p>
+
+<ul>
+<li>\( Δx = x - x_{i-1} \).</li>
+<li>\( P_{i-1} \) is the parameter value at \( x = x_{i-1} \).</li>
+<li>\( B_{i}\) and \( C_{i}\) are the coefficients defined for the interval 
+\( x_{i-1} &lt; x &lt; x_{i} \).</li>
+</ul>
+
+<p>The values of \( P_{i-1} \), \( B_{i} \), and \( C_{i} \) must be defined in the 
+parameter file for each interval.</p>
+
+<p>The linear coefficient \(A\) is determined by the boundary condition that the function is 
+continuous at the interval boundaries.</p>
+
+<p>For example, the bandgap specification for Al<sub>x</sub>Ga<sub>1&ndash;x</sub>As reads:</p>
+
+<pre>
+Bandgap {
+  Xmax(0) = 0.0000e+00   # [1]
+  Eg0(0) = 1.42248       # [eV]
+  Xmax(1) = 0.45         # [1]
+  Eg0(1) = 1.98515       # [eV]
+  B(Eg0(1)) = 0.0000e+00 # [eV]
+  C(Eg0(1)) = 0.0000e+00 # [eV]
+  Xmax(2) = 1            # [1]
+  Eg0(2) = 2.11          # [eV]
+  B(Eg0(2)) = 0.143      # [eV]
+  C(Eg0(2)) = 0.0000e+00 # [eV]
+}
+</pre>
+
+<p>In this example, two intervals are defined. The first extends from x = 0 to x = 0.45 
+and the second extends from x = 0.45 to x = 1. In the first interval, the parameter 
+<tt>Eg0</tt> is a linear function of the mole fraction (<tt>B(Eg0(1)) = 0</tt> and 
+<tt>C(Eg0(1)) = 0</tt>). In the second interval, the mole fraction dependency is a 
+polynomial of the second order (<tt>B(Eg0(2)) = 0.143</tt> and <tt>C(Eg0(2)) = 0</tt>).</p> 
+
+<!--============-->
+<h3>4.2.2.2 Fixed Mole Fraction</h3>
+
+<p>In many applications, the mole fraction of a ternary compound is fixed, for 
+example, the value of the mole fraction is dictated by conditions such as a 
+lattice match of the ternary compound to other materials.</p>
+
+<p>If the mole fraction is fixed, it is possible and convenient to define all the material 
+parameters for this <em>fixed</em> mole fraction. The parameter file can be saved in the 
+same format as the parameter file for an elementary material or a binary compound.</p>
+      
+<p>For example, the band-structure definition for Ga<sub>0.51</sub>In<sub>0.49</sub>P can be 
+defined as:</p>
+
+<pre>
+Bandgap {  
+  # Values are for Ga_0.51In_0.49P
+  Chi0 = 4.07        # [eV]
+  Bgn2Chi = 0.5      # [1]
+  Eg0 = 1.9          # [eV]
+  alpha = 5.4050e-04 # [eV K^-1]
+  beta = 2.0400e+02  # [K]
+  Tpar = 0.0000e+00  # [K]
+}
+</pre>
+
+<!--============-->
+<h3>4.2.2.3 Linear Mole Fraction Dependency</h3>
+      
+<p>If the model parameter is a linear function of the mole fraction, a simplified syntax can be 
+used. In this case, it is sufficient to define only the values for the two ends, that is, 
+x = 0 and x = 1.</p>
+
+<p>For example, the dielectric permittivity for Al<sub>x</sub>Ga<sub>1&ndash;x</sub>As reads:</p>
+
+<pre>
+Epsilon {
+  epsilon(0) = 13.18 # [1]
+  epsilon(1) = 10.06 # [1]
+}
+</pre>
+
+<!--=========================-->
+<a name="Quaternary"></a>
+<h2>4.2.3 Quaternary Compounds</h2>
+
+<p>This section discusses the mole fraction dependency for quaternary compounds.</p>
+
+<!--============-->
+<h3>4.2.3.1 General Format</h3>
+
+<p>Sentaurus Device supports 2:2, 3:1, and 1:3 quaternary compounds, such as InGaAsP and InGaAlAs 
+(refer to the <cite>Sentaurus&trade; Device User Guide</cite>). For quaternary compounds, mole 
+fraction&ndash;dependent parameters are determined by interpolating from the relevant ternary 'side' 
+materials.</p>
+
+<p>For example, for a 2:2 quaternary compound such as 
+In<sub>1&ndash;x</sub>Ga<sub>x</sub>As<sub>y</sub>P<sub>1&ndash;y</sub>, the 
+'side' materials result from setting one of the mole-fraction parameters to 0 or 1:</p>
+
+<p><tt>x=0</tt>:  InAs<sub>y</sub>P<sub>1&ndash;y</sub><br />
+<tt>x=1</tt>:  GaAs<sub>y</sub>P<sub>1&ndash;y</sub><br />
+<tt>y=0</tt>:  In<sub>1&ndash;x</sub>Ga<sub>x</sub>P<br />
+<tt>y=1</tt>:  In<sub>1&ndash;x</sub>Ga<sub>x</sub>As</p>
+
+<p>Refer to the <em>Sentaurus&trade; Device User Guide</em> for details about 
+the interpolation formulas for 1:3, 2:2, and 3:1 quaternary compounds.</p>
+
+<!--============-->
+<h3>4.2.3.2 Fixed Mole Fractions</h3>
+
+<p>In some applications, the mole fraction of a quaternary compound is fixed, for example, 
+the value of the x&ndash; and y&ndash;mole fractions is dictated by conditions such as a 
+lattice match of the compound to other materials.</p>
+
+<p>In the case previously described, it is convenient to define all material parameters for the 
+<em>fixed</em> mole fraction, and the parameter file for the quaternary compound has the same format 
+as the parameter file for an elementary material or a binary compound.</p>
+
+<!--============-->
+<h3>4.2.3.3 Dependent Variations of X and Y</h3>
+
+<p>In some applications, the x&ndash; and y&ndash;mole fractions of a quaternary compound 
+(for example, <br /> 
+In<sub>1&ndash;x</sub>Ga<sub>x</sub>As<sub>y</sub>P<sub>1&ndash;y</sub>) 
+are linked and graded dependently. For example:</p>
+
+<p>\[ \table 0 &lt; t &lt; 1 ; x= 0.47 t ; y = 1 -0.3t \] </p>
+
+<p>In such a case, it is convenient to define an <em>effective</em> ternary compound, 
+<tt>InGaAsP(t)</tt>. Refer to the <cite>Sentaurus&trade; Device User Guide</cite> for 
+details about how to define such materials.</p>
+
+<!--=========================-->
+<a name="WMatLib"></a>
+<h2>4.2.4 Working With a Material Library</h2>
+
+<p>It is recommended that a user or a group of users creates a custom material 
+library that contains calibrated material parameters for the materials used 
+in heterostructure device simulations.</p>
+
+<p>A custom material parameter file can be imported into a Sentaurus Device 
+parameter file with the <tt>Insert</tt> command. For example:</p>
+
+<pre>
+Material = &quot;GaAs&quot; { Insert=&quot;GaAs.par&quot; }
+Region = &quot;AlGaAs_Emitter&quot; { Insert = &quot;AlGaAs.par&quot; }
+RegionInterface = &quot;Passivation/GaAs_Base&quot; { Insert = &quot;GaAs%Si3N4.par&quot; }
+</pre>
+
+<p class="note">Be aware that the inserted parameter file cannot be 
+parameterized using the standard Sentaurus Workbench parameterization capabilities.</p>
+
+<p>The custom material parameter file can reside either in a project directly 
+or in a central location. If Sentaurus Device cannot find an inserted material 
+parameter file in the current working directory, Sentaurus Device looks in the 
+directory specified by the environment variable <tt>SDEVICEDB</tt>. Therefore, 
+for custom material parameter files stored in a central location, you must define 
+<tt>SDEVICEDB</tt> accordingly,for example:</p>
+
+<pre>
+&gt; setenv SDEVICEDB /home/MatLib
+</pre>
+
+<p>Custom default material parameter values are overwritten if the specification of the new 
+parameters appears after the insertion of the custom material parameter file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice.par" startExpr="*Region*GaAs_Base*" endExpr="*taumax*=*" footer="  ...\n}"-->
+<pre>
+Region = &quot;GaAs_Base&quot; {
+Insert=&quot;GaAs.par&quot;
+Scharfetter * relation and trap level for SRH recombination:
+{ * tau = taumin + ( taumax - taumin ) / ( 1 + ( N/Nref )^gamma)
+  * tau(T) = tau * ( (T/300)^Talpha )          (TempDep)
+  * tau(T) = tau * exp( Tcoeff * ((T/300)-1) ) (ExpTempDep)
+	taumin	= 0.0000e+00 ,	0.0000e+00	# [s]
+	taumax	= 1.0000e-10 ,	1.0000e-10	# [s]
+  ...
+}
+</pre>
+<!-- grep end -->
+
+<p>Click to view the parameter file 
+<a href="../../Applications_Library/GettingStarted/sdevice/HBT_Gummel/sdevice.par">
+sdevice.par</a>. This parameter file is from the <tt>HBT_Gummel</tt> project.</p>
+
+<p>Even though a custom material parameter file that is loaded using the 
+<tt>Insert</tt> command cannot be parameterized, Sentaurus Workbench 
+parameterization is available for local redefinitions. For example:</p>
+
+<pre>
+Region = &quot;GaAs_Base&quot; {
+  Insert=&quot;GaAs.par&quot;
+  Scharfetter * relation and trap level for SRH recombination:
+  {
+    taumax = @tau@ , @tau@   # [s]
+  }
+}
+</pre>
+
+<p>Instead of <tt>Insert</tt>, you can use the <tt>#include</tt> Sentaurus Workbench 
+statement. For example:</p>
+
+<pre>
+Region = &quot;AlGaAs_Emitter&quot; { 
+#include &quot;AlGaAs.par&quot; 
+}
+</pre>
+
+<p>This allows you to introduce parameters also in the included file.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

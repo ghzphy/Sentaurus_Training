@@ -1,0 +1,1766 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" /> 
+ 
+ <!-- for equation support -->
+ <link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+ <script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+ <script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+ <script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = true</script>
+   
+ <title>TCAD Sentaurus Tutorial &ndash; Python 3. Modules, Functions, and Classes</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_02.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_04.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Python Language<br />3. Modules, Functions, and Classes</h1>
+
+<p>
+<a href="#1">3.1 Python Modules and Packages</a><br />
+<a href="#2">3.2 Functions</a><br />
+<a href="#3">3.3 Objects and Classes</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce Python modules, packages, functions, objects, and classes.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Python Modules and Packages</h1>
+
+<p class="note">The scripts discussed here are available in the directory 
+<tt>Applications_Library/GettingStarted/python/py_basics</tt>. The code examples 
+that must be entered at the interactive prompt are also available in this 
+Sentaurus Workbench project.<br /><br />
+
+Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/python/py_basics/python_pyt.py">
+python_pyt.py</a>.</p>
+
+<p>To easily reuse functionality, Python allows you to structure code into modules and packages. 
+A Python <em>module</em> is a file containing a collection of related variables, functions, and classes. A Python <em>package</em> is a collection of related Python modules.</p>
+
+<!--===============================-->
+<a name="1_1"></a>
+<h2>3.1.1 Available Modules</h2>
+
+<p>Several types of Python modules and packages are available:</p>
+
+<ul>
+ <li>Built-in</li>
+ <li>Python Standard Library</li>
+ <li>Python packages for scientific computing</li>
+ <li>Sentaurus Visual Python packages</li>
+</ul>
+
+<!--==========================-->
+<a name="1_1_1"></a>
+<h3>3.1.1.1 Built-in Module</h3>
+
+<p>As part of the built-in module, the Python interpreter has a number of:</p>
+
+<ul>
+<li>Constants (see <a href="https://docs.python.org/3/library/constants.html">
+The Python Standard Library: Built-in Constants</a>)</li> 
+<li>Functions (see <a href="https://docs.python.org/3/library/functions.html">
+The Python Standard Library: Built-in Functions</a>)</li> 
+<li>Types or classes  (see <a href="https://docs.python.org/3/library/stdtypes.html">
+The Python Standard Library: Built-in Types</a>)</li> 
+</ul>   
+
+<p>Unlike other modules discussed in the next sections, there is no need to explicitly import 
+the built-in module since Python automatically imports it on startup.</p>
+  
+<p>Some of the built-in constants and built-in types are discussed in 
+<a href="py_02.html#2">Section 2.2 Built-in Data Types</a>. The built-in functions are discussed 
+in <a href="#2_1_1">Section 3.2.1.1 Using Built-in Functions</a>.</p>
+
+<!--==========================-->
+<a name="1_1_2"></a>
+<h3>3.1.1.2 Python Standard Library</h3>
+
+<p>The Python Standard Library is distributed with Python. It contains many modules for 
+common programming tasks, for example:</p>
+
+<ul>
+<li>Scientific computing: <tt>math</tt>, <tt>cmath</tt>, <tt>statistics</tt>, and <tt>random</tt> modules</li>
+<li>Copying objects: <a href="https://docs.python.org/3/library/copy.html"><tt>copy</tt> module</a></li>
+<li>Logging system: <a href="https://docs.python.org/3/library/logging.html"><tt>logging</tt> module</a></li>
+<li>Debugging: <a href="https://docs.python.org/3/library/pdb.html"><tt>pdb</tt> module</a></li>
+<li>File pathname matching: <a href="https://docs.python.org/3/library/glob.html"><tt>glob</tt> module</a></li>
+<li>String pattern matching: <a href="https://docs.python.org/3/library/re.html"><tt>re</tt> module</a></li>
+<li>Operating system interfaces: <a href="https://docs.python.org/3/library/os.html"><tt>os</tt> module</a></li>
+<li>Unit testing framework: <a href="https://docs.python.org/3/library/unittest.html"><tt>unittest</tt> module</a></li>
+<li>GUI development: <a href="https://docs.python.org/3/library/tkinter.html"><tt>tkinter</tt> module</a></li>
+<li>Printing arbitrary Python data structures in a more readable way: 
+<a href="https://docs.python.org/3/library/pprint.html"><tt>pprint</tt> module</a></li>
+</ul>
+
+<p>For an introduction to the modules in the Python Standard Library, see 
+<a href="https://docs.python.org/3/tutorial/stdlib.html">The Python Tutorial: Brief Tour of the Standard Library</a> and <a href="https://docs.python.org/3/tutorial/stdlib2.html">
+The Python Tutorial: Brief Tour of the Standard Library — Part II</a>.</p>
+
+<p>The following Python Standard Library modules are useful for scientific computations:</p>
+
+<ul>
+<li><a href="https://docs.python.org/3/library/math.html"><tt>math</tt> module</a> includes mathematical 
+constants and functions.</li>
+<li><a href="https://docs.python.org/3/library/cmath.html"><tt>cmath</tt> module</a> includes mathematical 
+functions for complex numbers.</li>
+<li><a href="https://docs.python.org/3/library/statistics.html"><tt>statistics</tt> module</a> includes 
+mathematical statistics functions.</li>
+<li><a href="https://docs.python.org/3/library/random.html"><tt>random</tt> module</a> is used for 
+generating pseudorandom numbers.</li>
+</ul>
+
+<!--==========================-->
+<a name="1_1_3"></a>
+<h3>3.1.1.3 Python Scientific Computing Stack</h3>
+
+<p>Python has many packages for scientific computation, but they are not included 
+in the standard Python distribution. They must be installed separately. These packages are 
+part of the Python Scientific Computing stack. The TCAD Python distribution includes many of 
+these packages such as:</p>
+
+<ul>
+<li><a href="https://numpy.org/">NumPy</a> (Numerical Python) provides the multidimensional 
+array object and fast array operations. Other packages such as SciPy and pandas use multidimensional 
+arrays to store data. It allows for vectorized operations, which are discussed in 
+<a href="#1_4_2">Section 3.1.4.2 Scalar-Oriented Versus Vectorized Code</a>.</li>
+<li><a href="https://scipy.org/">SciPy</a> (Scientific Python) provides algorithms for differentiation, 
+integration, interpolation, statistics, and many other scientific computation problems.</li>
+<li><a href="https://pandas.pydata.org/">pandas</a> provides the <tt>DataFrame</tt> object, which can be used to represent tabular data. It is useful for working with datasets. 
+Similar to NumPy, it provides many functions for processing tabular data. It can be used 
+to read and process data from CSV files. See <a href="py_05.html#3">Section 5.3 Sentaurus Visual: Loading CSV File Using pandas</a> for an introduction to <tt>pandas</tt>.</li>
+</ul>
+
+<p>You can see a complete list of the included packages by entering:</p>
+
+<pre>% gpythonsh -m pip list</pre>
+
+<!--==========================-->
+<a name="1_1_4"></a>
+<h3>3.1.1.4 Sentaurus Visual Python Packages</h3>
+
+<p>Sentaurus Visual Python Mode consists of the following packages:</p>
+
+<ul>
+<li>The <tt>svisual</tt> package contains Python functions for visualizing and analyzing TCAD simulation 
+results in both interactive mode and batch mode (see <a href="../sv/sv_6.html#7">Section 6.7 Sentaurus Visual in Python Mode</a>).</li>
+<li>The <tt>svisualpylib</tt> package contains modules for extracting device parameters 
+such as the Extraction module (<tt>extract</tt>), RF Extraction module (<tt>rfx</tt>), Harmonic Balance 
+module (<tt>hb</tt>), and IFM module (<tt>ifm</tt>). These are discussed briefly in 
+<a href="../sv/sv_6.html#8">Section 6.8 Sentaurus Visual Python Extraction Modules and Tcl Extraction 
+Libraries</a>.</li>
+</ul>
+
+<!--===============================-->
+<a name="1_2"></a>
+<h2>3.1.2 Using Modules</h2>
+
+<p>In some sense, you can think of a Python module as a library. You must load modules using the 
+<tt>import</tt> statement before using them. For example, the <tt>math</tt> module is available 
+as the file <tt>math.py</tt>. You can import the entire <tt>math</tt> module using the <tt>import</tt> 
+statement followed by the name of the module without the file extension <tt>.py</tt>.</p>
+
+<pre>
+&gt;&gt;&gt; import math  # Now, the entire math module is available
+</pre>
+
+<p>After importing a module, you can view the functions, methods, and constants defined 
+in the module using the <tt>dir</tt> function and can see help about the entire module or specific 
+functions by using the <tt>help</tt> function (see <a href="py_01.html#4">Section 1.4 Online Help</a>).</p>
+
+<p>It is common to import modules and rename them using the <tt>as</tt> keyword to more convenient shorter names. For example, the following statement imports the entire NumPy package and renames it to <tt>np</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; import numpy as np
+</pre>
+
+<p>Since you need to prepend the function name with the module name (see <a href="#1_2_1">Section 3.1.2.1 Modules as Objects</a> for an explanation of dot notation), the 
+modules are renamed in order to shorten their names. To use functions from the NumPy package such as the <tt>array</tt> function, 
+you must now write <tt>np.array</tt> instead of <tt>numpy.array</tt>.</p>
+
+<p>Similarly, by default, Sentaurus Visual Python imports the <tt>svisual</tt> package using:</p>
+
+<pre>import svisual as sv</pre>
+
+<p>This statement imports the entire <tt>svisual</tt> module and renames it to <tt>sv</tt>.</p>
+
+<p>Instead of importing the entire module, it is also common to import only the required functions and variables from a module. 
+For example, the following statement imports only the <tt>degrees</tt> function and the constant <tt>pi</tt> from the <tt>math</tt> module:</p>   
+
+<pre>
+&gt;&gt;&gt; from math import degrees, pi
+</pre>   
+
+<p>Now, you can access them without prepending their names with the module name:</p>
+
+<pre>
+&gt;&gt;&gt; radius = 1
+&gt;&gt;&gt; # Use the name pi instead of math.pi
+&gt;&gt;&gt; pi * (radius ** 2), 2 * pi * radius   
+(3.141592653589793, 6.283185307179586)
+&gt;&gt;&gt; # Use the name degrees instead of math.degrees
+&gt;&gt;&gt; degrees(pi)
+180.0
+</pre>
+
+<!--==========================-->
+<a name="1_2_1"></a>
+<h3>3.1.2.1 Modules as Objects</h3>
+
+<p>Python modules are objects. The statement <tt>import module_name</tt> creates a <tt>module</tt> 
+object whose name is <tt>module_name</tt>. For example, executing the <tt>import math</tt> statement 
+creates a module object called <tt>math</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; import math
+&gt;&gt;&gt; type(math)
+&lt;class 'module'&gt;
+</pre>
+
+<p>You can visualize in Python Tutor the state of memory after the execution of the 
+<tt>import</tt> statement.</p>
+
+<p><a href="images/module_obj.png"><img src="images/module_obj.png" width="570" 
+alt="Module as object" /></a></p>
+
+<p class="caption">Figure 1. Module as object. (Click image for full-size view.)</p>
+
+<p>Figure 1 shows that, as a result of executing an <tt>import</tt> statement (for example,
+<tt>import math</tt>), Python does the following:</p>
+
+<ul>
+<li>Creates a module object on the heap</li>
+<li>Adds a variable to the stack, whose name is the name of the module (<tt>math</tt>)</li>
+<li>Stores the address of the module object in the variable</li>
+</ul>
+
+<p>Python stores the contents of the module in the module object as attributes (attributes 
+are defined in <a href="#3">Section 3.3 Objects and Classes</a>). The variables defined 
+inside a module are stored as data attributes, and functions are stored as methods. 
+Therefore, to access the variables and functions defined in a module, you must use 
+dot notation in which the name of the module is prepended to the name of the variable 
+or function:</p>
+
+<pre>
+module.&lt;variable&gt;
+module.&lt;function()&gt;
+</pre>
+
+<p>For example:</p>
+
+<pre>
+&gt;&gt;&gt; import math
+&gt;&gt;&gt; # access constant pi defined in math module
+&gt;&gt;&gt; math.pi
+3.141592653589793
+
+&gt;&gt;&gt; # Some other constants defined in math library
+&gt;&gt;&gt; math.e, math.tau, math.inf, math.nan
+(2.718281828459045, 6.283185307179586, inf, nan)
+
+&gt;&gt;&gt; # Calculate area and circumference of a circle of radius 1 unit
+&gt;&gt;&gt; radius = 1
+&gt;&gt;&gt; math.pi * (radius ** 2), 2 * math.pi * radius
+(3.141592653589793, 6.283185307179586)
+</pre>
+
+<!--===============================-->
+<a name="1_3"></a>
+<h2>3.1.3 Mathematical Constants</h2>
+
+<p>The <tt>math</tt> module defines various mathematical constants and functions. All the 
+constants such as <tt>math.pi</tt> and <tt>math.e</tt> are implemented as variables since 
+Python does not support constants. Table&nbsp;1 lists some of these mathematical constants as 
+well as constants available in Python and in the NumPy package (see 
+<a href="https://numpy.org/doc/stable/reference/constants.html">NumPy API Reference - Constants</a>).</p>
+
+<a name="table1"></a>
+<table>
+<caption>Table 1. Mathematical constants in Python.</caption>
+
+<thead>
+<tr>
+<th>Variable</th>
+<th>Definition</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><tt>_</tt></td>
+<td>Value of last evaluated expression; defined only in interactive mode (not a mathematical constant)</td>
+</tr>
+
+<tr>
+<td><tt>1j</tt></td>
+<td>\( √{-1} \) (not a mathematical constant)</td>
+</tr>
+
+<tr>
+<td><tt>math.pi</tt></td>
+<td>Mathematical constant \( π \)</td>
+</tr>
+
+<tr>
+<td><tt>math.tau</tt></td>
+<td>\( τ = 2 π \)</td>
+</tr>
+
+<tr>
+<td><tt>math.e</tt></td>
+<td>Mathematical constant \( e \)</td>
+</tr>
+
+<tr>
+<td><tt>float('nan')</tt>, <tt>math.nan</tt>, <tt>numpy.nan</tt></td>
+<td>Not a number (NaN); obtained as a result of invalid operations</td>
+</tr>
+<tr>
+<td><tt>float('inf')</tt>, <tt>math.inf</tt>, <tt>numpy.inf</tt></td>
+<td>\( + ∞ \)</td> 
+</tr>
+
+<tr>
+<td><tt>-float('inf')</tt>, <tt>-math.inf</tt>, <tt>-numpy.inf</tt>, <tt>numpy.NINF</tt></td>
+<td>\( - ∞ \)</td>
+</tr>
+</tbody>
+</table>
+
+<p>As mentioned in <a href="py_02.html#2_1">Section 2.2.1 Numeric Types: <tt>int</tt>, 
+<tt>float</tt>, and <tt>complex</tt></a>, to create complex numbers from expressions, you need to multiply the expression by the imaginary unit <tt>1j</tt> or <tt>1J</tt>. For example, you can represent the complex number \( π j\) in Python as follows:</p>
+
+<pre>
+&gt;&gt;&gt; import math
+&gt;&gt;&gt; math.pi * 1j
+3.141592653589793j
+</pre>  
+
+<!--===============================-->
+<a name="1_4"></a>
+<h2>3.1.4 Physical Constants: scipy.constants Module</h2>
+
+<p>Physical constants are available in the <tt>constants</tt> module of the SciPy package 
+(<tt>scipy.constants</tt> module). Some of these are listed in Table 2. This module also 
+provides conversion factors from different units to SI units. However, it does not support 
+unit algebra.</p>
+
+<a name="table2"></a>
+<table>
+<caption>Table 2. Physical constants in <tt>scipy.constants</tt> module.</caption>
+
+<thead>
+<tr>
+<th>Variable</th>
+<th>Definition</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><tt>c</tt>, <tt>speed_of_light</tt></td>
+<td>Speed of light in vacuum</td>
+</tr>
+
+<tr>
+<td><tt>h</tt>, <tt>Planck</tt></td>
+<td>Planck's constant \( ℎ \)</td>
+</tr>
+
+<tr>
+<td><tt>hbar</tt></td>
+<td>\( ℏ = ℎ / {2 π} \) </td>
+</tr>
+
+<tr>
+<td><tt>e</tt>, <tt>elementary_charge</tt></td>
+<td>Elementary charge</td>
+</tr>
+
+<tr>
+<td><tt>k</tt>, <tt>Boltzmann</tt></td>
+<td>Boltzmann constant</td>
+</tr>
+
+<tr>
+<td><tt>epsilon_0</tt></td>
+<td>Vacuum permittivity</td>
+</tr>
+
+<tr>
+<td><tt>mu_0</tt></td>
+<td>Vacuum permeability</td>
+</tr>
+</tbody>
+</table>
+
+<p>As with other modules, you must import the <tt>scipy.constants</tt> module before using 
+the constants. Each constant is defined as a variable (since Python does not have constants), 
+and you use the variable name to access the constant:</p>
+
+<pre>
+&gt;&gt;&gt; import scipy.constants as const
+&gt;&gt;&gt; const.epsilon_0  # Access vacuum permeability
+</pre>
+
+<p>Calling the <tt>dir</tt> function by passing <tt>const</tt> as a parameter returns a list of the names 
+of physical constants, functions, and names of non-SI units defined in the <tt>scipy.constants</tt> module:</p>
+
+<pre>
+&gt;&gt;&gt; dir(const)
+['Avogadro', 'Boltzmann', 'Btu', 'Btu_IT', 'Btu_th', 'ConstantWarning', 
+'G', 'Julian_year', 'N_A', 'Planck', 'R', 'Rydberg', 'Stefan_Boltzmann'
+...
+'u', 'unit', 'value', 'week', 'yard', 'year', 'yobi', 'yotta', 'zebi',
+'zepto', 'zero_Celsius', 'zetta']
+</pre>
+
+<p>Some constants such as the speed of light in vacuum have a single letter name as well 
+as a more descriptive one:</p>
+
+<pre>
+&gt;&gt;&gt; const.c, const.speed_of_light
+(299792458.0, 299792458.0)
+</pre>
+
+<p>CODATA physical constants and functions in the <tt>scipy.constants</tt> module are discussed 
+in <a href="py_04.html#4">Section&nbsp;4.4 More on scipy.constants Module</a>.</p>
+
+<!--==========================-->
+<a name="1_4_1"></a>
+<h3>3.1.4.1 Unit Conversion</h3>
+
+<p>Conversion factors are available for converting the following:</p>
+
+<ul>
+ <li>Non-SI unit to an SI unit of a physical quantity</li>
+ <li>SI unit with prefix to SI unit</li>
+</ul>
+
+<p>You can access the conversion factors using the variable name of the unit or prefix. 
+For example, 1 eV = 1.602 &times; 10<sup>&ndash;19</sup> J. To access the conversion factor 
+for converting from eV to J, use the variable name <tt>eV</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; const.eV  # one electron volt in joules 
+1.602176634e-19
+&gt;&gt;&gt; # Conversion factor for converting micrometer to m 
+&gt;&gt;&gt; const.micron # 1 micrometer = 1e-6 m
+1e-06
+</pre>
+
+<p>You can convert from a different unit to an SI unit by multiplication:</p>
+
+<pre>
+&gt;&gt;&gt; 5 * const.nano  # Convert 5 nm to m
+5e-09
+</pre>
+
+<p>You can convert from an SI unit to a non-SI unit by division:</p>
+
+<pre>
+&gt;&gt;&gt; 5e-9 / const.nano  # Convert 5e-9 m to nm
+5.0
+</pre>
+
+<p>The variables corresponding to SI units are not defined since their conversion factors 
+are 1. For example, there is no variable called <tt>m</tt> for meter.</p>
+
+<p>Here is an example of using the physical constants and conversion factors from the 
+<tt>scipy.constants</tt> module. The long-wavelength cutoff, \( λ_c \), of a photodiode is 
+limited by the semiconductor bandgap, \( E_g \), and is given by:
+\[  λ_c = {ℎ c} / E_{g} \]
+
+where:</p>
+
+<ul>
+ <li>$ ℎ $ is Planck's constant.</li>
+ <li>$ c $ is the speed of light in vacuum.</li> 
+</ul>
+
+<p>The band gap and the cutoff wavelength are usually specified in units of eV and nm, respectively. 
+You can compute the cutoff wavelength in units of nm for GaAs with $E_{g}$ = 1.424 eV using the following script:</p>
+
+<pre>
+# Script: eg2lambda.py  
+import scipy.constants as const
+
+bandgap_ev = 1.424  # GaAs bandgap in eV
+# Convert bandgap unit from eV to J
+bandgap_joule = bandgap_ev * const.eV
+lambda_meter = const.h * const.c / bandgap_joule  # wavelength in m
+lambda_nm = lambda_meter / const.nano             # wavelength in nm
+print(f'cut-off wavelength: {lambda_nm:.2f} nm')
+</pre>
+
+<pre>
+&gt; gpythonsh eg2lambda.py
+cut-off wavelength: 870.68 nm
+</pre>   
+
+<!--==========================-->
+<a name="1_4_2"></a>
+<h3>3.1.4.2 Scalar-Oriented Versus Vectorized Code</h3>
+
+<p>Suppose you want to compute the cutoff wavelength of several semiconductors. You can do 
+this by using either a scalar-oriented loop-based approach or a vectorized array-based approach. 
+The following code illustrates the scalar-oriented loop-based approach:</p>
+
+<pre>
+# Script: eg2lambda_list.py  
+import scipy.constants as const
+
+# Specify band gaps of Ge, Si, and GaAs in a list
+bandgap_ev = [0.661, 1.12, 1.424]
+
+lambda_nm = []  # Create empty list 
+for eg in bandgap_ev:
+    bandgap_joule = eg * const.eV
+    lambda_meter = const.h * const.c / bandgap_joule
+    lambda_nm.append(lambda_meter / const.nano) 
+    
+print(f'cut-off wavelength: {lambda_nm} nm')   
+
+&gt; gpythonsh eg2lambda_list.py
+cut-off wavelength: [1875.7064815915317, 1107.0017717250023, 870.6755507949458] nm
+</pre>  
+
+<p>In the scalar-oriented loop-based approach, you do the following:</p>
+
+<ul>
+<li>Store all the band gaps in a list.</li>
+<li>Create an empty list to store the wavelengths.</li>
+<li>Loop over the individual band gaps using the <tt>for</tt> statement and:<br />
+  <ul>
+  <li>Compute the individual cutoff wavelengths using scalar arithmetic operations.</li>
+  <li>Append these individual wavelengths to the list of wavelengths using the 
+<tt>list.append()</tt> 
+  method, which adds an item to the end of the list (see <a href="py_04.html#3_4">
+  Section 4.3.4 List Methods</a>).</li>
+  </ul>
+</li>
+</ul>
+
+<p>Here is the vectorized version of the previous code:</p>
+
+<pre>
+# Script: eg2lambda_array.py 
+import numpy as np
+import scipy.constants as const
+
+# Set the precision for printing floating-point numbers in NumPy objects
+np.set_printoptions(precision=2)
+
+# Specify band gaps of Ge, Si, and GaAs in 1D array
+bandgap_ev = np.array([0.661, 1.12, 1.424])
+
+# Use elementwise scalar multiplication to convert all band gaps 
+# from eV to SI unit
+bandgap_joule = bandgap_ev * const.eV
+# Compute wavelength in [m] using elementwise inverse of array
+lambda_meter = const.h * const.c / bandgap_joule 
+lambda_nm = lambda_meter / const.nano
+
+print(f'cut-off wavelengths: {lambda_nm} nm')
+
+&gt; gpythonsh eg2lambda_array.py
+cut-off wavelengths: [1875.71 1107.    870.68] nm
+</pre> 
+
+<p>In the vectorized array-based approach, you do the following:</p>
+
+<ul>
+<li>Store all the band gaps in a 1D array.</li>
+<li>Use vectorized operations to compute the cutoff wavelength for all the band gaps in a single statement.</li>
+</ul>
+
+<p>The results of vectorized computation are stored in an array.</p>
+
+<p>Using code that uses vectorized operations instead of loops is called <em>vectorized code</em>,  
+and using array-based vectorized code instead of scalar-oriented loop-based code is called 
+<em>vectorization</em>. Vectorized code has several advantages over the corresponding 
+scalar-oriented loop-based code:</p>
+
+<ul>
+<li>It is easier to implement and understand vectorized code since it looks similar to mathematical 
+expressions.</li>
+<li>Programs using vectorized code are more concise since they do not use loops.</li>
+<li>Vectorized code usually runs faster than loop-based code.</li>
+</ul>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Functions</h1>
+
+<p>A <strong>function</strong> is a named sequence of statements that performs a computation 
+or another task. For example, the following are built-in functions:</p>
+
+<ul>
+<li>The <a href="https://docs.python.org/3/library/functions.html#abs">abs</a> function 
+computes the absolute value of a number.</li>
+<li>The <tt>print</tt> function displays a message.</li>
+<li>The <tt>type</tt> function displays the type of an object.</li>
+</ul>
+
+<!--===============================-->
+<a name="2_1"></a>
+<h2>3.2.1 Using Functions</h2>
+
+<p>To use functions for performing computations, you must <em>invoke</em> or <em>call</em> them. 
+A <em>function call</em> is an expression containing the function name followed by a pair of 
+parentheses containing zero or more comma-separated expressions called <em>arguments</em>. 
+Arguments allow you to pass information to the function.</p>
+
+<p>Here is an example of a function call with a single argument:</p>
+
+<pre>
+&gt;&gt;&gt; abs(1 + 1j)  # Call abs function with argument 1 + 1j 
+1.4142135623730951
+</pre>
+
+<p>Similar to all expressions, a function call evaluates to a value (here, <tt>1.4142135623730951</tt>).</p>
+
+<p>When Python evaluates a function call, it executes the statement inside a function. 
+After it is called, the function uses the arguments to perform the computation or task, 
+and then returns to the program step from which it was called. Going back to the calling program 
+is called <em>returning</em> from the function. As part of the return operation, functions send 
+results back to the calling program. This result is called the <em>return value</em>.</p>
+
+<p>In many ways, Python functions are similar to mathematical functions. They take input 
+(arguments) and return an output (return value).</p>
+
+<p>In contrast to mathematical functions, Python functions can return not only numeric objects but 
+also any other type of object such as strings or lists. Some functions such as the <tt>print</tt> function and many other list methods (see <a href="py_04.html#3_4">Section 4.3.4 List Methods</a>) return the value <tt>None</tt>. For example:</p>
+
+<pre>
+&gt;&gt;&gt; print(print('Hello, World!'))
+Hello, World!
+None
+</pre>
+
+<p>Here, the outer <tt>print</tt> function call displays the <tt>None</tt> returned by the 
+inner <tt>print</tt> function call.</p>
+
+<pre>
+&gt;&gt;&gt; type(print('Hello, World'))
+Hello, World!
+&lt;class 'NoneType'&gt;
+</pre>
+
+<p>Both these function calls are examples of composing functions (see <a href="#2_1_3">Section 3.2.1.3 Composing Functions</a>).</p>
+
+<!--==========================-->
+<a name="2_1_1"></a>
+<h3>3.2.1.1 Using Built-in Functions</h3>
+
+<p>As discussed in <a href="#1">Section 3.1 Python Modules and Packages</a>, many Python functions 
+are available in modules and, before using any of these functions, you need to import the 
+respective module. The Python interpreter has several functions as part of the <tt>built-in</tt> 
+module, which is always available. There is no need to import it.</p>
+
+<p>You have already used built-in Python functions such as <tt>print</tt>, <tt>help</tt>, 
+<tt>type</tt>, and <tt>id</tt>. Some of the useful built-in mathematical functions are 
+<a href="https://docs.python.org/3/library/functions.html#abs">abs</a>,
+<a href="https://docs.python.org/3/library/functions.html#min">min</a>, 
+<a href="https://docs.python.org/3/library/functions.html#max">max</a>,
+<a href="https://docs.python.org/3/library/functions.html#pow">pow</a>,
+<a href="https://docs.python.org/3/library/functions.html#round">round</a>, and 
+<a href="https://docs.python.org/3/library/functions.html#sum">sum</a>. These functions are documented in 
+<a href="https://docs.python.org/3/library/functions.html">The Python Standard Library: Built-in Functions</a>.</p>
+
+<p>You can see information about the arguments and return value of a function by using the 
+<tt>help</tt> function:</p>
+
+<pre>
+&gt;&gt;&gt; # Get help on abs function
+&gt;&gt;&gt; help(abs)  # call help function with argument abs
+Help on built-in function abs in module builtins:
+
+abs(x, /)
+    Return the absolute value of the argument.
+</pre>
+
+<!--==========================-->
+<a name="2_1_2"></a>
+<h3>3.2.1.2 Using Mathematical Functions</h3>
+
+<p>Various mathematical functions are available in the <tt>math</tt> module, <tt>cmath</tt> module, 
+and NumPy package.</p>
+
+<p>As discussed in <a href="#1_2_1">Section 3.1.2.1 Modules as Objects</a>, before invoking 
+functions defined in modules, you need to:</p>
+
+<ul>
+ <li>Import the module</li>
+ <li>Use dot notation to call the functions</li>
+</ul>
+
+<p>For example:</p>
+
+<pre>
+&gt;&gt;&gt; import math
+&gt;&gt;&gt; # Call sin function defined in math module
+&gt;&gt;&gt; math.sin(math.pi / 2) 
+1.0
+</pre>
+
+<pre>
+&gt;&gt;&gt; # Calculate pi using inverse sin function
+&gt;&gt;&gt; pi = 2.0 * math.asin(1.0)
+&gt;&gt;&gt; print(f'pi = {pi:.5f}')
+pi = 3.14159
+</pre>
+
+<pre>
+&gt;&gt;&gt; # Verify Euler's identity
+&gt;&gt;&gt; import math, cmath  # Importing multiple modules
+&gt;&gt;&gt; cmath.exp(math.pi * 1j) + 1
+1.2246467991473532e-16j
+</pre>
+
+<p>You also need to use dot notation when requesting help for functions in modules:</p>
+
+<pre>
+&gt;&gt;&gt; help(math.sin)  # help on sin function in math module
+Help on built-in function sin in module math:
+
+sin(x, /)
+    Return the sine of x (measured in radians).
+1.0
+</pre>
+
+<!--==========================-->
+<a name="2_1_3"></a>
+<h3>3.2.1.3 Composing Functions</h3>
+
+<p>The syntax for composing functions in Python is similar to the mathematical notation 
+for composing functions. For example, you can compute $e^{\ln{e}$ using:</p>
+
+<pre>
+&gt;&gt;&gt; import math
+&gt;&gt;&gt; math.exp(math.log(math.e))
+2.718281828459045
+</pre>
+
+<p>The order of evaluation is as expected. The innermost function is executed first. 
+The return value of the inner function is passed as the argument to the outer function. 
+Here is another example of composition using functions:</p>
+
+<pre>
+&gt;&gt;&gt; # Compute maximum of 2, 3, 4 and then square the maximum
+&gt;&gt;&gt; pow(max(2, 3, 4), 2)
+16
+</pre>
+
+<!--==========================-->
+<a name="2_1_4"></a>
+<h3>3.2.1.4 NumPy Universal Functions</h3>
+
+<p>The mathematical functions in the <tt>built-in</tt>, <tt>math</tt>, and <tt>cmath</tt> 
+modules operate on a single value. For example, you can use the <tt>math.degrees</tt> 
+function to convert an angle from radians to degrees:</p>
+
+<pre>
+&gt;&gt;&gt; import math   
+&gt;&gt;&gt; math.degrees(math.pi)
+180.0
+</pre>
+
+<p>NumPy has a vectorized version of mathematical and statistical functions called 
+<a href="https://numpy.org/devdocs/reference/ufuncs.html#ufuncs">universal functions</a> 
+(<em>ufunc</em> for short), which can be used to perform computations on several values at 
+the same time. A ufunc is a function that performs elementwise operations on NumPy arrays 
+and returns a new array. For example:</p>
+
+<pre>
+&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; # Convert several angles from degrees to radians
+&gt;&gt;&gt; angle_radians = np.array([0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi])
+&gt;&gt;&gt; np.rad2deg(angle_radians)
+array([  0.,  45.,  90., 135., 180.])
+
+&gt;&gt;&gt; # Compute hypotenuse of a right-angled triangle
+&gt;&gt;&gt; side1 = np.array([1, 2, 3])
+&gt;&gt;&gt; side2 = np.array([5, 5, 6])
+&gt;&gt;&gt; np.hypot(side1, side2) 
+array([5.09901951, 5.38516481, 6.70820393])
+</pre>
+
+<p>The ufuncs operate on scalars as well. For example:</p>
+
+<pre>
+&gt;&gt;&gt; np.sin(np.pi/2)
+1.0
+</pre>
+
+<p>NumPy has functions that handle complex numbers (see <a href="https://numpy.org/doc/stable/reference/routines.math.html#handling-complex-numbers">Handling complex numbers</a>):</p>
+
+<pre>
+&gt;&gt;&gt; z = np.array([1 + 1j, -1 + 1j, -1, -1j, -1 - 1j])
+&gt;&gt;&gt; np.real(z)  # Real part of array of complex numbers
+array([ 1., -1., -1., -0., -1.])
+&gt;&gt;&gt; np.conjugate(z)  # conjugate of array of complex numbers
+array([ 1.-1.j, -1.-1.j, -1.-0.j, -0.+1.j, -1.+1.j])
+</pre>
+
+<p>NumPy also supports not a number (NaN) values. It has functions that operate on arrays 
+with NaN values. For example, the <a href="https://numpy.org/doc/stable/reference/generated/numpy.sum.html">
+numpy.sum</a> function computes the sum of all array elements, but it does not ignore NaN values:</p>
+
+<pre>
+&gt;&gt;&gt; x = np.array([1, 2, np.nan, 3])
+&gt;&gt;&gt; np.sum(x)
+nan
+</pre>
+
+<p>The corresponding <a href="https://numpy.org/doc/stable/reference/generated/numpy.nansum.html">
+numpy.nansum</a> function also computes the sum of all array elements but treats NaN values as zero:</p>
+
+<pre>
+&gt;&gt;&gt; np.nansum(x)
+6.0
+</pre>
+
+<!--===============================-->
+<a name="2_2"></a>
+<h2>3.2.2 User-Defined Functions</h2>
+
+<p>You can create your own functions using the <tt>def</tt> keyword. Here is the syntax for 
+a function definition:</p>
+
+<pre>
+def &lt;function_name&gt;(&lt;formal parameters&gt;):
+    code block
+    return &lt;expression&gt;
+</pre>
+
+<p>The syntax is discussed using an example: define a function for computing the resistivity 
+$ρ$ of an n-type uniformly doped semiconductor using:</p>
+
+<p> \[ ρ = {1}/{e μ_n N_D} \] </p>
+
+<p>where:</p>
+
+<ul>
+ <li>$e$ is the elementary charge.</li>
+ <li>$μ_n$ is the electron mobility.</li>
+ <li>$N_D$ is the donor concentration.</li>
+</ul>
+
+<p>The following code implements this computation using the <tt>resistivity</tt> function:</p>
+
+<pre>
+# Script: resistivity.py
+# Import physical constants from scipy.constants module
+import scipy.constants as const
+
+# Define function
+def resistivity(nd, mobility_n):
+    &quot;&quot;&quot;Compute resistivity of n-type semiconductor.
+
+    :param nd: donor concentration [1/cm^3]  
+    :param mobility_n: electron mobility [cm2/(V-s)]  
+    :return: resistivity [Ohm-cm] of n-type semiconductor
+
+    &quot;&quot;&quot;
+    sigma = const.e * mobility_n * nd
+    rho = 1/sigma
+    return rho   
+</pre>  
+
+<p>As discussed in <a href="https://docs.python.org/3/tutorial/controlflow.html#defining-functions">
+The Python Tutorial: Defining Functions</a>:</p>
+
+<ul>
+<li>A function definition has two parts:<br />
+  <ul>
+  <li>The <em>header</em> is the first line of the definition.</li>
+   <li>The <em>body</em> is the rest of the definition.</li>
+  </ul>
+</li>
+
+<li>The header consists of the <tt>def</tt> keyword, followed by the name of the function 
+and the <em>signature</em> of the function, which is the parenthesized list of <em>formal parameters</em>, 
+here <tt>(nd, mobility_n)</tt>. The parameters receive the value of the arguments used in a function call.</li>
+
+<li>All statements after the <tt>def</tt> statement are indented and form the body of the function. 
+The colon (<tt>:</tt>) after the <tt>def</tt> statement and the indented body tells the Python 
+interpreter that the indented statements belong to the <tt>resistivity</tt> function. The indentation 
+determines whether the code belongs to the defined function or to any remaining code.</li>
+
+<li>The first statement of the function body can optionally be a triple-quoted string; this string 
+is the documentation string (or <em>docstring</em>) of the function. Unlike <tt>#</tt> comments, 
+Python saves the docstring and displays it when you call the <tt>help</tt> function with the 
+function name as the argument. The help message shows the function name and the parameters along 
+with the docstring:<br />
+
+<pre>
+&gt; gpythonsh -m IPython -i resistivity.py
+
+In [1]: help(resistivity)
+
+Help on function resistivity in module __main__:
+
+resistivity(nd, mobility_n)
+    Compute resistivity of n-type semiconductor.
+
+    :param nd: donor concentration [1/cm^3]  
+    :param mobility_n: electron mobility [cm2/(V-s)]  
+    :return: resistivity [Ohm-cm] of n-type semiconductor
+</pre></li>
+
+<li>The <tt>return</tt> statement is used to return the value of the expression after the 
+<tt>return</tt> keyword. The return value can be any Python data type such as string or list. 
+If the <tt>return</tt> statement is not included in the function definition, then by default, the 
+function returns <tt>None</tt>. So, Python functions always return a value.</li>
+
+<li>A function can be defined anywhere in a script, but it can be called only after being defined.</li>
+</ul>
+
+<p>The statements inside a function definition are not executed immediately after the 
+function definition. When Python executes the function definition, it creates a function object 
+and stores a function definition in the object as shown in the following Python Tutor visualization.</p>
+
+<p><a href="images/function_obj.png"><img src="images/function_obj.png" width="570" 
+alt="Function as object" /></a></p>
+
+<p class="caption">Figure 2. Function as object. (Click image for full-size view.)</p>
+
+<p>Python functions are objects of type <tt>function</tt>:</p>
+
+<pre>
+In [2]: type(resistivity)
+Out[2]: function
+</pre>
+
+<p>To compute the resistivity of n-type Si with $N_{D} = 10^{17} cm^{-3}$ and $μ_{n} = 700 \ {cm}^{2}/{V.s}$, 
+you must call the <tt>resistivity</tt> function with these arguments:</p>
+
+<pre>
+In [3]: resistivity(1e17, 700)
+Out[3]: 0.08916441534943947
+</pre>
+
+<p>In this example, you passed arguments to the <tt>resistivity</tt> function using <em>positional parameters</em>. You can also pass arguments to functions using <em>keyword arguments</em> or a combination of both positional and keyword arguments. Keyword arguments can be used to define default parameter values. For more details, refer to <a href="https://docs.python.org/3/tutorial/controlflow.html#special-parameters">The Python Tutorial: Special parameters</a>. These concepts are also explained in the appendix of the project documentation for <tt>Applications_Library/CMOS/CMOS_Characterization</tt>.</p>
+
+<!--===============================-->
+<a name="2_3"></a>
+<h2>3.2.3 Local and Global Variables</h2>
+
+<p>The variables that are defined inside a function and parameters exist only inside 
+the function. You can access them only from inside the function. Therefore, they are 
+called <em>local</em> variables. You cannot access local variables from outside the 
+function. For example, you defined the variables <tt>sigma</tt> and <tt>rho</tt> 
+inside the <tt>resistivity</tt> function. These cannot be accessed outside the function. 
+Attempting to do so results in an error:</p>
+
+<pre>
+In [4]: sigma
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+&lt;ipython-input-4-bc0b719fd29e&gt; in &lt;module&gt;
+----> 1 sigma
+
+NameError: name 'sigma' is not defined
+</pre>
+
+<p>Variables defined outside a function are called <em>global</em> variables. For example, 
+in the <tt>resistivity.py</tt> script, the variable <tt>const.e</tt> is a global variable 
+created as a result of importing the <tt>scipy.constants</tt> module. Global variables can be accessed 
+inside the function (for example, in the statement <tt>sigma = const.e * mobility_n * nd</tt>) 
+as well as outside the function:</p>
+
+<pre>
+In [5]: const.e
+Out[5]: 1.602176634e-19
+</pre>
+
+<p>You can find global variables using the built-in <a href="https://docs.python.org/3/library/functions.html#globals"><tt>globals</tt></a> function. It returns a dictionary whose keys include the global variables and their values:</p>
+
+<pre>
+&gt; gpythonsh
+
+&gt;&gt;&gt; x, y = 1, 2
+&gt;&gt;&gt; globals()
+{'__name__': '__main__', '__doc__': None, '__package__': None, 
+'__loader__': &lt;class '_frozen_importlib.BuiltinImporter'&gt;, '__spec__': None,
+'__annotations__': {}, '__builtins__': &lt;module 'builtins' (built-in)&gt;, 
+...
+'x': 1, 'y': 2}  
+</pre>   
+
+<!--===============================-->
+<a name="2_4"></a>
+<h2>3.2.4 Returning Multiple Values</h2>
+
+<p>You can use Python functions to return multiple values by using a sequence type such as list, 
+tuple, or NumPy array, or by using a dictionary. For example, you can use the built-in 
+<a href="https://docs.python.org/3/library/functions.html#divmod"><tt>divmod</tt></a> function to perform 
+integer division. It returns both the quotient and the remainder as a tuple:</p>
+
+<pre>
+&gt;&gt;&gt; divmod(5, 3)
+(1, 2)
+</pre>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Objects and Classes</h1>
+
+<p>Here is a summary of what has been covered about objects and classes so far:</p>
+
+<ul>
+ <li>Everything (including data) is represented by objects in Python.</li>
+ <li>Objects have an identity, a type, and a value. The type and identity of an object do not 
+change during the execution of a program. The value of mutable objects can change.</li>
+ <li>Instead of copying the content of an object into a new object, assignment creates an alias 
+to the same object.</li>
+ <li>Objects have attributes. There are two types of attribute: data attributes and methods.</li>
+ <li>Each object is created from a class.</li>
+ <li>Python has several built-in classes. You can create your own data types and these are called 
+user-defined classes.</li>
+</ul>
+
+<p>According to the <a href="https://docs.python.org/3/glossary.html">Python Glossary</a>:</p>
+
+<blockquote>
+<p>A <em>class</em> is a template for creating user-defined objects. Class definitions normally 
+contain method definitions which operate on instances of the class.<br />
+An <em>object</em> is any data with state (attributes or value) and defined behavior (methods).</p> 
+</blockquote>
+
+<p>Since an object is constructed from a class, a class serves as a template or blueprint for 
+creating an object. Since a class can be used to construct many objects, the created objects 
+are also called <em>instances</em> of the class and creating an object is called 
+<em>instantiation</em>.</p>
+
+<!--===============================-->
+<a name="3_1"></a>
+<h2>3.3.1 Using Objects</h2>
+
+<p>So far, you have been using objects from built-in classes. All data types, including numbers, 
+Booleans, <tt>NoneType</tt>, strings, and various other data structures such as lists and NumPy 
+arrays are objects. For example, the documentation for the type 
+<a href="https://docs.python.org/3/library/functions.html#complex"><tt>complex</tt></a> reads as follows:</p>
+
+<pre>
+class complex([real[, imag]])
+    Return a complex number with the value real + imag*1j or 
+    convert a string or number to a complex number. 
+    ...
+</pre>
+
+<p>It shows that <tt>complex</tt> is a class.</p>
+
+<!--==========================-->
+<a name="3_1_1"></a>
+<h3>3.3.1.1 Creating Objects</h3>
+
+<p>There are several ways of creating objects of built-in classes in Python:</p>
+
+<ul>
+ <li>Literals</li>
+ <li>Special syntax</li>
+ <li>Constructor</li>
+</ul>
+
+<p>You have been using literals and the special syntax for creating objects (for example, see 
+<a href="py_02.html#2">Section 2.2 Built-in Data Types</a>). Executing an expression containing 
+literals creates an object that represents the specified value. For example, executing the literal 
+<tt>2 + 3j</tt> creates a <tt>complex</tt> object to represent the complex number $2 + 3i$, 
+whose real part is 2 and imaginary part is 3:</p>
+
+<pre>
+&gt;&gt;&gt; z = 2 + 3j  # Create complex object using literals
+&gt;&gt;&gt; z
+(2+3j)
+</pre>
+
+<p>Python has a special syntax for creating objects that represent data structures such as lists, 
+tuples, and dictionaries:</p>
+ 
+<ul>
+ <li>To create lists or tuples, enclose values inside brackets or parentheses, respectively (see
+  <a href="py_02.html#2_5_2">Section&nbsp;2.2.5.2 Lists and Tuples</a>).</li>
+ <li>To create dictionaries, enclose key&ndash;value pairs inside braces (see
+  <a href="py_02.html#2_6">Section 2.2.6 Introduction to Dictionaries</a>).</li>
+</ul>   
+
+<p>All objects, both built-in and user-defined, can be created using the constructor for the class. 
+A <em>constructor</em> is a function that creates an object. Its name is the name of the type of 
+object that you want to create.</p>
+
+<p>Calling the constructor of a built-in type creates a new object of that type. The name of the 
+constructor is the class name. For example, a list object can be created using the <tt>list</tt> 
+constructor and a complex object can be constructed using the <tt>complex</tt> constructor.</p>
+
+<p>You can create an object to represent the complex number $2 + 3i$ using the <tt>complex</tt> constructor:</p>
+
+<pre>
+&gt;&gt;&gt; z = complex(2, 3)  # Create complex object using constructor
+&gt;&gt;&gt; z                  # Get value of z
+(2+3j)
+&gt;&gt;&gt; type(z)
+&lt;class 'complex'&gt;
+</pre>
+
+<p>The class of <tt>z</tt> is <tt>complex</tt>.</p>
+
+<!--==========================-->
+<a name="3_1_2"></a>
+<h3>3.3.1.2 Attributes: State and Behavior of Objects</h3>
+
+<p>The attributes of an object are defined in the class. There are two types of attribute:</p>
+
+<ul>
+<li><em>data attributes</em>: The variables defined inside a class are called data attributes 
+since they are used to store data. Each time you create a new object, Python assigns a set 
+of data attributes to the object. The set of values contained in these data attributes 
+is known as the <em>state</em> of an object. Mutating an object changes the value of the data attributes 
+and, therefore, its state.</li>
+<li><em>methods</em>: The functions defined inside a class are  called methods. They are used to 
+perform operations on data attributes of instances of the class. The set of operations that can 
+be performed on an object is known as the <em>behavior</em> of an object.</li>
+</ul>
+
+<p>Since data is stored in objects, you can say that an object is any data with a state 
+(data attributes and their values) and defined behavior (methods).</p>
+
+<p>Before using objects, either built-in or those available in other Python packages, you need 
+to know about the following:</p>
+
+<ul>
+<li>The operations that can be performed on the data attributes of an object</li>
+<li>How to perform the operations, that is, the required arguments and the syntax:<br />
+  <ul>
+  <li>Operator</li>
+  <li>Function call</li>
+  <li>Method call</li>
+  </ul>
+</li>
+<li>The result of the operation, that is, whether it mutates the object, returns a new object, 
+or simply provides information about the object</li>
+</ul>
+
+<p>To use objects for performing computations, you do not need to know the implementation 
+details about the data attributes or the methods. Implementation details are in the 
+class implementation, which is hidden from users.</p>
+
+<p>You can find the attributes (both data attributes and methods) of a class using the 
+<tt>dir</tt> function:</p>
+
+<pre>
+&gt;&gt;&gt; print(dir(z))
+['__abs__', '__add__', ..., 'conjugate', 'imag', 'real']
+</pre>
+
+<p>Here, <tt>imag</tt> and <tt>real</tt> are data attributes and <tt>conjugate</tt> is a method. 
+The names surrounded by double underscores (<tt>__</tt>) are special methods in Python. They 
+are informally known as <em>dunder</em> (<strong>d</strong>ouble <strong>under</strong>scores) 
+methods (see <a href="#3_1_5">Section 3.3.1.5 Referencing Dunder Methods (Advanced)</a>).</p>
+
+<p>You can request help for these attributes by using dot notation, which is explained in the 
+next section:</p>
+
+<pre>
+&gt;&gt;&gt; help(z.conjugate)
+Help on built-in function conjugate:
+
+conjugate(...) method of builtins.complex instance
+    complex.conjugate() -> complex
+    
+    Return the complex conjugate of its argument. (3-4j).conjugate() == 3+4j.
+
+Help on built-in function conjugate:
+
+conjugate(...) method of builtins.complex instance
+    complex.conjugate() -&gt; complex
+    
+    Return the complex conjugate of its argument. (3-4j).conjugate() == 3+4j.
+</pre>
+
+<p>The next sections explain how to use these attributes.</p>
+
+<!--==========================-->
+<a name="3_1_3"></a>
+<h3>3.3.1.3 Referencing Data Attributes</h3>
+
+<p>You have already seen that if a primitive object such as a number is assigned to a variable, 
+you can access the value of the object using the name of the variable:</p>
+
+<pre>
+&gt;&gt;&gt; x = 2
+&gt;&gt;&gt; x
+2 
+</pre>
+
+<p>If a data structure such as list is assigned to a variable, then you can access an element 
+using the variable name followed by the index of the element inside brackets:</p>
+
+<pre>
+&gt;&gt;&gt; x = [2, 3]
+&gt;&gt;&gt; x[0], x[1]  # Access list elements
+(2, 3)
+</pre>
+
+<p>Accessing the data attributes of an object is similar to accessing list elements. Instead 
+of using an integer (the index), you must use the name of the data attribute and, instead of 
+using brackets, you must use a period: <tt>object.&lt;data_attribute&gt;</tt></p>
+
+<p>This syntax for accessing or referencing attributes is also known as <em>dot notation</em> since it contains a period (.). For example, the <tt>complex</tt> object has the following data attributes:</p>
+
+<ul>
+<li><tt>real</tt> represents the real part of complex numbers.</li>
+<li><tt>imag</tt> represents the imaginary part of complex numbers.</li>
+</ul>
+
+<p>You can use dot notation to access them:</p>
+
+<pre>
+&gt;&gt;&gt; z = 2 + 3j
+&gt;&gt;&gt; z.real, z.imag
+(2.0, 3.0) 
+</pre>
+
+<p>Trying to access an attribute that is not defined for an object results in an error:</p>
+
+<pre>
+&gt;&gt;&gt; z.con
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+AttributeError: 'complex' object has no attribute 'con'
+</pre>
+
+<!--==========================-->
+<a name="3_1_4"></a>
+<h3>3.3.1.4 Referencing Methods</h3>
+
+<p>Since methods are essentially functions, to execute the statements inside a method, you must 
+invoke or call them. A method call is known as an <em>invocation</em>. Similar to a function call, 
+a method call is an expression that has a value. The syntax for a method call is a combination 
+of syntax for the attribute reference and the function call: <tt>object.&lt;method&gt;(arguments)</tt></p>
+
+<p>Similar to functions, a method can have zero or more arguments. The main difference between 
+a function and a method is that you must invoke methods on a specific object.</p>
+
+<p>For example, the <tt>complex</tt> object has the <tt>conjugate()</tt> method for computing 
+the complex conjugate of a complex number. The following code invokes the <tt>conjugate()</tt> 
+method on the complex object <tt>2 + 3j</tt> to return a new complex object <tt>2 - 3j</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; (2 + 3j).conjugate()  # Call conjugate() method on complex object 
+(2-3j)
+</pre>
+
+<p>Note that the <tt>conjugate()</tt> method has no arguments.</p>
+
+<p>You can also first assign an object to a variable and then call the <tt>conjugate()</tt> 
+method on the variable:</p>
+
+<pre>
+&gt;&gt;&gt; z = 2 + 3j     # Define variable  
+&gt;&gt;&gt; z.conjugate()  # Call conjugate() method on object
+(2-3j)
+</pre>
+
+<p>Note that the type of an object defines the operations that can be performed on it. For example, 
+you can multiply two integers but not two strings:</p>
+
+<pre>
+&gt;&gt;&gt; 'Hello' * 'World' 
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+TypeError: can't multiply sequence by non-int of type 'str'
+</pre>
+
+<!--==========================-->
+<a name="3_1_5"></a>
+<h3>3.3.1.5 Referencing Dunder Methods (Advanced)</h3>
+
+<p>The Python built-in classes implement all the operations using methods. Some of these methods, 
+called <em>special methods</em>, are also implemented so that they can be invoked by a special 
+syntax such as arithmetic operators or function calls. You can perform operations on objects using 
+the following:</p>
+
+<ul>
+<li>Operators or function calls</li>
+<li>Method calls</li>
+</ul>
+
+<p>The special methods are also known as <em>dunder</em> (<strong>d</strong>ouble 
+<strong>under</strong>scores) methods since their names are surrounded by double underscores 
+(<tt>__</tt>). For example, the special method <tt>__add__()</tt> is known as dunder <tt>add</tt> method.
+Some of the dunder methods are listed in Table 3. For a complete list, refer to 
+<a href="https://docs.python.org/3/reference/datamodel.html#special-method-names">The Python Language Reference: Special method names</a>.</p>
+
+<a name="table3"></a>
+<table>
+<caption>Table 3. Arithmetic operations, operators, and special methods.</caption>
+
+<thead>
+<tr>
+<th>Operation</th>
+<th>Operator or function</th>
+<th>Dunder method</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Addition</td>
+<td><tt>+</tt></td>
+<td><tt>__add__</tt></td>
+</tr>
+<tr>
+<td>Subtraction</td>
+<td><tt>-</tt></td>
+<td><tt>__sub__</tt></td>
+</tr>
+<tr>
+<td>Negation</td>
+<td><tt>-</tt></td>
+<td><tt>__neg__</tt></td>
+</tr>
+<tr>
+<td>Multiplication</td>
+<td><tt>*</tt></td>
+<td><tt>__mul__</tt></td>
+</tr>
+<tr>
+<td>Floating-point division</td>
+<td><tt>/</tt></td>
+<td><tt>__truediv__</tt></td>
+</tr>
+<tr>
+<td>Integer division</td>
+<td><tt>//</tt></td>
+<td><tt>__floordiv__</tt></td>
+</tr>
+<tr>
+<td>Remainder</td>
+<td><tt>%</tt></td>
+<td><tt>__mod__</tt></td>
+</tr>
+<tr>
+<td>Exponentiation</td>
+<td><tt>**</tt></td>
+<td><tt>__pow__</tt></td>
+</tr>
+<tr>
+<td>Absolute value</td>
+<td>built-in <tt>abs</tt></td>
+<td><tt>__abs__</tt></td>
+</tr>
+<tr>
+<td>Length of a sequence</td>
+<td>built-in <tt>len</tt></td>
+<td><tt>__len__</tt></td>
+</tr>
+<tr>
+<td>String representation</td>
+<td>built-in <tt>str</tt></td>
+<td><tt>__str__</tt></td>
+</tr>
+<tr>
+<td>Object representation</td>
+<td>built-in <tt>repr</tt></td>
+<td><tt>__repr__</tt></td>
+</tr>
+</tbody>
+</table>
+
+<p>The special syntax provides a convenient shorthand for invoking the special methods. When Python 
+evaluates these types of simpler expression, it internally calls the corresponding dunder method.</p>
+
+<p>For example, the operation of adding two complex numbers is implemented using the dunder 
+<tt>add</tt> method in the <tt>complex</tt> class, which can be invoked using 
+the <tt>+</tt> operator:</p>
+
+<pre>
+&gt;&gt;&gt; z1 = 1 + 2j  
+&gt;&gt;&gt; z2 = 3 + 4j
+&gt;&gt;&gt; z1 + z2      # Addition using + operator
+(4+6j)
+</pre>
+
+<p>Using the <tt>+</tt> operator to add two complex numbers (<tt>z1 + z2</tt> ) is equivalent 
+to the method call <tt>complex.__add__(complex)</tt>:</p>
+
+<pre>
+&gt;&gt;&gt; z1.__add__(z2)  # Addition using method call 
+(4+6j)
+</pre>
+
+<p>Here, you called the dunder <tt>add</tt> method on one of the <tt>complex</tt> objects 
+and passed the other one as an argument. Here, it does not matter which of the two objects 
+is passed as an argument.</p>
+
+<p>Similarly, the operation of computing the absolute value of a complex number is implemented 
+as the dunder <tt>abs</tt> method in the <tt>complex</tt> class. 
+The Python built-in <tt>abs</tt> function can be used to invoke this method:</p>
+
+<pre>
+&gt;&gt;&gt; z1 = 1 + 2j 
+&gt;&gt;&gt; abs(z1), z1.__abs__()
+(2.23606797749979, 2.23606797749979)
+</pre>
+
+<p>The function call <tt>abs(complex)</tt> is equivalent to the method call <tt>complex.__abs__()</tt>.</p>
+
+<p>From this discussion, you can see that the definition of a particular operator depends 
+on the type of the object on which it is performed. For example, using <tt>+</tt> on:</p>
+
+<ul>
+<li>Two integers performs scalar addition</li>
+<li>Two lists performs concatenation</li>
+<li>Two 1D NumPy arrays performs elementwise addition (vector addition)</li>
+</ul>
+
+<p>For example:</p>
+
+<pre>
+&gt;&gt;&gt; 2 + 3  # scalar addition
+5
+&gt;&gt;&gt; [2, 4] + [3, 6]  # concatenation
+[2, 4, 3, 6]
+&gt;&gt;&gt; np.array([2, 4]) + np.array([3, 6])  # array addition 
+array([ 5, 10])
+</pre>
+     
+<p>To see help about the operations supported by an object of a particular type, enter:</p>
+
+<pre>
+&gt;&gt;&gt; help(complex)
+Help on class complex in module builtins:
+
+class complex(object)
+ |  complex(real=0, imag=0)
+ |  
+ |  Create a complex number from a real part and an optional imaginary part.
+ |  
+ |  This is equivalent to (real + imag*1j) where imag defaults to 0.
+ |  
+ |  Methods defined here:
+ |  
+ |  __abs__(self, /)
+ |      abs(self)
+ |  
+ |  __add__(self, value, /)
+ |      Return self+value.
+ ...
+</pre>
+
+<!--===============================-->
+<a name="3_2"></a>
+<h2>3.3.2 User-Defined Classes</h2>
+
+<p>So far, you have been using built-in classes. Now, you will define your own class and use it 
+to create objects. You will define a <tt>Vector2d</tt> class that can be used to create objects 
+to represent 2D vectors in Cartesian coordinates:</p> 
+
+<p>\[ v↖{→} = x i↖{\^} + y j↖{\^} \]</p>
+
+<p>You will use the data attributes <tt>x</tt> and <tt>y</tt> to represent the x- and y-components 
+of the vector. One of the operations that can be performed on a vector is computing its length. 
+You will implement this operation using the <tt>length()</tt> method.</p>
+
+<p>You can create your own class using the <tt>class</tt> keyword. Here is the syntax for defining 
+a new class (see <a href="https://docs.python.org/3/tutorial/classes.html#a-first-look-at-classes">
+The Python Tutorial: A First Look at Classes</a>):</p>
+
+<pre>
+def &lt;ClassName&gt;():
+    statements
+</pre>
+
+<!--==========================-->
+<a name="3_2_1"></a>
+<h3>3.3.2.1 Defining a Class</h3>
+
+<p>The following code defines a new class called <tt>Vector2d</tt> and uses it to create a 2D vector:</p>
+
+<pre>
+# Script: vector.py   
+import math
+
+# Define class
+class Vector2d:
+    &quot;&quot;&quot;A class to represent a two-dimensional vector x i + y j
+    in Cartesian coordinates.
+    
+    Attribute x: x-component of the vector
+    Attribute y: y-component of the vector
+    &quot;&quot;&quot;
+    
+    # initializer
+    def __init__(self, x, y):
+        &quot;&quot;&quot;Initializes the state of Vector2d object.&quot;&quot;&quot;
+        # Define data attributes
+        self.x = x
+        self.y = y
+    
+    # define methods
+    def length(self):
+        &quot;&quot;&quot;Return length of a vector&quot;&quot;&quot;
+        return math.sqrt(self.x ** 2 + self.y ** 2)  
+    
+
+# Create a Vector2d object to represent a 2D vector
+v = Vector2d(1, 2)
+
+# Compute length of the vector
+length_vector = v.length()
+print(f'|v| = {length_vector}')   
+</pre>   
+
+<p>Now, run this script using gpythonsh:</p>
+
+<pre>
+&gt; gpythonsh vector.py
+|v| = 2.23606797749979
+</pre>
+
+<p>Here, the focus is not on the syntax of the class definition. This class definition is provided 
+to demonstrate the following:</p>
+
+<ul>
+<li>Data attributes are variables defined inside a class. They are defined using the following 
+assignment statements inside the dunder <tt>init</tt> method:<br />
+<pre>
+self.x = x
+self.y = y</pre></li>
+ 
+<li>Methods are functions defined inside a class and they operate on objects of the class. Similar 
+to functions, the <tt>length()</tt> method is defined using <tt>def</tt> statement and it is used 
+to compute the length of a <tt>Vector2d</tt> object.</li>
+</ul>
+
+<!--==========================-->
+<a name="3_2_2"></a>
+<h3>3.3.2.2 Using Objects From User-Defined Class</h3>
+
+<p>Having defined the <tt>Vector2d</tt> class, you can now use it to create and operate on 
+<tt>Vector2d</tt> objects. Requesting help for the <tt>Vector2d</tt> class prints the class docstring as well as the methods defined in the class:</p>
+
+<pre>
+&gt; gpythonsh -m IPython -i vector.py
+
+In [1]: help(Vector2d)
+
+Help on class Vector2d in module __main__:
+
+class Vector2d(builtins.object)
+ |  Vector2d(x, y)
+ |  
+ |  A class to represent a two-dimensional vector x i + y j
+ |  in Cartesian coordinates.
+ |  
+ |  Attribute x: x-component of the vector
+ |  Attribute y: y-component of the vector
+ |  
+ |  Methods defined here:
+ |  
+ |  __init__(self, x, y)
+ |      Initializes the state of Vector2d object.
+ |  
+ |  length(self)
+ |      Return length of a vector
+ ...
+</pre>
+
+<p>Earlier, you saw that you can create objects from built-in classes using different methods, 
+which include using the constructor. In general, you can create objects from user-defined classes 
+only using the class constructor. Similar to built-in classes, the constructor is the class name, 
+except that the class name by convention starts with an uppercase letter instead of a lowercase 
+letter.</p>
+
+<p>Now, create an object of type <tt>Vector2d</tt> to represent a vector in Cartesian coordinates 
+$ v↖{→} = i↖{\^} + 2 j↖{\^} $ and assign it to variable <tt>v</tt>:</p>
+
+<pre>
+In [2]: v = Vector2d(1, 2)
+</pre>
+
+<p>After Python executes this statement, it creates an object of type <tt>Vector2d</tt>:</p>
+
+<pre>
+In [3]: type(v)  # v is an object of type Vector2d
+Out[3]: __main__.Vector2d
+</pre>
+
+<p>Python uses the arguments in the constructor call to set the value of the data attributes 
+of the object <tt>v</tt>. You can retrieve these values using the built-in 
+<a href="https://docs.python.org/3/library/functions.html?highlight=vars#vars"><tt>vars</tt></a> function:</p>
+
+<pre>
+In [4]: vars(v)
+Out[4]: {'x': 1, 'y': 2}
+</pre>
+
+<p><tt>vars</tt> returns a dictionary of data attributes and their values. You can access 
+the attributes of the object using dot notation:</p>
+
+<pre>
+In [5]: v.x  # Access the x-component of vector
+Out[5]: 1
+
+In [6]: v.y  # Access the y-component of vector
+Out[6]: 2
+</pre>
+
+<p>You can compute the length of the vector by invoking the <tt>length()</tt> method on 
+the <tt>Vector2d</tt> object:</p>
+
+<pre>
+In [7]: v.length()  # Compute length of vector
+Out[7]: 2.23606797749979
+</pre>
+
+<p>You can also visualize the class definition and object in memory using Python Tutor.</p>
+
+<p><a href="images/class_custom.png"><img src="images/class_custom.png" width="570" 
+alt="Vector2d class and object" /></a></p>
+
+<p class="caption">Figure 3. Vector2d class and object. (Click image for full-size view.)</p>
+
+<p>Stepping through the code in Python Tutor shows that Python performs the following actions 
+when the corresponding line of code is executed:</p>
+
+<ul>
+<li>Line 1 creates a module object (on the heap) and assigns it to the variable <tt>math</tt> (on the stack).</li>
+<li>Line 2 creates an object (on the heap) to represent the <tt>Vector2d</tt> class and assigns it to 
+the variable <tt>Vector2d</tt>.</li>
+<li>Line 10 creates a <tt>Vector2d</tt> object and assigns it to the variable <tt>v</tt>.</li>
+<li>Line 11 computes the length of the <tt>Vector2d</tt> object and assigns it to the variable 
+<tt>length_vector</tt>.</li>
+</ul>
+
+<p>For user-defined classes, Python Tutor shows the methods defined inside a class 
+as well as the individual data attributes inside an object. 
+Here, it shows that:</p> 
+<ul>
+ <li>The <tt>Vector2d</tt> class has two methods <tt>__init__</tt> and <tt>length</tt>.</li>
+ <li>The <tt>Vector2d</tt> object has two data attributes <tt>x</tt> and <tt>y</tt> 
+with values of <tt>1</tt> and <tt>2</tt>, respectively.</li>   
+</ul>
+
+<!--==========================-->
+<a name="3_2_3"></a>
+<h3>3.3.2.3 Mutability, Aliasing, and Copying</h3>
+
+<p>The <tt>Vector2d</tt> objects are mutable. After you create a <tt>Vector2d</tt> object, you 
+can change its data attributes using <em>attribute assignment</em> statements. These are 
+assignment statements that contain a data attribute on the left:</p>
+
+<pre>
+In [8]: w = Vector2d(0, 0)  # Create null vector
+
+In [9]: w.x, w.y
+Out[9]: (0, 0)
+
+In [10]: # Create unit vector in x-direction
+
+In [11]: w.x = 1  # Attribute assignment
+
+In [12]: w.x, w.y
+Out[12]: (1, 0)
+</pre>
+
+<p>Here, you used an attribute assignment to update the <tt>x</tt> data attribute of <tt>w</tt>.</p>
+
+<p>Similar to built-in objects, binding an existing <tt>Vector2d</tt> object to a new variable 
+using assignment does not create a new <tt>Vector2d</tt> object. Python creates an alias. 
+For example:</p>
+
+<pre>
+In [13]: u = Vector2d(0, 0)  # Creates a new Vector2d object and assigns to u
+
+In [14]: v = u               # Creates a new variable and assigns id of u to v
+</pre>
+
+<p>Now, both <tt>u</tt> and <tt>v</tt> refer to the same <tt>Vector2d</tt> object as can be 
+seen in the following Python Tutor visualization.</p>
+
+<p><a href="images/vector_alias.png"><img src="images/vector_alias.png" width="570" 
+alt="Aliased Vector2d objects" /></a></p>
+
+<p class="caption">Figure 4. Aliased Vector2d objects. (Click image for full-size view.)</p>
+
+<p>Now, you can update the data attributes of the object using <tt>v</tt>:</p>
+
+<pre>
+In [15]: v.y = 1   # Update y data-attribute of v
+
+In [16]: u.x, u.y  # The y data-attribute of u is also updated
+Out[16]: (0, 1)
+</pre> 
+
+<p>You can make copies of objects (created from user-defined classes) by using the 
+<a href="https://docs.python.org/3/library/copy.html#copy.copy"><tt>copy</tt></a> function 
+in the <tt>copy</tt> module:</p>
+
+<pre>
+In [17]: import copy
+
+In [18]: u = Vector2d(0, 0)
+
+In [19]: v = copy.copy(u)  # Create a new Vector2d object by copying u
+
+In [20]: v.y = 1           # Update y data-attribute of v
+
+In [21]: u.y               # The y data-attribute of u is not updated
+Out[21]: 0
+</pre>   
+
+<p>Updating <tt>v</tt> does not update <tt>u</tt> since <tt>u</tt> and <tt>v</tt> 
+are different objects:</p>
+
+<pre>
+In [22]: u is v                                                                 
+Out[22]: False
+</pre>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_02.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="py_04.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

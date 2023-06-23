@@ -1,0 +1,372 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 2. Example: Material Deposition</title>
+</head>
+
+<body>
+<div id="all">
+
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />2. Example: Material Deposition</h1>
+
+<p>
+ <a href="#1">2.1 Overview</a><br />
+ <a href="#2">2.2 Generating the Initial Structure</a><br />
+ <a href="#3">2.3 Performing Material Deposition</a><br />
+ <a href="#4">2.4 Saving the Final Structure</a><br />
+ <a href="#5">2.5 Integration With Sentaurus Process</a><br /> 
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To perform a deposition simulation using Sentaurus Topography 3D.</li>
+ <li>To use Sentaurus Topography 3D functionality from within Sentaurus Process.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Overview</h1>
+
+<p>This section introduces the most common features of Sentaurus Topography 3D 
+in the context of a simple example of high-density plasma (HDP) deposition.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sptopo3d/depo_hdp</tt>. If you are not familiar 
+with Sentaurus Workbench projects, the preprocessed script file <tt>depo_hdp_t3d.cmd</tt> 
+can be found in this directory.</p>
+
+<p>To download the preprocessed script file, right-click the following link and choose 
+<strong>Save Target As</strong>: 
+<a href="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp/depo_hdp_t3d.cmd">
+depo_hdp_t3d.cmd</a>.</p>
+
+<p>To execute the file in Sentaurus Topography 3D on the command line, type:</p>
+
+<pre>
+&gt; sptopo3d depo_hdp_t3d.cmd
+</pre>
+
+<p>After the command file is executed, the generated TDR file is <tt>final.tdr</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Generating the Initial Structure</h1>
+
+<p>This section shows how to use geometric etching and deposition steps to generate 
+a simple trench to be used as the initial structure in Sentaurus Topography 3D. In this 
+example, due to the symmetry of the problem, only one-quarter of the structure needs 
+to be simulated. Sentaurus Topography 3D exploits such symmetries by using reflective 
+boundary conditions, which are applied by default. This allows you to save considerable 
+computation time.</p> 
+
+<p>The initial structure is defined with the <tt>define_structure</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp/sptopo3d_t3d.cmd" startExpr="##start - def_struct" endExpr="##end - def_struct" excludelines="##*" -->
+<pre>
+define_structure material=Silicon point_min={0 0 0} point_max={0.1 0.1 0.3}
+</pre>
+<!-- grep end -->
+
+<p>This command creates a silicon cuboid, which becomes the basis for further etching 
+or deposition processes (units are &mu;m).</p>
+
+<p class="note">The input structure to be processed in Sentaurus Topography 3D also can 
+be loaded from a TDR boundary file, for example:<br />
+<tt>define_structure file=input.tdr</tt></p>
+
+<p>A cuboid shape is defined that is used to etch a trench from the initial structure 
+with the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp/sptopo3d_t3d.cmd" startExpr="##start - trench" endExpr="##end - trench" excludelines="##*" -->
+<pre>
+define_shape type=cube name=trench point_min={0.05 0.05 0.1} \
+	point_max={0.1 0.1 0.3}
+</pre>
+<!-- grep end -->
+
+<p>Geometric etching is performed using the shape defined above:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp/sptopo3d_t3d.cmd" startExpr="##start - geom_etch" endExpr="##end - geom_etch" excludelines="##*" -->
+<pre>
+etch shape=trench
+</pre>
+<!-- grep end -->
+
+<p>Finally, the initial structure is saved before proceeding to the next steps 
+using the <tt>save</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp/sptopo3d_t3d.cmd" startExpr="##start - save_init" endExpr="##end - save_init" excludelines="##*" -->
+<pre>
+save file=n@node@_init.tdr
+</pre>
+<!-- grep end -->
+
+<p>In order for the saved file to be available in Sentaurus Workbench for visualization, 
+the file name contains the running-node parameter <tt>@node@</tt>.</p>
+
+<p class="note">If the file name is not specified, the initial structure will be 
+appended to the TDR file saved at the end of the simulation, after processing
+is performed.</p>
+
+<p>Figure 1 shows the initial structure.</p>
+
+<p><a href="images/tp_dep_initial_structure.png"><img src="images/tp_dep_initial_structure.png" 
+width="300" alt="Initial structure" /></a></p>
+
+<p class="caption">Figure 1. Generated initial structure. (Click image for full-size view.)</p>
+
+<p class="note">To activate the 2D mode of Sentaurus Topography 3D, the initial 
+structure must be two dimensional. In this example, the parameters 
+<tt>point_min</tt> and <tt>point_max</tt> in the <tt>define_structure</tt> and 
+<tt>define_shape</tt> commands would contain only two coordinate values. All the 
+subsequent commands are exactly the same as in three dimensions.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>2.3 Performing Material Deposition</h1>
+
+<p>The next subsections demonstrate the use of the deposition models in Sentaurus 
+Topography 3D. This example illustrates the high-density plasma (HDP) deposition model.</p>
+
+<p>Other deposition models, such as electroplating deposition, low-pressure chemical
+vapor deposition, physical vapor deposition, and plasma-enhanced chemical vapor deposition, 
+can be specified similarly (see the <cite>Sentaurus&trade; Topography 3D User Guide</cite>).</p>
+
+<!--=======================-->
+<a name="3.1"></a>
+<h2>2.3.1 Defining the Deposition Model</h2>
+
+<p>You use the <tt>define_deposit_machine</tt> command to specify the deposition model 
+to be used and the values of its parameters.</p>
+
+<p>A deposition machine that uses the HDP deposition model is defined with the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp/sptopo3d_t3d.cmd" startExpr="##start - define_machine" endExpr="##end - define_machine" excludelines="##*" -->
+<pre>
+define_deposit_machine model=hdp material=Oxide rate=2 \
+	anisotropy=0.7 exponent=100 redeposition=0.1 \
+	sputter_rate=0.95 s1=5.5 s2=-6 sticking=0.1
+</pre>
+<!-- grep end -->
+
+<p>In this example, the <tt>define_deposit_machine</tt> command specifies the 
+deposited material, the rate, the anisotropy, the angular distribution exponent, 
+the redeposition coefficient, the sputter rate, the sputtering coefficients, 
+and the sticking coefficient.</p>
+
+<p class="note">All parameters of deposition models are specified 
+with the <tt>define_deposit_machine</tt> command and are material independent. 
+This is in contrast to the etching models, where different parameter values
+can be assigned to different materials.</p>
+
+<p>The HDP deposition model assumes that a neutral flux and an ion flux reach 
+the surface. The anisotropy factor, given by the <tt>anisotropy</tt> parameter, 
+is 0.7. It is related to the weight of the ion flux on the deposition rate 
+with respect to the neutral flux.</p>
+
+<p>The incoming neutral particles can either stick to the surface and be deposited, 
+or can be re-emitted. In this example, the sticking probability is set to 0.1 with
+the parameter <tt>sticking</tt>. The deposition rate of neutrals on a flat unshadowed 
+surface is proportional to the parameter <tt>rate</tt> (here, set to 2&nbsp;&mu;m/s).</p>
+
+<p>The incoming ion flux is characterized by an angular source distribution. In this 
+example, the source distribution is modeled as cos<sup><em>m</em></sup>(&theta;). Here, 
+&theta; denotes the angle between the incoming direction and the vertical direction, and 
+<em>m</em> is an integer that determines the directivity of the ion beam. In this example, 
+it is set to 100 with the parameter <tt>exponent</tt>.</p>
+
+<p>Incoming ions are deposited and, at the same time, can induce a flux of sputtered particles. 
+The amount of sputtered material is highly dependent on the angle between the incoming direction 
+of the ions and the normal to the target surface. The dependency of the amount of sputtered 
+material on such an angle is specified by the yield function. In the HDP deposition model, 
+the yield function is defined by the values of the parameters <tt>s1</tt> and <tt>s2</tt>, 
+which are 5.5 and &ndash;6, respectively. For details about the yield function, see
+the <cite>Sentaurus&trade; Topography 3D User Guide</cite>.</p>
+
+<p>The amount of  sputtered material that redeposits is set by the <tt>redeposition</tt> parameter 
+(0.1 in the example). The <tt>sputter_rate</tt> parameter (0.95&nbsp;&mu;m/s in the example) 
+specifies a scaling value for the net amount of the redeposited flux, which determines how much 
+redeposition contributes to the oxide growth.</p>
+
+<p>The total amount of deposited oxide is the amount of deposited neutrals and ions, plus the amount 
+of sputtered material that redeposits, minus the amount of locally sputtered material.</p>
+
+<p>For details about the physics of the HDP deposition model and other deposition models, 
+see the <cite>Sentaurus&trade; Topography 3D User Guide</cite>.</p>
+
+<!--=======================-->
+<a name="3.2"></a>
+<h2>2.3.2 Starting the Deposition Process</h2>
+
+<p>To start the simulation of a deposition process on the structure lasting 
+0.04&nbsp;minutes, using the machine defined in 
+<a href="#3.1">Section&nbsp;2.3.1 Defining the Deposition Model</a>, use the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp/sptopo3d_t3d.cmd" startExpr="##start - deposit" endExpr="##end - deposit" excludelines="##*" -->
+<pre>
+deposit spacing={0.01 0.01 0.015} time=0.04
+</pre>
+<!-- grep end -->
+
+<p>The <tt>spacing</tt> parameter specifies the uniform grid used by the 
+level-set algorithm to evolve the surface. Here, dx=0.01&nbsp;&mu;m, dy=0.01&nbsp;&mu;m, 
+and dz=0.015&nbsp;&mu;m.</p>
+
+<p>Sentaurus Topography 3D prints information about the progress of the deposition process 
+in the log file:</p>
+
+<pre>
+deposit
+ time = 0.04 min.
+ material = 'Oxide'.
+ Serial computation mode.
+ Boundary conditions:
+ reflective at x min, reflective at x max,
+ reflective at y min, reflective at y max.
+ --------------
+ Remeshing... took 0.1 s.
+ [  1]:   t= 0.00 Progress: [&gt;         ] 11%  Remaining:   280.1s.
+ [  2]:   t= 0.01 Progress: [=&gt;        ] 23%  Remaining:   234.6s.
+ [  3]:   t= 0.01 Progress: [==&gt;       ] 35%  Remaining:   192.2s.
+ [  4]:   t= 0.02 Progress: [===&gt;      ] 47%  Remaining:   165.1s.
+ [  5]:   t= 0.02 Progress: [====&gt;     ] 59%  Remaining:   131.5s.
+ [  6]:   t= 0.03 Progress: [======&gt;   ] 71%  Remaining:    98.2s.
+ [  7]:   t= 0.03 Progress: [=======&gt;  ] 83%  Remaining:    57.2s.
+ [  8]:   t= 0.04 Progress: [========&gt; ] 95%  Remaining:    16.1s.
+ [  9]:   t= 0.04 Progress: [==========]100%  Remaining:     0.0s.
+ --------------
+ Grid to brep conversion... Performing boolean operations: 
+  simplify: 0% : 100%  
+
+deposit done.
+</pre>
+
+<p class="note">Decreasing the size of the spatial discretization increases the 
+required memory and the CPU time because there are more grid points to store and process. 
+Usually when setting up a deposition or an etching simulation, you need to find a 
+compromise between the required accuracy and the available computational resources.
+A good understanding of the relationship between the discretization sizes and the resulting
+accuracy is important not only when setting up a simulation, but also when interpreting its
+results.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>2.4 Saving the Final Structure</h1>
+
+<p>To save the final structure, use the <tt>save</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp/sptopo3d_t3d.cmd" startExpr="##start - save_final" endExpr="##end - save_final" excludelines="##*" -->
+<pre>
+save file=n@node@_final.tdr
+</pre>
+<!-- grep end -->
+
+<p class="note">When Sentaurus Topography 3D is run from within Sentaurus Workbench,
+if the file name is not specified, the structure will be saved with the default 
+name <tt>n&lt;node&gt;_t3d.tdr</tt>.</p>
+
+<p>Figure 2 shows the processed structure.</p>
+
+<p><a href="images/tp_dep_final.png"><img src="images/tp_dep_final.png" width="300" 
+alt="Final structure" /></a></p>
+
+<p class="caption">Figure 2. Resulting structure after HDP deposition 
+of oxide on top of silicon substrate. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>2.5 Integration With Sentaurus Process</h1>
+
+<p>To show how to use the functionality of Sentaurus Topography 3D from within 
+Sentaurus Process, the HDP deposition example is replicated here in Sentaurus Process.</p>
+
+<p>The <tt>init</tt> command replaces the <tt>define_structure</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp_sp/sprocess_fps.cmd" startExpr="##start - init" endExpr="##end - init" excludelines="##*" -->
+<pre>
+init tdr= @pwd@/init.tdr
+</pre>
+<!-- grep end -->
+
+<p class="note">Here, the initial structure is obtained directly by loading a TDR boundary file.</p>
+
+<p>The <tt>topo</tt> command of Sentaurus Process calls all the related functionality 
+of Sentaurus Topography. For example, the following commands call the Sentaurus 
+Topography 3D <tt>define_deposit_machine</tt> and <tt>deposit</tt> commands from 
+Sentaurus Process:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp_sp/sprocess_fps.cmd" startExpr="##start - deposit" endExpr="##end - deposit" excludelines="#*" -->
+<pre>
+topo define_deposit_machine model= hdp material= Oxide rate= 2 \
+	anisotropy= 0.7 exponent= 100 redeposition= 0.1 \
+	sputter_rate= 0.95 s1= 5.5 s2= -6 sticking= 0.1
+
+topo deposit spacing= {0.01 0.01 0.015} time= 0.04
+</pre>
+<!-- grep end -->
+
+<p>Finally, the <tt>struct</tt> command is used instead of the <tt>save</tt> command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp_sp/sprocess_fps.cmd" startExpr="##start - save" endExpr="##end - save" excludelines="##*" -->
+<pre>
+struct tdr= n@node@_final.tdr
+</pre>
+<!-- grep end -->
+
+<p>The complete Sentaurus Process project can be accessed from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/sptopo3d/depo_hdp_sp</tt>.
+Alternatively, you can find the preprocessed script file <tt>depo_hdp_sp_fps.cmd</tt> 
+in this directory.</p>
+
+<p>To download the preprocessed script file, right-click the following link and choose 
+<strong>Save Target As</strong>: 
+<a href="../../Applications_Library/GettingStarted/sptopo3d/depo_hdp_sp/depo_hdp_sp_fps.cmd">
+depo_hdp_sp_fps.cmd</a>.</p>
+
+<p>To execute the file in Sentaurus Process on the command line, type:</p>
+
+<pre>
+&gt; sprocess depo_hdp_sp_fps.cmd
+</pre>
+
+<p>After the command file is executed, the generated TDR file is <tt>final.tdr</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

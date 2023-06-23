@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device EMW 3. Integrating EMW in Sentaurus Workbench Tool Flow</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device Electromagnetic Wave Solver<br />
+3. Integrating EMW in Sentaurus Workbench Tool Flow</h1>
+
+<p>
+<a href="#1">3.1 Running EMW</a><br />
+<a href="#2">3.2 Using EMW Results in Sentaurus Device</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To describe how to run EMW from Sentaurus Workbench.</li>
+ <li>To describe how to combine EMW simulation results 
+     with Sentaurus Device simulations.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Running EMW</h1>
+
+<p>There are two ways to run EMW:</p>
+
+<ul>
+<li>From the command line as shown in <a href="emw_1.html#1">Section&nbsp;1.1 Starting EMW</a>.</li>
+<li>Having it as a tool within a Sentaurus Workbench project. 
+Sentaurus Workbench will launch EMW automatically when 
+a project is executed.</li>
+</ul>
+
+<p>To add EMW to a Sentaurus Workbench project:</p>
+
+<ol>
+<li>Choose <strong>Tool</strong> &gt; <strong>Add</strong>.<br />
+The Add Tool dialog box opens.</li>
+<li>Click the <strong>Tools</strong> button.</li>
+<li>Select the EMW icon from the Select DB Tool dialog box.</li>
+<li>Click <strong>OK</strong>.</li>
+</ol>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Using EMW Results in Sentaurus Device</h1>
+
+<p>Typically, the absorbed photon density calculated by EMW will 
+be further used in a Sentaurus Device simulation to compute the 
+resulting illuminated device characteristics.</p>
+
+<p>A common Sentaurus tool flow for this would consist of the following:</p>
+
+<ul>
+<li>A Sentaurus Structure Editor node generates a boundary and 
+a mixed-element grid for electrical simulation.</li>
+<li>A Sentaurus Mesh node generates the tensor mesh for 
+EMW from the TDR boundary file of Sentaurus Structure Editor.</li>
+<li>An EMW node calculates the absorbed photon density.</li>
+<li>A Sentaurus Device node uses the absorbed photon density calculated by EMW.</li>
+<li>A Sentaurus Visual node extracts the electrical characteristics from 
+the device simulation results.</li>
+</ul>
+
+<p>Figure 1 shows the tool flow of the Sentaurus Workbench project.</p>
+
+<p><img src="images/emw_toolflow.png" width="561" height="123" alt="Tool flow" /></p> 
+                                                                
+<p class="caption">Figure 1. Common tool flow connecting 
+EMW with Sentaurus Device simulation.</p>
+
+<p>In the following, an extension of the previously used <tt>simple2d</tt>
+Sentaurus Workbench project is discussed. A Sentaurus Device node is added,
+where the short-circuit current of an illuminated p-n junction is calculated,
+thereby using the absorbed photon density from the EMW simulation. The Sentaurus 
+Visual node extracts the calculated short-circuit current.</p>
+
+<p>To achieve this goal, some modifications to the <tt>simple2d</tt> project are
+necessary, which are described tool by tool in the following subsections.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/emw/simple2d-sdevice</tt>.</p>
+
+<!--=========================-->
+<a name="2_sde"></a>
+<h2>3.2.1 Sentaurus Structure Editor Node</h2>
+
+<p>For the electrical simulation, a mixed-element grid is needed with 
+some refinement, as well as doping profiles and electrical contacts. 
+A boundary file for the subsequent tensor-grid generation is saved to 
+<tt>n@node@_bnd.tdr</tt> (where <tt>@node@</tt> is a substitution 
+mark for Sentaurus Workbench to assign an integer during runtime).</p>
+
+<p>The mixed-element grid is generated in Sentaurus Structure Editor 
+and is saved to the <tt>n@node@_el_msh.tdr</tt> file. To further understand the 
+modifications to the command file of Sentaurus Structure Editor, 
+see the <a href="../sde/sde_menu.html">Sentaurus Structure Editor module</a>.</p>
+
+<!--=========================-->
+<a name="2_smesh"></a>
+<h2>3.2.2 Sentaurus Mesh Node</h2>
+
+<p>The Sentaurus Mesh node is unmodified.</p>
+
+<!--=========================-->
+<a name="2_emw"></a>
+<h2>3.2.3 EMW Node</h2>
+
+<p>In the EMW command file, you must specify the option to interpolate the
+extracted absorbed photon density or power flux density to the mixed-element
+grid used in Sentaurus Device. This is achieved with the following syntax:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d-sdevice/emw_eml.cmd" startExpr="*Name*n@node@_g*" startOffset=-1 EndExpr="}*" -->
+<pre>
+Extractor {
+  Name     = &quot;n@node@_g&quot;
+  Quantity = {absorbedPhotonDensity, PowerFluxDensity}
+  GridFile = &quot;@[relpath n@node|sde@_el_msh.tdr]@&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>As a result, the absorbed photon density is written to the 
+<tt>n5_g_eml.tdr</tt> file, which has the same grid points as 
+the mixed-element grid.</p>
+
+<p class="note">Interpolation is performed point-to-point in a 
+nonconservative way. Therefore, if interference patterns (from 
+the dense tensor grid) are not resolved adequately on the mixed-element 
+grid, the total number of absorbed photons can differ.</p>
+
+<!--=========================-->
+<a name="2_sdevice"></a>
+<h2>3.2.4 Sentaurus Device Node</h2>
+
+<p>To load the external absorbed photon density profile, the unified interface for 
+optical generation computation is used. To read the absorbed photon density from the 
+<tt>n5_g_eml.tdr</tt> file, the following lines are set in the Sentaurus Device 
+command file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d-sdevice/sdevice_des.cmd" startExpr="*opticalgenerationinput*" Lines=1 header="File {...\n" footer="}" -->
+<pre>
+File {...
+
+  OpticalGenerationInput = &quot;@[relpath n@node|emw@_g_eml.tdr]@&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>By default, Sentaurus Device looks for a dataset <tt>OpticalGeneration</tt>. 
+To use the absorbed photon density, in the <tt>Physics{Optics(OpticalGeneration(...))}</tt> 
+section, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d-sdevice/sdevice_des.cmd" startExpr="*ReadFromFile*(*" lines=1 -->
+<pre>
+      ReadFromFile(Datasetname=AbsorbedPhotonDensity)
+</pre>
+<!-- grep end -->
+
+<p>The absorbed photon density is converted to optical carrier generation by 
+the quantum yield model in the <tt>Physics{Optics(OpticalGeneration(...))}</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d-sdevice/sdevice_des.cmd" startExpr="*quantumyield*" Lines=1 -->
+<pre>
+      QuantumYield(StepFunction(EffectiveBandgap)) 
+</pre>
+<!-- grep end -->
+
+<p>This model assumes that all photons with an energy larger than the effective 
+band gap will be converted to one electron&ndash;hole pair; other photons 
+do not contribute to carrier generation.</p>
+
+<!--=========================-->
+<a name="2_svisual"></a>
+<h2>3.2.5 Sentaurus Visual Node</h2>
+
+<p>Sentaurus Visual extracts the last calculated value for the current at the 
+<tt>nContact</tt> at 0&nbsp;V:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d-sdevice/svisual_vis.tcl" startExpr="set*jsc*" Lines=1 -->
+<pre>
+set jsc [lindex [get_variable_data &quot;nContact TotalCurrent&quot; -dataset $ds] end]
+</pre>
+<!-- grep end -->
+
+<p>This value corresponds to the short-circuit 
+current and is returned to Sentaurus Workbench.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

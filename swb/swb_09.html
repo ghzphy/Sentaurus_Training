@@ -1,0 +1,612 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Workbench 9. Tree Navigation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_08.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_10.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Workbench<br />9. Tree Navigation</h1>
+
+<p>
+ <a href="#1">9.1 Tree Navigation Concept</a><br />
+ <a href="#2">9.2 Node Navigation</a><br />
+ <a href="#3">9.3 Reserved Keywords</a><br />
+ <a href="#4">9.4 Execution Dependencies</a><br />
+ <a href="#5">9.5 The &quot;/i&quot; and &quot;/o&quot; Reference Options</a><br />
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To provide deeper insight into the tree navigation in Sentaurus Workbench.</li> 
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>9.1 Tree Navigation Concept</h1>
+
+<p>The common strategy for data exchange between different tools 
+in a Sentaurus Workbench project uses the concept of <em>tree navigation</em>, 
+which is based on the fact that each node in a simulation tree has a 
+unique number. When manipulating tool inputs, you can enter preprocessing 
+commands (for example, <tt>#if</tt> and <tt>#include</tt>) and special 
+<tt>@...@</tt> constructions, which are evaluated and substituted 
+during a project preprocess.</p>
+
+<p>To show node numbers:</p>
+
+<ul>
+<li>Choose <strong>View</strong> &gt; <strong>Tree Options</strong> &gt; 
+<strong>Node Numbers</strong>, or press Ctrl+2.</li>
+</ul>
+
+<p>Press the F9 key to show both the node number and the parameter value 
+in the same cell (see Figure&nbsp;1).</p>
+
+<p><img src="images/swb_treenavi.png" width="520" height="487" 
+alt="Tree representation in Sentaurus Workbench GUI" /></p>
+
+<p class="caption">Figure 1. Project tree representation in GUI of Sentaurus Workbench.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>9.2 Node Navigation</h1>
+
+<p>A complete Sentaurus Workbench project, showing the standard node navigation 
+and parameter operations, is located in the directory 
+<tt>Applications_Library/GettingStarted/swb/node_preprocess</tt>.</p>
+
+<p>Load the project into Sentaurus Workbench and preprocess it (press Ctrl+P). Then, 
+look at each particular node input (<tt>pp*.cmd</tt>) to see how the preprocessor 
+interprets the commands.</p>
+
+<p>The node number for each particular tool in a project can be accessed 
+using the <tt>@node@</tt> specification in a tool command file. For 
+example, for the project in Figure&nbsp;1, the following entries 
+have been put into the first tool input (tool1):</p>
+
+<table>
+<tr>
+<th>Node specification</th>
+<th>Tool instance</th>
+</tr>
+
+<tr>
+<td>
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool1_fps.cmd" startExpr="@node@*" endExpr="*unique*" -->
+<pre>
+@node@
+@node:2@
+
+@node:first@
+@node:last@
+
+@node:+2@
+#if &quot;@node@&quot; == &quot;@node:last@&quot;
+# last node, no next experiment exists. 
+# do not execute this node
+#noexec
+#else
+@node:+1@
+#endif
+
+@node:index@
+@node:max@
+
+@node|1@
+@node|+1@
+
+@node|tool1@
+@node|tool2@
+
+@node:all@
+@node|tool1:all@
+
+@node|1:all@
+@node|tool2:all@
+
+@[lsort -unique &quot;@node|1:all@&quot; ]@
+</pre>
+<!-- grep end -->
+</td>
+
+<td class="imgline"><img src="images/swb_au_nodesp.png" width="157" height="467" 
+alt="Sentaurus Process node" /></td>
+</tr>
+</table>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/swb/node_preprocess/tool1_fps.cmd">
+tool1_fps.cmd</a>.</p>
+
+<p>Table 1 illustrates how Sentaurus Workbench interprets these entries during
+the project preprocess for node number 2. The Description column assumes a
+horizontal project orientation. For a vertical project orientation, the definitions 
+of the words <em>right</em> and <em>below</em>, and <em>horizontal</em> and 
+<em>vertical</em> in the description should be exchanged.</p>
+
+<table>
+<caption>Table 1. Node navigation semantics.</caption>
+
+<tr>
+<th>Command entry</th>
+<th>Result after preprocessing</th>
+<th>Description</th>
+</tr>
+   
+<tr>
+<td><tt>@node@</tt></td>
+<td>2</td>
+<td>Returns the current node number.</td>
+</tr>
+
+<tr>
+<td><tt>@node:2@</tt></td>
+<td>3</td>
+<td>Returns the second node from top in the current column.<br />
+Here, a colon (:) is the operator used to navigate between different experiments
+within the same columns.</td> </tr>
+
+<tr>
+<td><tt>@node:first@</tt></td>
+<td>2</td>
+<td>Returns the number of the first node in the column.</td>
+</tr>
+
+<tr>
+<td><tt>@node:last@</tt></td>
+<td>6</td>
+<td>Returns the number of the last node in the column.</td>
+</tr>
+
+<tr>
+<td><tt>@node:+2@</tt></td>
+<td>4</td>
+<td>Returns the node number, that is two positions below the current node.<br />
+If a node does not exist in that relative position, then the last existing node in
+this direction is returned.</td>
+</tr>
+
+<tr>
+<td>
+<pre>
+#if @node@ ==
+  @node:last@
+#noexec
+#else
+@node:+1@
+#endif
+</pre>
+</td>
+<td>For node=2: 3<br />
+For last node=6: node is not executed</td>
+<td>Relative references such as <tt>@node:-1@</tt>, and <tt>@node|+1@</tt> must
+be used with care, since they might refer to nonexistent node numbers. To avoid
+such problems, it is recommended that you check using the <tt>#if</tt>
+command.<br /><br />
+
+In the example, for the last node in the column, the reference to the 
+node below does not exist. Thus, Sentaurus Workbench is instructed not 
+to execute the node - node status will stay "white". Note, however, that
+subsequent tools are still being executed. If you want to avoid the execution of
+subsequent nodes, just prune the node, see 
+<a href="swb_04.html#Prune">Section&nbsp;4.4 Pruning Project Trees</a>.</td>
+</tr>
+
+<tr>
+<td><tt>@node:index@</tt></td>
+<td>1</td>
+<td>Returns the index of the current node in its column starting from 1.</td>
+</tr>
+
+<tr>
+<td><tt>@node:max@</tt></td>
+<td>5</td>
+<td>Returns the index of the last node in the column, which is 
+equivalent to the number of splits on the current tool level in 
+the project tree.</td>
+</tr>
+
+<tr>
+<td><tt>@node|1@</tt><br />or<br /><tt>@node|+1@</tt></td>
+<td>12 13</td>
+<td class="imgline">Returns node numbers for the next subsequent 
+tool in the project that are in the same branch of the simulation 
+tree.<br />
+Here, a vertical bar (|) is the operator to navigate horizontally between 
+different tool nodes in the project.<br /><br />
+
+<img src="images/swb_au_navnode.png" width="350" alt="Navigating nodes" /><br /><br />
+
+When navigating, only real nodes are counted. 
+Virtual nodes (light-blue colored) are ignored.</td>
+</tr>
+    
+<tr>
+<td><tt>@node|tool1@</tt></td>
+<td>2</td>
+<td>Returns the node number for the &quot;tool1&quot; tool name in the 
+current branch of the simulation tree. Using the tool name for node 
+navigation sometimes is more convenient, because you do not need to 
+consider at which project tree level a node is located, but 
+can directly access its number using a tool name.</td>
+</tr>
+
+<tr>
+<td><tt>@node|tool2@</tt></td>
+<td>12 13</td>
+<td>Returns the node numbers for the &quot;tool2&quot; tool name in the current 
+branch of the simulation tree. This command is equivalent to 
+<tt>@node|+1@</tt>.</td>
+</tr>
+
+<tr>
+<td><tt>@node:all@</tt></td>
+<td>2 3 4 5 6</td>
+<td>Returns the list of node numbers in the current project level.</td>
+</tr>
+
+<tr>
+<td><tt>@node|tool1:all@</tt></td>
+<td>2 3 4 5 6</td>
+<td>Returns the list of node numbers for the &quot;tool1&quot; tool name 
+in the simulation tree. This command is equivalent to 
+<tt>@node:all@</tt>.</td>
+</tr>
+
+<tr>
+<td><tt>@node|+1:all@</tt><br /> or <br /> <tt>@node|tool2:all@</tt></td>
+<td>12 13 14 15 16 17 18 19 20 21 12 13 14 15 16 17 18 19 20 21</td>
+<td>Returns a list of all node numbers for the next subsequent tool in 
+the project. Numbers in the list are repeated according to a 
+number of splits on the next tool level (in this case, two 
+repetitions of the number set are produced).</td> 
+</tr>
+
+<tr>
+<td><tt>@[lsort -unique &quot;@node|+1:all@&quot; ]@</tt></td>
+<td>12 13 14 15 16 17 18 19 20 21</td>
+<td>To produce the unique node number list without repetitions of the previous
+<tt>@...:all@</tt> expressions.<br /><br />
+
+The <tt>@[...]@</tt> construction instructs Sentaurus Workbench that there are 
+Tcl commands inside, which must be evaluated during node preprocessing.</td>
+</tr>
+</table>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>9.3 Reserved Keywords</h1>
+
+<p>There are other <tt>@...@</tt> reserved keywords in Sentaurus Workbench, 
+which can be useful for tree navigation and data analysis. The most frequently 
+used keywords are collected in the second SDE tool input (tool2) of the project 
+shown in Figure&nbsp;1.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/swb/node_preprocess/tool2_dvs.cmd">
+tool2_dvs.cmd</a>.</p>
+
+<table>
+<caption>Table 2. Reserved Sentaurus Workbench keywords.</caption>
+<tr>
+<th>Keyword</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>@previous@</tt></td>
+<td>Returns the node number of the previous node in the tree branch. 
+Used to create node execution dependency 
+(see <a href="#4">Section 9.4 Execution Dependencies</a>).<br />
+It cannot be used in the first tool input in the flow, for which
+a previous node does not exist.</td>
+</tr>
+
+<tr>
+<td><tt>@experiment@</tt></td>
+<td class="imgline">Returns the experiment number to which a node belongs.
+<br /><br />
+
+<img src="images/swb_au_experiment.png" width="452" height="217" alt="Experiment number" /></td>
+</tr>
+
+<tr>
+<td><tt>@experiments@</tt></td>
+<td>Returns all the experiments to which a node belongs as a list.</td>
+</tr>
+
+<tr>
+<td><tt>@tool_label@</tt></td>
+<td>The label of a tool instance in the simulation flow.<br /><br />
+
+<a href="images/swb_au_toolabel.png"><img src="images/swb_au_toolabel.png" width="460" 
+alt="Tool label" /></a></td>
+</tr>
+
+<tr>
+<td><tt>@pwd@</tt></td>
+<td>Returns an absolute path to the project depository.</td>
+</tr>
+
+<tr>
+<td><tt>@pwdout@</tt></td>
+<td>Returns an absolute path to the project depository in hierarchical project organization.
+Takes into account the possibility of remote data location outside of the project directory.</td>
+</tr>
+
+<tr>
+<td><tt>@nodedir@</tt></td>
+<td>Returns the path to the corresponding node folder for hierarchical 
+project organization, relative to <tt>@pwdout@</tt>.</td>
+</tr>
+
+<tr>
+<td><tt>@tdrboundary@</tt></td>
+<td>Returns the full name of the device structure boundary file, 
+which is supposed to be loaded or saved in the current node. This 
+command assumes that a boundary is created by either Sentaurus Process 
+or Sentaurus Structure Editor, and it automatically substitutes the 
+keyword with a proper file name. If specified in other tool inputs, 
+this specification will generate a preprocessor error.</td>
+</tr>
+
+<tr>
+<td><tt>@tdr@</tt></td>
+<td>Returns the grid file name, given in TDR data format, which 
+appears to be a result of the preceding process simulation or meshing 
+step. Sentaurus Workbench automatically assigns a name according 
+to the provided tool sequence in the project.</td>
+</tr>
+<tr>
+<td><tt>@commands@</tt></td>
+<td>Returns the tool preprocessed file name ready for execution.</td>
+</tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table>
+<caption>Table 3. Summary of specially reserved keywords for Sentaurus Device.</caption>
+
+<tr>
+<th>Keyword</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><tt>@tdrdat@</tt></td>
+<td>Returns a file name using the 
+<tt>n&lt;current_node_number&gt;_des.tdr</tt> format, which is suitable 
+for the <tt>Plot</tt> file specification in the <tt>File</tt> 
+section of the Sentaurus Device command file. Therefore, it is usually 
+used as a parameter of the <tt>Plot</tt> statement: 
+<tt>Plot=&quot;@tdrdat@&quot;</tt>.</td>
+</tr>
+
+<tr>
+<td><tt>@plot@</tt></td>
+<td>Returns a file name using the 
+<tt>n&lt;current_node_number&gt;_des.plt</tt> format, which is suitable 
+for the <tt>Current</tt> specification in the <tt>File</tt> section 
+of the Sentaurus Device command file. It is used as a parameter of the 
+<tt>Current</tt> statement, <tt>Current=&quot;@plot@&quot;</tt>, which 
+refers to the results of the electrothermal device simulation, such as 
+currents, voltages, time, temperature, and charges.</td>
+</tr>
+
+<tr>
+<td><tt>@log@</tt></td>
+<td>Returns a file name using the 
+<tt>n&lt;current_node_number&gt;_des.log</tt> format, which is suitable 
+for the <tt>Output</tt> specification in the <tt>File</tt> section of the 
+Sentaurus Device command file. Therefore, it is usually used as a parameter 
+of the <tt>Output</tt> statement: <tt>Output=&quot;@log@&quot;</tt>.</td>
+</tr>
+
+<tr>
+<td><tt>@acplot@</tt></td>
+<td>Returns a file name using the 
+<tt>n&lt;current_node_number&gt;_ac_des.plt</tt> format. It is used as 
+a parameter of the <tt>ACExtract</tt> statement in the <tt>File</tt> 
+section of the Sentaurus Device command file, 
+<tt>ACExtract=&quot;@acplot@&quot;</tt>, which refers to the results 
+of small-signal AC analysis.</td>
+</tr>
+
+<tr>
+<td><tt>@parameter@</tt></td>
+<td>Returns a file name using the 
+<tt>n&lt;current_node_number&gt;_des.par</tt> format. It is used as a 
+parameter of the <tt>Parameter</tt> statement in the <tt>File</tt> 
+section of the Sentaurus Device command file, 
+<tt>Parameter=&quot;@parameter@&quot;</tt>, which refers to the 
+input parameter file, containing material properties and the kinetic 
+model coefficients.</td>
+</tr>
+</table>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>9.4 Execution Dependencies</h1>
+
+<p>When running a project, the node execution order is defined by node 
+dependencies. Sentaurus Workbench immediately submits all nodes that are ready
+for execution, assuming that all their prerequisite nodes have been executed already.</p>
+
+<p>To have a node execution dependent on the successful completion of the
+previous node or nodes in the project tree, the special preprocess command 
+<tt>#setdep</tt> can be used in the following form:</p>
+
+<pre>
+#setdep &lt;list_of_nodes&gt;
+</pre>
+
+<p>Having found such a command, the preprocessor ensures that a current node 
+is not executed before all nodes in the list have the status &quot;done&quot;.</p>
+
+<table>
+<caption>Table 4. Commands to activate node execution dependencies.</caption>
+
+<tr>
+<th>Command</th>
+<th>Result</th>
+</tr>
+
+<tr>
+<td><tt>#setdep @node|-1@</tt></td>
+<td>Sets the dependency on a previous node in the project tree branch.</td>
+</tr>
+
+<tr>
+<td><tt>#setdep @node|-1:all@</tt></td>
+<td>Requests the node execution only when all nodes in the previous 
+node column are finished.</td>
+</tr>
+
+<tr>
+<td><tt>@previous@</tt></td>
+<td>Specifying <tt>@previous@</tt> in the input automatically 
+triggers a corresponding node dependency.</td>
+</tr>
+</table>
+
+<p>To unset node dependency, use the <tt>#remdep</tt> command.</p>
+
+<p class="note">When a project remains in Editable mode (see 
+<a href="swb_07.html#Editable">Section 7.4 Runtime Editing Mode</a>), selecting the 
+<strong>Preprocess, then run</strong> option for nodes in the Run Project dialog box 
+does not generate a node dependency. To activate node dependency, a project or node 
+must be preprocessed explicitly by choosing <strong>Nodes</strong> &gt; 
+<strong>Preprocess</strong> or by pressing Ctrl+P.</p>
+
+<p>In some cases, you might want to change this predefined project execution order. 
+Sentaurus Workbench allows you to do this by setting a concurrency mode for experiments 
+in the Run Project dialog box:</p>
+
+<ul>
+<li><strong>Concurrency Mode: Unlimited</strong> is the default mode for project execution.<br />
+  <ul>
+  <li>Node running order is defined by the node dependencies.</li>
+  <li>Nodes are executed on a tool-by-tool basis, when the earlier positioned tool nodes 
+      in the project are executed first.</li>
+  </ul>
+</li>
+ 
+<li><strong>Concurrency Mode: Limited</strong> restricts the maximum number of running 
+experiments that can be executed simultaneously, by a given number.<br />
+  <ul>
+  <li>Nodes are executed on an experiment-by-experiment basis, and experiments with 
+      the smallest index are executed first.</li>
+  <li>The number of simultaneously run experiments is given as input. This allows you 
+      to control the number of runs in case of limited computational resources or limited 
+      license availability.</li>    
+  </ul>
+</li>
+</ul>
+
+<p><img src="images/swb_au_concur.png" width="458" height="431" 
+alt="Run Project dialog box with concurrency mode" /></p>
+
+<p class="caption">Figure 5. Run Project dialog box with Limited selected as the 
+concurrency mode.</p>
+
+<p>To make the limited concurrency mode the default:</p>
+
+<ol>
+<li>Choose <strong>Edit</strong> &gt; <strong>Preferences</strong>.</li>
+<li>In the SWB Preferences dialog box, expand <strong>Scheduler</strong> &gt; 
+<strong>General Settings</strong>.</li>
+<li>Set <strong>Default Concurrency of Running Experiments</strong> to <strong>Limited</strong>.</li>
+<li>Click <strong>Apply</strong>.</li>
+</ol>
+
+<p class="note">If you switch on the <strong>Run Limits</strong> option, then 
+it deactivates the concurrency mode and activates the run limits specified by users 
+inside a dedicated <tt>runlimits.xml</tt> file. For details about the 
+<strong>Run Limits</strong> option, see the 
+<cite>Sentaurus&trade; Workbench User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>9.5 The &quot;/i&quot; and &quot;/o&quot; Reference Options</h1>
+
+<p>Each <tt>@...@</tt> reference in Sentaurus Workbench can have an 
+option, specifying whether the reference addresses the input or 
+output interface of a tool.</p>
+
+<p>The possible flags (options) are:</p>
+
+<ul>
+<li><tt>@&lt;ABC&gt;/i@</tt> refers to the input file of type 
+<tt>&lt;ABC&gt;</tt> for the current tool.</li>
+<li><tt>@&lt;ABC&gt;/o@</tt> refers to the output file of type 
+<tt>&lt;ABC&gt;</tt> for the current tool.</li>
+</ul>
+
+<p>If no option is specified, then the Sentaurus Workbench preprocessor assumes the
+input file (<tt>&quot;/i&quot;</tt> option), which works seamlessly for most
+tools. The only exception is Sentaurus Structure Editor, for which you might want
+either to load input from the previous tool (for example, Sentaurus Process) or
+to create input for the subsequent tool (for example, Sentaurus Mesh). This is where
+the <tt>&quot;/i&quot;</tt> and <tt>&quot;/o&quot;</tt> options are helpful.</p>
+
+<p>For example, the following commands in the file 
+<a href="../../Applications_Library/GettingStarted/swb/node_preprocess/tool2_dvs.cmd">
+tool2_dvs.cmd</a>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/tool2_dvs.cmd" startExpr="*input output*" startOffset=1 Lines=2 excludeLines=";;*" -->
+<pre>
+  @tdrboundary/i@
+  @tdrboundary/o@
+</pre>
+<!-- grep end -->
+
+<p>will be interpreted by the Sentaurus Workbench preprocessor for node 12 as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/swb/node_preprocess/pp12_dvs.cmd" startExpr="*input output*" startOffset=1 Lines=2 excludeLines=";;*" -->
+<pre>
+  n2_bnd.tdr
+  n12_bnd.tdr
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_08.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="swb_10.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Visual 3. Working With XY Plots</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Visual<br />3. Working With XY Plots</h1>
+
+<p>
+ <a href="#1">3.1 Introduction</a><br />
+ <a href="#2">3.2 Creating an XY Plot</a><br />
+ <a href="#3">3.3 Adjusting Curve Properties</a><br />
+ <a href="#4">3.4 Modifying Plot Appearance</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the basic controls of visualizing xy plots in Sentaurus Visual.</li>
+</ul>
+
+<!--==================================================-->
+<a name="1"></a> 
+<h1>3.1 Introduction</h1>
+
+<p>Sentaurus Visual can create xy plots, also referred to as 1D plots. Such 
+plots are commonly produced to visualize data stored in PLT files produced 
+by Sentaurus Device.</p>
+
+<p>This section demonstrates how to create I<sub>d</sub>&ndash;V<sub>g</sub> 
+curves using the user interface of Sentaurus Visual and how to customize plot 
+appearance.</p>
+
+<p class="note">The files discussed in this section are part of the Sentaurus
+Workbench project <tt>export</tt>. The complete project can be investigated from 
+within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/svisual/export</tt>.</p>
+
+<!--==================================================-->
+<a name="2"></a> 
+<h1>3.2 Creating an XY Plot</h1>
+
+<p>To follow this section, load the files <tt>idvg1_des.plt</tt> and <tt>idvg2_des.plt</tt> 
+from the Sentaurus Workbench project
+<tt>Applications_Library/GettingStarted/svisual/export</tt> into Sentaurus
+Visual.</p>
+
+<p>This section concentrates on the Sentaurus Visual user interface and functionality.</p> 
+
+<p>Loading an xy file does not automatically plot the dataset associated with it. 
+Instead, the loaded datasets appear in the Data Selection panel, and a blank plot is 
+created. To plot I<sub>d</sub>&ndash;V<sub>g</sub> curves:</p>
+
+<ol>
+<li>Select the loaded dataset. To select multiple datasets, hold the Ctrl key 
+and click the required datasets.</li>
+
+<li>To assign V<sub>g</sub> to the x-axis, select <strong>gate</strong> in the 
+middle pane and then <strong>InnerVoltage</strong> in the bottom pane, and 
+click the <strong>To X-Axis</strong> button. Figure 1 shows the Data Selection panel 
+at this stage.</li>
+
+<li>To assign I<sub>d</sub> data to the y-axis, select <strong>drain</strong> 
+in the middle pane and then <strong>TotalCurrent</strong> in the bottom pane, 
+and click the <strong>To Left Y-Axis</strong> button.</li>
+</ol>
+
+<p><img src="images/sv_plot_XY_selection.png" width="396" height="480" 
+alt="Data Selection panel showing active 1D dataset and interface to create xy plots" /></p>
+
+<p class="caption">Figure 1. Data Selection panel showing active 1D datasets 
+and interface to create xy plots.</p>
+
+<p>I<sub>d</sub>&ndash;V<sub>g</sub> curves are generated according to this selection. 
+At this time, the plot appearance, such as legend font size and tick number formatting, 
+reflects user preferences. Subsequent sections will show how to customize the plot 
+appearance. To make future plots appear in a particular format, you need to customize 
+the user preferences for xy plots.</p>
+
+<p><img src="images/sv_plot_XY_idvg1.png" width="465" height="457" 
+alt="Drain current versus gate voltage curves" /></p>
+
+<p class="caption">Figure 2. Drain current versus gate voltage curves plotted 
+in Sentaurus Visual for two datasets. The plot appearance has not been 
+customized and reflects user preferences.</p>
+
+<!--==================================================-->
+<a name="3"></a> 
+<h1>3.3 Adjusting Curve Properties</h1>
+
+<p>To adjust the curve appearance on the plot, the curve must be selected first. 
+To select a curve, either click the curve itself with the 
+<img class="imgline" src="images/icons/select.png" width="10" height="16" alt="Select icon" /> 
+Select tool, or select the curve from the <strong>Curves</strong> tab of the 
+Data Selection panel.</p>
+
+<p><img src="images/sv_plot_XY_data.png" width="513" height="391"
+alt="Curves tab of Data Selection panel" /></p>
+
+<p class="caption">Figure 3. Curves tab of Data Selection panel showing 1D curves.</p>
+
+<p>If two curves are close to each other, accurately picking one curve using the 
+<img class="imgline" src="images/icons/select.png" width="10" height="16" alt="Select icon" /> 
+Select tool can be challenging. To facilitate selection of curves that are in 
+close proximity, Sentaurus Visual can change between two neighboring curves when 
+selecting a point.</p>
+
+<p>You can change curve properties on the <strong>Style</strong> subtab. You can select 
+one or more curves, and change properties such as visibility and line thickness by using 
+the icons above the list of curves.</p>
+
+<p>You can change the order of curves by selecting the required curves and then clicking 
+the Up Arrow or Down Arrow button in the upper-right part of the tab.</p>
+
+<!--==================================================-->
+<a name="4"></a> 
+<h1>3.4 Modifying Plot Appearance</h1>
+
+<p>To control the axis range, number formatting, font selection, font size, and so on, 
+click the axis to open the Axis Properties panel.</p>
+
+<p>Depending on the window resolution and some other Sentaurus Visual settings, 
+the Axis Properties panel might open another panel and you will need to move 
+the Axis Properties panel to the front manually by clicking it.</p>
+
+<p><img src="images/sv_plot_XY_axis_prop.png" width="461" height="306" 
+alt="Axis Properties panel" /></p>
+
+<p class="caption">Figure 4. Axis Properties panel.</p>
+
+<p>To edit the axis title, click the <strong>Title/Scale</strong> tab. To include 
+Greek symbols in the title, use the following XML tag: 
+<tt>&lt;greek&gt;character&lt;/greek&gt;</tt>.</p>
+
+<p>To format text as a subscript, use the following XML tag: 
+<tt>&lt;sub&gt;character&lt;/sub&gt;</tt>. To format text as a superscript, 
+use the following XML tag: <tt>&lt;sup&gt;character&lt;/sup&gt;</tt>.</p>
+
+<p><a href="images/sv_plot_XY_axis_title.png"><img src="images/sv_plot_XY_axis_title.png" 
+width="570" alt="Editing axis title in Axis Properties panel" /></a></p>
+
+<p class="caption">Figure 5. Editing axis title in Axis Properties panel. 
+(Click image for full-size view.)</p>
+
+<p>Unicode character support is available only for xy plots. You can use special 
+characters in the plot title, axis titles, and legend of xy plots.</p>
+
+<p class="note">Both 2D and 3D plots do not support unicode characters.</p>
+
+<p>To modify the legend appearance, click a legend. Similarly, to edit general plot 
+properties, click anywhere on the plot. The Plot Properties panel allows you 
+to modify plot scaling, the grid, and colors.</p>
+
+<!--==================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_2.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_4.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

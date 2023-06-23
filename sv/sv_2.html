@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Visual 2. Visualizing 2D Structures</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Visual <br />2. Visualizing 2D Structures</h1>
+
+<p>
+ <a href="#1">2.1 Overview</a><br />
+ <a href="#2">2.2 Viewing the Structure</a><br />
+ <a href="#3">2.3 Materials and Regions</a><br />
+ <a href="#4">2.4 Selecting Data Fields</a><br />
+ <a href="#5">2.5 Zooming and Panning</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To introduce the basic controls of visualizing 2D structures in Sentaurus Visual.</li>
+</ul>
+
+<!--==================================================-->
+<a name="1"></a> 
+<h1>2.1 Overview</h1>
+
+<p>In this section, you will work with a 2D structure and learn how to control 
+the view of the structure, how to display and hide materials and regions, how 
+to zoom and pan the structure, and how to display the mesh and boundaries. You also 
+will learn how to change the view of the structure, and to zoom and pan the structure.</p>
+
+<!--==================================================-->
+<a name="2"></a> 
+<h1>2.2 Viewing the Structure</h1>
+
+<p>To follow this section, download the following file by right-clicking and choosing 
+<strong>Save Target As</strong>:</p>
+
+<ul>
+<li><a href="files/ldmos_des.tdr">ldmos_des.tdr</a></li>
+</ul>
+
+<p>Figure 1 shows the new plot with device structure after the <tt>ldmos_des.tdr</tt> 
+file has been loaded. This file is an output file of Sentaurus Device, representing a 2D 
+LDMOS transistor structure and the corresponding solution variables stored on the final 
+element mesh.</p>
+
+<p><a href="images/sv_ldmos_loaded.png"><img src="images/sv_ldmos_loaded.png" 
+width="570" alt="LDMOS structure loaded" /></a></p>
+
+<p class="caption">Figure 1. Device structure after ldmos_des.tdr file has 
+been loaded. (Click image for full-size view.)</p>
+
+<p>When loading a TDR file, Sentaurus Visual:</p>
+
+<ul>
+<li>Draws the device structure in a new frame in the plot area. The file name of 
+the loaded structure without extension is displayed at the top of the plot. This is 
+the dataset name.</li>
+
+<li>Displays the materials and regions on the <strong>Materials</strong> and 
+<strong>Regions</strong> tabs of the Data Selection panel.</li>
+
+<li>Displays the solution variables from the data file on the 
+<strong>Scalars</strong> tab of the Data Selection panel. By default, Sentaurus Visual 
+draws the contour bands of doping concentration in the structure.</li>
+</ul>
+
+<!--==================================================-->
+<a name="3"></a> 
+<h1>2.3 Materials and Regions</h1>
+
+<p>Two-dimensional or 3D plots are composed of materials that are distributed 
+in regions. The Data Selection Panel provides a list of materials present in the 
+structure and allows you to control how these materials are rendered.</p>
+
+<p>The tabs in the Data Selection panel are:</p>
+
+<ul>
+<li>The <strong>Materials</strong> tab controls how materials are displayed in the plot area.</li>
+<li>The <strong>Regions</strong> tab controls how regions are displayed in the plot area.</li>
+<li>The <strong>Lines/Particles</strong> tab controls how contacts are rendered and 
+how special lines, such as p-n junction and depletion region boundaries, are displayed.</li>
+</ul>
+
+<p><img src="images/sv_selection_panel.png" width="394" height="781" alt="Data Selection panel" /></p>
+
+<p class="caption">Figure 2. Data Selection panel.</p>
+
+<p>In the Data Selection panel, the icons at the top of the <strong>Materials</strong> 
+and <strong>Regions</strong> tabs control specifically how materials are rendered.</p>
+
+<table width="570">
+<caption>Table 1. Icons for controlling how materials and regions are rendered.</caption>
+
+<tr>
+<th>Icon</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/matregion_bulk.png" width="24" height="24" 
+alt="Show or hide bulk icon" /></td>
+<td>Shows or hides the bulk.</td>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/matregion_fieldcontour.png" width="24" height="24" 
+alt="Show or hide field contour icon" /></td>
+<td>Shows or hides the contour fields.</td>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/matregion_mesh.png" width="24" height="24" 
+alt="Show or hide mesh icon" /></td>
+<td>Shows or hides the mesh.</td>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/matregion_boundary.png" width="24" height="24" 
+alt="Show or hide boundary icon" /></td>
+<td>Shows or hides the borders.</td>
+</tr>
+
+<tr>
+<td><img class="imgline" src="images/icons/matregion_translucency.png" width="24" height="24" 
+alt="Show or hide translucency icon" /></td>
+<td>Switches on or switches off translucency.</td>
+</tr>
+</table>
+
+<p>Clicking the icon itself shows or hides the specified property for all materials or regions 
+in the active plot. However, selecting the check box next to a material or region name shows 
+or hides the specified property only for that material or region. For example, 
+clearing the check box in the second column for the material &quot;Oxide&quot; would switch 
+off contour fields only in the material Oxide (see Figure&nbsp;3).</p>
+
+<p><img src="images/sv_clearing_field_checkbox.png" width="396" height="237" 
+alt="Data Selection panel for materials highlighting the cleared check box" /></p>
+
+<p class="caption">Figure 3. Data Selection panel for materials, showing the cleared check box 
+to hide contour fields in the material Oxide only.</p>
+
+<!--==================================================-->
+<a name="4"></a> 
+<h1> 2.4 Selecting Data Fields</h1>
+
+<p>The lower part of the Data Selection panel is where you can control how data fields 
+are displayed. Both scalar and vector plots can be displayed in Sentaurus Visual. 
+To create a contour plot, select the required property to be plotted on the 
+<strong>Scalars</strong> tab. The range and levels are set automatically, but they 
+can be customized using the <strong>Range</strong> and <strong>Levels</strong> tabs.</p>
+
+<p>To better understand how data-field plotting is controlled, here is an example with 
+instructions to plot the impact ionization rate and the current flowlines at breakdown:</p>
+
+<ol>
+<li>Download the LDMOS structure by right-clicking the link here and choosing 
+ <strong>Save Target As</strong>:<br />
+ <ul>
+ <li><a href="files/ldmos_des.tdr">ldmos_des.tdr</a></li>
+ </ul>
+</li>
+
+<li>Load the file <tt>ldmos_des.tdr</tt> 
+(see <a href="sv_1.html#3">Section 1.3 Loading Data Files</a>).</li>
+
+<li>On the <strong>Scalars</strong> tab, select the <tt>ImpactIonization</tt> 
+field from the list.</li>
+
+<li>For the <tt>ImpactIonization</tt> field, select the check box in the first column 
+for contour fields 
+<img class="imgline" src="images/icons/matregion_fieldcontour.png" width="24" height="24" 
+alt="Field contour icon" />.<br />
+Colored contour bands for the impact ionization rate are shown. The range is determined 
+automatically, and logarithmic interpolation is chosen following the specification in 
+the <tt>datexcodes.txt</tt> file.</li>
+
+<li>With the <tt>ImpactIonization</tt> field highlighted, change the range on the 
+<strong>Range</strong> tab. In the first text box, set the minimum level to <tt>1</tt>. 
+In the second text box, set the maximum to <tt>1e24</tt>.</li>
+
+<li>On the <strong>Scalars</strong> tab, select the <tt>CurrentPotential</tt> field 
+from the list.</li>
+
+<li>For the <tt>CurrentPotential</tt> field, select the check box in the second column for
+contour lines <img class="imgline" src="images/icons/contour_lines.png" width="17" height="17" 
+alt="Contour lines icon" />.<br />
+Thin black isolines of current potential are plotted on top of the colored contour 
+fields of impact ionization. By default, Sentaurus Visual plots 31 contour lines.
+</li>
+
+<li>With <tt>CurrentPotential</tt> field selected, click the <strong>Levels</strong> tab. 
+Change the number of levels from <tt>31</tt> to <tt>11</tt>, and press the Enter key.<br />
+By plotting 11 equally spaced contour levels for <tt>CurrentPotential</tt>, 
+you can observe 10% of the conduction current flowing between every two neighboring flowlines.</li>
+
+<li>Zoom into the area where the <tt>ImpactIonization</tt> rate is high by clicking 
+<img class="imgline" src="images/icons/zoom.png" width="23" height="23" alt="Zoom icon"/>.</li>
+</ol>
+
+<p>Figure 4 shows the impact ionization contour fields and current flowlines plotted
+near the LDMOS field oxide after magnification.</p>
+
+<p><a href="images/sv_select_datafields.png"><img src="images/sv_select_datafields.png" 
+width="570" alt="ImpactIonization and CurrentPotential plot in LDMOS transistor at breakdown" /></a></p>
+
+<p class="caption">Figure 4. ImpactIonization and CurrentPotential plot in LDMOS
+transistor at breakdown. (Click image for full-size view.)</p>
+
+<!--==================================================-->
+<a name="5"></a> 
+<h1> 2.5 Zooming and Panning</h1>
+
+<p>To take a closer look at significant details on a plot, there are various 
+ways to zoom. On a selected plot, you can zoom using the mouse wheel, or by clicking 
+the middle mouse button and moving to the top or bottom of the screen.</p>
+
+<p>To pan, drag while holding the right mouse button.</p>
+
+<!--==================-->
+<h2>2.5.1 Zoom Tool</h2>
+
+<p>The zoom tool magnifies a particular area of a plot. To select the zoom tool:</p>
+
+<ol>
+<li>Click the <img class="imgline" src="images/icons/zoom.png" 
+  width="24" height="24" alt="Zoom icon" /> toolbar button.</li>
+<li>Drag to draw a rectangle over the area you want to magnify.</li>
+</ol>
+
+<!--==================-->
+<h2>2.5.2 Reset Tool</h2>
+
+<p>The reset tool <img class="imgline" src="images/icons/reset.png" 
+width="21" height="19" alt="Reset icon" /> restores the selected plot position 
+and zoom level. It does not restore the rotation on 3D plots.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sv_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

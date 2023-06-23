@@ -1,0 +1,451 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Interconnect 2. Example: 3D Damascene Structure</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Interconnect<br />2. Example: 3D Damascene Structure</h1>
+
+<p>
+<a href="#1">2.1 Overview</a><br />
+<a href="#2">2.2 Defining Initial 3D Grid</a><br />
+<a href="#3">2.3 Defining Initial Simulation Domain</a><br />
+<a href="#4">2.4 Initializing the Simulation</a><br />
+<a href="#5">2.5 Setting Up a Meshing Strategy</a><br />
+<a href="#6">2.6 Defining Mesh Refinement</a><br />
+<a href="#7">2.7 Performing Etching and Deposition</a><br />
+<a href="#8">2.8 Solving Stresses</a><br />
+<a href="#9">2.9 Extracting 1D Profiles</a><br />
+<a href="#10">2.10 Defining Contacts</a><br />
+<a href="#11">2.11 Defining Physical Loads</a><br />
+<a href="#12">2.12 Thermal and Electrical Analyses Simulation</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to simulate a damascene structure in three dimensions.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Overview</h1>
+
+<p>In this section, a typical simulation flow is demonstrated with a damascene structure 
+in three dimensions. The structure is composed of two metals and a via (all copper). 
+Many widely used process and control commands are introduced to perform the following 
+types of simulation:</p>
+
+<ul>
+ <li>Stress</li>
+ <li>Structure generation and process</li>
+ <li>Coupled thermal and electrical analyses</li>
+</ul>
+
+<p>Other relevant topics are covered such as controlling meshing, defining contacts and 
+supplies, and saving snapshots.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 Defining Initial 3D Grid</h1>
+
+<p>The initial 3D grid is defined with <tt>line</tt> commands:</p>
+
+<!-- grep startExpr="*Initial 3D grid*" endExpr="*Initial simulation domain*" file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+line x location= 0.0      spacing= 0.05&lt;um&gt; tag= subTop
+line x location= 0.1&lt;um&gt;  spacing= 0.05&lt;um&gt; tag= subBottom
+line y location=-0.1&lt;um&gt;  spacing= 0.05&lt;um&gt;
+line y location= 0.05&lt;um&gt; spacing= 0.05&lt;um&gt;
+line z location= 0.0&lt;um&gt;  spacing= 0.1&lt;um&gt;
+line z location= 0.7&lt;um&gt;  spacing= 0.1&lt;um&gt;
+
+</pre>
+<!-- grep end -->
+
+<p>The first argument of the <tt>line</tt> command specifies the direction of the grid. 
+The grid spacing is defined by pairs of the <tt>location</tt> and <tt>spacing</tt> arguments. 
+The argument <tt>spacing</tt> defines the spacing between two grid lines at the specified 
+location. Sentaurus Interconnect expands or compresses the grid spacing linearly between 
+the two locations defined in the <tt>line</tt> command.</p>
+
+<p>Sentaurus Interconnect uses coordinate systems such that 1D, 2D, and 3D simulations are 
+consistent. Most importantly, the positive x-axis always points into the wafer. In two and 
+three dimensions, the positive y-axis points to the right and, in three dimensions, the 
+positive z-axis points out of the page.</p>
+
+<p class="note">Units in Sentaurus Interconnect can be specified explicitly by giving the 
+units in angle brackets. For most cases, the default unit of length is micrometer. Therefore, 
+<tt>location=2.0&lt;um&gt;</tt> and <tt>location=2.0</tt> are equivalent. In this section, 
+units are given explicitly.<br /><br />
+
+The unified coordinate system (UCS) is switched on by default (<tt>math coord.ucs</tt>), 
+so the axes in Sentaurus Visual match the axes in the command file of Sentaurus Interconnect.</p>
+
+<p>You can label a line with the <tt>tag</tt> keyword for later use in the <tt>region</tt> command.</p>
+
+<!--========================================-->
+<a name="3"></a>
+<h1>2.3 Defining Initial Simulation Domain</h1>
+
+<p>To define the initial simulation domain, use the <tt>region</tt> command. Many, if not most, 
+simulations start with a block of silicon. The shorthand for this situation is to define a region 
+of silicon that spans all defined lines:</p>
+
+<!-- grep startExpr="region Silicon" lines=1 file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+region Silicon
+</pre>
+<!-- grep end -->
+
+<p>You also can use the <tt>region</tt> command to define a new region between specified lines. 
+To limit the size of the region to be less than all defined lines, the lines must be given a 
+label with the <tt>tag</tt> argument, which is defined in the <tt>line</tt> command. These labels 
+are used in the <tt>region</tt> command with the <tt>xlo</tt>, <tt>xhi</tt>, <tt>ylo</tt>, 
+<tt>yhi</tt>, <tt>zlo</tt>, and <tt>zhi</tt> arguments.</p>
+
+<!--========================================-->
+<a name="4"></a>
+<h1>2.4 Initializing the Simulation</h1>
+
+<p>To initialize the simulation, use the <tt>init</tt> command:</p>
+
+<!-- grep startExpr="init*" lines=1 file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+init wafer.orient= { 0 0 1 } notch.direction= { 1 1 0 }
+</pre>
+<!-- grep end -->
+
+<p>Here, the wafer orientation is set to {0 0 1}, and the flat orientation is set to {1 1 0}; 
+these are the defaults.</p>
+
+<p class="note">The <tt>init</tt> command can be used to initialize the initial impurity 
+and many other definitions, and to load previous simulations.</p>
+
+<!--========================================-->
+<a name="5"></a>
+<h1>2.5 Setting Up a Meshing Strategy</h1>
+
+<p>The initial grid is valid until the first command that changes the geometry, such as 
+deposition or etching. For these steps, a remeshing strategy must be defined.</p>
+
+<p>The meshing engine Sentaurus Mesh tries to preserve the initial mesh as much as possible and 
+only modifies the mesh in the new layers and in the vicinity of the new interfaces.</p>
+
+<p>To define a remeshing strategy, use:</p>
+
+<!-- grep startExpr="*Settings for automatic meshing*" endExpr="*Remove all default refinement*" file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+pdbSet Grid SnMesh min.normal.size  0.020 ;# 20nm
+pdbSet Grid SnMesh max.lateral.size 0.100 ;# 100nm
+pdbSet Grid SnMesh normal.growth.ratio.3d 2.0
+</pre>
+<!-- grep end -->
+
+<p>where:</p>
+
+<ul>
+<li><tt>min.normal.size</tt> determines the grid spacing of the first layer starting 
+from the interface.</li>
+<li><tt>max.lateral.size</tt> limits not only the lateral grid spacing, but also the 
+maximum grid spacing anywhere.</li>
+<li><tt>normal.growth.ratio.3d</tt> determines how fast the grid spacing can increase 
+from one layer to another.</li>
+</ul>
+
+<!--========================================-->
+<a name="6"></a>
+<h1>2.6 Defining Mesh Refinement</h1>
+
+<p>Usually, localized refinement is defined by introducing refinement boxes. This strategy prevents 
+excessive meshing that can result if mesh refinement is based solely on the <tt>line</tt> command 
+(with the <tt>spacing</tt> argument). Lines specified with the <tt>line</tt> command run the entire 
+length (or breadth or depth) of the structure.</p>
+
+<p>The refinement boxes can be inserted at any time during the simulation. The simplest form of a 
+refinement box used in this example consists of minimum and maximum coordinates where the refinement 
+box is valid, and the local maximum mesh spacing is in the x-, y-, and z-direction. A refinement box 
+specified for a 2D simulation will be applied to a 1D simulation if it is valid for <tt>y=0.0</tt>. 
+Similarly, a 3D refinement box will be applied if it covers <tt>z=0.0</tt>.</p>
+
+<p>The following refinement boxes specify refinement criteria defined by coordinates or materials:</p>
+
+<!-- grep startExpr="*Refinement by coordinates*" endExpr="*refinebox interface.materials=*" endOffset=-1 file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+refinebox name= active min= { -0.65 -0.1 0.0 } max= { -0.1 0.05 0.7 } \
+	xrefine= 100&lt;nm&gt; yrefine= 100&lt;nm&gt; zrefine= 100&lt;nm&gt;
+refinebox name= metal materials= Copper \
+	xrefine= 50&lt;nm&gt; yrefine= 50&lt;nm&gt; zrefine= 50&lt;nm&gt;
+</pre>
+<!-- grep end -->
+
+<p>The other type of refinement box used in this example is an <em>interface refinement</em>. 
+This type of interface is a graded refinement that is refined near an interface in the perpendicular 
+direction and relaxed away from the interface. Using the <tt>refinebox</tt> command, you can specify 
+interface refinement using either the <tt>interface.materials</tt> argument or the 
+<tt>interface.mat.pairs</tt> argument:</p>
+
+<!-- grep startExpr="refinebox interface.materials=*" lines=1 file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+refinebox interface.materials= { Copper Nitride Oxide }
+</pre>
+<!-- grep end -->
+
+<ul>
+<li>Use <tt>interface.materials</tt> to indicate that refinement will occur at all interfaces 
+to the specified materials.</li>
+<li>Use <tt>interface.mat.pairs</tt> to choose interface refinement only at the interface
+of two specific materials, Multiple interface material pairs can be specified, for example: 
+<tt>interface.mat.pairs= {Copper Oxide Copper Silicon}</tt>
+</li>
+</ul>
+
+<p class="note">The <tt>refinebox</tt> command only specifies a refinement criterion, but 
+the mesh is not changed. The <tt>grid remesh</tt> command forces a remesh.</p>
+
+<!--========================================-->
+<a name="7"></a>
+<h1>2.7 Performing Etching and Deposition</h1>
+
+<p>The structure is created with etching and deposition operations to simulate processing steps. 
+Masks can be used in these operations, and they must be defined before use:</p>
+
+<!-- grep startExpr="mask*" endExpr="#*Fabrication*" file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap_excludeEmpty"-->
+<pre>
+mask clear
+mask name= metal_1 left= 0.0 right= 0.1 front= 0.0 back= 0.45
+mask name= via_12 left= 0.025 right= 0.1 front= 0.3 back= 0.4
+mask name= metal_2 left= 0.0 right= 0.1 front= 0.25 back= 0.7
+</pre>
+<!-- grep end -->
+
+<p>Masks can be inverted using the <tt>negative</tt> option:</p>
+
+<pre>
+mask name= test left= -1.0 right= 1.0 front= -1.0 back= 1.0 negative
+</pre>
+
+<p>The damascene structure is defined with a series of etching and deposition steps:</p>
+
+<!-- grep startExpr="*Fabrication steps*" endExpr="*Define solve mode*" file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap_excludeEmpty"-->
+<pre>
+deposit Oxide temperature= 250&lt;C&gt; thickness= 0.1 type= isotropic
+deposit Oxide temperature= 250&lt;C&gt; thickness= 0.2 type= isotropic
+deposit Photoresist thickness= 0.1 type= isotropic mask= metal_1
+etch Oxide temperature= 25&lt;C&gt; thickness= 0.2 type= anisotropic
+deposit Copper temperature= 250&lt;C&gt; coord= -0.3 type= fill
+strip Photoresist
+deposit Nitride temperature= 250&lt;C&gt; coord= -0.35 type= fill
+deposit Oxide temperature= 250&lt;C&gt; thickness= 0.1 type= isotropic
+deposit Photoresist thickness= 0.1 type= isotropic mask= via_12
+etch Oxide temperature= 25&lt;C&gt; thickness= 0.11 type= anisotropic
+etch Nitride temperature= 25&lt;C&gt; thickness= 0.1 type= anisotropic
+deposit Copper temperature= 250&lt;C&gt; coord= -0.46 type= fill
+strip Photoresist
+deposit Oxide temperature= 250&lt;C&gt; coord= -0.65 type= fill
+deposit Photoresist thickness= 0.1 type= isotropic mask= metal_2
+etch Oxide temperature= 0&lt;C&gt; thickness= 0.2 type= anisotropic
+deposit Copper temperature= 250&lt;C&gt; coord= -0.65 type= fill
+strip Photoresist
+deposit Nitride temperature= 250&lt;C&gt; coord= -0.7 type= fill
+</pre>
+<!-- grep end -->
+
+<p>Intrinsic stresses can be added to a deposited material using the <tt>stressdata</tt> 
+command after deposition:</p>
+
+<pre>
+stressdata Oxide sxxi= 1e3&lt;MPa&gt; syyi= 1e3&lt;MPa&gt; szzi= 1e3&lt;MPa&gt;
+</pre>
+
+<p>A stress relaxation step is called after each <tt>etch</tt> or <tt>deposit</tt> command. 
+You can switch off this behavior with the PDB parameter:</p>
+
+<pre>
+pdbSet Mechanics EtchDepoRelax 0
+</pre>
+
+<p>Furthermore, you can switch on the following PDB parameter to trace all temperature 
+ramps in fabrication steps and to solve thermal mismatch strains and stresses:</p>
+
+<pre>
+pdbSet Mechanics StressHistory 1
+</pre>
+
+<p class="note">By default, the simulation dimension is promoted only when necessary. Therefore, 
+until a mask is introduced, the simulation remains 1D. Similarly, when going from two dimensions 
+to three dimensions, until a 3D mask is introduced (one that varies in the z-direction in the 
+defined simulation domain), the simulation remains 2D.</p>
+
+<p>Figure 1 shows the final structure where the <tt>substrate</tt> and <tt>Gas</tt> regions are 
+hidden. For a better view, the other regions are transparent, except <tt>Copper</tt> and 
+<tt>Nitride</tt>.</p>
+
+<p><a name="Fig1" href="images/si_dd_struct.png"><img src="images/si_dd_struct.png" 
+width="300" alt="Final damascene structure" /></a></p>
+
+<p class="caption">Figure 1. Final damascene structure. (Click image for full-size view.)</p>
+
+<!--========================================-->
+<a name="8"></a>
+<h1>2.8 Solving Stresses</h1>
+
+<p>Before solving stresses, the <tt>mode</tt> command is used to identify all effects that will 
+be solved. In this step, only the <tt>mechanics</tt> option is used. The <tt>solve</tt> command 
+then is called to solve stresses at certain temperatures (or temperature ramps). For example:</p>
+
+<pre>
+mode mechanics
+
+solve temperature= 25
+</pre>
+
+<p><a name="Fig2" href="images/si_dd_stress.png"><img src="images/si_dd_stress.png" 
+width="300" alt="Stress distribution along the z-direction" /></a></p>
+
+<p class="caption">Figure 2. Stress distribution from thermal mismatch, along the 
+z-direction. (Click image for full-size view.)</p>
+
+<!--========================================-->
+<a name="9"></a>
+<h1>2.9 Extracting 1D Profiles</h1>
+
+<p>You can save 1D profiles at any point in the process flow, for example:</p>
+
+<pre>
+SetPlxList { StressEL_xx StressEL_yy StressEL_zz }
+
+WritePlx damascene_via.plx y= 0.04 z= 0.35 Copper
+</pre>
+
+<p>or:</p>
+
+<pre>
+struct tdr= n@node@_via.tdr y= 0.04 z= 0.35
+</pre>
+
+<!--========================================-->
+<a name="10"></a>
+<h1>2.10 Defining Contacts</h1>
+
+<p>Besides stress simulation, the thermal and electrical analyses simulation is performed 
+for the structure. To do that, contacts are defined and then are supplied with certain 
+electrical, electrostatic, or thermal boundary conditions, such as voltage, and temperature.</p>
+
+<p>Contacts are added to the structure using the <tt>contact</tt> command. There are two types of contact specification:</p>
+
+<ul>
+<li>For a <em>box</em> contact, you specify a box and a material, and all interfaces of that material 
+that are inside the box become the contact.</li>
+<li>For a <em>point</em> contact, you specify a point inside a chosen region. The chosen region is 
+removed, and all interfaces between the chosen region and bulk materials become part of the contact.</li>
+</ul>
+
+<p>In the following example, only box-type contacts are defined:</p>
+
+<!-- grep startExpr="*Contacts*" endExpr="*Supplies*" file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap_excludeEmpty"-->
+<pre>
+contact Copper name= upper box sidewall \
+	xlo= -0.65 xhi= -0.45 ylo= 0.0 yhi= 0.05 zlo= 0.7 zhi= 0.7
+contact Copper name= lower box sidewall \
+	xlo= -0.30 xhi= -0.10 ylo= 0.0 yhi= 0.05 zlo= 0.0 zhi= 0.0
+contact Silicon name= tm0 box  \
+	xlo= 0.0 xhi= 0.0 ylo= -0.1 yhi= 0.05 zlo= 0.0 zhi= 0.7
+contact Nitride name= tm1 box  \
+	xlo= -0.7 xhi= -0.7 ylo= -0.1 yhi= 0.05 zlo= 0.0 zhi= 0.7
+</pre>
+<!-- grep end -->
+
+<!--========================================-->
+<a name="11"></a>
+<h1>2.11 Defining Physical Loads</h1>
+
+<p>The <tt>supply</tt> command is used to supply physical loads to contacts, regions, or 
+boundaries, depending on the types of loading. You can define the following physical loadings:</p>
+
+<ul>
+<li>Electrical such as <tt>current</tt> and <tt>voltage</tt></li>
+<li>Thermal such as <tt>temperature</tt> and <tt>power</tt></li>
+<li>Mechanical such as <tt>displacement</tt> and <tt>force</tt></li>
+</ul>
+
+<p>The following commands define electrical and thermal supplies on the contacts:</p>
+
+<!-- grep startExpr="*Supplies*" endExpr="*Define new solve mode*" file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap_excludeEmpty"-->
+<pre>
+supply contact.name= upper voltage= 0.1&lt;V&gt;
+supply contact.name= lower voltage= 0.0&lt;V&gt;
+supply contact.name= tm0 temperature= 100&lt;C&gt;
+supply contact.name= tm1 temperature= 25&lt;C&gt;
+</pre>
+<!-- grep end -->
+
+<!--========================================-->
+<a name="12"></a>
+<h1>2.12 Thermal and Electrical Analyses Simulation</h1>
+
+<p>To perform thermal and electrical analyses simulation, append the <tt>mode</tt> command 
+to include all effects intended to be coupled together before the <tt>solve</tt> command:</p>
+
+<!-- grep startExpr="*Define new solve mode*" endExpr="solve time=*" file="../../Applications_Library/GettingStarted/sinterconnect/DualDamascene/sinterconnect_sis.cmd" excludelines="#*" format="wrap"-->
+<pre>
+mode mechanics current thermal
+solve time= 1&lt;s&gt;
+</pre>
+<!-- grep end -->
+
+<p>After solving, the voltage and temperature distributions are shown in Figure&nbsp;3 and 
+Figure&nbsp;4 for the damascene structure, respectively.</p>
+
+<p><a name="Fig3" href="images/si_dd_potential.png"><img src="images/si_dd_potential.png" 
+width="400" alt="Stress distribution along the z-direction" /></a></p>
+
+<p class="caption">Figure 3. Potential distribution: potential is set to 0.1 V for upper 
+copper sidewall and 0.0&nbsp;V for lower one. (Click image for full-size view.)</p>
+
+<p><a name="Fig4" href="images/si_dd_temperature.png"><img src="images/si_dd_temperature.png" 
+width="400"  alt="Temperature distribution" /></a></p>
+
+<p class="caption">Figure 4. Temperature distribution: temperature is set to 373&nbsp;K 
+(100&deg;C) on the bottom and 298&nbsp;K (25&deg;C) on the top. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="si_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

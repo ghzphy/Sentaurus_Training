@@ -1,0 +1,535 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />   
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = false</script>   
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device 14. Special Focus: Stress- and Orientation-Dependent MOS Simulation</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_13.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_15.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device<br />14. Special Focus: Stress- and Orientation-Dependent MOS Simulation</h1>
+
+<p>
+ <a href="#1">14.1 Overview</a><br />
+ <a href="#2">14.2 Specifying the Simulation Orientation</a><br />
+ <a href="#3">14.3 Reading Stress Profiles From a TDR File</a><br />
+ <a href="#4">14.4 IALMob Model and Auto-Orientation Feature</a><br />
+ <a href="#5">14.5 IALMob Model With High-k Mobility Models</a><br />
+ <a href="#6">14.6 Quantum Corrections on Carrier Density</a><br />
+ <a href="#7">14.7 Effects of Stress on Band Structure and Carrier Density</a><br />
+ <a href="#8">14.8 Effects of Stress on Band Structure and Mobility</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To demonstrate stress-dependent and orientation-dependent MOS simulations 
+in Sentaurus Device.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>14.1 Overview</h1>
+
+<p>Quantum effects and stress-induced changes to the band structure must be 
+considered to compute the correct dependency of the carrier concentration on 
+the quasi-Fermi level. In addition, such effects influence the carrier mobility 
+by changing the number of available final scattering states for intravalley and 
+intervalley scattering mechanisms, and the effective conductivity masses. Moreover, 
+interface-scattering mechanisms can depend on the channel interface orientation 
+and the channel direction, requiring mobility models with varying parameterization, 
+dependent on orientation.</p>
+
+<p>Sentaurus Device provides various models to accomplish such dependencies.
+The project <tt>Applications_Library/GettingStarted/sdevice/MultiValleyMOS</tt> 
+demonstrates the influence of device orientation and uniaxial stress 
+along the x-direction on the I<sub>d</sub>&ndash;V<sub>g</sub> characteristics 
+for a 45 nm NMOS and PMOS. In particular, it  demonstrates how to:</p>
+
+<ul>
+<li>Specify the device simulation orientation.</li>
+<li>Read stress profiles from a TDR file.</li>
+<li>Use the inversion and accumulation layer mobility (<tt>IALMob</tt>) model 
+together with the auto-orientation feature.</li>
+<li>Combine density-gradient quantum corrections with stress-induced changes 
+to the band structure.</li>
+<li>Model the influence of stress, device orientation, and quantum effects 
+onto the channel mobility.</li>
+</ul>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>14.2 Specifying the Simulation Orientation</h1>
+
+<p>The orientation of the simulation coordinate system must be specified with respect 
+to the crystallographic directions using the <tt>LatticeParameters</tt> section 
+of the parameter file. For example, the following specifies the x-coordinate 
+axis of the simulation domain to point in the [1&nbsp;0&nbsp;0] direction, while the y-axis 
+is oriented along the 
+[0<span style="text-decoration: overline">1</span><span style="text-decoration: overline">1</span>] 
+direction of the crystal:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/sdevice.par" startExpr="*Lattice*" endExpr="}*" -->
+<pre>
+LatticeParameters {
+  X = (1,  0,  0)
+  Y = (0, -1, -1)
+}
+</pre>
+<!-- grep end -->
+
+<p>Figure 1 shows the simulation coordinate axes with respect to the example MOS geometry.</p>
+
+<p><a href="images/sd_orientation_MOS.png"> <img src="images/sd_orientation_MOS.png" 
+width="500" alt="MOS orientation" /></a></p>
+
+<p class="caption">Figure 1. NMOS with simulation coordinate axes indicated. 
+(Click image for full-size view.)</p>
+
+<p>In this project, the Sentaurus Workbench variables <tt>@surface@</tt> and 
+<tt>@channel@</tt> define the orientation specifications in the parameter file, 
+for (channel interface orientation)/&lt;channel direction&gt; combinations 
+(001)/&lt;100&gt;, (001)/&lt;011&gt;, (011)/&lt;100&gt;, and 
+(011)/&lt;01<span style="text-decoration: overline">1</span>&gt; in an NMOS and a PMOS.</p>
+
+<p>Click to view the primary file 
+<a href="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/sdevice.par">
+sdevice.par</a>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>14.3 Reading Stress Profiles From a TDR File</h1>
+
+<p>Realistic stress profiles are usually calculated within Sentaurus Process. 
+However, in this project, a simple uniform uniaxial stress profile with the 
+only nonzero component being &sigma;<sub>XX</sub> is specified within Sentaurus 
+Structure Editor. In either case, the TDR file containing the stress data is specified 
+by the <tt>Piezo</tt> file within the <tt>File</tt> section of the Sentaurus Device 
+command file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*File*{*" startoccurrence=1 endExpr="*Piezo*"  footer="...}"-->
+<pre>
+File {
+  Grid      = &quot;@tdr@&quot;
+  Piezo     = &quot;@tdr@&quot;
+...}
+</pre>
+<!-- grep end -->
+
+<p>By default, the meanings of the stress components read from the TDR file are 
+assumed to refer to the same simulation coordinate system as specified in 
+Sentaurus Device. Explicitly, this is expressed by the <tt>Math</tt> setting:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*CoordinateSystem*" startoccurrence=1 lines=1 header="Math {" footer="...}"-->
+<pre>
+Math {
+  CoordinateSystem { AsIs }
+...}
+</pre>
+<!-- grep end -->	
+
+<p>For alternative specifications, see the <cite>Sentaurus&trade; Device User Guide</cite>,
+Chapter 2.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>14.4 IALMob Model and Auto-Orientation Feature</h1>
+
+<p>These MOS simulations demonstrate the use of the inversion and accumulation 
+layer mobility (<tt>IALMob</tt>) model. This model takes into account 
+bulk phonon and impurity scattering as well as contributions due to surface 
+roughness and surface phonon scatterings.</p>
+
+<p>In Sentaurus Device, the <tt>IALMob</tt> model is selected as an option to the 
+<tt>Enormal</tt> keyword of the <tt>Mobility</tt> specification, as shown here.</p>
+
+<p>For the bulk part of the <tt>IALMob</tt> model, you select either the full 
+Philips unified mobility model (<tt>PhuMob</tt>) or a reduced model. The full 
+model is used by default. The reduced model, which neglects some terms related 
+to minority carriers, is selected by setting the <tt>-FullPhuMob</tt> flag:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*Physics*Silicon*" startoccurrence=1 lines=1  footer="..."-->
+<pre>
+Physics (material= &quot;Silicon&quot;) {
+...
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*Mobility*" startoccurrence=1 lines=4 footer="...}"-->
+<pre>
+  Mobility(
+    Enormal ( IALMob( AutoOrientation ) Lombardi_highk )
+    HighFieldSaturation( EparallelToInterface )
+  )
+...}
+</pre>
+<!-- grep end -->
+
+<p>Some additional parameter file specifications are required to use this model 
+consistently with the literature:</p>
+
+<ul>
+<li>Sentaurus Device omits the calculation of the transverse field&ndash;dependent 
+mobility model if the normal field is very small. Since the <tt>IALMob</tt> model 
+calculates both doping-dependent and transverse field&ndash;dependent mobility, it 
+must be called for all values of the normal field. This can be accomplished by setting 
+<tt>EnormMinimum=0.0</tt> in the <tt>IALMob</tt> section.</li>
+<li>To select the H&auml;nsch model, specify the parameter &alpha;=1 in the 
+<tt>HighFieldDependence</tt> section. In addition, the exponent in the H&auml;nsch 
+model is equal to 2, which can be specified by setting &beta;<sub>0</sub> = 2 and 
+&beta;<sub>exp</sub> = 0, respectively:<br />
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/Si.par" startExpr="*EnormMinimum*" startoccurrence=4 lines=1  header= "IALMob {" footer="...}"-->
+<pre>
+IALMob {
+        EnormMinimum    = 0.0           # [V/cm]
+...}
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/Si.par" startExpr="*HighFieldDependence*{" startoccurrence=1 lines=1 -->
+<pre>
+HighFieldDependence {
+</pre>
+<!-- grep end -->
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/Si.par" startExpr="*beta0*2.0*2.0*" startoccurrence=1 lines=3  footer="...}"-->
+<pre>
+	beta0	= 2.0      ,	2.0		# [1]
+	betaexp	= 0.0      ,	0.0		# [1]
+	alpha	= 1.0      ,    1.0  		# [1]
+...}
+</pre>
+<!-- grep end -->
+</li>
+</ul>
+
+<p>Click to view the silicon parameter file 
+<a href="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/Si.par">
+Si.par</a>.</p>
+
+<p>It is well known that the surface-related scattering mechanism strongly depends 
+on the channel interface orientation and the channel direction. To account for 
+such a dependency on mobility surface orientation, named parameter sets for the 
+<tt>IALMob</tt> model can be specified in the parameter file:</p> 
+
+<pre>
+IALMob &quot;name&quot; { ... }
+</pre>
+
+<a name="AutoOrient"></a>
+<p>When the <tt>AutoOrientation</tt> option is activated, the model by default 
+looks for and uses parameter sets named &quot;100&quot;, &quot;110&quot;, and 
+&quot;111&quot; corresponding to surface orientations of {100}, {110}, and {111}:</p>
+
+<pre>
+IALMob &quot;001&quot; { ... }
+IALMob &quot;110&quot; { ... }
+IALMob &quot;111&quot; { ... }
+</pre>
+
+<p>The <tt>AutoOrientation</tt> option is activated inside the <tt>IALMob</tt> 
+specification:</p>
+
+<pre>
+Physics (Material= &quot;Silicon&quot;) { ...
+
+  Mobility(
+    ...
+</pre>
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*Enormal*" startoccurrence=1 lines=1  -->
+<pre>
+    Enormal ( IALMob( AutoOrientation ) Lombardi_highk )
+</pre>
+<!-- grep end -->
+<pre>
+    ...
+  )
+}
+</pre>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>14.5 IALMob Model With High-k Mobility Models</h1>
+
+<p>For devices with high-k materials in the gate stack, remote phonon and remote 
+Coulomb scattering can contribute as mobility-limiting scattering mechanisms. Such 
+contributions can be added by specifying the <tt>Lombardi_highk</tt> mobility model 
+inside the <tt>Enormal</tt> mobility section:</p>
+
+<pre>
+Physics (Material= &quot;Silicon&quot;) { ...
+
+  Mobility(
+    ...
+</pre>
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*Enormal*" startoccurrence=1 lines=1  -->
+<pre>
+    Enormal ( IALMob( AutoOrientation ) Lombardi_highk )
+</pre>
+<!-- grep end -->
+<pre>
+    ...
+  )
+}
+</pre>
+
+<p>Besides the remote scattering terms, the <tt>Lombardi_highk</tt> model 
+also contains surface roughness and surface phonon contributions. 
+Such contributions are already taken into account by the <tt>IALMob</tt> model. 
+Therefore, they are switched off in the <tt>Lombardi_highk</tt> model by appropriate 
+parameter settings for <tt>alpha_lom_e</tt> and <tt>alpha_lom_h</tt>. 
+Remote Coulomb scattering terms are  assumed to be negligible in this example and 
+are switched off as well. This is accomplished by setting the following 
+<tt>Lombardi_highk</tt> parameters to zero:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/Si.par" startExpr="*Lombardi_highk*" startoccurrence=1 lines=6  -->
+<pre>
+Lombardi_highk {
+ alpha_lom_e = 0.0
+ alpha_lom_h = 0.0
+ alpha_rcs_e = 0.0
+ alpha_rcs_h = 0.0
+}
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="6"></a>
+<h1>14.6 Quantum Corrections on Carrier Density</h1>
+
+<p>Carrier quantization influences charge carrier density as well as carrier 
+scattering and, consequently, carrier mobility. In this example, the density 
+gradient model is used to account for the influence of quantization on carrier 
+density, while the influence of quantum effects on mobility is taken into account 
+by the modified local-density approximation (MLDA) model.</p>
+
+<p>For quantum corrections on carrier density in NMOS and PMOS simulations, 
+the density gradient model is activated for electrons or holes in the 
+<tt>Physics</tt> section of the channel material (silicon) by the keyword 
+<tt>eQuantumPotential</tt> (<tt>hQuantumPotential</tt> for holes):</p>
+
+<pre>
+Physics (Material = &quot;Silicon&quot;) { ...
+</pre>
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*eQuantumPotential*" startoccurrence=2 lines=2  -->
+<pre>
+  eQuantumPotential
+  eMultiValley(MLDA kpDOS -Density)
+</pre>
+<!-- grep end -->
+<pre>
+  ...
+}
+</pre>
+
+<p>The density gradient model also supports the auto-orientation framework, which 
+can be activated by specifying <tt>AutoOrientation</tt> as an argument to either 
+<tt>eQuantumPotential</tt> or <tt>hQuantumPotential</tt> in the command file:</p>
+
+<pre>
+Physics (Material = &quot;Silicon&quot;) { ...
+  eQuantumPotential(AutoOrientation)
+  eMultiValley(MLDA kpDOS -Density)
+  ...
+}
+</pre>
+
+<p>The flag <tt>-Density</tt>, used as an option to the <tt>MultiValley</tt> model, 
+is required here to switch off additional quantum corrections on the density 
+calculated by the quasi-1D MLDA model.</p>
+
+<p>In addition to the changes in the <tt>Physics</tt> section, the equation for the 
+density-gradient quantum corrections must be added to the set of coupled equations:</p>
+
+<pre>
+Solve {...
+  { Coupled { Poisson Electron Hole eQuantumPotential} }
+  ...
+}
+</pre>
+
+<p class="note">The MLDA model in this example is used only for effects on mobility.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>14.7 Effects of Stress on Band Structure and Carrier Density</h1>
+
+<p>To take into account the strain-induced conduction and valence band-edge shifts 
+as well as band-structure curvature changes, additional models must be 
+activated. Besides the simpler models, the deformation potential model with 
+the two-band k&middot;p calculations for electrons and the six-band k&middot;p model 
+for holes are used in this example. These models are specified by the <tt>Piezo</tt> 
+model settings in the <tt>Physics</tt> section as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*Piezo*" startoccurrence=2 lines=4  -->
+<pre>
+  Piezo(
+    Model(
+      DeformationPotential(ekp hkp minimum)
+      DOS( emass hmass )
+</pre>
+<!-- grep end -->
+<pre>
+     ...   
+  )
+)
+</pre>
+
+<p>The options <tt>ekp</tt> and <tt>hkp</tt> activate the k&middot;p models 
+for electrons and holes, respectively. The option <tt>minimum</tt> indicates 
+to use the lowest (for the conduction band) or the topmost (for the valence 
+band) band edge of the split bands as the new effective band edge.</p>
+
+<p>The <tt>DOS(emass hmass)</tt> statement activates the calculation 
+of a new effective density-of-states (DOS) for the strained lattice.</p>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>14.8 Effects of Stress on Band Structure and Mobility</h1>
+
+<p>Quantum corrections and stress effects on the band structure result 
+in a modified effective conductivity mass tensor as well as modifications 
+of the contributions due to different scattering mechanisms onto the mobility. 
+To take such effects into account, <tt>hMultiValley</tt> with <tt>hSubband</tt> 
+model specifications are required for holes:</p>
+
+<pre>
+Physics (Material= &quot;Silicon&quot;) {
+  hMultivalley(MLDA kpDOS -Density)
+  ...
+  Piezo (    
+    Model (
+      ...
+</pre>
+<!-- grep file="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd" startExpr="*Mobility*" startoccurrence=3 lines=3  -->
+<pre>
+      Mobility( hSubband(Doping EffectiveMass Scattering(MLDA) )
+        hSaturationFactor= 0.0
+      )
+</pre>
+<!-- grep end -->
+<pre>
+    )
+  )
+}
+</pre>
+
+<p>The option <tt>MLDA</tt> in the <tt>hMultiValley</tt> statement activates the MLDA 
+model to account for quantum effects on holes. The six-band k&middot;p model for the 
+strained band structure is activated by the option <tt>kpDOS</tt>. The flag 
+<tt>-Density</tt> indicates that these models must be used only for the 
+<tt>hSubband</tt> mobility model. Similarly, <tt>eMultiValley</tt> can be used 
+for electrons.</p>
+
+<p>The total hole-mobility tensor to be calculated can be written in the following general form, 
+which can be applied to both bulk and inversion layer cases:</p>
+
+<p> \[ μ↖{-}_{p} = q τ_0 ∑↙{i}{p_i} / {p} {τ_i}/{τ_0}(m↖{-}_{C,i})^{-1} \] </p>
+
+<p>where:</p>
+
+<ul>
+<li>\({p_i}/{p}\) is a local hole-band occupancy.</li>
+<li>\( {τ_i}/{τ_0} \) is the ratio of stressed and unstressed relaxation times.</li>
+<li>\( (m↖{-}_{C,i})^{-1} \) is the inverse conductivity hole mass tensor.</li>
+</ul>
+
+<p>The model accounts for the six-band hole-band structure in all terms of this 
+equation. For the inversion regime, the model computes the six-band k&middot;p MLDA 
+DOS of each band. Finally, the model computes the mobility ratio (3x3 tensor), which 
+corrects the relaxed current density.</p>
+
+<p>Figure 2 shows the influence of the channel direction/surface orientation 
+on the device I<sub>d</sub>&ndash;V<sub>gs</sub> of the given PMOS.</p>
+
+<p><a href="images/sd_IdVg_holes_orientation.png"><img src="images/sd_IdVg_holes_orientation.png" 
+width="500" alt="IdVg PMOS orientation dependence" /></a></p>
+
+<p class="caption">Figure 2. I<sub>d</sub>&ndash;V<sub>gs</sub> for given 
+(011) PMOS for &lt;100&gt; and &lt;011&gt; channel orientation. 
+(Click image for full-size view.)</p>
+
+<p>The option <tt>Doping</tt> of the subband model indicates that a carrier density
+and the corresponding Fermi-level according to the local doping will be used to compute 
+the valley occupancies. Alternatively, the local carrier density can be used by
+specifying the <tt>Fermi</tt> keyword.</p>
+
+<p>The option <tt>EffectiveMass</tt> of the subband model activates the calculation 
+of the effective mass tensor.</p>
+
+<p>The option <tt>Scattering(MLDA)</tt> of the subband model activates the scattering 
+model, which defines the ratio of the stressed and unstressed valence-band momentum 
+relaxation times &tau;/&tau;<sub>0</sub>. It considers acoustic phonon scattering, 
+optical phonon emission, optical phonon absorption, and simplified impurity scattering.
+The option <tt>MLDA</tt> to the scattering model activates MLDA quantum corrections in the 
+calculation of the valley relaxation times.</p>
+
+<p>By default, the subband model uses unstrained mobility values according to the
+<a href="#AutoOrient">named parameter sets</a> for the {100}, {110}, and {111}
+surface orientations. The parameter sets are assumed to be calibrated for the &lt;110&gt; 
+channel direction. For other channel interface orientations, the set that fits best 
+to one of these orientations is used.</p>
+
+<p>For other combinations of surface and channel orientations, copy the project
+into your Sentaurus Workbench working directory and run it for configurations 
+of interest.</p>
+
+<p><a href="images/sd_IdVg_electrons_strain.png"><img src="images/sd_IdVg_electrons_strain.png" 
+width="500" alt="Id-Vg NMOS stress influence" /></a></p>
+
+<p class="caption">Figure 3. NMOS I<sub>d</sub>&ndash;V<sub>gs</sub> at 
+0.05 V drain voltage for the given (100)/&lt;011&gt; channel orientations, 
+with and without uniaxial stress along the channel direction. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the command file  
+<a href="../../Applications_Library/GettingStarted/sdevice/MultiValleyMOS/IdVg_des.cmd">IdVg_des.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in
+the directory <tt>Applications_Library/GettingStarted/sdevice/MultiValleyMOS</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_13.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="sd_15.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

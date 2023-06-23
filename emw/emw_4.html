@@ -1,0 +1,1068 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<link rel="icon" href="../images/favicon.ico" />
+<link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+
+<!-- for equation support -->
+<link rel="stylesheet" href="../styles/jqmath-0.4.3.css" />
+<script type="text/javascript" src="../styles/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="../styles/jqmath-etc-0.4.6_tcad.min.js" charset="utf-8"></script>
+<script type="text/javascript">M.MathPlayer = false; M.trustHtml = true;  M.$mathQ = true</script>    
+
+<title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device EMW 4. Best Practices for Image Sensor Simulations</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device Electromagnetic Wave Solver<br />
+4. Best Practices for Image Sensor Simulations</h1>
+
+<p>
+<a href="#1">4.1 Overview</a><br />
+<a href="#2">4.2 Structure Generation</a><br />
+<a href="#3">4.3 Meshing</a><br />
+<a href="#4">4.4 EMW Simulation</a><br />
+<a href="#5">4.5 Result Extraction</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To learn how to most efficiently set up, run, and evaluate image sensor simulations with EMW.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Overview</h1>
+
+<p>An EMW simulation project consists of several components including structure
+generation, mesh generation, optical simulation, and evaluation of results. For a
+successful and efficient simulation, the smooth interplay of these components is
+crucial. Figure 1 shows the tool flow of a simple EMW project containing all the 
+important components.</p>
+
+<dl class="ref">
+<dt>pixel</dt>
+<dd>The electrical device generation, here performed in Sentaurus Structure Editor,
+but could also be accomplished in one or several Sentaurus Process steps.</dd>
+
+<dt>beol</dt>
+<dd>Additional optical components usually present in the back-end-of-line (BEOL)
+and typically not required for electrical simulation; typically performed in
+Sentaurus Structure Editor.</dd>
+
+<dt>emw</dt>
+<dd>Performs the optical simulation itself.</dd>
+
+<dt>svisual</dt>
+<dd>Sentaurus Visual tool for evaluating results such as absorption in regions 
+and photon fluxes.</dd>
+
+<dt>movie</dt>
+<dd>Sentaurus Visual tool to compile a movie in GIF format from a time series
+of snapshots.</dd>
+</dl>
+
+<p>The complete project can be investigated from within Sentaurus Workbench
+in the directory <tt>Applications_Library/GettingStarted/emw/simple-cis</tt>.</p>
+
+<p><a href="images/emw_cis_swb.png"><img src="images/emw_cis_swb.png" width="550" 
+alt="Sentaurus Workbench project" /></a></p>
+ 
+<p class="caption">Figure 1. Sentaurus Workbench Project. (Click image for
+full-size view.)</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Structure Generation</h1>
+
+<p>CMOS image sensor (CIS) simulation setups can be very complex and usually have many 
+input parameters such as pixel size, substrate thickness, and wavelength.</p>
+
+<p>The following sections introduce a few concepts to illustrate how complex setups 
+can be broken down and organized in a way to allow for a more efficient workflow.</p>
+
+<!--==========================-->
+<a name="21"></a>
+<h2>4.2.1 Global Parameters</h2>
+
+<p>For an efficient setup, it is helpful to define input variables in one place as 
+global parameters, so they can be set in a single place and
+referred to in different tools consistently. For this purpose, the first tool
+<tt>pixel</tt> has an additional file 
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_var.txt">pixel_var.txt</a> 
+that is loaded in the command file of the first tool with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_dvs.cmd" startExpr="#include*"  lines=1 -->
+<pre>
+#includeext &quot;pixel_var.txt&quot;
+</pre>
+<!-- grep end -->
+
+<p>and only serves the purpose to define hidden Sentaurus Workbench variables with 
+<tt>#seth</tt> statements that can be accessed by using the usual <tt>@var@</tt> 
+syntax in any subsequent input file. For example, the pixel size and substrate 
+thickness are defined in 
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_var.txt">pixel_var.txt</a> with:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_var.txt" startExpr="#seth*w_pixel*"  lines=1 footer="..." -->
+<pre>
+#seth w_pixel 1
+...
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_var.txt" startExpr="#seth*t_sub*"  lines=1 -->
+<pre>
+#seth t_sub 2
+</pre>
+<!-- grep end -->
+
+<p>In the file <a href="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_var.txt">pixel_dvs.cmd</a>, 
+these parameters are then accessed to create the silicon substrate as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_dvs.cmd" startExpr="*sdegeo:create-cuboid*"  endExpr="*sub*" -->
+<pre>
+(sdegeo:create-cuboid
+  (position 0 0 0) 
+  (position @w_pixel@ @w_pixel@ (- @t_sub@))
+</pre>
+<!-- grep end -->
+
+<p>If you looked at the created boundary file (by selecting the node and clicking the 
+<strong>Quick Visualize</strong> toolbar button), you might have noticed that the 
+substrate thickness is actually 1&nbsp;&mu;m and not 2&nbsp;&mu;m as defined in
+<tt>pixel_var.txt</tt>. This is due to the fact that <tt>@t_sub@</tt> has been
+redefined as a Sentaurus Workbench parameter in the Sentaurus Workbench table; 
+Sentaurus Workbench parameters in the table always overwrite any <tt>#seth</tt> definition. 
+This behavior allows you to easily introduce variations of a certain <tt>#seth</tt> variable; 
+you simply create a corresponding Sentaurus Workbench parameter in the table.</p>
+
+<p>In addition to global parameters, there are  extracted parameters that
+can be used in subsequent tools. This is accomplished by writing variable&ndash;value
+pairs into the output file of the tool. For example, in the <tt>pixel</tt> tool, the minimum
+z-coordinate of the device is extracted by the following lines:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_dvs.cmd" startExpr="*define*zmin*"  endExpr="*ft_Scalar*" -->
+<pre>
+(define zmin (sde:min-z (get-body-list)))
+(sde:ft_scalar &quot;zmin &quot; zmin)
+</pre>
+<!-- grep end -->
+
+<p>This outputs a line like the following to the corresponding 
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/n3_dvs.out">n3_dvs.out</a> file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/n3_dvs.out" startExpr="*DOE*zmin*"  lines=1 -->
+<pre>
+DOE: zmin  -1
+</pre>
+<!-- grep end -->
+
+<p>To label <tt>@zmin@</tt> as a hidden parameter, so it does not appear in the 
+results table of Sentaurus Workbench, you add a corresponding <tt>#seth</tt> definition 
+at the beginning of 
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_dvs.cmd">pixel_dvs.cmd</a>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/pixel_dvs.cmd" startExpr="*seth*zmin*"  lines=1 -->
+<pre>
+#seth zmin x
+</pre>
+<!-- grep end -->
+
+<p>To see a list of available @-parameters and variables at a certain node, you
+can always select that node, and then right-click the node and choose 
+<strong>Node Explorer</strong> (or press the F7 key), then go to the <strong>Node Data</strong> 
+tab (see Figure&nbsp;2).</p>
+
+<p><a href="images/emw_cis_nodedata.png"><img src="images/emw_cis_nodedata.png" width="550" 
+alt="Node Explorer showing available parameters" /></a></p> 
+
+<p class="caption">Figure 2. Node Explorer showing available parameters. (Click
+image for full-size view.)</p>
+
+<p>When using extracted variables in subsequent tools, for example, <tt>@zmin@</tt> 
+from the tool <tt>pixel</tt> is used in the EMW command file, you must ensure that, during 
+preprocessing, a reasonable value already exists for it. Otherwise, preprocessing of 
+the EMW command file will fail. This can be achieved by checking the value of <tt>@zmin@</tt>
+ at the beginning of the 
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/emw_eml.cmd">emw_eml.cmd</a> 
+file and stopping preprocessing if it is not adequate:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/emw_eml.cmd" startExpr="*#if*"  endExpr="*#endif*" -->
+<pre>
+#if @&lt;![string is double t_Me1 ]||![string is double zmin ]||![string is 
+double zmax_Me1 ]&gt;@ 
+EMW requires numeric values for extraction variables during preprocessing. 
+Run Sentaurus Structure Editor nodes first.
+#exit
+#endif
+</pre>
+<!-- grep end -->
+
+<!--==========================-->
+<a name="22"></a>
+<h2>4.2.2 Organizing Structure Editor Input Using Splits</h2>
+
+<p>Optical structure generation typically results in lengthy scripts. To maintain 
+a good overview, it is advisable to break up the script into splits using the 
+preprocessor construct:</p>
+
+<pre>
+#header
+initialization part
+#endheader
+initial commands
+
+#split @A@
+commands of split A
+
+#split @B@
+commands of split B
+</pre>
+
+<p>To make the split work, the Sentaurus Workbench parameters <tt>@A@</tt> and 
+<tt>@B@</tt> must be defined for the tool. This will execute for the first node of
+the tool:</p>
+
+<pre>
+initialization part
+initial commands
+</pre>
+
+<p>for the node under <tt>@A@</tt>:</p>
+
+<pre>
+initialization part
+commands of split A
+</pre>
+
+<p>and for the node under <tt>@B@</tt>:</p>
+
+<pre>
+initialization part
+commands of split B
+</pre>
+
+<p>Sentaurus Workbench ensures that, at the end of a split, the results are
+saved and, at the beginning of the next split, they are reloaded.</p>
+
+<p>Looking at Figure 1, you will notice that the tool <tt>beol</tt> has three yellow nodes.
+This is due to the splits introduced in 
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/beol_dvs.cmd">beol_dvs.cmd</a>
+as follows:</p>
+
+<p><a href="images/emw_cis_splits.png"><img src="images/emw_cis_splits.png" width="550" 
+alt="jEdit demonstrating splits and explicit folding" /></a></p>
+ 
+<p class="caption">Figure 3. jEdit demonstrating splits and explicit folding. (Click
+image for full-size view.)</p>
+
+<p>The first initial node of the <tt>beol</tt> tool loads the pixel from the previous
+step and planarizes it by filling voids with Oxide. The second node under
+<tt>@MeStack@</tt> adds the metal stack, and the final node under <tt>@r_Lens@</tt> 
+adds the microlens.</p>
+
+<p><a href="images/emw_cis_beol.png"><img src="images/emw_cis_beol.png" width="550" 
+alt="Structure created from the three splits" /></a></p>
+ 
+<p class="caption">Figure 4. Resulting structure of the three splits. (Click
+image for full-size view.)</p>
+
+<!--==========================-->
+<a name="23"></a>
+<h2>4.2.3 Maintaining Overview With Folding in jEdit</h2>
+
+<p>Looking again at Figure 3, you can see how explicit folding in jEdit helps you
+to maintain the overview in long scripts. Everything between <tt>{{{</tt> and
+<tt>}}}</tt> can be collapsed and expanded using the <strong>Folding</strong> menu. 
+Folds are marked by a small triangle close to the line numbers and the number of
+collapsed lines is appended. To activate explicit folding, add the line 
+<tt>; :folding=explicit:</tt> to your file.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 Meshing</h1>
+
+<p>For the basic principles of how to create a tensor mesh, see the
+Sentaurus Mesh module, 
+<a href="../smesh/smesh_07.html">Section 7. Using the Tensor-Product Mesh Generator</a>.</p>
+
+<!--==========================-->
+<a name="31"></a>
+<h2>4.3.1 Courant Criteria</h2>
+
+<p>CIS devices are usually complex and are often generated with the help of masks,
+which easily leads to tiny misalignments of boundaries across the structure. These 
+small misalignments then propagate further into very small tensor cell sizes and 
+can impact the maximal stable time step defined by the Courant criteria:</p>
+
+<p>$Δt_{stable} = 1 / {c/n √{1/{Δx}^2+1/{Δy}^2+1/{Δz}^2}}$</p>
+
+<p>which, in one dimension, reduces to the following equation:</p>
+
+<p>$Δt_{stable,1d} = {n Δx} / {c}$</p>
+
+<p>Therefore, the stable time step is limited by the smallest edge length. Note
+that the cells in the region with lowest <em>n</em> &ndash; most often gas around the lens &ndash;
+are the most critical for the overall time-step computation.</p>
+
+<p>So it is crucial to avoid very small cell sizes in general, but understanding 
+which region is actually limiting the stable time step is a more complex task. 
+Sentaurus Mesh can help you here: setting <tt>verbosity=3</tt> in the <tt>IOControls</tt> section 
+(see <a href="../../Applications_Library/GettingStarted/emw/simple-cis/snmesh_msh.cmd">snmesh_msh.cmd</a>)
+prints the stable time step for each material at the end of its log 
+file (<a href="../../Applications_Library/GettingStarted/emw/simple-cis/n12_msh.log">n12_msh.log</a>):</p>
+
+<!-- offgrep manually optimized width to fit 80 file="../../Applications_Library/GettingStarted/emw/simple-cis/n12_msh.log" startExpr="Summary:*"  endExpr="global*" -->
+<pre>
+Summary:
+--------
+Copper:  tcourant=n/a minCellSize=(0.01, 0.01, 0.01) cells=72000
+Gas:     tcourant=2.223761e-17s minCellSize=(0.01, 0.01, 0.02) cells=204419
+Nitride: tcourant=4.279048e-17s minCellSize=(0.01, 0.01, 0.014286) cells=70000
+Oxide:   tcourant=2.444004e-17s minCellSize=(0.01, 0.01, 0.007143) cells=611181
+PolySi:  tcourant=6.545171e-17s minCellSize=(0.01, 0.01, 0.007143) cells=22400
+Silicon: tcourant=6.791883e-17s minCellSize=(0.01, 0.01, 0.007576) cells=1320000
+--------
+global:  tcourant=2.223761e-17s minCellSize=(0.01, 0.01, 0.007143) cells=2300000
+</pre>
+<!-- offgrep end -->
+
+<p>This summary tells you that the stable time step will be 2.223761e-17&nbsp;s (last
+line), and it is limited by the Gas region. In addition, you can see that
+relaxing the mesh in the Gas does not increase the stable time step much, as the
+next limiting region, the Oxide region, has a slightly higher stable time
+step. Therefore, the Oxide would have to be coarsened as well to achieve a significantly
+larger time step.</p>
+
+<p class="note">Dispersive regions, like Copper, do not contribute to the stable
+time-step computation.</p>
+
+<!--==========================-->
+<a name="32"></a>
+<h2>4.3.2 NPW and maxNPW Refinement</h2>
+
+<p>In general, for CIS devices, it is convenient to use the nodes per wavelength
+(NPW) refinement. However, similar to the general pairwise definition of
+refinements in a minimum and maximum notation, NPW also allows for defining a maximum NPW 
+using the command <tt>maxNPW</tt>. Usually, the NPW settings are
+controlled by Sentaurus Workbench parameters for all directions <tt>@NPW@</tt> plus a separate
+one in each propagation direction <tt>@NPWz@</tt>.</p>
+
+<p>It is common practice to increase the NPW value by 1.5x in the propagation direction to 
+achieve more accurate results. A convenient way to control all of the maximum NPW values accordingly 
+is to define one parameter <tt>@fmax@</tt> and then multiply all NPW parameters by it as 
+<tt>@&lt;NPW*fmax&gt;@</tt>. The typical <tt>@fmax@</tt> is in the range of 1..2. 
+This results in the following typical mesh command file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/snmesh_msh.cmd" startExpr="*NPWx*"  endExpr="*maxNPWz*" -->
+<pre>
+    NPWx = @npw@
+    NPWy = @npw@
+    NPWz = @npwz@
+    maxNPWx = @&lt;fmax*npw&gt;@
+    maxNPWy = @&lt;fmax*npw&gt;@
+    maxNPWz = @&lt;fmax*npwz&gt;@
+</pre>
+<!-- grep end -->
+                      
+<p>Click to view the primary file
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/snmesh_msh.cmd">
+snmesh_msh.cmd</a>.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>4.4 EMW Simulation</h1>
+
+<p>This section describes how to set up EMW efficiently so it fulfills the
+different requirements during project development, from fast running at the
+beginning to optimized turnaround time for variations.</p>
+
+<p>Click to view the primary file
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/emw_eml.cmd">
+emw_eml.cmd</a>.</p>
+
+<!--==========================-->
+<a name="41"></a>
+<h2>4.4.1 Controlling Termination of the Simulation</h2>
+
+<p>One of the main simulation settings of EMW is the break criteria or tolerance
+usually introduced as the Sentaurus Workbench parameter <tt>@tol@</tt>. However, depending on what
+you simulate, there might be better choices to terminate the simulation. In this
+setup, depending on the range of <tt>@tol@</tt>, different break criteria are
+applied:</p>
+
+<dl>
+<dt><strong>Tolerance</strong> [0 &lt; <tt>@tol@</tt> &lt; 1]</dt>
+<dd>The simulation ends if the maximum deviation of the E-fields compared to the
+previous check is less than <tt>@tol@</tt>.<br />
++ Automatic convergence detection.<br /> 
+- Increases turnaround time, especially on GPU.<br />
+- <tt>@tol@</tt> should not be confused with the simulation error. It is an
+empirical number that must be adapted for each application and can depend on
+wavelength or incident angle or both; typical values are 1e-3...1e-5.
+</dd>
+
+<dt><strong>TotalTimeStep</strong> [<tt>@tol@</tt>=0, or 1000 &le; <tt>@tol@</tt>]</dt>
+<dd>The simulation ends after <tt>@tol@</tt> number of time steps.<br />
++ Very fast, as no detector is required.<br />
++ Use <tt>TotalTimeStep = 1</tt> to quickly produce cuts to check setup,
+structure, and meshing.<br />
+- You need to know when simulation will stop.<br />
+- Propagation distance might vary: <em>propagation distance</em> = <em># of timesteps</em> &times;  
+<em>timestep</em><br />
+</dd>
+
+<dt><strong>ct</strong> [1 &le; <tt>@tol@</tt> &lt; 1000]</dt>
+<dd>The simulation ends after the light in vacuum would have propagated this
+distance <em>d</em> = <em>c</em> &times; <em>t</em> in &mu;m.<br />
++ Very fast, as no detector is required.<br />
++ Propagation distance is well defined even when time step varies.<br />
++ The value of <tt>ct</tt> has a descriptive meaning.<br />
+- You need to know how far the light must propagate to reach a certain accuracy.
+</dd>
+</dl>
+
+<p>Therefore, in a typical project development, you would first use <tt>@tol@ = 0</tt>
+to visualize the tensor mesh cuts and check whether all regions are resolved in a
+reasonable manner.</p> 
+
+<p>Then, you would run a few <tt>@tol@ = 0.1</tt> or <tt>@tol@ = 1001</tt> with a
+very coarse mesh to see whether all the scripts are running through as expected.</p>
+
+<p>Next, you would decrease <tt>@tol@ = 1e-3..1e-5</tt> and play with the refinement
+to find the optimum between turnaround time and accuracy (for example, deviation of <tt>R+T+A</tt>
+from 1). The result extraction, in the next section, always returns the
+propagation distance <tt>ct</tt>, so you will develop a sense of the value for <tt>ct</tt> for
+this particular structure </p>
+
+<p>For a large design-of-experiments (DoE), especially in conjunction with GPU, it is advisable to use
+<tt>@tol@=&lt;ct&gt;</tt>, where <tt>&lt;ct&gt;</tt> is the optimum value as
+determined in the previous step. This optimizes the turnaround time by deactivating the
+detector.</p>
+
+<!--==========================-->
+<a name="42"></a>
+<h2>4.4.2 General Considerations for Plotting</h2>
+
+<p>CIS structures usually have a few million cells to a couple of hundred cells. Therefore,
+often you cannot save the full 3D structure for visualization in
+Sentaurus Visual. To solve this issue, you can do one of the following:</p>
+
+<ol>
+<li>Save only a subset of regions using the <tt>Plot</tt> keyword <tt>region</tt>.</li>
+<li>Save your data onto a coarser mixed-element grid.</li>
+<li>Save 2D cuts instead of full 3D.</li>
+</ol>
+
+<p>Option 1 is usually still too large because the silicon domain typically is still too
+large.</p>
+
+<p>Option 2 can be used especially when a subsequent Sentaurus Device simulation is
+performed. However, often it is interesting to see interference patterns that otherwise might be lost during interpolation onto a coarse grid.</p>
+
+<p>As a minimum set of plot quantities, the following is a good starting point:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/emw_eml.cmd" startExpr="*Quantity*" lines=1 -->
+<pre>
+  Quantity = {AbsElectricField, CplxRefIndex, CplxExtCoeff}
+</pre>
+<!-- grep end -->
+
+<p>The magnitude of the electric field <tt>AbsElectricField</tt> is the most
+commonly used quantity to investigate optics. The n&amp;k values
+<tt>CplxRefIndex</tt> and <tt>CplxExtCoeff</tt> are always useful to understand
+the optical device behavior. In addition, if displayed as contour lines, it can be
+used to mimic region boundaries during visualization (see Figure&nbsp;5).</p>
+
+<p class="note">Avoid the quantity <tt>region</tt>. This requires a more complex
+format for storage in TDR files and comes with a significant performance penalty for
+writing.</p> 
+
+<p><a href="images/emw_cis_nk_contour.png"><img src="images/emw_cis_nk_contour.png" width="550" 
+alt="Structure visualization using n as contour lines" /></a></p> 
+
+<p class="caption">Figure 5. Visualizing the structure using CplxRefIndex as
+contour lines to indicate region interfaces. (Click image for full-size view.)</p>
+
+<p>In general, it is helpful to turn plotting completely on and off with a single switch, 
+for example, to optimize turnaround time or disk space when running large
+DoEs or performance optimizations. In this template, this is accomplished by
+adding <tt>plot</tt> to the Sentaurus Workbench parameter <tt>@model@</tt>.</p>
+
+<p>In addition, it is useful to control the transient plotting of snapshots taken
+during light propagation, for example, to investigate the dynamics of light
+propagation, which can also be converted to a movie later by using the Sentaurus Visual
+tool <tt>movie</tt>. The Sentaurus Workbench parameter <tt>@movieCuts@</tt> takes a list of plot
+section names, for example <tt>Ex</tt>, which then will be plotted during light
+propagation. <tt>@movieTickStep@</tt> is used to control the number of steps 
+between two subsequent plots.</p>
+
+<!--==========================-->
+<a name="43"></a>
+<h2>4.4.3 Working With Cuts</h2>
+
+<p>For CIS devices, usually one vertical x-cut and y-cut through the middle of the structure
+and several horizontal z-cuts are helpful to investigate the optical behavior.
+While the two vertical cuts are straightforward, real structures might require
+dozens of z-cuts, each of them requiring a separate <tt>Plot</tt> section.
+This repetitive work can be streamlined using Tcl preprocessing. First, you define
+a list of label and z-cut position pairs:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/emw_eml.cmd" startExpr="*plotZcuts*"  endExpr="*}]*" header="!(" footer="..." -->
+<pre>
+!(
+set plotZcuts [subst {
+  &quot;Me1&quot; @&lt;zmax_Me1-t_Me1/2.&gt;@ 
+  &quot;poly&quot; @&lt;(zmax_poly+zmin_poly)/2.&gt;@ 
+  &quot;SiTop&quot; -0.01 
+  &quot;bot&quot; @zmin@ 
+}]
+...
+</pre>
+<!-- grep end -->
+
+<p>Note how you are using preprocessing variables such as <tt>zmax_Me1</tt> extracted
+by Sentaurus Structure Editor to achieve a self-consistent definition of
+geometric parameters.</p>
+
+<p>Second, for each entry, you create a corresponding <tt>Plot</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/emw_eml.cmd" startExpr="*foreach*"  endExpr="*PlaneZ*" header="..." footer="  ...\n}\n)!" -->
+<pre>
+...
+foreach {label z} $plotZcuts {
+  puts &quot;Plot {&quot;
+  puts &quot;  Name = \&quot;n@node@_Ez$label\&quot;&quot;
+  puts &quot;  Quantity = {AbsElectricField, CplxRefIndex, CplxExtCoeff}&quot;
+  puts &quot;  PlaneZ = $z&quot;
+  ...
+}
+)!
+</pre>
+<!-- grep end -->
+
+<p>The same principle of preprocessing can be used to define z-cuts for
+extractors and sensors.</p>
+
+<p>When visualizing cuts within Sentaurus Visual, the first thing you
+notice is that, depending on the cut type, the structure might be upside down or
+labeled with the wrong axis, as EMW saves all plots regardless of their
+orientation as xy plots. To correct for this, a custom button has been introduced, 
+which assumes that the plot names of the cuts end in x, y, or z and, depending on
+this, corrects the orientation and axis labels accordingly (see Figure 6).</p>
+
+<p><a href="images/emw_cis_fix_cs_cut.png"><img src="images/emw_cis_fix_cs_cut.png" width="550" 
+alt="Showing cuts before and after fixing the orientation and axis labels" /></a></p> 
+
+<p class="caption">Figure 6. (Left) X-cut as loaded by Sentaurus Visual and (right) after
+using the custom button with fixed orientation and axis labels. (Click image for
+full-size view.)</p>
+
+<p>To use this feature, ensure:</p>
+
+<ul>
+<li>Sentaurus Visual runs in Tcl mode.</li>
+<li>The custom button toolbar is switched on (choose <strong>View</strong> &gt; 
+<strong>Toolbars</strong> &gt; <strong>CustomButtons</strong>). You should see the 
+<strong>E</strong> of the custom button toolbar for editing it.</li>
+<li>You open Sentaurus Visual from within the <tt>simple-cis</tt> project.</li>
+</ul>
+
+<p>Then, you should see the fix coordinate system for EMW cuts button in the toolbar 
+as shown in Figure&nbsp;7.</p>
+
+<p><a href="images/emw_cis_custom_button.png"><img src="images/emw_cis_custom_button.png" width="400" 
+alt="Sentaurus Visual showing custom button" /></a></p> 
+
+<p class="caption">Figure 7. Sentaurus Visual showing custom button to fix
+axis and orientation of EMW cuts. (Click image for full-size view.)</p>
+
+<!--==========================-->
+<a name="44"></a>
+<h2>4.4.4 Using Sensors</h2>
+
+<p>Sensors are a very powerful EMW feature to integrate quantities over a
+volume or surface. Evaluation can occur at the end only or during time
+propagation, which can provide important insights into how light propagates
+in the device and also about convergence details. Figure&nbsp;8 shows the evolution
+of R,T,A and the deviation of the error |1-RTA|. Obviously, the simulation
+converged after <tt>ct</tt>=~60&nbsp;um as RTA no longer shows significant changes. 
+A smaller error than |1-RTA|=0.005 is not achievable with this mesh.</p> 
+
+<a name="fig8"></a>
+<p><a href="images/emw_cis_rta_ct.png"><img src="images/emw_cis_rta_ct.png" width="550" 
+alt="Evolution of 1-RTA and R,T,A versus ct" /></a></p> 
+
+<p class="caption">Figure 8. Evolution of R,T,A and 1 &ndash; RTA during time given in
+c &middot; t. (Click image for full-size view.)</p>
+
+<p>As with other extra features, the transient evaluation of sensors requires 
+additional computation time and, therefore, can be switched on by
+adding <tt>transSens</tt> to <tt>@model@</tt>.</p>
+
+<p class="note">It is not advisable to run volume integration sensors for large
+domains in transient mode, as it can take considerable time.</p>
+
+<p>The most valuable sensors for CIS are reflection, transmission, and absorption
+sensors (RTA) and region or materialwise volume integration sensors to capture
+the absorption in specific regions or materials. For RTA, the <tt>RTA</tt> section of EMW can
+be used. Which sensors are evaluated can be controlled with the <tt>Sensors</tt>
+command.</p>
+
+<p>The log output allows you to set which output quantities are printed
+to the log file and, consequently, appear as Sentaurus Workbench results. You can choose between
+R,T,A and the sum of RTA. In addition, the normalized values Rnorm,Tnorm, and Anorm are available with:</p> 
+
+<p>$Rnorm = R/(R+T+A)$</p>
+
+<p>Note that the switches for transient evaluation are present in the <tt>RTA</tt>
+section as for any sensors, as well. However, when running the sensors in transient,
+you might want to switch off A in the <tt>RTA</tt> section, as it is a volume integration
+over the entire device and might increase runtime considerably.</p>
+
+<p>Due to the staggered grid used in EMW, E- and H-fields must be interpolated
+to the same location before any further computation such as squaring for the
+intensity can be performed. To improve accuracy, EMW first squares the E-field
+and then evaluates the spatial interpolation required by the staggered grid. In
+this way, interpolation errors are not enhanced by squaring them. This scheme can
+be used by setting <tt>CompatibilityMode=No</tt> in the <tt>Sensor</tt> or <tt>RTA</tt> 
+section.</p>
+
+<p>Another helpful approach is to use z-cut flux sensors throughout your
+device, for example, below the lens, or at the top of the silicon, which basically
+tracks how the flux along the propagation direction in your device varies, thereby
+giving you a quick insight into where the light &quot;disappears&quot; in your
+device. The same preprocessing approach as for plots is used to define multiple
+sensors efficiently:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/emw_eml.cmd" startExpr="*Flux*Sensor*"  endExpr="*)!*" excludeLines="#*" -->
+<pre>
+!(
+set dz 0.05 ;# shift in z direction to set flux sensors away from interfaces 
+set sensorZFlux [subst {
+  &quot;lens&quot; [expr @zmin_lens@ - $dz] 
+  &quot;PolyTop&quot; [expr @zmax_poly@ + $dz] 
+  &quot;SiTop&quot; 0 
+}]
+
+foreach {label z} $sensorZFlux {
+  puts &quot;Sensor {&quot;
+  puts &quot;  Name              = \&quot;F$label\&quot;&quot;
+  puts &quot;  Quantity          = PhotonFluxDensity&quot;
+  puts &quot;  PlaneZ            = $z&quot;
+  puts &quot;  Mode              = {Integrate}&quot;
+  puts &quot;  CompatibilityMode = No&quot;
+  #if [string match -nocase &quot;*transSens*&quot; &quot;@model@&quot;]
+  puts &quot;  StartTick         = 0&quot;
+  puts &quot;  TickStep          = @movieTickStep@&quot;
+  #endif
+  puts &quot;}&quot;
+}
+)!
+</pre>
+<!-- grep end -->
+
+<p>Note that all sensors shift by a small amount <tt>dz</tt> to avoid being 
+positioned exactly at an interface. </p> 
+
+<!--==========================-->
+<a name="45"></a>
+<h2>4.4.5 Troubleshooting Convergence Issues</h2>
+
+<p>FDTD simulation can fail for various reasons. This is a list to check for
+the most common reasons:</p>
+
+<ul>
+<li>Does the mesh show everywhere at least 5 nodes per wavelength? This is the
+minimum for a wave to be well-defined in a medium.</li>
+
+<li>Is the specified tolerance too ambitious? If the reported error in the log tends
+to stagnate at a certain value, then the chosen mesh might be too coarse to reach the 
+requested tolerance. In this case, relax the tolerance or increase the mesh density.</li>
+
+<li>Check <tt>Nrise</tt>. In rare cases, increasing <tt>Nrise</tt> in the <tt>Excitation</tt>
+section up to 30 can help convergence. <tt>Nrise</tt> sets the number of signal periods
+before full amplitude of the excitation is reached. A steep function 
+introduces higher order frequencies, which must vanish from the simulation to
+fulfill steady-state criteria of the harmonic signal.</li>
+
+<li>Does the simulation include dispersive media? If so, then try to increase
+<tt>Oversampling</tt> in the <tt>Globals</tt> section up to 4. An indication that  
+dispersive media are the problem is when using PEC instead of dispersive media allows 
+the simulation to run successfully. To do so, simply change the
+<tt>DispersiveMedia</tt> section to the <tt>PEC</tt> section, removing the
+<tt>DispersiveMedia</tt>-specific options.</li>
+</ul>
+
+<!--==========================-->
+<a name="46"></a>
+<h2>4.4.6 Troubleshooting Accuracy Issues</h2>
+
+<p>Due to the nature of the staggered grid used in the Yee algorithm commonly
+used in FDTD, a reasonable judgment of the accuracy can be a real challenge. In
+general, a finer grid improves accuracy. which is typically measured by the
+deviation of reflection, transmission, and absorption from 1, so &Delta;&epsilon; 
+= |1 &ndash; R+T+A|.</p>
+
+<p>However, increasing the mesh density not only increases the number of
+discrete points that must be processed, but also decreases the stable time
+step to advance the simulation in time according to the Courant criteria (see
+<a href="#31">Section&nbsp;4.3.1 Courant Criteria</a>). Therefore, more time steps 
+must be calculated for the same propagation distance. So, overall, the
+feasibility to improve accuracy by increasing the mesh is limited.</p>
+
+<p>Some further considerations before you adjust the global mesh refinement:</p>
+
+<ul>
+<li>Did the simulation reach stationary state? One indication of this is that, when
+using a detector, the error values smoothly decrease and eventually drop below
+the tolerance. For a more detailed picture, run sensors in transient and check
+the evolution of R, T, A. Increase the simulation time if needed.</li> 
+
+<li>If you see beats in the transient R, T, A signals on a longer time scale, then 
+this might indicate that the excitation signal was ramped up too fast. In
+this case, increasing <tt>Nrise</tt> up to 30 will remove higher order modes and result in
+a smoother evolution of R,T,A (see Figure&nbsp;9).</li>
+
+<li>Ensure you have <tt>CompatibilityMode=No</tt> for your sensors and in the
+<tt>RTA</tt> section.</li>
+
+<li>Try to refine the illuminated interfaces of strong absorbing materials.</li>
+</ul>
+
+<a name="fig9"></a>
+<p><a href="images/emw_cis_rta_nrise.png"><img src="images/emw_cis_rta_nrise.png" width="550" 
+alt="Plot showing much smoother behavior for larger Nrise" /></a></p>
+ 
+<p class="caption">Figure 9. 1 &ndash; RTA shows much smoother behavior for larger
+Nrise. This can be more pronounced for structures showing more optical resonance. 
+(Click image for full-size view.)</p>
+
+<!--==========================-->
+<a name="47"></a>
+<h2>4.4.7 Parallelization</h2>
+
+<p>EMW offers different parallelization schemes, such as shared-memory
+parallelization (SMP), distributed processing (DP) using message passing
+interface (MPI), and hardware acceleration on graphics processing units
+(GPU).</p>
+
+<p>For CIS, SMP is commonly used in combination with GPU. For very large
+structures, such as cross-talk simulations, multiple GPUs can be used through
+MPI.</p>
+
+<p>The number of threads can be controlled in the <tt>Globals</tt> section by:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/emw_eml.cmd" startExpr="*NumberOfThreads*"  lines=1 header="Globals {" footer="}" -->
+<pre>
+Globals {
+  NumberOfThreads = @nthreads@
+}
+</pre>
+<!-- grep end -->
+
+<p>where <tt>@nthreads@</tt> is a hidden variable defined in <tt>emw_eml.cmd</tt>, 
+so it can be easily parameterized by introducing a Sentaurus Workbench parameter.</p>
+
+<p>If you own a GPU and you purchased an emw_mpi license, then you can run the
+time-stepping part of the FDTD simulation on the GPU using the command-line
+option <tt>-hw nvidia</tt>, which you can set in the <strong>Command-Line Options</strong> 
+field of the EMW tool properties. The command-line option <tt>-hw none</tt> uses CPU only 
+and is the default. In the project, this option is introduced by the Sentaurus Workbench 
+parameter <tt>@gpu@</tt>. For GPU, it is recommended to use 8 threads. Otherwise, the 
+remaining CPU tasks such as preprocessing (material assignment), detector evaluation, 
+and postprocessing (sensors, extractors) dominate the turnaround time.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>4.5 Result Extraction</h1>
+
+<p>The major EMW results are shown in the Sentaurus Workbench results table, which originates
+directly from EMW as well as from the Sentaurus Visual tool <tt>svisual</tt>. In
+addition, the Sentaurus Visual tool <tt>movie</tt> can generate an animated GIF
+of the light propagation.</p>
+
+<a name="51"></a>
+<!--==========================-->
+<h2>4.5.1 Extracted Results</h2>
+
+<p>EMW can transfer different quantities such as reflection, transmission, and 
+absorption (R,T,A) directly to the Sentaurus Workbench results table. For details about 
+how to control the output in EMW, see <a href="#44">Section&nbsp;4.4.4 Using Sensors</a>.</p>
+
+<p>However, there are quantities that require more computational effort, such as 
+absorption of certain regions or groups of regions or runtime statistics.
+These quantities are extracted in the <tt>svisual</tt> tool run when in batch mode. The
+command file of this tool is structured into two parts: the first part is executed
+only in batch mode and the second part is executed only when run in interactive
+mode described in the next section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/svisual_vis.tcl" startExpr="###########*"  endExpr="*if*" footer="...}" -->
+<pre>
+##############################################################################
+# B A T C H 
+if {![info exists runVisualizerNodesTogether]} {
+...}
+</pre>
+<!-- grep end -->
+
+<p>As Sentaurus Workbench respects the order of how result variables appear in the
+log file, the order of the output can be used to group variables together. First, EMW
+outputs R,T,A. Second, Sentaurus Visual adds RTA and materialwise absorption, fluxes,
+propagation quantities, and statistics, grouped into corresponding sections.</p>
+
+<table>
+<tr> <th>Variable</th><th>Unit&nbsp;</th><th>Description</th> </tr>
+
+<tr><td>R</td><td>1</td>
+<td>Reflection</td></tr>
+
+<tr><td>T</td><td>1</td>
+<td>Transmission</td></tr>
+
+<tr><td>A</td><td>1</td>
+<td>Absorption (over entire domain, if <tt>@model@</tt> contains <tt>noA</tt> A=1-R-T)</td></tr>
+
+<tr><td>RTA</td><td>1</td>
+<td>R+T+A</td></tr>
+
+<tr><td><b>__ABS__</b></td><td>__</td>
+<td>Absorption for subdomains, implemented as region or material sensor &ndash; no box
+sensors &ndash; whose names start with A</td></tr>
+
+<tr><td>ACopper</td><td>1</td>
+<td>Absorption in Copper</td></tr>
+
+<tr><td>APolySi</td><td>1</td>
+<td>Absorption in PolySilicon</td></tr>
+
+<tr><td>ASilicon</td><td>1</td>
+<td>Absorption in Silicon</td></tr>
+
+<tr><td>Asum</td><td>1</td>
+<td>Sum of the absorption of all of the previously mentioned subdomains</td></tr>
+
+<tr><td><b>__FLUX__</b></td><td>__</td>
+<td>Relative fluxes in propagation direction</td></tr>
+
+<tr><td>TF</td><td>1</td>
+<td>Relative flux through the total field sensor TF: 1 for vacuum case, &lt; 1
+in case of reflection</td></tr>
+
+<tr><td>Flens</td><td>1</td>
+<td>Relative flux at bottom of lens</td></tr>
+
+<tr><td>FPolyTop</td><td>1</td>
+<td>Relative flux at top of PolySilicon </td></tr>
+
+<tr><td>FSiTop</td><td>1</td>
+<td>Relative flux at top of Silicon</td></tr>
+
+<tr><td><b>__PROP__</b></td><td>__</td>
+<td>Propagation quantities</td></tr>
+
+<tr><td>ct</td><td>$μm$</td>
+<td>Total vacuum propagation distance of the simulation</td></tr>
+
+<tr><td>Rstep</td><td>1/$μm$</td>
+<td>Number of time steps required per &mu;m vacuum propagation distance</td></tr>
+
+<tr><td><b>__STAT__</b></td><td>__</td>
+<td>Runtime statistics</td></tr>
+
+<tr><td>Mcells</td><td>$10^6$</td>
+<td>Number of cells of simulation grid in millions</td></tr>
+
+<tr><td>Nsteps</td><td>1</td>
+<td>Number of simulation steps performed during time-stepping</td></tr>
+
+<tr><td>Ttot</td><td>s</td>
+<td>Total wallclock time of the simulation in seconds</td></tr>
+
+<tr><td>Vthru</td><td>Mcells/s</td>
+<td>Simulation throughput based on time used for time-stepping only, excluding
+pre- and postprocessing)</td></tr>
+</table>
+
+<p>The extraction script is flexible and sensitive to sensor names, for
+example, the domainwise absorption sensors are recognized by their dataset name in
+the resulting PLT file <tt>A*Integr*</tt>. Similarly, the flux quantities evaluate the
+preprocessing variable <tt>$sensorZFlux</tt> defined in the EMW command file. This allows
+the script to reflect changes in the EMW setup automatically.</p> 
+
+<a name="52"></a>
+<!--==========================-->
+<h2>4.5.2 ct Plots</h2>
+
+<p>The <tt>svisual</tt> tool also visualizes the evolution of sensor values
+such as R,T,A and the error $|1-R+T+A|$, which you can investigate when
+<tt>@model@</tt> contains <tt>transSens</tt>. To do so, select the <tt>svisual</tt> 
+nodes of one experiment or multiple experiments in which you are interested, and click
+the <strong>Run Selected Visualizer Nodes Together</strong> button. This will produce the
+plots shown in <a href="#fig8">Figure&nbsp;8</a> and <a href="#fig9">Figure&nbsp;9</a>.</p>
+
+<p>In the command file, the interactive part is in the second part of the <tt>svisual</tt> 
+command file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/svisual_vis.tcl" startExpr="*I N T E R A C T I V E*" startOffset=-1 endExpr="*if*" footer="...}" -->
+<pre>
+##############################################################################
+# I N T E R A C T I V E 
+if {[info exists runVisualizerNodesTogether]} {
+...}
+</pre>
+<!-- grep end -->
+
+<p>The script is again written in a flexible way, taking into account changes
+in the EMW command file automatically. However, to further customize it, major
+properties such as axis labels and scaling title are put at the top of the section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/svisual_vis.tcl" startExpr="*File*settings*" endExpr="*if*" endOffset=-1 footer="..." -->
+<pre>
+  #- File settings
+  set n              &quot;@node@&quot;
+  set nemw           &quot;@node|emw@&quot;
+  set MYDATAFILE($n) &quot;@plot@&quot;
+  set STATUSFILE($n) &quot;[file rootname $MYDATAFILE($n)].sta&quot;
+  
+  #-Plot settings
+  set TITLE       &quot;&quot;                          ;# Plot title
+  set XLABEL         {ct [&lt;greek&gt;m&lt;/greek&gt;m]} ;# Label for x-axis
+  set YLABEL         &quot;Max. Dev., 1-RTA&quot;       ;# Label for y-axis
+  set Y2LABEL        &quot;R,T,A&quot;                  ;# Label for y2-axis
+...
+</pre>
+<!-- grep end -->
+
+<p>Plot attributes are set in the <tt>create_plots</tt> procedure:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/svisual_vis.tcl" startExpr="*proc*create_plots*" lines=6 footer="    ...}" -->
+<pre>
+  proc create_plots {} {
+    set ::MYPLOT [create_plot -1d]
+    set_plot_prop -show_grid -title $::TITLE -title_font_size 18 -show_legend
+    set_axis_prop -title_font_size 16 -scale_font_size 14
+    set_axis_prop -axis x -title $::XLABEL 
+    set_axis_prop -axis y -type log -title $::YLABEL 
+    ...}
+</pre>
+<!-- grep end -->
+
+<p>Similarly, curves are created in the <tt>create_curves</tt> procedure:</p>  
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/svisual_vis.tcl" startExpr="*proc*create_curves*" lines=6 footer="    ...}" -->
+<pre>
+  proc create_curves {} {
+    echo &quot;create curves&quot;
+    if {[list_datasets $::dsDetector($::n)] != &quot;&quot;} {
+      echo &quot;create monitor curve&quot;             
+      create_curve -name cMaxDev($::n) -dataset $::dsDetector($::n) \
+                   -axisX $::varTime -axisY $::varMaxDev
+      set_curve_prop cMaxDev($::n) -color $::color -line_width 2 \
+                   -label &quot;Max Dev.: $::legend&quot;
+    ...}
+</pre>
+<!-- grep end -->
+
+<p>These procedures can be adapted as needed.</p>
+
+<a name="53"></a>
+<!--==========================-->
+<h2>4.5.3 Movie</h2>
+
+<p>When transient plotting is switched on, by mentioning the cut name, for example, 
+<tt>Ex</tt> in <tt>@movieCuts@</tt>, movies can be generated from the series of
+cuts to visualize the light propagation. This task is performed by
+the tool <tt>movie</tt>, which collects all of the cuts and exports an animated GIF 
+(see Figure&nbsp;10).</p>
+
+<p>You can look at the animated GIF directly from within Node Explorer: select the 
+<tt>*.gif</tt> file and click <strong>Launch</strong> to start the GNOME image viewer (eog) 
+or a similar viewer.</p>
+
+<p>You can control movie creation in the command file 
+<a href="../../Applications_Library/GettingStarted/emw/simple-cis/svisual_vis.tcl">
+movie_vis.tcl</a>  of the tool <tt>movie</tt> by setting parameters in the user 
+preference section at the top:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple-cis/movie_vis.tcl" startExpr="*user*" endExpr="#-*" endOffset=-2 -->
+<pre>
+puts &quot;user parameters&quot;
+set n @node@
+set nemw @node|emw@
+set cuts @movieCuts@ ;# defines multiple movie sets separated by _, e.g. Ex_Ey 
+set filePattern &quot;n${nemw}_%cut%_*_eml.tdr&quot; ;# Plot file pattern, %cut% =&gt; Ex
+set resolution      &quot;400x600&quot; ;# resolution of the gif
+set framesPerSeconds 5        ;# frame rate in seconds
+set plotRange {1 -1}          ;# 1=first, 2=second, -1=last, {1 -1} = all...
+set plotSkip 1         ;# skip factor 1=each plot is used, 2=every second...
+</pre>
+<!-- grep end -->
+
+<p>A few notes:</p>
+
+<dl>
+<dt><tt>cuts</tt></dt>
+<dd>Can contain more than one entry, for example, <tt>Ex_Ey</tt>. In this case, two 
+separate movies are created, one for <tt>Ex</tt> and one for <tt>Ey</tt>.</dd>
+
+<dt><tt>filepattern</tt></dt>
+<dd>This is a template that must match the cut files, where <tt>%cut%</tt> is
+replaced with the cut name, for example, <tt>Ex</tt>.</dd>
+
+<dt><tt>resolution</tt></dt>
+<dd>Gives the dimensions (horizontal x vertical) of the generated GIF file in pixels.</dd>
+
+<dt><tt>plotRange</tt></dt>
+<dd>Used to select a range of the cuts, for example, to remove uninteresting
+parts at the beginning or the end of the simulation.</dd>
+
+<dt><tt>plotSkip</tt></dt>
+<dd>Sometimes the simulation produces too many cuts or you want to test
+your movie settings quickly. With <tt>plotSkip</tt>, you can omit each <em>n</em>th picture.</dd>
+</dl>
+
+<p><a href="images/emw_cis_movie.gif"><img src="images/emw_cis_movie.gif" width="300" 
+alt="Animation of x-cut showing light propagation" /></a></p>
+ 
+<p class="caption">Figure 10. Animation of x-cut showing light propagation in terms of
+E-field magnitude. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

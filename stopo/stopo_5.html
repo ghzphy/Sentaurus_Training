@@ -1,0 +1,694 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 5. Particle Monte Carlo Reaction Modeling</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_6.html">next section &gt;&gt;</a> 
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />5. Particle Monte Carlo Reaction Modeling </h1>
+
+<p>
+ <a href="#1">5.1 Introduction to the Particle Monte Carlo Engine</a><br />
+ <a href="#2">5.2 Defining the PMC Model</a><br />
+ <a href="#3">5.3 Defining the Source Species Characteristics</a><br />
+ <a href="#4">5.4 Defining the PMC Machine</a><br />
+ <a href="#5">5.5 Defining the PMC Model Reaction Properties</a><br />
+ <a href="#6">5.6 Running the PMC Simulation</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To provide a basic understanding and setup of the particle Monte Carlo (PMC) 
+     reaction models in Sentaurus Topography 3D.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Introduction to the Particle Monte Carlo Engine</h1>
+
+<p>The PMC engine for feature-scale simulation of etching and deposition processes 
+is based on a cellular grid representation of the wafer structure, and a PMC technique 
+to model the fluxes of plasma-generated species to the wafer surface. Simulations with 
+the PMC engine are always run in three dimensions. For the same model and similar 
+accuracy, the PMC engine is, in general, significantly faster than the level-set engine, 
+up to factors of 100 and more.</p>
+
+<p>In contrast to the level-set engine, which calculates etching and deposition rates 
+on the gas&ndash;material interface (as shown in 
+<a href="stopo_4.html">Section&nbsp;4. Working With the Rate Formula Module</a>) and 
+then advances this interface accordingly, the PMC engine relies on a set of user-specified 
+surface reactions that control the interactions of plasma-generated species with the 
+exposed part of the wafer representation.</p>
+
+<p>This modeling approach is natural, versatile, and simple, because each surface reaction 
+describes only one elementary interaction of the plasma-generated species with one of 
+the species on the wafer surface.</p>
+
+<!--==============================-->
+<a name="four_pmc_parts"></a>
+<h2>5.1.1 Main Parts of a PMC Process Step</h2>
+
+<p>A PMC process step is divided into four main steps that must be specified in the correct 
+order in the Tcl command file to be executed by Sentaurus Topography 3D:</p>
+
+<ol>
+<li>Define the PMC model (see <a href="#2">Section 5.2 Defining the PMC Model</a>).</li>
+<li>Define the source species characteristics (see 
+<a href="#3">Section 5.3 Defining the Source Species Characteristics</a>).</li>
+<li>Define the PMC machine (see <a href="#4">Section 5.4 Defining the PMC Machine</a>).</li>
+<li>Define the PMC model reaction properties (see 
+<a href="#5">Section 5.5 Defining the PMC Model Reaction Properties</a>).</li>
+</ol>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Defining the PMC Model</h1>
+
+<p>In PMC, instead of using an analytic formula for the etching or deposition rate 
+(as in the rate formula module (RFM)), a set of reactions is used to model the 
+interaction of the incoming species in the gas phase (tag <tt>&lt;g&gt;</tt> is used 
+from now on) with the materials on the surface (tagged with <tt>&lt;s&gt;</tt> from now on). 
+As for RFM models, the definition of a new reaction model starts with the 
+<tt>define_model</tt> command and ends with the <tt>finalize_model</tt> command.</p>
+
+<!--==============================-->
+<a name="source_species"></a>
+<h2>5.2.1 Defining the Source Species</h2>
+
+<p>Before writing the reactions, you must define all the incoming species in the 
+gas phase that will be used in the PMC reaction model. There is no limitation to 
+the names or the number of the species to be used. Of course, you cannot define 
+two separate gas species with the same name.</p>
+
+<p>Unlike the definition of a level set&ndash;based model, there is no distinction 
+between ion and neutral species when the source species are defined in the model. 
+The properties of the gas species (flux, and angular and energy distributions) are 
+defined after the model definition, so the same model can be used with different 
+gas species properties, if needed.</p>
+
+<p>To define a new gas species (for example, fluorine (F)) in a PMC model, you use 
+the <tt>add_source_species</tt> command after the <tt>define_model</tt> command as 
+follows:</p>
+
+<pre>
+define_model name=PMCModel1 description=&quot;Simple Etch Model&quot;
+
+add_source_species name=F model=PMCModel1
+...
+
+finalize_model model=PMCModel1
+</pre>
+
+<!--==============================-->
+<a name="surface_reactions"></a>
+<h2>5.2.2 Defining the Surface Reactions</h2>
+
+<p>After all the gas species are defined, the next step is to define the surface 
+reactions of the model, that is, all the reactions needed between the gas species 
+and the materials on the surface of the structure.</p>
+
+<p>There are several types of surface reaction in PMC depending on their products. 
+The syntax of a surface reaction resembles the syntax of a real chemical reaction: 
+reactants are on the left side and products are on the right side of the reaction. 
+Only one-way reactions are supported and only two reactants can appear on the 
+left-hand side of the reaction, with the species in the gas phase (tagged with 
+<tt>&lt;g&gt;</tt>) always being one of the two.</p>
+
+<p>Stoichiometric reactions and mass preservation are not supported for PMC surface 
+reactions. The following list shows the basic set of surface reactions that are 
+available in PMC and the corresponding syntax using the <tt>add_reaction</tt> command:</p>
+
+<pre>
+add_reaction model=demo  name=adsorption \
+   expression=&quot;A&lt;g&gt; + Mat1&lt;s&gt; = Mat1A&lt;s&gt;&quot;
+
+add_reaction model=demo  name=reemission \
+   expression=&quot;B&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;s&gt; + B&lt;g&gt;&quot;
+
+add_reaction model=demo  name=reflection \
+   expression=&quot;C&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;s&gt; + C&lt;r&gt;&quot;
+
+add_reaction model=demo  name=simple_etch \
+   expression=&quot;D&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;v&gt;&quot;
+
+add_reaction model=demo  name=sputtering_tracked \
+   expression=&quot;E&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;p&gt;&quot;
+
+add_reaction model=demo  name=sputtering_untracked \
+   expression=&quot;G&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;q&gt;&quot;
+
+add_reaction model=demo  name=nucleation \
+   expression=&quot;H&lt;g&gt; + Mat1&lt;s&gt; = Mat2&lt;s&gt; + Mat1&lt;b&gt;&quot;
+
+add_reaction model=demo  name=growth \
+   expression=&quot;H&lt;g&gt; + Mat2&lt;s&gt; = Mat2&lt;s&gt; + Mat2&lt;b&gt;&quot;
+</pre>
+
+<p>The arbitrary species <tt>A</tt>, <tt>B</tt>, <tt>C</tt>, <tt>D</tt>, <tt>E</tt>, 
+<tt>G</tt>, and <tt>H</tt> are assumed to have been previously defined with the 
+<tt>add_source_species</tt> command.</p>
+
+<!-- ======================================================================= -->
+<a name="surface_reaction_types"></a>
+<h2>5.2.3 Types of Surface Reaction</h2>
+
+<p>In this section, the surface reaction types presented in 
+<a href="#surface_reactions">Section&nbsp;5.2.2 Defining the Surface Reactions</a> are 
+explained in more detail.</p>
+
+<hr />
+
+<a name="adsorption"></a>
+<pre>
+add_reaction model=demo  name=adsorption \
+   expression=&quot;A&lt;g&gt; + Mat1&lt;s&gt; = Mat1A&lt;s&gt;&quot;
+</pre>
+
+<p>The first reaction named <tt>adsorption</tt> is used to model the adsorption 
+of species <tt>A</tt> on the surface of material <tt>Mat1</tt>. The product is a 
+particle of a new material called <tt>Mat1A</tt> on the surface (tagged <tt>&lt;s&gt;</tt>) 
+that replaces one particle of <tt>Mat1</tt>. The product can have any name, but 
+<tt>Mat1A</tt> has been chosen to remember more easily that <tt>A</tt> was adsorbed on 
+<tt>Mat1</tt>. The particle <tt>A</tt> consumed during this reaction is removed from the 
+simulation.</p>
+
+<hr />
+
+<a name="reemission"></a>
+<pre>
+add_reaction model=demo  name=reemission \
+   expression=&quot;B&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;s&gt; + B&lt;g&gt;&quot;
+</pre>
+
+<p>The reaction named <tt>reemission</tt> is used to model the reemission of species 
+<tt>B</tt> from the surface of material <tt>Mat1</tt>. The products are the same as the 
+reactants because the surface is not modified and species <tt>B</tt> has been put 
+back into the gas phase. Nevertheless, it is possible to write a reemission reaction 
+with a modified material on the surface.</p>
+
+<p class="note">Species <tt>B</tt> are reemitted strictly isotropically from
+the surface, even if the initial angular distribution from its source was not 
+isotropic.<br /><br />
+
+This reaction (<tt>reemission</tt>) is the <em>default reaction</em> executed 
+by the PMC engine when the reactants on the left-hand side are used in other 
+reactions that finally do not happen (stochastic process) in a cell.</p>
+
+<hr />
+
+<a name="reflection"></a>
+<pre>
+add_reaction model=demo  name=reflection \
+   expression=&quot;C&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;s&gt; + C&lt;r&gt;&quot;
+</pre>
+
+<p>The third reaction called <tt>reflection</tt> is distinguished from the 
+<tt>reemission</tt> reaction by the product <tt>C</tt> tagged with <tt>&lt;r&gt;</tt> 
+instead of <tt>&lt;g&gt;</tt>.</p>
+
+<p>In this case, species <tt>C</tt> is reflected specularly (incidence angle 
+equals reflection angle) on the surface of <tt>Mat1</tt>. It is possible to adjust 
+the angular distribution of the reflected species in the properties of the specific 
+reaction as shown later.</p>
+
+<hr />
+
+<a name="simple_etch"></a>
+<pre>
+add_reaction model=demo  name=simple_etch \
+   expression=&quot;D&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;v&gt;&quot;
+</pre>
+
+<p>Regarding the reaction <tt>simple_etch</tt>, species <tt>D</tt> reacts with 
+<tt>Mat1</tt> to produce the volatile species <tt>Mat1</tt> (tagged <tt>&lt;v&gt;</tt>). 
+The volatile species can have a different name than the material on the surface. 
+Particles <tt>D</tt> and <tt>Mat1</tt> consumed during this reaction are removed 
+from the simulation. This means that, in this reaction, one incident particle 
+<tt>D</tt> removes one particle <tt>Mat1</tt> from the surface.</p>
+
+<hr />
+
+<a name="sputtering"></a>
+<pre>
+add_reaction model=demo  name=sputtering_tracked \
+   expression=&quot;E&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;p&gt;&quot;
+
+add_reaction model=demo  name=sputtering_untracked \
+   expression=&quot;G&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;q&gt;&quot;
+</pre>
+
+<p>In cases when an energetic particle (mainly ions) impacts the surface, its kinetic 
+energy might be enough to remove more than one particle at the same time (high yield). 
+Such a mechanism is <em>sputtering</em>. In order to model it, a separate type of 
+reaction is introduced in PMC where you need to specify a yield function to let the 
+simulator know how many particles can be removed by the incoming particle. The ejected 
+particles from the surface go into the gas phase, and they can potentially react with 
+the materials on the surface.</p>
+
+<p>If you want the simulator to track those ejected particles, so as to use them 
+in the left-hand side of other reactions, you must use a reaction like the 
+one named <tt>sputtering_tracked</tt>, where the ejected species on the right-hand side 
+(products) are tagged with <tt>&lt;p&gt;</tt>.</p>
+
+<p>Tracking ejected particles requires a certain amount of additional memory and CPU 
+resources. So, in cases where you do not need to use the sputtered species in the 
+left-hand side of other reactions, you can save computational resources by using a 
+reaction like <tt>sputtering_untracked</tt>, where the particles (tagged <tt>&lt;q&gt;</tt>) 
+that are removed from the surface are not tracked.</p>
+
+<p>In both cases of sputtering reactions, you must provide a yield function for the 
+reaction using the <tt>define_yield</tt> command as shown in 
+<a href="./stopo_4.html#neuionfluxsput">
+Section&nbsp;4.2.3 Modeling a Neutral Flux and an Ion Flux With Sputtering</a>. 
+The yield function can be angle dependent and energy dependent, and can be 
+customized by using an analytic formula as you will see later in the sputtering 
+example.</p>
+
+<hr />
+
+<a name="deposition"></a>
+<pre>
+add_reaction model=demo  name=nucleation \
+   expression=&quot;H&lt;g&gt; + Mat1&lt;s&gt; = Mat2&lt;s&gt; + Mat1&lt;b&gt;&quot;
+
+add_reaction model=demo  name=growth \
+   expression=&quot;H&lt;g&gt; + Mat2&lt;s&gt; = Mat2&lt;s&gt; + Mat2&lt;b&gt;&quot;
+</pre>
+
+<p>So far, the reactions have as products either species that go to the gas phase or 
+species that stay at the surface. The last reactions, <tt>nucleation</tt> 
+and <tt>growth</tt>, introduce a new type of product tagged with <tt>&lt;b&gt;</tt>.</p>
+
+<p>The particle of product species tagged with <tt>&lt;b&gt;</tt> is moved into the 
+volume (bulk) of the structure and a particle of the product species tagged with 
+<tt>&lt;s&gt;</tt> is added on top and becomes a new surface particle. In this way, 
+material can be deposited on the surface.</p>
+
+<p>The <tt>nucleation</tt> reaction is about adding, at the surface, a particle of a 
+species that differs from the material that is already on the surface. The 
+<tt>growth</tt> reaction is a deposition reaction that adds a particle of the same 
+material as the existing material on the surface.</p>
+
+<p>In general, for a deposition to proceed, both a nucleation reaction and a growth 
+reaction are needed. If only a nucleation reaction is present, a monolayer of the 
+material will be deposited, unless the deposited material is the same as the existing 
+material on the surface. In both reactions, <tt>nucleation</tt> and <tt>growth</tt>, 
+the reacting particle in the gas phase (precursor, <tt>&lt;g&gt;</tt> tag) is removed 
+from the simulation after the reaction happens.</p>
+
+<!-- ======================================================================= -->
+<a name="finalize_model"></a>
+<h2>5.2.4 Finalizing the Model</h2>
+
+<p>After you have introduced all the source species and the necessary surface
+reactions, your model is ready to be finalized and used. As for RFM models,
+the command <tt>finalize_model</tt> must be added at the end of all source species
+and reaction additions to close the definition of a PMC model. The following 
+example shows a complete model definition for etching:</p>
+
+<pre>
+define_model name=Si_F_Etch description=&quot;Etching Si with Fluorine&quot;
+add_source_species name=F model=Si_F_Etch
+
+add_reaction name=adsorb_F_Si model=Si_F_Etch \
+  expression=&quot;F&lt;g&gt; + Silicon&lt;s&gt; = SiF&lt;s&gt;&quot;
+
+add_reaction name=adsorb_F_SiF model=Si_F_Etch \
+  expression=&quot;F&lt;g&gt; + SiF&lt;s&gt; = SiF2&lt;s&gt;&quot;
+
+add_reaction name=adsorb_F_SiF2 model=Si_F_Etch \
+  expression=&quot;F&lt;g&gt; + SiF2&lt;s&gt; = SiF3&lt;s&gt;&quot;
+
+add_reaction name=etch_F_SiF3 model=Si_F_Etch \
+  expression=&quot;F&lt;g&gt; + SiF3&lt;s&gt; = SiF4&lt;v&gt;&quot;
+
+finalize_model name=Si_F_Etch
+</pre>
+
+<!-- ======================================================================= -->
+<a name="3"></a>
+<h1>5.3 Defining the Source Species Characteristics</h1>
+
+<p>PMC model definitions contain all the source species used by the models, but their 
+properties (such as fluxes, angular and energy distribution functions, and yields) 
+are not yet defined.</p>
+
+<!-- =============================== -->
+<a name="distributions"></a>
+<h2>5.3.1 Defining the Source Species Distribution</h2>
+
+<p>To define the distribution function of a species and its flux, you use the command 
+<tt>define_species_distribution</tt>. For example:</p>
+
+<pre>
+define_species_distribution name=distribution species=A exponent=1 flux=1.0e-3 
+define_species_distribution name=distribution species=B exponent=10 flux=1.0e-4
+define_species_distribution name=distribution species=C exponent=100 \
+  flux=3.4e-5 energy_min=5 energy_max=100
+</pre>
+
+<p>The keyword <tt>exponent</tt> defines the angular distribution of the species 
+based on the formula cos<sup><em>m</em></sup>(&theta;) (as discussed in 
+<a href="./stopo_2.html#3.1">Section&nbsp;2.3.1 Defining the Deposition Model</a>). 
+In contrast to level-set models, in PMC, the fluxes of source species are not normalized, 
+but they are defined in absolute values with the keyword <tt>flux</tt> 
+([mol s<sup>-1</sup>m<sup>-2</sup>]).</p>
+
+<p>As you can observe, the distributions of species <tt>A</tt>, <tt>B</tt>, and 
+<tt>C</tt> share the same name. This means that they are grouped in the same 
+collection of distribution functions (<tt>name=distribution</tt>) and, 
+whenever this collection is called, all the source species distributions defined in it 
+can be used. The distributions of all the source species used in a specific PMC model 
+should be grouped together under the same name.</p>
+
+<p>Note that, in the distribution collection defined before named <tt>distribution</tt>, 
+there are species that are energy independent (<tt>A</tt> and <tt>B</tt>) as well as 
+species that are energy dependent (<tt>C</tt>). Although this is allowed, you cannot use 
+<tt>A</tt>, <tt>B</tt>, and <tt>C</tt> in the same PMC model. The species used in a PMC 
+model can be either energy dependent or energy independent.</p>
+
+<p>It is possible to visualize the defined distributions using the <tt>save</tt> command. 
+Plots are saved in a TDR file and can be viewed with Sentaurus Visual. All the distributions 
+in the collection will be saved in the TDR file. For example:</p>
+
+<pre>
+save species_distribution=distribution file=distr_functions.tdr
+</pre>
+
+<p><a href="images/tp_pmc_species_distr_ABC.png"><img src="images/tp_pmc_species_distr_ABC.png" 
+width="570" alt="Species A and B distribution, and contour plot for species C" /></a></p>
+
+<p class="caption">Figure 1. (Left) Plots of the distributions of species <tt>A</tt> and 
+<tt>B</tt>, and (right) 2D contour plot of the energy-dependent distribution of 
+species <tt>C</tt>. (Click image for full-size view.)</p>
+
+<!-- =============================== -->
+<a name="distr_energy_dep"></a>
+<h2>5.3.2 Energy Dependency of the Species Distribution Function</h2>
+
+<p>The distribution functions for species <tt>A</tt> and <tt>B</tt> do not contain 
+any energy statement, which means the <tt>A</tt> and <tt>B</tt> particles emitted from 
+the source do not carry any energy information &ndash; they are energy independent. On 
+the other hand, the distribution for species <tt>C</tt> contains the keywords 
+<tt>energy_min</tt> and <tt>energy_max</tt> (uniform distribution between the two values), 
+which renders it energy dependent.</p>
+
+<p class="note">The distribution definitions for all species used in a PMC model are 
+allowed to be either energy dependent or energy independent. You cannot mix 
+energy-dependent and energy-independent source species in the same PMC model. So, 
+depending on the distributions of the source species used in a PMC model, the latter 
+can be characterized as either an energy-dependent or an energy-independent PMC model.</p>
+
+<!-- =============================== -->
+<a name="yield_function"></a>
+<h2>5.3.3 Defining the Source Species Material Yield Function</h2>
+
+<p>Whenever a sputtering reaction is present in a PMC model, it is mandatory to 
+provide a yield function for it. The yield function is defined in the same way as 
+for an RFM model (see <a href="./stopo_4.html#neuionfluxsput">
+Section&nbsp;4.2.3 Modeling a Neutral Flux and an Ion Flux With Sputtering</a>). 
+The <a href="#sputtering">sputtering example</a> in 
+<a href="#surface_reaction_types">Section&nbsp;5.2.3 Types of Surface Reaction</a> 
+used species <tt>E</tt> and <tt>G</tt> in sputtering reactions. For those species, 
+it is necessary to define yield functions. For example:</p>
+
+<pre>
+define_yield name=yield species=E material=Mat1 \
+  energy=0 yield_max=1.5 theta_max=54 yield_at_zero=1.0
+
+define_yield name=yield species=G material=Mat1 \
+  expression=&quot;max(0,((3.0*(sqrt(E)-sqrt(50.0)))*(1.0 - pow(sin(theta),10))))&quot;
+</pre>
+
+<p>The defined yield for species <tt>G</tt> when it reacts with <tt>Mat1</tt> uses 
+an expression that is energy dependent (square root of <tt>E</tt>). This means that 
+species <tt>G</tt> is part of an energy-dependent PMC model. Nevertheless, it is 
+possible to use an energy-independent yield function even if the associated species 
+is part of an energy-dependent PMC model, but not the other way around (that is, 
+you cannot use an energy-dependent yield function for a species that is part of an 
+energy-independent PMC model).</p>
+
+<p>As this is the case for the source species distributions, yield definitions can be 
+grouped in one yield collection by attributing the same name to all the yield definitions 
+that belong to the collection.</p>
+
+<p>As for the species distributions, it is possible to visualize the defined yields by 
+using the <tt>save</tt> command. Plots are saved in a TDR file and can be viewed with 
+Sentaurus Visual. All the yields in the collection will be saved in the TDR file. 
+For example:</p>
+
+<pre>
+save yield=yield file=yield_functions.tdr energy_min=0 energy_max=100
+</pre>
+
+<p>When a collection for yield functions contains elements that are energy dependent, 
+you must use the keywords <tt>energy_min</tt> and <tt>energy_max</tt> to  produce 2D 
+contour plots of the yield functions.</p>
+
+<p><a href="images/tp_pmc_yield_EG.png"><img src="images/tp_pmc_yield_EG.png" 
+width="570" alt="E and G species yield functions" /></a></p>
+
+<p class="caption">Figure 2. Two-dimensional contour plots of the yield functions of 
+(left) species <tt>E</tt> and (right) species <tt>G</tt>. The yield function of 
+species <tt>G</tt> is energy dependent. (Click image for full-size view.)</p>
+
+<!-- =============================== -->
+<a name="default_event"></a>
+<h2>5.3.4 Defining the Source Species Properties: Default Event</h2>
+
+<p>As previously shown in the <a href="#reemission">reemission reaction</a>, 
+this type of reaction (reemission) occurs by default (no need to explicitly add it 
+in the model) if the main reaction between the specified reactants does not occur.</p>
+
+<p>Each reaction of a PMC model has a probability to happen and you will see later
+how to define this probability. If the defined probability for a reaction is &lt; 1, 
+there is the likelihood that this reaction does not occur. In that case, the event, 
+by default, is the reemission of the gas species from the surface at the point of 
+incidence, which happens with an isotropic angular distribution.</p>
+
+<p>You can change the behavior for the default event and discard the incoming gas 
+particle instead of reemitting it with the following command:</p>
+
+<pre>
+define_species_properties default_event=discard name=properties species=C
+</pre>
+
+<p>Discarding the non-reacting gas particle means that it is removed from the simulation 
+and it cannot react further with any surface material. Changing the default event 
+is useful when you want to preserve the anisotropic characteristics of a species. 
+If a gas species with a narrow angular distribution (high <tt>exponent</tt> value) 
+does not react at a surface site and it is reemitted isotropically, then it starts to lose 
+its anisotropic characteristics, and this behavior can lead to unexpected effects such as an 
+increase in lateral etching. Figure&nbsp;3 shows an exaggerated example of this parasitic 
+effect.</p>
+
+<p><a href="images/tp_pmc_default_event_01.png"><img src="images/tp_pmc_default_event_01.png" 
+width="570" alt="Structures showing default_event=discard and default_event=reemit" /></a></p>
+
+<p class="caption">Figure 3. Default event effect on etching: (left) default event has 
+changed to <tt>discard</tt> and (right) default event has retained its default value, that is, 
+<tt>reemit</tt>. The effect on the shape is dramatic because the anisotropic species used 
+for etching lose their highly directional character when <tt>default_event=reemit</tt> as 
+they are reemitted isotropically from the surface. (Click image for full-size view.)</p>
+
+<p>The properties of multiple species can also be part of a collection if they are 
+defined with the same name, as is the case for the distributions and yield functions.</p>
+
+<!-- ======================================================================= -->
+<a name="4"></a>
+<h1>5.4 Defining the PMC Machine</h1>
+
+<p>The third step in the PMC process setup is the definition of a <em>machine</em>, which 
+assembles the defined PMC model with the source species characteristics. In the following 
+example, the fluorine PMC etching model of silicon is used to show the assembly in the machine 
+with the fluorine distribution:</p>
+
+<pre>
+define_model name=Si_F_Etch description=&quot;Etching Si with Fluorine&quot;
+add_source_species name=F model=Si_F_Etch
+
+add_reaction name=adsorb_F_Si model=Si_F_Etch \
+   expression=&quot;F&lt;g&gt; + Silicon&lt;s&gt; = SiF&lt;s&gt;&quot;
+
+add_reaction name=adsorb_F_SiF model=Si_F_Etch \
+   expression=&quot;F&lt;g&gt; + SiF&lt;s&gt; = SiF2&lt;s&gt;&quot;
+
+add_reaction name=adsorb_F_SiF2 model=Si_F_Etch \
+   expression=&quot;F&lt;g&gt; + SiF2&lt;s&gt; = SiF3&lt;s&gt;&quot;
+
+add_reaction name=etch_F_SiF3 model=Si_F_Etch \
+   expression=&quot;F&lt;g&gt; + SiF3&lt;s&gt; = SiF4&lt;v&gt;&quot;
+
+finalize_model name=Si_F_Etch
+
+define_species_distribution name=distr species=F flux=1.0e-3 exponent=1 energy=0
+
+define_etch_machine name=F_etch_machine model=Si_F_Etch \
+   species_distribution=distr
+</pre>
+
+<p>In PMC, only the <tt>define_etch_machine</tt> command is used to define a machine 
+even if the PMC model contains deposition reactions; this is the convention.</p>
+
+<!-- ======================================================================= -->
+<a name="5"></a>
+<h1>5.5 Defining the PMC Model Reaction Properties</h1>
+
+<p>The last step in the configuration of a PMC process is the addition of the 
+properties of the surface reactions of the PMC model used in the machine. The 
+properties are basically the probabilities of the surface reactions that are 
+defined in the PMC model, which is used in the machine.</p>
+
+<p>In the example of surface reactions used in 
+<a href="#4">Section&nbsp;5.4 Defining the PMC Machine</a>, you have four reactions 
+that need to have their probabilities defined. For this purpose, you use the 
+<tt>add_reaction_properties</tt> command for each reaction of the PMC model. 
+For example:</p>
+
+<pre>
+add_reaction_properties machine=F_etch_machine reaction=adsorb_F_Si p=0.7
+add_reaction_properties machine=F_etch_machine reaction=adsorb_F_SiF p=0.5
+add_reaction_properties machine=F_etch_machine reaction=adsorb_F_SiF2 p=0.5
+add_reaction_properties machine=F_etch_machine reaction=adsorb_F_SiF3 p=0.005
+</pre>
+
+<p>Notice that both the machine name and the reaction name must be defined. This 
+means that the properties of the reactions might differ for different machines. 
+The keyword <tt>p</tt> defines the probability as a number between 0 and 1.</p>
+
+<p>It is possible to use an analytic expression for the probability of a reaction 
+that can depend on the incidence angle or the energy of the incident particle. To 
+do that, you need to predefine the analytic expression for the probability using 
+the <tt>define_probability</tt> command before using it in the 
+<tt>add_reaction_properties</tt> command. For example, you could write:</p>
+
+<pre>
+define_probability name=adsorb_F_Si_prob expression=&quot;0.7*cos(theta)&quot;
+
+add_reaction_properties machine=F_etch_machine reaction=adsorb_F_Si \
+  probability=adsorb_F_Si_prob
+</pre>
+
+<p class="note">Note the difference in usage between the keywords <tt>p</tt> and 
+<tt>probability</tt> in the <tt>add_reaction_properties</tt> command. The keyword
+<tt>p</tt> is used to assign a number between 0 and 1; whereas, the keyword
+<tt>probability</tt> is used to call a probability expression that has been
+predefined with the <tt>define_probability</tt> command.</p>
+
+<p>The probabilities that are defined with a mathematical expression using the 
+<tt>define_probability</tt> command can also be saved in a TDR file for visualization. 
+For example:</p>
+
+<pre>
+save probability=adsorb_F_Si_prob file=n@node@_probability.tdr
+</pre>
+
+<p><a href="images/tp_pmc_probability.png"><img src="images/tp_pmc_probability.png" 
+height="400" alt="Plot of defined probability" /></a></p>
+
+<p class="caption">Figure 4. Plot of the defined probability <tt>adsorb_F_Si_prob</tt>. 
+(Click image for full-size view.)</p>
+
+<p class="note">For PMC models that contain more than one reaction with the 
+<strong>same pair of reactants</strong> on the left-hand side, the 
+<strong>sum of the probabilities</strong> of all those reactions with a common pair 
+of reactants <strong>must not exceed unity</strong>. This is also valid for probabilities 
+defined by mathematical expressions, meaning that the condition for the sum of probabilities 
+&le; 1 must hold for all possible values of those expressions. Otherwise, an error is 
+issued during runtime and the simulation stops.</p>
+
+<p>If you have a reflection reaction, you can adjust the angular 
+distribution (like a <em>beam spreading</em>) around the reflection (specular) direction. 
+For example, assume you have defined the 
+<a href="#reflection">reflection reaction as before</a>:</p>
+
+<pre>
+add_reaction model=demo  name=reflection \
+   expression=&quot;C&lt;g&gt; + Mat1&lt;s&gt; = Mat1&lt;s&gt; + C&lt;r&gt;&quot;
+</pre>
+
+<p>Then, the properties of this reaction can be set as follows:</p>
+
+<pre>
+add_reaction_properties machine=demo_machine reaction=reflection \
+   reflection_exponent=10 p=0.1
+</pre>
+
+<p>If the <tt>reflection_exponent</tt> is omitted, then all the particles are reflected 
+along the specular direction without any spreading. The smaller the 
+<tt>reflection_exponent</tt>, the broader the spreading of the reflected particles 
+around the specular direction.</p>
+
+<!-- ======================================================================= -->
+<a name="6"></a>
+<h1>5.6 Running the PMC Simulation</h1>
+
+<p>You have completed the four steps needed to define a PMC process simulation and now 
+it is time to run it. By convention, as for the machine definition, to run the PMC 
+simulation only, you use the <tt>etch</tt> command, even if the PMC model contains 
+deposition reactions. To activate the PMC engine, set <tt>method=pmc</tt>.</p>
+
+<p>Regarding the boundary conditions (BCs) in PMC, by default, reflective BCs are applied 
+to the particles on all the sidewalls of the simulation domain. It is also possible to 
+assign periodic BCs on sidewall pairs with the <tt>define_boundary_conditions</tt> 
+command.</p>
+
+<p>The following example sets periodic BCs on the two sidewalls perpendicular 
+to the x-axis:</p>
+
+<pre>
+define_boundary_conditions x=periodic
+</pre>
+
+<p>The meshing used in PMC is isotropic, so you only need to specify one value for 
+the <tt>spacing</tt> parameter or to use the same one for all three directions 
+(x, y, and z). For example:</p>
+
+<pre>
+etch method=pmc spacing= {0.005 0.005 0.005} time=1.0 machine=demo_machine
+</pre>
+
+<p>The next section presents some simple examples for etching and deposition 
+to help you start using PMC simulations.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_4.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_6.html">next section &gt;&gt;</a> 
+
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

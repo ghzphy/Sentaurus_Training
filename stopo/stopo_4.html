@@ -1,0 +1,661 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Topography 3D 4. Working With the Rate Formula Module</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Topography 3D<br />4. Working With the Rate Formula Module</h1>
+
+<p>
+ <a href="#1">4.1 Simple Models</a><br />
+ <a href="#2">4.2 Flux Models</a><br />
+ <a href="#3">4.3 References</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To provide examples of increasing complexity, built sequentially  
+from the beginning, that demonstrate the most important features of the 
+rate formula module (RFM).</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Simple Models</h1>
+
+<p>These examples of creating different simple RFM models do not involve fluxes.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch</tt>.</p>
+
+<!--========================-->
+<a name="isoetch"></a>
+<h2>4.1.1 Modeling Isotropic Etching</h2>
+
+<p>Here, an isotropic etching model is defined using the RFM and is used to run 
+a simulation.</p>
+
+<p>The etching rate of the process should have a constant value, which is assumed 
+to be independent of both the etched material and the shape of the surface of 
+the structure under process. Accordingly, no flux of particles needs to be taken 
+into account in this simple model, which is named <tt>m1</tt>. This model is 
+oversimplified but allows you to focus on the fundamental aspects of the RFM.</p>
+
+<p>The commands to define this model are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch/rfm_simple_iso_etch_t3d.cmd" startExpr="##start - model definition" endExpr="##end - model definition" excludelines="##*" format="excludeEmpty" -->
+<pre>
+# Model definition.
+define_model name=m1 type=etch description=&quot;Simple etch model&quot;
+add_formula model=m1 expression=&quot;-@etch_rate@*1.0e-6/60.0&quot;
+finalize_model model=m1
+</pre>
+<!-- grep end -->
+
+<p>The definition of each RFM model starts with a <tt>define_model</tt> command 
+and ends with a <tt>finalize_model</tt> command. The <tt>define_model</tt> command 
+specifies the name (<tt>m1</tt>) and the type (<tt>etch</tt>) of the model, and 
+provides a short description of the model.</p>
+
+<p>The rate formula is provided by the <tt>expression</tt> parameter of the 
+<tt>add_formula</tt> command. Here, the etching rate is set to 1&nbsp;&mu;m/minute.</p>
+
+<p class="note">The minus sign is necessary because etching is described by negative 
+values, and deposition is described by positive values.<br /><br />
+
+The value of the parameter <tt>expression</tt> is expected to have the 
+unit m/s. When using a parameter that has the quantity <tt>velocity</tt>, the appropriate 
+conversion is performed automatically. However, in this example, dimensionless numbers 
+are used for which no automatic conversion is performed. Therefore, the specified value 
+must be converted to m/s explicitly.</p>
+
+<p>After defining the model <tt>m1</tt>, it can be used to configure an etching machine 
+as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch/rfm_simple_iso_etch_t3d.cmd" startExpr="##start - machine config" endExpr="##end - machine config" excludelines="##*" -->
+<pre>
+define_etch_machine model=m1
+</pre>
+<!-- grep end -->
+
+<p>Here is the complete Sentaurus Topography 3D input that defines the RFM model <tt>m1</tt> 
+and that runs a simulation:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch/rfm_simple_iso_etch_t3d.cmd" startExpr="##start - model definition" endExpr="##end - script" excludelines="##*" format="excludeEmpty" -->
+<pre>
+# Model definition.
+define_model name=m1 type=etch description=&quot;Simple etch model&quot;
+add_formula model=m1 expression=&quot;-@etch_rate@*1.0e-6/60.0&quot;
+finalize_model model=m1
+# Machine configuration.
+define_etch_machine model=m1
+define_structure material=Silicon point_min={0 0 0} point_max={0.1 0.1 0.3}
+define_shape type=cube name=mask point_min={0.0 0.0 0.3} \
+	point_max={0.1 0.1 0.8}
+deposit shape=mask material=Photoresist
+define_shape type=cube name=trench point_min={0.05 0.05 0.3} \
+	point_max={0.1 0.1 0.8}
+etch shape=trench
+save file=n@node@_init.tdr
+etch spacing=0.002 time=1.0
+save
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_rfm_simple_iso_etch.png"><img src="images/tp_rfm_simple_iso_etch.png" 
+height="400" alt="Etching using the simple RFM model m1" /></a></p>
+
+<p class="caption">Figure 1. Etching using the simple RFM model m1. 
+(Click image for full-size view.)</p> 
+
+<!--========================-->
+<a name="isoetchpara"></a>
+<h2>4.1.2 Modeling Isotropic Etching With Parameters</h2>
+
+<p>An etching model with an isotropic etching rate can be defined in a more flexible 
+way by using a parameter instead of a hard-coded value for the rate.</p>
+
+<p>This can be achieved by introducing a floating-point parameter with the 
+<tt>add_float_parameter</tt> command, which then can be used in the 
+<tt>add_formula</tt> command as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch/rfm_simple_iso_etch_param_t3d.cmd" startExpr="##start - model definition" endExpr="##end - model definition" excludelines="##*" format="excludeEmpty" -->
+<pre>
+# Model definition.
+define_model name=m2 type=etch \
+  description=&quot;A parametric model for isotropic etching&quot;
+add_float_parameter name=etch_rate model=m2 min=0 scope=global \
+  quantity=velocity
+add_formula model=m2 expression=&quot;-etch_rate()&quot;
+finalize_model model=m2
+</pre>
+<!-- grep end -->
+
+<p>These commands define an RFM model called <tt>m2</tt>, whose etching rate 
+is set to the value of the floating-point parameter <tt>etch_rate</tt>.</p>
+
+<p>The <tt>add_float_parameter</tt> command defines a mandatory parameter with 
+a minimum value and also specifies a <tt>global</tt> scope (as opposed to 
+<tt>material_dependent</tt>), which means that its value does not depend on 
+the material when the rate formula is evaluated.</p>
+
+<p>The quantity of an expression is that of a velocity. By default, it has the 
+unit &mu;m/minute. You must ensure that all subexpressions and parameters used 
+in the expression lead to a quantity of a velocity.</p>
+
+<p>In this example, the expression consists only of the parameter <tt>etch_rate</tt>. 
+Therefore, the parameter <tt>etch_rate</tt> must have the quantity <tt>velocity</tt>, 
+which is specified with the parameter <tt>quantity</tt> of the <tt>add_float_parameter</tt> 
+command.</p>
+
+<p>Since the minimum-allowed value of the parameter is set to 0, an error will occur 
+if the parameter <tt>etch_rate</tt> is assigned a negative value during the machine 
+configuration.</p>
+
+<p>User-defined parameters are accessed as functions without arguments and with the 
+name of the parameter as the function name. Accordingly, <tt>etch_rate()</tt> provides 
+the value of the parameter <tt>etch_rate</tt>.</p>
+
+<p>A simulation based on the model <tt>m2</tt> then can be run by the following commands:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch/rfm_simple_iso_etch_param_t3d.cmd" startExpr="##start - model definition" endExpr="##end - script" excludelines="##*" format="excludeEmpty" -->
+<pre>
+# Model definition.
+define_model name=m2 type=etch \
+  description=&quot;A parametric model for isotropic etching&quot;
+add_float_parameter name=etch_rate model=m2 min=0 scope=global \
+  quantity=velocity
+add_formula model=m2 expression=&quot;-etch_rate()&quot;
+finalize_model model=m2
+# Machine configuration.
+define_etch_machine model=m2 etch_rate=@etch_rate@
+define_structure material=Silicon point_min={0 0 0} point_max={0.1 0.1 0.3}
+define_shape type=cube name=mask point_min={0.0 0.0 0.3} \
+	point_max={0.1 0.1 0.8}
+deposit shape=mask material=Photoresist
+define_shape type=cube name=trench point_min={0.05 0.05 0.3} \
+	point_max={0.1 0.1 0.8}
+etch shape=trench
+save file=n@node@_init.tdr
+etch spacing=0.002 time=1.0
+save
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_rfm_simple_iso_etch_param.png"><img src="images/tp_rfm_simple_iso_etch_param.png" 
+height="400" alt="Etching using the parameterized simple RFM model m2" /></a></p>
+
+<p class="caption">Figure 2. Etching using the parameterized simple RFM model m2. 
+(Click image for full-size view.)</p> 
+
+<p>The advantage of model <tt>m2</tt> in comparison to model <tt>m1</tt> is that 
+the value of the etching rate now can be varied when configuring an etching machine. 
+Therefore, model <tt>m2</tt> can be reused easily in different applications; 
+whereas, model <tt>m1</tt> would need to be modified for each new application.</p>
+
+<!--========================-->
+<a name="etchrate"></a>
+<h2>4.1.3 Modeling a Material-Dependent Etching Rate</h2>
+
+<p>In the model <tt>m2</tt> introduced in <a href="#isoetchpara">Section&nbsp;4.1.2 
+Modeling Isotropic Etching With Parameters</a>, the etching rate was assumed to be 
+the same for all materials. A more realistic model would take into account the 
+dependency of the etching rate on the etched material. This can be achieved with 
+the RFM by defining a parameter as follows:</p>
+
+<pre>
+add_float_parameter ... scope=material_dependent default=0 ...
+</pre>
+
+<p>When configuring a machine, since the scope of the parameter <tt>etch_rate</tt> 
+is set to <tt>material_dependent</tt>, its value is not set with the 
+<tt>define_etch_machine</tt> command, but with the <tt>add_material</tt> command, 
+as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch/rfm_simple_iso_etch_mat_dep_rate_t3d.cmd" startExpr="##start - machine config" endExpr="##end - machine config" excludelines="#*" format="excludeEmpty" -->
+<pre>
+define_etch_machine model=m3
+add_material material=Photoresist etch_rate=@&lt;etch_rate*0.001&gt;@
+add_material material=Silicon etch_rate=@&lt;etch_rate&gt;@
+</pre>
+<!-- grep end -->
+
+<p>Here, the <tt>define_etch_machine</tt> and <tt>add_material</tt> commands 
+configure a machine using the model <tt>m3</tt>.</p>
+
+<p>The value of the parameter <tt>etch_rate</tt> is set to 0.001x<tt>@etch_rate@</tt>&nbsp;&mu;m/minute 
+for photoresist and <tt>@etch_rate@</tt>&nbsp;&mu;m/minute for silicon; whereas, the default value 
+(0&nbsp;&mu;m/minute) will be used for the other materials present in the structure, 
+if any.</p>
+
+<p class="note">The default values of the parameters are provided in the model 
+definition. However, when a machine is configured, the values of the parameters 
+can be overwritten with any value in the allowed range.</p>
+
+<p>The complete example is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch/rfm_simple_iso_etch_mat_dep_rate_t3d.cmd" startExpr="##start - model definition" endExpr="##end - script" excludelines="##*" format="excludeEmpty" -->
+<pre>
+# Model definition.
+define_model name=m3 type=etch \
+  description=&quot;An etch model with material-dependent etch rate&quot;
+add_float_parameter name=etch_rate model=m3 \
+  default=0 min=0 scope=material_dependent quantity=velocity
+add_formula model=m3 expression=&quot;-etch_rate()&quot;
+finalize_model model=m3
+# Machine configuration.
+define_etch_machine model=m3
+# Specify the value of &quot;etch_rate&quot; for photoresist and silicon.
+# The default value of &quot;etch_rate&quot; is used for all other materials.
+add_material material=Photoresist etch_rate=@&lt;etch_rate*0.001&gt;@
+add_material material=Silicon etch_rate=@&lt;etch_rate&gt;@
+define_structure material=Silicon point_min={0 0 0} point_max={0.1 0.1 0.3}
+define_shape type=cube name=mask point_min={0.0 0.0 0.3} \
+	point_max={0.1 0.1 0.8}
+deposit shape=mask material=Photoresist
+define_shape type=cube name=trench point_min={0.05 0.05 0.3} \
+	point_max={0.1 0.1 0.8}
+etch shape=trench
+save file=n@node@_init.tdr
+etch spacing=0.002 time=1.0
+save
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_rfm_simple_iso_etch_mat_dep_rate.png"><img src="images/tp_rfm_simple_iso_etch_mat_dep_rate.png" height="400" alt="Etching using the simple RFM model m3 with a material-dependent rate" /></a></p>
+
+<p class="caption">Figure 3. Etching using the simple RFM model m3 with a 
+material-dependent rate. (Click image for full-size view.)</p> 
+
+<!--========================-->
+<a name="matdepend"></a>
+<h2>4.1.4 Using a Material-Dependent Rate Formula</h2>
+
+<p>Material-dependent parameters take into account differences in the properties 
+of materials. The RFM provides a different mechanism to model material-dependent 
+behaviors: material-dependent rate formulas. This means that different mathematical 
+expressions can be used to compute the process rates on different materials.</p>
+
+<p>To provide an example of this RFM capability, suppose that a model must be 
+defined in which silicon will be etched only if visible from the vertical direction, 
+at a rate proportional to the cosine of the angle between the normal of the surface 
+element and the vertical direction. All other materials will be etched isotropically. 
+Here is a complete example that defines such a model and runs a simulation based on it:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Simple_Iso_Etch/rfm_simple_iso_etch_mat_dep_formula_t3d.cmd" startExpr="##start - model definition" endExpr="##end - script" excludelines="##*" format="excludeEmpty" -->
+<pre>
+define_model name=m4 type=etch \
+  description=&quot;An etch model with material-dependent rate formula&quot;
+add_float_parameter name=etch_rate model=m4 default=0 min=0 \
+  scope=material_dependent quantity=velocity
+# Specify the default mathematical expression of the rate.
+add_formula model=m4 expression=&quot;-etch_rate()&quot;
+# Specify the mathematical expression of the rate to use for silicon.
+add_formula model=m4 material=Silicon \
+  expression=&quot;-etch_rate() * cos(theta()) * visible()&quot;
+finalize_model model=m4
+define_etch_machine model=m4
+add_material material=Photoresist etch_rate=@&lt;etch_rate*0.001&gt;@
+add_material material=Silicon etch_rate=@&lt;etch_rate&gt;@
+define_structure material=Silicon point_min={0 0 0} point_max={0.1 0.1 0.3}
+define_shape type=cube name=mask point_min={0.0 0.0 0.3} \
+	point_max={0.1 0.1 0.8}
+deposit shape=mask material=Photoresist
+define_shape type=cube name=trench point_min={0.05 0.05 0.3} \
+	point_max={0.1 0.1 0.8}
+etch shape=trench
+save file=n@node@_init.tdr
+etch spacing=0.002 time=1.0
+save
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_rfm_simple_iso_etch_mat_dep_formula.png">
+<img src="images/tp_rfm_simple_iso_etch_mat_dep_formula.png" height="400" 
+alt="Etching using the simple RFM model m4 with a material-dependent formula" /></a></p>
+
+<p class="caption">Figure 4. Etching using the simple RFM model m4 with a 
+material-dependent formula. (Click image for full-size view.)</p> 
+
+<p>In this example, a default rate formula is defined along with a rate formula 
+specific for silicon, specified with the <tt>material</tt> parameter in the 
+<tt>add_formula</tt> command.</p> 
+
+<p>The following RFM built-in functions are used in such an expression:</p>
+
+<ul>
+<li><tt>cos()</tt> returns the cosine of an angle expressed in radian.</li>
+<li><tt>theta()</tt> returns the angle in radian between the vertical direction 
+and the normal of the element to which the formula is applied.</li>
+<li><tt>visible()</tt> returns 1 if the surface element to which the formula is 
+applied is visible from the vertical direction, and 0 otherwise.</li>
+</ul>
+
+<p>The same model could have been described without using material-dependent 
+rate formulas, but only material-dependent parameters. Nevertheless, the use of a 
+material-dependent rate formula has advantages:</p>
+
+<ul>
+<li>The number of parameters is reduced.</li>
+<li>The model is easier to write and to understand.</li>
+<li>The information that the visibility is relevant only for silicon is directly 
+included in the model, and it is then clear that only one parameter must be 
+calibrated for each material.</li>
+</ul>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Flux Models</h1>
+
+<p>These examples of creating different simple RFM models involve different fluxes.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench in the directory 
+<tt>Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models</tt>.</p>
+
+<!--========================-->
+<a name="neuflux"></a>
+<h2>4.2.1 Modeling Neutral Fluxes</h2>
+
+<p>The RFM allows you to include fluxes of particles and the related physical 
+effects into a user-defined model.</p>
+
+<p>In the following example, this feature is demonstrated by setting up a model 
+for the configuration of Figure 5, which describes a process to deposit silicon 
+oxide at a rate proportional to the total flux of some neutral particles.</p>
+
+<p>To include a neutral flux in an RFM model, the <tt>add_neutral_flux</tt> 
+command is used in the definition of the model.</p>
+
+<p><a href="images/tp_rfm_neu_flux.png"><img src="images/tp_rfm_neu_flux.png" width="500" 
+alt="Deposition process involving a neutral flux" /></a></p>
+
+<p class="caption">Figure 5. Deposition process involving a neutral flux; 
+reemission of neutrals from surface is taken into account. (Click image 
+for full-size view.)</p>
+
+<p>If the model is called <tt>m5</tt> and the flux of neutrals is called <tt>N</tt>, 
+the model can be defined with the commands:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_fluxes_t3d.cmd" startExpr="##start - model definition" endExpr="##end - model definition" excludelines="##*" format="excludeEmpty" -->
+<pre>
+define_model name=m5 type=deposit \
+  description=&quot;A deposition model with deposition rate \
+  proportional to the total flux of neutrals&quot;
+# Define a flux of neutrals called &quot;N&quot;.
+add_neutral_flux name=N model=m5
+add_float_parameter name=deposition_rate model=m5 min=0 scope=global \
+  quantity=velocity
+# Use the total flux of &quot;N&quot; in the rate formula definition.
+add_formula model=m5 expression=&quot;deposition_rate() * total_flux(N)&quot;
+finalize_model model=m5
+</pre>
+<!-- grep end -->
+
+<p>The value of the total flux is obtained in the rate formula using the 
+<tt>total_flux()</tt> RFM built-in function and passing the name of the flux 
+to it as an argument. Moreover, since this is a deposition model, the sign of 
+the rate is positive.</p>
+
+<p>When a deposition machine is configured with such a model, the value of the 
+sticking coefficient for the flux <tt>N</tt> is provided using the 
+<tt>add_flux_properties</tt> command.</p>
+
+<p>Since <tt>m5</tt> is a deposition model, the sticking coefficient cannot be 
+material dependent. Analogously, material-dependent parameters are not allowed 
+in deposition models either.</p>
+
+<p>The commands to define a deposition machine using the model <tt>m5</tt>, 
+to set the sticking coefficient for flux <tt>N</tt>, to define the initial 
+structure, and to run the simulation are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_fluxes_t3d.cmd" startExpr="##start - machine config" endExpr="##end - script" excludelines="##*" format="excludeEmpty" -->
+<pre>
+define_deposit_machine model=m5 material=Oxide deposition_rate=@depo_rate@
+add_flux_properties flux=N sticking=0.7
+define_structure material=Silicon point_min={0 0 0} point_max={0.1 0.1 0.3}
+define_shape type=cube name=trench point_min={0.05 0.05 0.1} \
+	point_max={0.1 0.1 0.3}
+etch shape=trench
+save file=n@node@_init.tdr
+deposit spacing=0.005 time=1.0 engine=monte_carlo
+save
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_rfm_neutral_fluxes.png"><img src="images/tp_rfm_neutral_fluxes.png" 
+height="400" alt="Etching using a neutral flux in the deposition RFM model m5" /></a></p>
+
+<p class="caption">Figure 6. Etching using a neutral flux in the deposition RFM model m5. 
+(Click image for full-size view.)</p> 
+
+<!--========================-->
+<a name="neuionflux"></a>
+<h2>4.2.2 Modeling a Neutral Flux and an Ion Flux</h2>
+
+<p>In this section, an etching model using a neutral flux and an ion flux is set up.</p>
+
+<p>Figure 7 shows the considered configuration, and the etching rate is assumed to be 
+proportional to the product between the total flux of neutrals and the direct flux 
+of ions. In this way, an interaction between the two different species is taken 
+into account.</p>
+
+<p><a href="images/tp_rfm_neu_ion_flux.png"><img src="images/tp_rfm_neu_ion_flux.png" width="500" 
+alt="Etching process involving a neutral flux and an ion flux" /></a></p>
+
+<p class="caption">Figure 7. Etching process involving a neutral flux and an ion 
+flux that interact with each other; reemission from the surface is taken into 
+account for neutrals; reflection, sputtering, and sputter deposition are not 
+taken into account for the ion flux. (Click image for full-size view.)</p>
+
+<p>For simplification, interactions of ions with the surface are not taken into 
+account in this model. Therefore, reflection, sputtering, and sputter deposition 
+are deactivated in the <tt>add_ion_flux</tt> command. Accordingly, the model <tt>m6</tt> 
+can be defined as follows:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_ion_fluxes_t3d.cmd" startExpr="##start - model definition" endExpr="##end - model definition" excludelines="##*" format="excludeEmpty" -->
+<pre>
+define_model name=m6 type=etch \
+  description=&quot;An etch model involving neutrals and ions&quot;
+add_neutral_flux name=N model=m6
+# Define an energy-independent ion flux called &quot;I&quot;
+# with no physical effect enabled.
+add_ion_flux name=I model=m6 energy=independent reflection=false \
+  sputtering=false
+add_float_parameter name=etch_rate model=m6 default=0 min=0 \
+  scope=material_dependent quantity=velocity
+# Use the total flux of &quot;N&quot; and the direct flux of &quot;I&quot;
+# in the rate formula definition.
+add_formula model=m6 \
+  expression=&quot;-etch_rate() * total_flux(N) * direct_flux(I)&quot;
+finalize_model model=m6
+</pre>
+<!-- grep end -->
+
+<p>In the rate formula, the direct flux of the ion flux is obtained using 
+the built-in RFM function <tt>direct_flux()</tt>.</p>
+
+<p>While the angular distribution of all neutrals is always assumed to be 
+uniform, the angular distribution of any ion flux must be specified using 
+the <tt>define_iad</tt> command.</p>
+
+<p>In this example, the built-in cos<sup><em>m</em></sup>&theta; distribution 
+is used with an exponent of <em>m</em>=5000, as defined by the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_ion_fluxes_t3d.cmd" startExpr="##start - define IADF" endExpr="##end - define IADF" excludelines="##*" -->
+<pre>
+define_iad name=my_iad species=I exponent=5000
+</pre>
+<!-- grep end -->
+
+<p>To define an etching machine using the angular distribution <tt>my_iad</tt>, use:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_ion_fluxes_t3d.cmd" startExpr="##start - machine config" endExpr="##start - flux properties" excludelines="##*" -->
+<pre>
+define_etch_machine model=m6 iad=my_iad
+
+</pre>
+<!-- grep end -->
+
+<p>To complete the example, the value of the sticking coefficient for the 
+neutral flux <tt>N</tt> must be set as well as the value of the material-dependent 
+parameter <tt>etch_rate</tt>.</p>
+
+<p>Since <tt>m6</tt> is an etching model, the sticking coefficient 
+can be material dependent, as shown in the following example, which sets the 
+sticking coefficient equal to 0.5 for silicon and 0.3 for photoresist:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_ion_fluxes_t3d.cmd" startExpr="##start - flux properties" endExpr="##end - script" excludelines="##*" format="excludeEmpty" -->
+<pre>
+# Set the value of the sticking coefficient for flux N.
+add_flux_properties flux=N sticking=0.5 material=Silicon
+add_flux_properties flux=N sticking=0.3 material=Photoresist
+add_material material=Photoresist etch_rate=@&lt;etch_rate/1000&gt;@
+add_material material=Silicon etch_rate=@etch_rate@
+define_structure material=Silicon point_min={0 0 0} point_max={0.1 0.1 0.3}
+define_shape type=cube name=mask point_min={0.0 0.0 0.3} \
+	point_max={0.1 0.1 0.5}
+deposit shape=mask material=Photoresist
+define_shape type=cube name=trench point_min={0.05 0.05 0.3} \
+	point_max={0.1 0.1 0.5}
+etch shape=trench
+save file=n@node@_init.tdr
+etch spacing= {0.01 0.01 0.01} time=3.0 engine=monte_carlo 
+save
+</pre>
+<!-- grep end -->
+
+<p><a href="images/tp_rfm_neutral_ion_fluxes.png"><img src="images/tp_rfm_neutral_ion_fluxes.png" height="400" 
+alt="Etching using a neutral flux in combination with an ion flux in the etching RFM model m6" /></a></p>
+
+<p class="caption">Figure 8. Etching using a neutral flux in combination with an ion flux 
+in the etching RFM model m6. (Click image for full-size view.)</p> 
+
+<!--========================-->
+<a name="neuionfluxsput"></a>
+<h2>4.2.3 Modeling a Neutral Flux and an Ion Flux With Sputtering</h2>
+
+<p>Several physical effects are available for ions, but these effects 
+were not activated in the previous example.</p>
+
+<p>This example shows how sputtering by ions can be modeled with the RFM. 
+The way of specifying the other available physical effects is similar.</p>
+
+<p>Figure 9 shows the situation to be considered. It shows a simultaneous 
+etching and deposition process in which etching occurs because of sputtering 
+by ions, and deposition of silicon oxide occurs simultaneously due to neutral 
+particles.</p>
+
+<p><a href="images/tp_rfm_etchdepo.png"><img src="images/tp_rfm_etchdepo.png" width="500" 
+alt="Simultaneous etching and deposition process involving a neutral flux and an ion flux" /></a></p>
+
+<p class="caption">Figure 9. Simultaneous etching and deposition process 
+involving a neutral flux and an ion flux; reemission of neutrals from the 
+surface and sputtering by ions is taken into account; deposition is due to 
+neutrals; and etching is due to ions. (Click image for full-size view.)</p>
+
+<p>The etching rate is assumed to be proportional to the amount of material sputtered 
+by ions; whereas, the deposition rate is supposed to be proportional to the 
+total flux of neutrals.</p>
+
+<p>To include sputtering in the model, first, such an effect must be activated 
+by setting <tt>sputtering=true</tt> in the <tt>add_ion_flux</tt> command.</p>
+
+<p>Moreover, a yield function must be specified to compute the amount of matter 
+sputtered from each material present in the structure using the 
+<tt>define_yield</tt> command.</p>
+
+<p>Since yield functions depend also on the material with which the ions interact, 
+the command <tt>define_yield</tt> has the parameter <tt>material</tt> to specify 
+the target material.</p>
+
+<p>A yield function according to Yamamura <a href="#chini-1992">[Ref. 1]</a> is 
+assumed for silicon having a maximum yield of 2 when the angle between the 
+incidence direction of ions and the normal of the surface element is equal to 35&deg;. 
+However, the yield function for photoresist is modeled using the Sentaurus 
+Topography 3D model described by the parameters <tt>s1</tt> and <tt>s2</tt>. 
+Finally, since oxide is deposited, a yield function must be defined for oxide as well. 
+A Yamamura model is used for this. The commands to define these functions are:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_ion_fluxes_sputtering_t3d.cmd" startExpr="##start - define yield" endExpr="##end - define yield" excludelines="##*" -->
+<pre>
+define_yield name=y species=I material=Silicon energy=0 theta_max=35 \
+  yield_max=2
+define_yield name=y species=I material=Photoresist energy=0 s1=5.5 s2=-6.0
+define_yield name=y species=I material=Oxide energy=0 theta_max=60 \
+  yield_max=1.4
+</pre>
+<!-- grep end -->
+
+<p>The angular distributions, the yield functions, and the material to deposit 
+are specified when an etching machine is defined with the command:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_ion_fluxes_sputtering_t3d.cmd" startExpr="##start - machine config" endExpr="##end - machine config" excludelines="##*" -->
+<pre>
+define_etch_machine model=m7 iad=my_iad yield=y \
+        deposition_rate=@&lt;etch_rate/100&gt;@ deposit_material=Oxide
+</pre>
+<!-- grep end -->
+
+<p>Click to view the complete command file 
+<a href="../../Applications_Library/GettingStarted/sptopo3d/RFM_Flux_Models/rfm_neutral_ion_fluxes_sputtering_t3d.cmd">rfm_neutral_ion_fluxes_sputtering_t3d.cmd</a>.</p>
+
+<p><a href="images/tp_rfm_neutral_ion_fluxes_sputtering.png">
+<img src="images/tp_rfm_neutral_ion_fluxes_sputtering.png" height="400" 
+alt="Neutral and ion fluxes used in RFM model m7 combined with sputtering" /></a></p>
+
+<p class="caption">Figure 10. Neutral and ion fluxes used in RFM model m7 combined 
+with sputtering. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 References</h1>
+
+<dl class="ref">
+<dt>Ref. 1</dt>
+<dd><a name="chini-1992"></a>T. K. Chini <em>et al.</em>, &quot;The angular 
+dependence of sputtering yields of Ge and Ag,&quot; <cite>Nuclear Instruments 
+and Methods in Physics Research Section B: Beam Interactions with Materials 
+and Atoms</cite>, vol. 72, no. 3&ndash;4, pp. 355&ndash;358, 1992.</dd>
+</dl> 
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_3.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="stopo_5.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

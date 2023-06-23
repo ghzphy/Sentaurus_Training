@@ -1,0 +1,815 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Device EMW 2. Basics</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Device Electromagnetic Wave Solver<br />2. Basics</h1>
+
+<p>
+<a href="#1">2.1 Introduction</a><br />
+<a href="#2">2.2 General Notes on the Command File</a><br />
+<a href="#3">2.3 Globals Section</a><br />
+<a href="#4">2.4 ComplexRefractiveIndex Section</a><br />
+<a href="#5">2.5 Boundary Section</a><br />
+<a href="#6">2.6 PlaneWaveExcitation Section</a><br />              
+<a href="#7">2.7 Plot Section</a><br />
+<a href="#8">2.8 Extractor Section</a><br />
+<a href="#9">2.9 Sensor Section</a><br />
+<a href="#10">2.10 Detector Section</a><br />
+<a href="#11">2.11 Postprocessing</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+<li>To become familiar with the basic capabilities of EMW.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>2.1 Introduction</h1>
+
+<p>This section introduces the most common features of EMW in the 
+context of a simple 2D silicon&ndash;air structure, where you will 
+calculate the optical generation profile in silicon and the reflection. 
+The structure is shown in Figure&nbsp;1.</p> 
+
+<p><img src="images/emw_si_air.png" width="200" alt="Silicon-air structure of example, showing tensor grid" /></p> 
+                                                                
+<p class="caption">Figure 1. Silicon&ndash;air structure of the 
+investigated example, showing the tensor grid.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd">
+emw_eml.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/emw/simple2d</tt>.</p>
+
+<p>For your convenience, a similar project has been created for the 3D
+case. The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/emw/simple3d</tt>.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>2.2 General Notes on the Command File</h1>
+
+<p>An EMW command file consists of several command sections 
+of the form <tt>Section {...}</tt>, with each section describing 
+a specific aspect of the simulation. Inside a section, each 
+command keyword has the form <tt>keyword = value</tt>, for example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd"  startExpr="Plot*{*" startOffset=-1 endExpr="}*" -->
+<pre>
+* Plot the absolute value of the electric field at the end of the simulation
+Plot {
+  Name      = &quot;n@node@_Eabs&quot;
+  Quantity  = {AbsElectricField, AbsMagneticField, Region}
+  TickStep  = 300
+  StartTick = 100
+  EndTick   = 800
+  FinalPlot = yes
+}                                       
+</pre>
+<!-- grep end -->
+
+<p class="note">Keywords are case insensitive, but identifiers such as 
+region names and materials are surrounded by double quotation marks 
+and are case sensitive.<br /><br />
+
+Lists are defined in braces with their items separated by a comma. <br /><br />
+
+Each command must be on a single line; only list items can be wrapped before 
+or after the comma.<br /><br />
+
+Comments are indicated by the first character on a line being # or *.</p>
+
+<p>Typically, an EMW command file consists of the following sections:</p>
+
+<ul>
+<li><tt>Globals</tt></li> 
+<li><tt>ComplexRefractiveIndex</tt></li>
+<li><tt>DispersiveMedia</tt></li>
+<li><tt>Boundary</tt></li>
+<li><tt>PlaneWaveExcitation</tt></li>
+<li><tt>Plot</tt></li>
+<li><tt>Extractor</tt></li>
+<li><tt>Sensor</tt></li>
+<li><tt>Monitor</tt></li>
+<li><tt>Detector</tt></li>
+</ul>
+
+<p>In general, the order of the sections in the command file is arbitrary. 
+However, it is recommended that you maintain the above order because it 
+simplifies navigation looking for a particular parameter. Each command section 
+is described in the following sections sequentially, in the context of 
+the 2D silicon&ndash;air structure example.</p>
+
+<!--==========================-->
+<a name="3"></a>
+<h1>2.3 Globals Section</h1>
+ 
+<p>The <tt>Globals</tt> section contains all the global parameter 
+settings for the simulation, such as input and output file names, 
+which kernel to use, how many threads should be used for the calculation, 
+and some limits on the simulation time or the maximum number of time steps.</p>
+
+<p>As a minimal requirement, you must specify 
+<tt>GridFile = &quot;myGrid_msh.tdr&quot;</tt> to indicate the tensor 
+grid to be used in the EMW simulation.</p>
+
+<p>In addition, typically, the parameter file containing the 
+refractive index data and the log file are specified by the 
+keywords <tt>ParameterFile</tt> and <tt>LogFile</tt>, respectively. 
+A result file (<tt>.plt</tt>) is used when global values must be stored, 
+such as the integrated absorbed photon density in a certain volume or the 
+photon flux through a surface. As multiple <tt>Plot</tt> sections are allowed, 
+the plot file names are defined in the corresponding <tt>Plot</tt> 
+sections using the keyword <tt>Name</tt>.</p>
+
+<p>The Courant criteria determine the stable time step for advancing the light 
+propagation in FDTD simulations. It links the smallest edge length of the grid 
+to the largest possible time step. For dispersive media, so for regions where 
+&kappa;&nbsp;&nbsp;&gt;&nbsp;<em>n</em>, The Courant criteria are not strictly fulfilled. 
+Therefore, the simulation might require an even smaller time step as calculated by 
+the Courant criteria to converge. To achieve this, the time step can be further 
+reduced by a user-specified factor using the keyword <tt>OverSampling</tt>.</p>
+
+<p>FDTD simulations can be very time consuming. Therefore, it is 
+a good idea to limit the maximum number of allowed time steps to be 
+calculated by <tt>TotalTimeSteps</tt> or the total simulation time 
+itself by <tt>TotalSimulationTime</tt> (in seconds).</p>
+
+<p>If you want to save additional disk space, use <tt>CompressTDR=Yes</tt>
+to reduce the file size up to a factor of two.</p>
+
+<!--==========================-->
+<a name="4"></a>
+<h1>2.4 ComplexRefractiveIndex Section</h1>
+
+<p>You can define the optical parameters as a complex refractive index (CRI) 
+in the material parameter file. EMW uses the same CRI library as Sentaurus Device. 
+Therefore, the same parameter file as for Sentaurus Device can be used. Then, the 
+optical data is read from the <tt>ComplexRefractiveIndex</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/pp3_msh.par" startExpr="Material*Gas*"  endExpr="}*" -->
+<pre>
+Material = &quot;Gas&quot; { 
+  ComplexRefractiveIndex {
+    Formula = 0
+    n_0 = 1
+    k_0 = 0
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>The CRI offers different dependencies of the refractive index. The most
+commonly used is wavelength dependency. The dependencies can be controlled
+materialwise or regionwise by specifying multiple
+<tt>ComplexRefractiveIndex</tt> sections with the additional keyword
+<tt>Material</tt> or <tt>Region</tt>. In the following example, for the region
+<tt>&quot;ambient&quot;</tt>, you use a constant refractive index but, for 
+the material <tt>&quot;Silicon&quot;</tt>, you use a wavelength dependency 
+for both the refractive index (<tt>Real</tt>) and the extinction coefficient 
+(<tt>Imag</tt>):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="ComplexRefractiveIndex*{*"  endExpr="}*" endOccurrence=2  -->
+<pre>
+ComplexRefractiveIndex {
+  Region = &quot;ambient&quot;
+}
+
+ComplexRefractiveIndex {
+  Material = &quot;Silicon&quot;
+  WavelengthDep = {Real,Imag}
+}
+</pre>
+<!-- grep end-->
+
+<p>If neither <tt>Material</tt> nor <tt>Region</tt> is specified, the settings
+apply to all regions.</p>
+
+<!--==========================-->
+<a name="5"></a>
+<h1>2.5 Boundary Section</h1>
+
+<p>For each border of the simulation domain, boundary conditions (BCs) must 
+be specified. The border of the domain can be addressed by specifying the 
+keyword <tt>Sides</tt> containing a list of <tt>X</tt>, <tt>Y</tt>, <tt>Z</tt>, 
+or <tt>Xmin</tt>, <tt>Xmax</tt>, and so on.</p>
+
+<p>In this example, you have an infinite silicon&ndash;air 
+interface, so you can use periodic BCs in the horizontal direction. 
+In addition, to investigate oblique incident light, you can 
+choose the <tt>PeriodicOblique</tt> BC:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="Boundary*{*" endExpr="}*" -->
+<pre>
+Boundary {
+  Type  = PeriodicOblique
+  Sides = {X}
+} 
+</pre>
+<!-- grep end -->
+
+<p>In the vertical direction (<tt>Sides = {Y}</tt>), you can use absorbing BCs,
+where the best damping or absorption is achieved with the convolutional
+perfectly matched layer (CPML) by setting <tt>Type = CPML</tt>. EMW provides 
+a set of default parameters that are suitable for the most common situations in
+semiconductor devices. For more details, see the 
+<cite>Sentaurus&trade; Device Electromagnetic Wave Solver User Guide</cite>, 
+&quot;Specifying Parameters of CPML Boundary Condition&quot;.</p>
+
+<!--==========================-->
+<a name="6"></a>
+<h1>2.6 PlaneWaveExcitation Section</h1>
+
+<p>The <tt>PlaneWaveExcitation</tt> section summarizes everything related 
+to the plane wave excitation:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="planewaveexcitation*{*"  endExpr="}*" -->
+<pre>
+PlaneWaveExcitation {
+  PlaneY     = -0.5    
+  Theta      = 0
+  Psi        = 0                                                             
+  Wavelength = @&lt;1000.*wavelength&gt;@ * nm
+  Intensity  = 0.1  * W/cm2
+  Nrise      = 4    * number of signal periods until full power
+}
+</pre>
+<!-- grep end-->
+
+<p>The excitation plane must be axis aligned and cuts through the entire
+simulation domain. It is defined by specifying a plane perpendicular to a 
+coordinate axis (<tt>PlaneY</tt>) and a coordinate value where the plane 
+intersects with the axis (see the red line in Figure&nbsp;1).</p>
+
+<p>The direction of the plane wave &ndash; the k-vector &ndash; is 
+defined by the angles <tt>Theta</tt> and <tt>Phi</tt>. A third angle 
+<tt>Psi</tt> can be used to define the direction of the E-vector 
+or the polarization plane (see Figure&nbsp;2).</p>
+
+<p><a href="images/emw_angles.png"><img src="images/emw_angles.png" width="580" 
+alt="Angles for defining 3D excitation" /></a></p>
+                                                                
+<p class="caption">Figure 2. Angles for defining 3D excitation. 
+(Click image for full-size view.)</p>
+
+<p class="note">In two dimensions, the 3D notation shown in Figure 2 is fully 
+supported. However, if only <tt>Theta</tt> is specified and <tt>Phi</tt> is 
+omitted, the 2D specification is used, where <tt>Theta</tt> is counted from 
+the positive y-axis clockwise (see Figure&nbsp;3). The 2D and 3D angular 
+settings can be reviewed in the log file.</p>
+
+<p><a href="images/emw_angles2d.png"><img src="images/emw_angles2d.png" width="580" 
+alt="Angle and polarization definitions for 2D excitation" /></a></p>
+
+<p class="caption">Figure 3. Angle and polarization definitions for 2D excitation. 
+(Click image for full-size view.)</p>
+
+<p>To simplify the setup, EMW can automatically set the position of the excitation 
+plane as well as the angles <tt>Theta</tt> and <tt>Phi</tt>, depending on the 
+coordinate system orientation and the simulation dimension. This is demonstrated in 
+the <tt>simple3d</tt> example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple3d/emw_eml.cmd" startExpr="planewaveexcitation*{*"  endExpr="}*" excludeLines="*#*" -->
+<pre>
+PlaneWaveExcitation {
+  Direction  = FromBottom                                                       
+  Wavelength = @&lt;1000.*wavelength&gt;@ * nm
+  Intensity  = 0.1  * W/cm2
+  Nrise      = 4    * number of signal periods until full power
+}
+</pre>
+<!-- grep end-->
+
+<p>The chosen values are printed to the log file:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple3d/n4_eml.out" startExpr="Excitation plane*"  endExpr="Psi*"  -->
+<pre>
+Excitation plane has been set to 'PlaneZ = -9.6000e-01 [um]' (auto set)
+
+Excitation angles in 3d specification:
+Theta = 0.0000e+00 [deg] (auto set)
+Phi = 0.0000e+00 [deg] (auto set)
+Psi = 45 [deg] (auto set)
+</pre>
+<!-- grep end-->
+
+<p>Note that you still can change settings on top of this, for example, setting 
+<tt>theta=30</tt> to achieve oblique incidence.</p>
+
+<p>The intensity and wavelength of the plane wave are set by specifying 
+the <tt>Intensity</tt> in W/cm<sup>2</sup> and <tt>Wavelength</tt> in 
+nanometer. Alternatively, the E-field <tt>Amplitude</tt> in V/m and
+<tt>Frequency</tt> in Hz can be used.</p>
+
+<p>Finally, for the harmonic signal, the keyword <tt>NRise</tt> specifies the
+number of signal periods before the full amplitude is reached. This is an
+important keyword to achieve good convergence. Too small a value introduces
+artificial higher frequencies (think of a step function whose Fourier
+transformation consists of a very broad spectrum), which must vanish before
+steady state is reached and, eventually, prevent the system from converging. On
+the other hand, too high a value increases simulation time, because a larger
+rise time results in a longer total calculation time. Typical values are between
+4 and 15 in practice.</p>
+
+<!--===============================================-->
+<a name="7"></a>
+<h1>2.7 Plot Section</h1>
+
+<p>The <tt>Plot</tt> section controls the plotting of time-dependent quantities
+such as the E-field and H-field, or the Poynting vector:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="Plot*{*"  endexpr="}*" excludeLines="*#*" -->
+<pre>
+Plot {
+  Name      = &quot;n@node@_Eabs&quot;
+  Quantity  = {AbsElectricField, AbsMagneticField, Region}
+  TickStep  = 300
+  StartTick = 100
+  EndTick   = 800
+  FinalPlot = yes
+}                                       
+</pre>
+<!-- grep end -->
+
+<p>As multiple <tt>Plot</tt> sections are allowed in the command file, each
+<tt>Plot</tt> section has a name, which is used as the file name for the plot
+file, for example, <tt>Name = &quot;n1_Eabs&quot;</tt> generates a plot file
+<tt>n1_Eabs_eml.tdr</tt>.</p>
+
+<p>The quantities that will be included in the plot can be selected with
+<tt>Quantity&nbsp;=&nbsp;{&lt;identifier&gt;,&nbsp;...&nbsp;}</tt>. In the above
+example, the electric and magnetic field magnitudes are plotted. The quantity
+<tt>Region</tt> stores the region boundaries and their names in the plot file
+for better orientation during visualization.</p>
+
+<p>When the plot is to be created, it can be controlled with the keywords
+<tt>StartTick</tt>, <tt>EndTick</tt>, and <tt>TickStep</tt>. In the example, a
+plot is generated starting at the 100th time step, then every 300 time steps
+until the 800th time step is reached, that is, at 100, 400, 700. The created
+plot files have an index appended to the file name
+(<tt>n1_Eabs_eml_000.tdr</tt>).</p>
+
+<p>If <tt>FinalPlot = yes</tt> is specified, a plot file will be
+created at the end of the simulation.</p>
+
+<p>In summary, the above <tt>Plot</tt> section generates several plot files with
+the names <tt>n4_Eabs_eml_000.tdr</tt>, <tt>n4_Eabs_eml_001.tdr</tt>, and
+<tt>n4_Eabs_eml_002.tdr</tt> as well as the final plot file
+<tt>n4_Eabs_eml.tdr</tt>. The plot files can be viewed with Sentaurus Visual
+(see the <a href="../sv/sv_menu.html">Sentaurus Visual module</a>).</p>
+
+<!--==============================-->
+<a name="7_3d"></a>
+<h2>2.7.1 Notes on 3D Plotting</h2>
+
+<p>As EMW tensor grids can have hundreds of millions of vertices, the plotting 
+can require substantial time. Therefore, you have the following options:</p>
+
+<ul>
+<li>Restrict the plot domain.</li>
+<li>Interpolate results to a coarser mixed-element grid.</li>
+<li>Define axis-aligned cuts.</li>
+</ul>
+
+<p>To restrict the plot domain, a user-defined box or region can be defined to 
+reduce the amount of stored data. The box is defined by specifying two opposite 
+corners of a rectangle using <tt>BoxCorner1</tt> and <tt>BoxCorner2</tt>. For 
+convenience, the minimum and maximum coordinate values of the domain boundaries 
+can be retrieved with the keywords <tt>min</tt> and <tt>max</tt>. For example:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="Plot*{*"  startOccurrence=2 endexpr="}*" -->
+<pre>
+Plot {
+  Name       = &quot;n@node@_Si&quot;
+  BoxCorner1 = {min,   0, 0}
+  BoxCorner2 = {max, max, 0}
+  Quantity   = {AbsElectricField, Region}
+}                                       
+</pre>
+<!-- grep end -->
+
+<p>In three dimensions, you can specify axis aligned cuts by using on of the keywords 
+<tt>PlaneX</tt>, <tt>PlaneY</tt>, <tt>PlaneZ</tt>.</p>
+
+<p>The following <tt>Plot</tt> section, for example, generates an x-cut of the 
+electric field at x = 0.05 and saves it to a file <tt>n4_xcut_eml.tdr</tt>:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple3d/emw_eml.cmd" startExpr="Plot*{*" endexpr="}*" -->
+<pre>
+Plot {                                          
+  Name      = &quot;n@node@_Ex&quot;
+  Quantity  = {AbsElectricField, Region}
+  PlaneX    = 0.05    
+  FinalPlot = yes
+}
+</pre>
+<!-- grep end -->
+
+<p>Another possibility to reduce the amount of stored data is to plot the result 
+variables on a coarser mixed-element grid, instead of the very dense tensor grid. 
+This can be activated by providing a mixed-element grid file with <tt>GridFile</tt> 
+in the <tt>Plot</tt> section. An example is provided in 
+<a href="emw_3.html">Section&nbsp;3. Integrating EMW in Sentaurus Workbench Tool Flow</a>.</p>
+
+<!--=================================-->
+<a name="8"></a>
+<h1>2.8 Extractor Section</h1>
+
+<p>The <tt>Extractor</tt> section, very similar to plots, extracts spatial device 
+quantities and writes it to a TDR file. However, the main difference is that extractors 
+extract quantities that require heavy postprocessing, for example, time-averaged quantities 
+such as the time-averaged <tt>PowerFluxDensity</tt>, <tt>AbsorbedPhotonDensity</tt>, and 
+<tt>OpticalGeneration</tt>. Like plots, the output can be restricted to certain regions 
+or boxes, it can be evaluated for axis-aligned cuts only, and it can be written on 
+a coarse mixed-element grid instead of a tensor grid.</p>
+
+<p>The most important quantity, the optical generation, is covered by 
+<tt>AbsorbedPhotonDensity</tt>. In the following example, the absorbed photon 
+density profile in the silicon can be computed using the syntax:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="Extractor*{*"  endexpr="}*" -->
+<pre>
+Extractor {
+  Name     = &quot;n@node@_g&quot;
+  Quantity = {AbsorbedPhotonDensity, Region}
+}
+</pre>
+<!-- grep end -->
+
+<p>The result is stored in the <tt>n4_g_eml.tdr</tt> file and can be viewed 
+in a similar way to the plot files in Sentaurus Visual.</p>
+
+<p class="note">Do not extract too large 3D tensor grids as this might consume 
+considerable amounts of time. Instead, use cuts or interpolate to a mixed-element 
+grid. See <a href="#7_3d">Section&nbsp;2.7.1 Notes on 3D Plotting</a>.</p>
+
+<!--==========================-->
+<a name="9"></a>
+<h1>2.9 Sensor Section</h1>
+
+<p>Sensors provide users with the ability to measure integrated values of the
+photon flux through user-defined areas or the absorbed photon density in
+selected volumes. The result is a scalar value and is written to the result
+file. Similar to the excitation, planes can be defined with <tt>PlaneY</tt>.
+Integration volumes can be defined with <tt>BoxCorner1</tt> and
+<tt>BoxCorner2</tt> in analogy to the <tt>Plot</tt> section. In addition, a
+region (or material) of the tensor grid, which does not necessarily need to be
+cuboid, can be used as the identifier for volume integration.</p>
+
+<p class="note">The region (or material) definition requires more runtime. So 
+wherever possible, use boxes as the integration regions.</p>
+
+<p>As multiple sensors are allowed, sensors must be named with the keyword 
+<tt>Name</tt>. The quantity to be measured is set with <tt>Quantity</tt>. 
+The sensor returns the integrated value, or the averaged value, or both 
+(for example, <tt>Mode = {Integrate, Average}</tt>).</p>
+
+<p class="note">For 2D simulations, the third dimension is assumed to be 1
+&mu;m.</p>
+
+<p>The following lines from the <tt>simple2d</tt> example demonstrate how to
+calculate the reflection of the structure. Therefore, the sensor is defined
+above the excitation plane at the upper boundary in the scattered field region
+(see Figure 1):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="*Name*reflected*" startOffset=-1   endExpr="}*" -->
+<pre>
+Sensor {
+  Name       = &quot;reflected&quot;
+  Quantity   = PhotonFluxDensity 
+  PlaneY     = min
+  Mode       = {Integrate}
+}
+</pre>
+<!-- grep end -->
+
+<p>This returns the number of reflected photons per second. However, 
+usually, you are interested in the reflection coefficient, so you must 
+divide the number of reflected photons by the number of incident photons.</p>
+
+<p>As the number of incident photons is not directly accessible as in 
+the total-field scattered-field excitation, you only have (Total Field 
+= Incident + Reflected) and (Scattered Field = Reflected). 
+However, knowing the total flux, you can subtract the scattered flux 
+to extract the incident flux. For this, you can define a sensor solely 
+between the excitation plane and the silicon surface to measure the 
+total flux (see Figure 1):</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="*Name*total*" startOffset=-1 EndExpr="}*" -->
+<pre>
+Sensor {
+  Name       = &quot;total&quot;
+  Quantity   = PhotonFluxDensity 
+  PlaneY     = -0.2
+  Mode       = {Integrate}
+}
+</pre>
+<!-- grep end -->
+
+<p>The results are accessible in the log file and the result file
+(<tt>.plt</tt>), and can be viewed and further processed in Sentaurus
+Visual.</p>
+
+<p>To compute the transmission coefficient, you can add, in a 
+similar way as for the reflection, an additional sensor at 
+the bottom of the silicon (see Figure 1).</p>
+
+<p>To calculate the absorption, you can define a sensor that encloses the entire
+silicon region, but this time, integrating the absorbed photon density:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="*Name*absorbed*" startOffset=-1 endExpr="}*"-->
+<pre>
+Sensor {
+  Name     = &quot;absorbed&quot;
+  Quantity = AbsorbedPhotonDensity
+  BoxCorner1 = {min, min, 0}
+  BoxCorner2 = {max, max, 0}
+  Mode     = {Integrate}
+}
+</pre>
+<!-- grep end -->
+
+<p>For volume integration, it is also possible to define box corners and a
+region at the same time. In that case, the keyword <tt>Domains</tt> defines how
+the integration volumes will be connected. They can be evaluated as
+<tt>United</tt>, or <tt>Intersecting</tt>, or <tt>Separate</tt>.</p>
+
+<p>The following <tt>Sensor</tt> section in example <tt>simple2d</tt> performs
+the integration in the substrate region, but only if it is inside a rectangle of
+(<tt>min,min</tt>)&ndash;(<tt>0.05,max</tt>), where <tt>min</tt> and
+<tt>max</tt> refer to the domain boundaries:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="*Name*intersected*" startOffset=-1 endExpr="}*" -->
+<pre>
+Sensor {
+  Name       = &quot;intersected&quot;
+  Quantity   = AbsorbedPhotonDensity
+  Region     = {&quot;substrate&quot;}
+  BoxCorner1 = {min , min, 0}
+  BoxCorner2 = {0.05, max, 0}
+  Domains    = Intersecting
+  Mode       = {Integrate}
+}
+</pre>
+<!-- grep end -->
+
+<p>As it is very common to calculate reflection, transmission, and absorption 
+(RTA) in an EMW simulation, EMW offers a shortcut for setting up the required 
+sensors for RTA and total field, and for performing the postprocessing. 
+Specifying the command section <tt>RTA {}</tt> will automatically add the previously 
+mentioned sensors, calculate RTA and the sum of it (RTA=R+T+A), and output the 
+results to the EMW log as DoE result parameters, so Sentaurus Workbench can pick 
+them up for its table of simulation results. In addition, the results are written 
+to the result file. See the <tt>simple3d</tt> example.</p>
+
+<p>You can further fine-tune the RTA calculation, for example, specifying which 
+results to plot to the Sentaurus Workbench table, by using the keyword <tt>Log</tt>. 
+For example, the following section plots only <tt>R</tt>, <tt>T</tt>, and <tt>A</tt>, 
+and their sum (<tt>RTA</tt>).</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple3d/emw_eml.cmd" startExpr="RTA*{*"  endexpr="}*" excludeLines="*Tick*" -->
+<pre>
+RTA {
+  Log = {R,T,A,RTA}
+}
+</pre>
+<!-- grep end -->
+
+<p class="note">The <tt>RTA</tt> section requires the <tt>Direction</tt> keyword 
+to be specified in the <tt>PlaneWaveExcitation</tt> section, to decide on which 
+boundary to place the reflection and tranmission sensors.</p>
+
+<p>Like the <tt>Plot</tt> section, <tt>Sensor</tt> sections and the <tt>RTA</tt> 
+section can be evaluated not only at the end, but also during time-stepping. 
+Therefore, you can observe the transient evolution of the sensor values, for 
+example, to investigate convergence.</p>
+
+<p>To activate transient evaluation, specify <tt>StartTick</tt> and optionally 
+<tt>TickStep</tt>:</p>
+ 
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple3d/emw_eml.cmd" startExpr="RTA*{*"  endexpr="}*" excludeLines="*Log*" -->
+<pre>
+RTA {
+  StartTick = 0
+}
+</pre>
+<!-- grep end -->
+
+<!--==========================-->
+<a name="10"></a>
+<h1>2.10 Detector Section</h1>
+
+<p>The purpose of the detector is to terminate the simulation if 
+the simulation fulfills certain criteria. For harmonic excitation, 
+the simulation terminates if a time-harmonic steady-state is reached, 
+that is, if the maximum deviation of the field compared to the field in the 
+immediately preceding period is lower than the specified <tt>Tolerance</tt>.</p>
+
+<p>In this case, you can set the evaluation region of the detector for 
+the entire simulation domain, with <tt>Tolerance</tt> set to 1e-3:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d/emw_eml.cmd" startExpr="Detector*{*"  endexpr="}*" -->
+<pre>
+Detector {
+  Tolerance = 1e-3
+}
+</pre>
+<!-- grep end -->
+
+<p>During an EMW simulation, the <tt>Detector</tt> section writes the maximum
+deviation of the entire <tt>Detector</tt> domain to the log file and to the result 
+file. Sometimes, it can be useful to monitor the convergence behavior
+visually to have a better understanding of the current state of the simulation
+and to decide whether an increased number of time steps would significantly
+reduce the maximum deviation and, therefore, lead to more accurate results.</p>
+
+<p>The maximum deviation can be plotted over time or over the number of time
+steps (denoted as <tt>TickStep</tt>). The data is saved continuously in the
+<tt>ResultFile</tt> specified in the <tt>Globals</tt> section of the command
+file and can be plotted in Sentaurus Visual. Clicking the <strong>Reload</strong> 
+button in Sentaurus Visual during an EMW simulation adds any new data points computed 
+in the intervening time to the existing curve and updates the plot accordingly.</p>
+
+<p>An example of how to plot maximum deviation versus time steps can be
+investigated from within the project 
+<tt>Applications_Library/GettingStarted/emw/simple2d</tt> in the 
+<a href="../../Applications_Library/GettingStarted/emw/simple2d/svisual_vis.tcl">
+svisual_vis.tcl</a> command file.</p>
+
+<p>In this example, the convergence monitoring plot is generated by selecting
+the Sentaurus Visual node and then clicking the <strong>Run Selected Visualizer
+Nodes Together</strong> toolbar button of Sentaurus Workbench. To refresh the plot
+with new data points, choose <strong>File</strong> &gt; <strong>Reload All</strong>, 
+or choose <strong>File</strong> &gt; <strong>Reload Selected</strong>, in 
+Sentaurus Visual.</p>
+
+<p>Figure 4 shows a plot of the maximum deviation versus time steps for
+<tt>tolerance=0.001</tt> in the <tt>Detector</tt> section.</p>
+
+<p><a href="images/emw_convergence.png"><img src="images/emw_convergence.png"
+width="570" alt="Convergence monitoring" /></a></p>
+                         
+<p class="caption">Figure 4. Convergence monitoring. (Click image for full-size view.)</p>
+
+<p>In addition to the maximum deviation, you can plot the transient evolution 
+of sensors, like R, T, and A as demonstrated in the example project <tt>simple3d</tt>. 
+Figure&nbsp;5 shows the maximum deviation and tolerance as before, but in addition, 
+on the right axis, R, T, and A. See how reflection converges quite fast as the 
+light just needs to travel to the Si&ndash;air interface and back. There is no 
+further reflecting in this device. For the transmission (and absorption), it takes 
+a bit longer, as the wave front has to reach the rear side of the silicon.</p>
+
+<p><a href="images/emw_rta_transient.png"><img src="images/emw_rta_transient.png" width="570" 
+alt="Transient evolution of R, T, A" /></a></p>
+                                                                
+<p class="caption">Figure 5. Transient evolution of R, T, and A. 
+(Click image for full-size view.)</p>
+
+<p>In addition, the quantity <tt>1 &ndash; (R+T+A)</tt> (labeled as <tt>1-RTA</tt>) 
+is plotted on the left axis. This quantity is a measure for the overall accuracy of 
+your simulation and ideally equals 0. It is mainly influenced by the mesh and when 
+the simulation is stopped. So, if the value unsatisfactorily deviates from 0, it 
+is an indication to use a finer mesh or to run the simulation for a longer time, 
+which reduces the tolerance of the detector.</p>
+
+<!--==========================-->
+<a name="11"></a>
+<h1>2.11 Postprocessing</h1>
+
+<p>FDTD simulations are usually very time consuming and produce huge amounts of
+data, which are difficult to handle afterwards. Imagine you ran a FDTD simulation for
+a few hours and, at the end, you realize that you would like to investigate
+the E-field in an additional cut or to use an additional sensor to integrate the
+absorbed photon density for a different region.</p>
+
+<p>In this case, the postprocessing capability of EMW can be very helpful because 
+it allows you to save the absorbed photon density and power flux density together 
+with the region information at the end of a FDTD simulation in a save file. After 
+the simulation, this save file can be loaded into EMW, applying arbitrary extractors 
+and sensors to it without having to redo the calculation.</p>
+
+<p>To demonstrate the principle of postprocessing, the <tt>simple2d</tt> project
+described above is chosen and split into two EMW tool instances:</p>
+
+<p>The first tool instance <tt>emw</tt> performs the FDTD calculation, without 
+applying any extractor or sensor. It simply saves the results in a save file by 
+specifying a <tt>Save</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d-postprocess/emw_eml.cmd" startExpr="Save*{*"  endexpr="}*" -->
+<pre>
+Save {
+  Name = &quot;@save@&quot;
+  Quantity = {AbsorbedPhotonDensity, PowerFluxDensity}
+}
+</pre>
+<!-- grep end -->
+
+<p>The save file name is specified with the Sentaurus Workbench file reference <tt>@save@</tt>, 
+which expands to <tt>n4_save_eml.tdr</tt>.</p>
+
+<p>A silver region has been added to one end of the silicon and is explicitly treated 
+as a dispersive medium:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d-postprocess/emw_eml.cmd" startExpr="Dispersive*{*"  endexpr="}*" -->
+<pre>
+DispersiveMedia {
+  Material = {&quot;Silver&quot;}
+  Model = SingleDipoleDrude
+  ModelParameters = ComputeFromComplexRefractiveIndex
+  InterfaceAveraging = yes
+}
+</pre>
+<!-- grep end -->
+
+<p>The <tt>SingleDipoleDrude</tt> model used here computes a single-pole fitting
+for silver at the defined excitation wavelength. The wavelength-dependent <i>n
+&amp; k</i> values are read directly from the <tt>NumericalTable</tt> in the
+<tt>ComplexRefractiveIndex</tt> section of the material parameter file by
+specifying <tt>ModelParameters = ComputeFromComplexRefractiveIndex</tt>. With
+<tt> InterfaceAveraging = yes</tt>, a weighted average of the dielectric
+function in the frequency domain is used at the silicon&ndash;silver interface, 
+which helps to improve convergence and accuracy during runtime and is typically
+recommended when using dispersive models.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/emw/simple2d-postprocess/emw_eml.cmd">
+emw_eml.cmd</a>.</p>
+
+<p>The second tool instance <tt>emwPostProcess</tt> loads the save file by
+specifying <tt>LoadFile</tt> in the <tt>Globals</tt> section:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/emw/simple2d-postprocess/emwPostProcess_eml.cmd" startExpr="Global*{*"  endexpr="}*" -->
+<pre>
+Globals {
+  LoadFile    = &quot;@load@&quot;
+  ResultFile  = &quot;@plot@&quot;
+  LogFile     = &quot;@log@&quot;
+}
+</pre>
+<!-- grep end -->
+
+<p>Again, a Sentaurus Workbench file reference is used to specify the file name;
+<tt>@load@</tt> expands to <tt>n4_save_eml.tdr</tt>. Subsequently, any
+<tt>Extractor</tt> or <tt>Sensor</tt> sections are evaluated as for a standard
+EMW simulation.</p>
+
+<p class="note">For postprocessing, apart from the <tt>Globals</tt> section,
+only <tt>Extractor</tt> and <tt>Sensor</tt> sections are allowed.</p>
+
+<p>In this particular example, the absorbed photon density is extracted and
+sensors are placed as for the <tt>simple2d</tt> project to extract reflection,
+transmission, and absorption.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/emw/simple2d-postprocess/emwPostProcess_eml.cmd">
+emwPostProcess_eml.cmd</a>.</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/emw/simple2d-postprocess</tt>.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_1.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="emw_3.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

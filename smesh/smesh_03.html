@@ -1,0 +1,296 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Mesh 3. Meshing at Interfaces</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_02.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_04.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Mesh<br />3. Meshing at Interfaces</h1>
+
+<p>
+ <a href="#1">3.1 Overview</a><br />
+ <a href="#2">3.2 Interface Refinement</a><br />
+ <a href="#3">3.3 Offsetting</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To describe interface mesh refinement in Sentaurus Mesh.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>3.1 Overview</h1>
+
+<p>In most semiconductor devices, interfaces between two materials play a significant role. 
+Therefore, a finer mesh is typically required at critical interfaces. Sentaurus Mesh provides
+the following mechanisms to specify an interface mesh:</p>
+
+<ul>
+<li><em>Interface refinement</em> provides an easy way to specify a finer mesh near the interface 
+for the axis-aligned mesh generator.</li>
+<li><em>Offsetting</em> allows you to build mesh lines that follow the contours of the interface.</li>
+</ul>
+
+<p>In general, interface refinement is useful when the interface is generally straight and along 
+one of the x-axis, y-axis, or z-axis directions. In cases where the interface is highly curved 
+or not axis-aligned, offsetting is recommended.</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>3.2 Interface Refinement</h1>
+
+<p>The Sentaurus Mesh command files featured in this section are all 
+contained in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/RefineInterface</tt>. 
+To work with the project, copy it to a local directory within your 
+Sentaurus Workbench working directory.</p>
+
+<p>A frequently useful feature in Sentaurus Mesh is interface mesh refinement, 
+which allows you to gradually resolve material interfaces in an isotropic manner.</p>
+
+<p>The interface mesh refinement controls are embedded into a refinement 
+region specification in the <tt>Definitions</tt> section:</p>
+
+<pre>
+Refinement &quot;reference name&quot; {
+  MaxElementSize = (&lt;xmax&gt; &lt;ymax&gt; &lt;zmax&gt;)
+  MinElementSize = (&lt;xmin&gt; &lt;ymin&gt; &lt;zmin&gt;)
+  RefineFunction = MaxLengthInterface(Interface(&quot;&lt;Material1&gt;&quot;,&quot;&lt;Material2&gt;&quot;),
+                   Value = value, Factor = value [DoubleSide] [UseRegionNames])
+}
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>Interface(&quot;&lt;Material1&gt;&quot;,&quot;&lt;Material2&gt;&quot;)</tt> indicates 
+the materials whose interface must be refined.</li>
+<li><tt>Value</tt> specifies the value of the initial mesh step at the interface.</li>
+<li><tt>Factor</tt> controls the grading of the element sizes across the interface.</li>
+<li><tt>DoubleSide</tt> (optional) initiates the mesh refinement on both sides of the interface. 
+By default, the interface is refined inside <tt>&lt;Material1&gt;</tt> only.</li>
+<li><tt>UseRegionNames</tt> (optional) interprets an interface as a regionwise specification.</li>
+</ul>
+
+<p>Multiple <tt>RefineFunction</tt> definitions are allowed inside a single <tt>Refinement</tt> 
+statement. Instead of the full <tt>MaxLengthInterface</tt> name, you can use <tt>MaxLenInt</tt>, 
+for example:</p>
+
+<pre>
+Refinement &quot;reference name&quot; {
+  MaxElementSize = (&lt;xmax&gt; &lt;ymax&gt; &lt;zmax&gt;)
+  MinElementSize = (&lt;xmin&gt; &lt;ymin&gt; &lt;zmin&gt;)
+  RefineFunction = MaxLenInt(Interface(&quot;Material1&quot;,&quot;Material2&quot;),
+                   Value = value, Factor = value)
+}
+</pre>
+
+<p>In the <tt>RefineInterface</tt> project, the Sentaurus Mesh tool instance 
+labeled <tt>IntRefA</tt> demonstrates the use of the interface refinement option in 
+Sentaurus Mesh, where the interface refinement is applied to both sides of the 
+silicon&ndash;SiO<sub>2</sub> and polysilicon&ndash;SiO<sub>2</sub> material 
+interfaces:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineInterface/IntRefA_msh.cmd" startExpr="Definitions*" endExpr="}*" -->
+<pre>
+Definitions {
+  Refinement &quot;global&quot; {
+    MaxElementSize = (1 1 1)
+    MinElementSize = (0.01 0.01 0.01)
+    RefineFunction = MaxLenInt(Interface(&quot;Silicon&quot;,&quot;SiO2&quot;), 
+             value=0.01, factor=2, DoubleSide)
+    RefineFunction = MaxLenInt(Interface(&quot;PolySi&quot;,&quot;All&quot;), 
+             value=0.01, factor=2, DoubleSide)
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sm_aa_interface.png"><img src="images/sm_aa_interface.png" 
+width="400" alt="Interface mesh refinement" /></a></p>
+
+<p class="caption">Figure 1. Interface mesh refinement. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/RefineInterface/IntRefA_msh.cmd">
+IntRefA_msh.cmd</a>.</p>
+
+<p>The interface mesh refinement method works very well for axis-aligned or 
+slightly nonaxis-aligned geometries. However, for strongly curved or nonaxis-aligned 
+device geometries, the interface mesh refinement can produce many mesh 
+points when refining a nonplanar geometry, due to the specifics of the 
+binary tree&ndash;based space decomposition, as shown in Figure&nbsp;2.
+In general, it is not recommended to use interface refinement on such geometries. 
+Use offsetting instead.</p>
+
+<p><a href="images/sm_aa_nonaa.png"><img src="images/sm_aa_nonaa.png" width="400" 
+alt="Interface mesh refinement applied to nonaxis-aligned device geometry" /></a></p>
+
+<p class="caption">Figure 2. Interface mesh refinement applied to nonaxis-aligned device 
+geometry can produce a huge number of mesh points due to the specifications of the 
+recursive binary-tree decomposition algorithm. (Click image for full-size view.)</p>
+
+<p>In the <tt>RefineInterface</tt> project, the Sentaurus Mesh tool instance 
+labeled <tt>IntRefB</tt> demonstrates the behavior of interface mesh refinement 
+applied to a nonaxis-aligned device geometry.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/RefineInterface/IntRefB_msh.cmd">
+IntRefB_msh.cmd</a>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>3.3 Offsetting</h1>
+
+<p>The possibility to generate boundary-conforming grids, using a combination 
+of binary volume decomposition and offsetting algorithms, is implemented in 
+Sentaurus Mesh.</p>
+
+<p>You activate the offsetting algorithm by specifying the <tt>EnableOffset</tt> or 
+<tt>EnableSections</tt> option in the <tt>IOControls</tt> section of the command file. 
+Without one of these options, the <tt>Offsetting</tt> section is ignored and 
+boundary-conforming layers are not produced.</p>
+
+<p>The controls for offsetting are specified in the <tt>Offsetting</tt> section 
+of the command file:</p>
+
+<pre>
+Offsetting {
+  noffset {
+    hlocal = <em>float</em>
+    factor = <em>float</em>
+    maxlevel = <em>integer</em>
+  }
+
+  noffset material &quot;&lt;material_1&gt;&quot; &quot;&lt;material_2&gt;&quot; {
+    factor = <em>float</em>
+    hlocal = <em>float</em>
+    window = [(<em>float</em> <em>float</em> <em>float</em>) (<em>float</em> <em>float</em> <em>float</em>)]
+  }
+
+  noffset material &quot;&lt;material_name&gt;&quot; {
+    maxlevel = <em>integer</em>
+  }
+}
+</pre>
+
+<p>Both materialwise and regionwise specifications are supported.</p>
+
+<p>The offsetting algorithm uses a combination of simple offsetting and level-set 
+methods to generate mesh layers conformal with the material interface.</p>
+
+<p>Offsetting can be confined to a given window using a <tt>window</tt> 
+specification. This often helps to maintain the best mesh quality for complex device 
+structures. Note that a window controls only the starting position of layering and, 
+therefore, layers can potentially grow outside of the window. Multiple window 
+specifications within the same interface section are supported, but they must all use 
+a common <tt>hlocal</tt> and <tt>factor</tt>.</p>
+
+<p>Figure 3 illustrates the most important offsetting parameters mentioned.</p>
+
+<p><a href="images/sm_aa_offsetpara.png"><img src="images/sm_aa_offsetpara.png" width="500" 
+alt="Main parameters related to offset layering at interfaces" /></a></p>
+
+<p class="caption">Figure 3. Main parameters related to offset layering at interfaces. 
+At the material interface, the lateral mesh resolution is given by the axis-aligned mesh 
+(AAM) refinement specifications. (Click image for full-size view.)</p>
+
+<p>To illustrate how to use offsetting to generate a boundary-conforming anisotropic 
+mesh layer, you will apply it to the same device structure, as shown in Figure&nbsp;2. 
+The <tt>maxlevel=6</tt> specification has been applied to both the <tt>Silicon</tt> and 
+<tt>Oxide</tt> materials, thereby creating six boundary-conforming mesh layers on 
+both sides of the silicon&ndash;oxide interface. The layering starts with a layer 
+thickness, specified by the <tt>hlocal</tt> value in the corresponding 
+<tt>noffset material</tt> section. This setting applies to the first of two materials, 
+which appear in each particular specification:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/RefineInterface/IntRefC_msh.cmd" startExpr="Offsetting*" endExpr="}*" -->
+<pre>
+Offsetting {
+
+  noffset material &quot;Silicon&quot; {
+    maxlevel=6
+  }
+
+  noffset material &quot;Oxide&quot; {
+    maxlevel=6
+  }
+
+  noffset material &quot;Silicon&quot; &quot;Oxide&quot; {
+    hlocal=0.01
+    factor=1.5
+  }
+
+  noffset material &quot;Oxide&quot; &quot;Silicon&quot; {
+    hlocal=0.015
+    factor=1.6
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Figure&nbsp;4 shows the resulting boundary-conforming mesh.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/RefineInterface/IntRefC_msh.cmd">
+IntRefC_msh.cmd</a>.</p>
+
+<p class="note">It is not recommended to use the same <tt>hlocal</tt> on both sides of 
+an interface because this can create poor-quality mesh elements.</p>
+
+<p><a href="images/sm_aa_offset2d.png"><img src="images/sm_aa_offset2d.png" width="400" 
+alt="Boundary-conforming mesh interface refinement applied to nonaxis-aligned device geometry" /></a></p>
+
+<p class="caption">Figure 4. Boundary-conforming interface refinement applied 
+to nonaxis-aligned device geometry by applying offsetting specifications at the 
+silicon&ndash;oxide interface by Sentaurus Mesh. (Click image for full-size view.)</p>
+
+<p>The Sentaurus Mesh tool instance labeled <tt>IntRefC</tt>, contained in the 
+Sentaurus Workbench project <tt>Applications_Library/GettingStarted/snmesh/RefineInterface</tt>, 
+demonstrates the behavior of interface mesh refinement applied to nonaxis-aligned 
+device geometry. To work with the project, copy it to a local directory within your 
+Sentaurus Workbench directory.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_02.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_04.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

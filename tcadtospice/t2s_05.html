@@ -1,0 +1,1330 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+    <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+    <title>TCAD Sentaurus Tutorial &ndash; TCAD to SPICE 5. Garand VE</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_04.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<h1>TCAD to SPICE<br />5. Garand VE</h1>
+
+<p>
+ <a href="#1">5.1 Setting Up a Simulation Using Garand VE</a><br />
+ <a href="#2">5.2 Variability Analysis</a>
+</p>
+
+<!--================================================-->
+<h2>Objectives</h2>
+
+<ul>
+ <li>To demonstrate how to perform variability analysis using Garand&nbsp;VE.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>5.1 Setting Up a Simulation Using Garand&nbsp;VE</h1>
+
+<p>Garand&nbsp;VE can simulate I<sub>d</sub>&ndash;V<sub>g</sub>, I<sub>d</sub>&ndash;V<sub>d</sub>, 
+and C&ndash;V curves. Simulations are performed at fixed biases for a range specified by users. 
+In addition, Garand&nbsp;VE can perform V<sub>T</sub> search simulations, where a series of 
+simulations is run according to an internal algorithm until a threshold voltage that satisfies a 
+user-defined current criterion is found. In this case, you can specify only the initial bias 
+for the search, together with the current criterion and the degree of accuracy of the search.</p>
+
+<p>It is important to point out that the <em>interface</em> between Garand&nbsp;VE and Sentaurus Workbench 
+is represented by gpythonsh, which acts as a <em>controller</em> for both the Garand&nbsp;VE simulation 
+status and the flow of data between Garand&nbsp;VE and Sentaurus Workbench.</p>
+
+<p>In addition, gpythonsh harvests and stores the simulation data in a database (see 
+<a href="t2s_02.html">Section&nbsp;2. TCAD to SPICE Database</a>).</p>
+
+<p>This section demonstrates how to set up Garand&nbsp;VE inside a Sentaurus Workbench project 
+and how to control, through gpythonsh, the simulation types and the flow of data to and 
+from the database.</p>
+
+<p>See the API documentation for a comprehensive guide to controlling Garand&nbsp;VE 
+through the gpythonsh wrapper.</p>
+
+<p>To access the API documentation, right-click a TCAD to SPICE tool icon and choose 
+<strong>TCAD to SPICE API Documentation</strong> as illustrated on Figure 1.</p>
+
+<p><img src="images/python-api-ref.png" width="275" height="457" alt="TCAD to SPICE API documentation" /></p>
+
+<p class="caption">Figure 1. Accessing TCAD to SPICE API documentation.</p>
+
+<strong>Prerequisites</strong>
+
+<ul>
+<li>You have already completed <a href="t2s_02.html">Section 2. TCAD to SPICE Database</a>, 
+which explains the SWB Python database and how it can be used in the gpythonsh scripting environment.</li>
+<li>gpythonsh syntax is based on Python version 3.6.</li>
+</ul>
+
+<p>This section covers the following topics:</p>
+
+<ul>
+<li><a href="#1_setup">Section 5.1.1 Setting Up Garand&nbsp;VE in Sentaurus Workbench</a></li>
+<li><a href="#1_basefile">Section 5.1.2 Base Garand&nbsp;VE Input File</a></li>
+<li><a href="#1_template">Section 5.1.3 Python Template File for Garand&nbsp;VE</a></li>
+<li><a href="#1_sim_type">Section 5.1.4 Controlling the Simulation Type</a></li>
+<li><a href="#1_db_collect">Section 5.1.5 Saving Data to and Retrieving Data From the Database</a></li>
+</ul>
+
+<!--==============================-->
+<a name="1_setup"></a>
+<h2>5.1.1 Setting Up Garand&nbsp;VE in Sentaurus Workbench</h2>
+
+<p>Garand&nbsp;VE can be added to a Sentaurus Workbench project like other tools as follows:</p>
+
+<ol>
+<li>From Sentaurus Workbench, choose <strong>Tool</strong> &gt; <strong>Add</strong>.<br />
+The Add Tool dialog box opens.</li>
+<li>On the <strong>Tool Properties</strong> tab, select Garand VE from the <strong>Name</strong> 
+list or click the <strong>Tools</strong> button to select the tool from the Select DB Tool dialog box 
+as shown in Figure&nbsp;2.</li>
+</ol>
+
+<p><img src="images/garand-swb-select-db-tool.png" width="313" height="96"
+alt="Garand VE tool shown in Select DB Tool dialog box" /></p>
+
+<p class="caption">Figure 2. Garand&nbsp;VE tool shown in Select DB Tool dialog box.</p>
+
+<p>Sentaurus Workbench adds the Garand&nbsp;VE tool at the current project location and automatically 
+provides two input files:</p>
+
+<ul>
+<li><em>Template file</em> is the Python command file (recalling that gpythonsh manages TCAD to SPICE tools).</li>
+<li><em>Base Garand&nbsp;VE Input File</em> contains the basic inputs for running Garand&nbsp;VE. Note that gpythonsh will process 
+this file and create runnable copies, which include all the modifications dictated by users through the gpythonsh 
+template file.</li>
+</ul>
+
+<p><img src="images/garand-swb-garand-menu.png" width="377" height="257"
+alt="Accessing Garand input files from Edit Input command" /></p>
+
+<p class="caption">Figure 3. Accessing Garand&nbsp;VE input files from the Edit Input command.</p>
+
+<p>Sentaurus Workbench preprocesses both files by using standard Sentaurus Workbench preprocessor 
+syntax. These are discussed in detail in the next sections.</p>
+
+<!--================================================-->
+<a name="1_basefile"></a>
+<h2>5.1.2 Base Garand&nbsp;VE Input File</h2>
+
+<p>The Base Garand&nbsp;VE Input File should contain the input commands that are common 
+to the Garand&nbsp;VE tools inside the same Sentaurus Workbench project. Generally, the Base 
+Garand&nbsp;VE Input File contains basic models, material properties, the path to input structure 
+files, output types, solver information, and other basic Garand&nbsp;VE simulation attributes.</p>
+
+<p class="note">There must be only one Base Garand&nbsp;VE Input File for each Sentaurus Workbench 
+project.</p>
+
+<p>If necessary, standard Sentaurus Workbench variable substitution can be used in the 
+Base Garand&nbsp;VE Input File to produce a preprocessed input file that will be used by gpythonsh.</p>
+
+<p>gpythonsh uses the Base Garand&nbsp;VE Input File as a generalized parent file and creates a 
+specialized runnable child file for each Garand&nbsp;VE tool instance inside the Sentaurus Workbench 
+project. In each of these runnable files, some of the input commands are overwritten 
+or new input lines are added.</p>
+
+<!--=============================-->
+<h3>5.1.2.1 Example</h3>
+
+<p>In Figure 4, the Garand&nbsp;VE tool instances in the Sentaurus Workbench project are specialized 
+in performing I<sub>d</sub>&ndash;V<sub>g</sub>, I<sub>d</sub>&ndash;V<sub>d</sub>, and V<sub>T</sub>
+simulations. All tool instances share the same Base Garand&nbsp;VE Input File, but have different Python 
+template files.</p>
+
+<p>The main idea is to declare, in the Base Garand&nbsp;VE Input File, all the parameters that 
+are constant across the project (such as temperature and Gummel accuracy). In the Base 
+Garand&nbsp;VE Input File, you can also specify placeholders for those parameters that will change 
+across the project (such as gate bias). There is no special syntax for these placeholders. 
+However, the used keyword must exist. gpythonsh will modify the value of these placeholders 
+according to the instructions specified in the template file (see 
+<a href="#1_template">Section&nbsp;5.1.3 Python Template File for Garand&nbsp;VE</a>).</p>
+
+<p>For a list of all Garand&nbsp;VE input commands, refer to the <cite>Garand User Guide</cite>.</p>
+
+<p><a href="images/garand-stages-in-swb.png"><img src="images/garand-stages-in-swb.png" 
+width="580" alt="Garand VE tool instances in Sentaurus Workbench project" /></a></p>
+
+<p class="caption">Figure 4. Example of Garand&nbsp;VE tool instances in a Sentaurus Workbench 
+project. All Garand&nbsp;VE tool instances share the same generalized Base Garand&nbsp;VE Input File. 
+Each tool instance has a different template file, where gpythonsh instructions are specified 
+to drive the specific operation of that tool instance. For each Garand&nbsp;VE tool instance, 
+gpythonsh will create a child copy of the generalized input file and modify it to perform 
+the user-defined operation (in this example, I<sub>d</sub>&ndash;V<sub>g</sub>, 
+I<sub>d</sub>&ndash;V<sub>d</sub>, or V<sub>T</sub> simulation). (Click image for full-size view.)</p>
+
+<p>Here is the Base Garand&nbsp;VE Input File used in the example project:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandApp/base_garand_inputfile.garinp" startLine=1 endExpr="OUTPUT  experiment*" format="trip_wrap" -->
+<pre>
+# ------------------------------- SIMULATION TYPE ------------------------------
+SIMULATION  solve=on                 # Perform solution
+SIMULATION  sim_type=IdVg            # [IdVg, IdVd, target]
+SIMULATION  accept_unconverged=on    # if &quot;off&quot; all unconverged datapoints will
+                                     # appear as '0' in the database
+
+#if &quot;@Type@&quot; == &quot;pMOS&quot;
+#define    __BAND__ valence
+SIMULATION  n_or_p=p                 # p-type simulation
+BIAS    drain=-0.05                  # Drain Bias     [V]
+BIAS    gate=0.0                     # Gate Bias      [V]
+BIAS    substrate=0.0                # Substrate Bias [V]
+BIAS    delta=-0.07                  # Voltage step for I-V curve [V]
+BIAS    ivpoints=11                  # Number of points in the I-V curve
+#else if &quot;@Type@&quot; == &quot;nMOS&quot;
+#define    __BAND__ conduction
+SIMULATION  n_or_p=n                 # n-type simulation
+BIAS    drain=0.05                   # Drain Bias     [V]
+BIAS    gate=0.0                     # Gate Bias      [V]
+BIAS    substrate=0.0                # Substrate Bias [V]
+BIAS    delta=0.07                   # Voltage step for I-V curve [V]
+BIAS    ivpoints=11                  # Number of points in the I-V curve
+#endif
+
+# ------------------------------- SIMULATION MODEL -----------------------------
+MODEL   density_gradient=on    # Density gradient solution (majority carriers)
+MODEL   minority_dg=on         # Density gradient solution (minority carriers)
+MODEL   dg_doping_limit=5e19         # DG application density threshold [/cm3]
+MODEL   fermi_dirac  status=off      # Fermi-Dirac statistics
+
+SIMULATION gummel_acc=1e-4           # Gummel loop accuracy
+SIMULATION bounded_fermi		= on
+
+SIMULATION import_bands = off
+SIMULATION T = 300                   # simulation temperature
+
+#------------------------------ SIMULATION DOMAIN ------------------------------
+STRUCTURE  IMPORT  filename=@tdr@    # Device structure file
+STRUCTURE  gate_length=@&lt;lgate*1e3&gt;@ # Nominal gate length [nm]
+
+#------------------------------- MESH DEFINITION -------------------------------
+MESH IMPORT                          # import the whole mesh in the structure
+
+#------------------------------ CONTACT DEFINITION -----------------------------
+# Gate contact bounding box
+CONTACT  metal_gate  import=@gate_con@   name='@gate_con@' 
+# Source contact bounding box
+CONTACT  source      import=@source_con@ name='@source_con@' 
+# Drain contact bounding box
+CONTACT  drain       import=@drain_con@  name='@drain_con@' 
+# Substrate contact bounding box
+CONTACT  substrate   import=@bulk_con@   name='@bulk_con@' 
+
+CONTACT  work_function=@workfn@          # set the metal workfunction
+CONTACT  confined_boundary=off           # Do not apply DG at contact interfaces
+
+# ---------------------------- MATERIAL REDEFINITION ---------------------------
+MATERIAL Silicon.__BAND__.dgy  0.3   # Density gradient mass x  [me]          
+MATERIAL SiliconGermanium.__BAND__.dgy  0.3   # Density gradient mass x  [me] 
+MATERIAL Oxide.__BAND__.dgy    0.1   # Density gradient mass x  [me]          
+MATERIAL Silicon.__BAND__.dgx  0.3   # Density gradient mass x  [me]          
+MATERIAL SiliconGermanium.__BAND__.dgx  0.3   # Density gradient mass x  [me] 
+MATERIAL Oxide.__BAND__.dgx    0.1   # Density gradient mass x  [me]          
+MATERIAL Silicon.__BAND__.dgz  5.0   # Density gradient mass x  [me]          
+MATERIAL SiliconGermanium.__BAND__.dgz  5.0   # Density gradient mass x  [me] 
+MATERIAL Oxide.__BAND__.dgz    5.0   # Density gradient mass x  [me]  
+
+MATERIAL Nitride.permittivity  7.5   # Setup permittivity of Nitride material 
+MATERIAL Oxide.permittivity    3.9   # Setup permittivity of Oxide material   
+MATERIAL Silicon.permittivity  11.7  # Setup permittivity of Silicon material 
+MATERIAL LowK.permittivity     2.5   # Setup permittivity of LowK material    
+
+# ---------------------------- MATERIAL STRESS ---------------------------------
+STRAIN import=on                     # enable strain import
+
+# ---------------------------------- MOBILITY ----------------------------------
+MATERIAL Silicon.__BAND__.mobility.bulk masetti   # bulk mobility model
+MATERIAL Silicon.__BAND__.mobility.eprp yamaguchi # low-field mobility model
+MATERIAL Silicon.__BAND__.mobility.elat caughey   # high-field mobility model
+
+# ------------------------------ SIMULATION OUTPUT -----------------------------
+OUTPUT  directory=results      # Directory to which output files are written
+OUTPUT  experiment=n@node@     # Output file header if running I-V curve
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="1_template"></a>
+<h2>5.1.3 Python Template File for Garand&nbsp;VE</h2>
+
+<p>The template file contains the user-defined instructions for gpythonsh, which controls 
+the execution of each Garand&nbsp;VE tool instance.</p>
+
+<p>Each Garand&nbsp;VE tool instance has a different template file.</p>
+
+<p>If necessary, Sentaurus Workbench variable substitution can be used in the 
+template file.</p>
+
+<p>Each template file reads the Base Garand&nbsp;VE Input File and produces a specialized 
+copy of it to perform the simulation required in each tool instance.</p>
+
+<p>gpythonsh defines the Garand&nbsp;VE simulator as an object (<tt>garand</tt>), which has 
+<em>attributes</em> that allow you to set up inputs of the object. In addition, 
+<em>methods</em> allow you to drive the object to perform specialized functions. 
+The most important attributes and methods used in this example are presented in 
+Table&nbsp;1 and Table&nbsp;2. For an extended list, see the API documentation.</p>
+
+<p>The typical syntax for attributes in Python template files is:</p>
+
+<pre>
+garand.<em>attribute_name</em> = <em>attribute_value</em>
+</pre>
+
+<p>The syntax for methods is similar to a function call. Therefore, the typical syntax is:</p>
+
+<pre>
+garand.<em>method_name</em>(<em>input_parameters</em>)
+</pre>
+
+<table>
+<caption>Table 1. Some of the available attributes of the <tt>garand</tt> object.</caption>
+
+<tr>
+<th>Attribute</th>
+<th>Description</th>
+<th>Default value</th>
+</tr>
+
+<tr>
+<td><tt>wait</tt></td>
+<td>Waits for current simulation to finish before continuing.</td>
+<td><tt>False</tt></td>
+</tr>
+<tr>
+<td><tt>clear_data</tt></td>
+<td>Clears old data from the database on first Garand&nbsp;VE call.</td>
+<td><tt>False</tt></td>
+</tr>
+<tr>
+<td><tt>inputfile</tt></td>
+<td>Links the Garand&nbsp;VE input file to the user-specified path.</td>
+<td>&ndash;</td>
+</tr>
+</table>
+
+<p></p>
+
+<table>
+<caption>Table 2. Some of the available methods of the <tt>garand</tt> object.</caption>
+
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Inputs</th>
+</tr>
+
+<tr>
+<td><tt>Wait()</tt></td>
+<td>Garand&nbsp;VE waits at this line of the script until all currently running Garand&nbsp;VE 
+simulations are completed. Note the uppercase letter with respect to the attribute, 
+which has a lowercase letter.</td>
+<td>&ndash;</td>
+</tr>
+
+<tr>
+<td><tt>simulate()</tt></td>
+<td>Executes Garand&nbsp;VE with the specified conditions.</td>
+<td>Any Garand&nbsp;VE commands that users want to add to the Base Garand&nbsp;VE Input File upon execution.</td>
+</tr>
+</table>
+
+<!--================================================-->
+<a name="ex_template"></a>
+<h3>5.1.3.1 Example</h3>
+
+<p>The template file has three main sections:</p>
+
+<ul>
+<li>Set up the general environment using the <tt>garand</tt> object attributes</li>
+<li>Set up input values such as the simulation type, contact biases, and parallel 
+execution options using the <tt>garand</tt> object attributes</li>
+<li>Run the Garand&nbsp;VE simulator with specific functionalities using the <tt>garand</tt> 
+object methods</li>
+</ul>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandApp/IdVg_eng.py"  startExpr="#*" endExpr="*high Vd" foramt="trim_wrap"-->
+<pre>
+#####################################################################
+### The garand object is injected into the environment by         ###
+### gpythonsh. A small amount of setup is required before usage.  ###
+#####################################################################
+# Set full path to Garand VE input file 
+garand.inputfile = open(os.path.join(&quot;@pwd@&quot;,&quot;@nodedir@&quot;,&quot;pp@node@_eng.garinp&quot;))
+garand.clear_data= False
+garand.wait      = True
+
+#####################################################################
+### Because of the simple structure of the Garand VE input file,  ###
+### you can directly alter the options of the Garand VE           ###
+### simulation. The attribute inputfile is set up like a Python   ###
+### dictionary with key-value pairs; therefore, access or         ###
+### substitution to all Garand VE inputs inside the file is       ###
+### very easy.                                                    ###
+#####################################################################
+garand.inputfile[&quot;STRUCTURE  IMPORT  filename&quot;] = &quot;@pwd@/@tdr@&quot;
+garand.inputfile[&quot;BIAS delta&quot;] = @&lt;Vdd_nom/8&gt;@
+garand.inputfile[&quot;BIAS ivpoints&quot;]=9
+
+#####################################################################
+### You can now execute Garand VE with the bias settings in the   ###
+### input file already attached to this tool instance             ###
+#####################################################################
+garand.simulate({&quot;bias drain&quot;: @Vdd_lin@}) # Run Garand VE full IdVg at low Vd
+garand.simulate({&quot;bias drain&quot;: @Vdd_nom@}) # Run Garand VE full IdVg at high Vd
+</pre>
+<!-- grep end -->
+
+<p>This example of the template file performs an I<sub>d</sub>&ndash;V<sub>g</sub> 
+simulation. The aim is to properly set up the input file (a range of gate biases) using 
+the Garand&nbsp;VE object (<tt>garand</tt> named in the Python code) and then to run the 
+Garand&nbsp;VE simulator when V<sub>d</sub> = <tt>Vdd_lin</tt>, where <tt>Vdd_lin</tt> is the 
+parameter defined in Sentaurus Workbench.</p>
+
+<p>The first line sets up the full path to the Garand&nbsp;VE child input files. gpythonsh will not 
+delete the old data in the database because <tt>garand.clear_data=False</tt>, and 
+Garand&nbsp;VE will wait for the full simulation to finish because <tt>garand.wait=True</tt>.</p>
+
+<p>Next, the path to the TDR file is defined and applied to the Garand&nbsp;VE input file using 
+the <tt>garand.inputfile</tt> attribute. Note that <tt>garand.inputfile</tt> is set up 
+similarly to a Python dictionary with keyword (<tt>"STRUCTURE IMPORT filename"</tt>) 
+&ndash; value (<tt>"@pwd@/@tdr@"</tt>) pairs. The path to the TDR file is set using 
+standard Sentaurus Workbench variable substitution. It becomes very easy to access and 
+modify commands inside the file.</p>
+
+<p>Finally, you call the <tt>garand</tt> methods needed to perform the required 
+functionality. In this example, you simply specify the drain bias input and pass it 
+to the <tt>garand.simulate()</tt> method.</p>
+
+<!--================================================-->
+<a name="1_sim_type"></a>
+<h2>5.1.4 Controlling the Simulation Type</h2>
+
+<p>Garand&nbsp;VE supports running three types of simulation: I<sub>d</sub>&ndash;V<sub>g</sub>, 
+I<sub>d</sub>&ndash;V<sub>d</sub>, and V<sub>T</sub>. Because of the easy access and manipulation 
+capability of the Garand&nbsp;VE input file, the gpythonsh wrapper allows you to control the 
+simulation type in a straightforward way. 
+<a href="#1_template">Section&nbsp;5.1.3 Python Template File for Garand&nbsp;VE</a> shows 
+how to run a simple I<sub>d</sub>&ndash;V<sub>g</sub> simulation. The example script in 
+<a href="#ex_template">Section&nbsp;5.1.3.1 Example</a> can be modified to run an 
+I<sub>d</sub>&ndash;V<sub>d</sub> simulation, as shown here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandApp/IdVd_eng.py" startExpr="#*" endExpr="garand.Wait()*"  foramt="trim_wrap" -->
+<pre>
+#####################################################################
+### The garand object is injected into the environment by         ###
+### gpythonsh. A small amount of setup is required before usage.  ###
+#####################################################################
+# Set full path to Garand VE input file 
+garand.inputfile = open(os.path.join(&quot;@pwd@&quot;,&quot;@nodedir@&quot;,&quot;pp@node@_eng.garinp&quot;))
+garand.clear_data= False
+garand.wait      = True          
+
+
+garand.inputfile[&quot;STRUCTURE  IMPORT  filename&quot;] = &quot;@pwd@/@tdr@&quot;
+garand.inputfile[&quot;BIAS delta&quot;] = @&lt;Vdd_nom/8&gt;@
+garand.inputfile[&quot;BIAS ivpoints&quot;]=9
+garand.inputfile[&quot;SIMULATION sim_type&quot;] = &quot;IdVd&quot;
+
+#####################################################################
+### You can now execute Garand VE with the bias settings in the   ###
+### input file already attached to this tool instance             ###
+#####################################################################
+#if &quot;@Type@&quot; == &quot;pMOS&quot;
+gate_bias_list=[@&lt;Vdd_nom+0.3&gt;@, @&lt;Vdd_nom+0.15&gt;@, @Vdd_nom@]
+#else
+gate_bias_list=[@&lt;Vdd_nom-0.3&gt;@, @&lt;Vdd_nom-0.15&gt;@, @Vdd_nom@]
+#endif
+
+for vg in gate_bias_list:
+    # Execute Garand VE with a different Vg every time
+    garand.simulate({&quot;bias gate&quot;: vg})    
+
+garand.Wait() 
+</pre>
+<!-- grep end -->
+
+<p>Again, you are simply exploiting the keyword&ndash;value pair structure of 
+the Python dictionary <tt>garand.inputfile</tt> attribute, assigning the value 
+<tt>IdVd</tt> to the keyword <tt>SIMULATION sim_type</tt>. The Garand&nbsp;VE simulation is 
+then launched specifying a different gate bias value at each iteration. 
+</p>
+<p>Similarly, to perform a V<sub>T</sub> search simulation by using the tool 
+instance <tt>VT_simulation</tt>, the Python template will be modified as: </p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandApp/VT_simulation_eng.py" startExpr="#*" endExpr="garand.simulate*"  foramt="trim_wrap" -->
+<pre>
+#####################################################################
+### The garand object is injected into the environment by         ###
+### gpythonsh. A small amount of setup is required before usage.  ###
+#####################################################################
+# Set full path to Garand VE input file 
+
+garand.inputfile = open(os.path.join(&quot;@pwd@&quot;,&quot;@nodedir@&quot;,&quot;pp@node@_eng.garinp&quot;))
+garand.clear_data= False
+garand.wait      = True
+
+VT_init = 0.0  # Initial Vg value for the VT search algorithm 
+
+#####################################################################
+### Because of the simple structure of the Garand VE input file,  ###
+### you can directly alter the options of the Garand VE           ###
+### simulation. The attribute inputfile is set up like a Python   ###
+### dictionary with key-value pairs; therefore, access or         ###
+### substitution to all Garand VE inputs inside the file is       ### 
+### very easy.                                                    ###
+#####################################################################
+garand.inputfile[&quot;STRUCTURE  IMPORT  filename&quot;] = &quot;@pwd@/@tdr@&quot;
+garand.inputfile[&quot;SIMULATION sim_type &quot;]         = &quot;target&quot; 
+garand.inputfile[&quot;SIMULATION target_current&quot;]    = @VT_current_criterion@
+garand.inputfile[&quot;SIMULATION target_acc&quot;]        = 1e-4
+garand.inputfile[&quot;SIMULATION target_iter_max&quot;]   = 25
+garand.inputfile[&quot;SIMULATION target_init_slope&quot;] = 70
+
+#####################################################################
+### You can now execute Garand VE with the bias settings in the   ###
+### input file already attached to this tool instance             ###
+#####################################################################
+# Run Garand VE VT search, at low VD, starting VT search from Vg=0.0
+
+garand.simulate({&quot;BIAS drain&quot;: @Vdd_lin@, &quot;BIAS gate&quot;: VT_init}) 
+</pre>
+<!-- grep end -->
+
+<!--================================================-->
+<a name="1_db_collect"></a>
+<h2>5.1.5 Saving Data to and Retrieving Data From the Database</h2>
+
+<p>gpythonsh manages the flow of information to and from different tools by using 
+an underlying database (see <a href="t2s_02.html">Section&nbsp;2. TCAD to SPICE Database</a>). 
+All simulation results are stored in a database location named after the Sentaurus 
+Workbench <tt>@node@</tt>. This allows an easy link between Sentaurus Workbench jobs 
+and the database location, and an easy convention for data to be stored to, and 
+retrieved from, the database.</p>
+
+<!--=============================-->
+<h3>5.1.5.1 Saving Data to the Database</h3>
+
+<p>In the specific case of Garand&nbsp;VE, the tool has a direct interface with the database 
+and it automatically saves the simulation results to the database using a naming location 
+based on the Sentaurus Workbench <tt>@node@</tt> value. In the case of an 
+I<sub>d</sub>&ndash;V<sub>g</sub> (or I<sub>d</sub>&ndash;V<sub>d</sub>) simulation, Garand&nbsp;VE identifies 
+the gate (or drain) bias as the independent variable (<tt>ivar</tt>) and the drain current 
+as the dependent variable (<tt>dvar</tt>), and stores these values in the database.</p>
+
+<p>There is, therefore, no burden on the user side. After the <tt>garand.simulate()</tt> 
+method is invoked, data is stored automatically. Table&nbsp;3 lists all the metadata that 
+Garand&nbsp;VE saves to the database.</p>
+
+<table>
+<caption>Table 3. Metadata saved to the database by Garand&nbsp;VE.</caption>
+
+<tr>
+<th>Metadata</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>Release</td>
+<td>The current Garand&nbsp;VE release</td>
+</tr>
+
+<tr>
+<td>SimulationType</td>
+<td>I<sub>d</sub>&ndash;V<sub>g</sub>, I<sub>d</sub>&ndash;V<sub>d</sub>, or target (that is, V<sub>T</sub> search)</td>
+</tr>
+
+<tr>
+<td>ivar</td>
+<td>The independent variable (for example, <tt>Vg</tt>)</td>
+</tr>
+
+<tr>
+<td>dvar</td>
+<td>The dependent variable (for example, <tt>Id</tt>)</td>
+</tr>
+
+<tr>
+<td>DeviceType</td>
+<td>nMOS or pMOS</td>
+</tr>
+
+<tr>
+<td>CurrentUnits</td>
+<td>Units for the electron current (for example, [A])</td>
+</tr>
+
+<tr>
+<td>CapacitanceUnits</td>
+<td>Units for the capacitance (for example, [F])</td>
+</tr>
+
+<tr>
+<td>LengthUnits</td>
+<td>Units for the geometrical features (for example, [nm])</td>
+</tr>
+
+<tr>
+<td>L</td>
+<td>Gate length</td>
+</tr>
+
+<tr>
+<td>W</td>
+<td>Gate width</td>
+</tr>
+
+<tr>
+<td>Temperature</td>
+<td>Simulation temperature</td>
+</tr>
+
+<tr>
+<td>AreaFactor</td>
+<td>Same scaling factor as in Sentaurus Device</td>
+</tr>
+
+<tr>
+<td>drainLabel</td>
+<td>Name of the drain contact</td>
+</tr>
+
+<tr>
+<td>sourceLabel</td>
+<td>Name of the source contact</td>
+</tr>
+
+<tr>
+<td>gateLabel</td>
+<td>Name of the gate contact</td>
+</tr>
+
+<tr>
+<td>substrateLabel</td>
+<td>Name of the substrate contact</td>
+</tr>
+
+<tr>
+<td>RDC</td>
+<td>Drain contact resistance</td>
+</tr>
+
+<tr>
+<td>RSC</td>
+<td>Source contact resistance</td>
+</tr>
+</table>
+
+<!--=============================-->
+<h3>5.1.5.2 Retrieving Data From the Database</h3>
+
+<p>Given the previously mentioned naming convention for the database storage locations, 
+retrieving data is straightforward. Assume you have a previous Garand&nbsp;VE tool instance 
+that performed a simple I<sub>d</sub>&ndash;V<sub>g</sub> simulation. You now create, in 
+Sentaurus Workbench, a tool instance to retrieve the data that Garand&nbsp;VE saved to 
+the database.</p>
+
+<p><a href="images/garand-swb-retrieve-and-plot.png"><img src="images/garand-swb-retrieve-and-plot.png" 
+width="580" alt="Retrieve_DB_data tool instance" /></a></p>
+
+<p class="caption">Figure 5. Sentaurus Workbench project showing the Retrieve_DB_data_idvg 
+tool instance. (Click image for full-size view.)</p>
+
+<p>The data to be retrieved from the database is identified by the 
+<tt>Retrieve_DB_data_idvg</tt> script with the following:</p>
+
+<ul>
+<li>The dataset in the database</li>
+<li>The independent variable (<tt>ivar</tt>)</li>
+<li>The dependent variable (<tt>dvar</tt>)</li>
+</ul>
+
+<p>The specific code is given by the following line:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandApp/Retrieve_DB_data_idvg_eng.py" startExpr="project_data_ld*" endExpr="project_data_hd*" format="wrap"-->
+<pre>
+project_data_ld = Data.from_db(project=&quot;@node|IdVg@&quot;, ivar=&quot;v@gate_con@&quot;, \
+  dvar=&quot;i@drain_con@&quot;,**{drain_bias_filter:@Vdd_lin@})[0]
+project_data_hd = Data.from_db(project=&quot;@node|IdVg@&quot;, ivar=&quot;v@gate_con@&quot;, \
+  dvar=&quot;i@drain_con@&quot;,**{drain_bias_filter:@Vdd_nom@})[0]
+</pre>
+<!-- grep end -->
+
+<p>For details about the syntax and options for the available gpythonsh methods, see 
+the API documentation. It is worth mentioning that the <tt>Data.from_db</tt> method 
+returns a data container, which can be exported in several formats (including CSV and PLT).</p>
+
+<p>After data is retrieved from the database into the data container <tt>project_data</tt>, 
+it is then grouped in a way to be written into a single PLT file by using the <tt>Data.concat_data()</tt> 
+method. The method <tt>write_plt()</tt> finally exports the data into a PLT file, 
+which can be visualized by the next Sentaurus Visual tool instance. Moreover, note the <tt>Vt(ic=ivt)</tt> method 
+applied to the low-drain data to extract the threshold voltage (<tt>VT_extr</tt>) from the 
+I<sub>d</sub>&ndash;V<sub>g</sub> curve: this value can be compared with the one obtained by the 
+<tt>VT_simulation</tt> tool instance.</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandApp/Retrieve_DB_data_idvg_eng.py" startExpr="project_data_ld.write_plt*" endExpr="*hd_0.plt*"  foramt="trim_wrap" -->
+<pre>
+project_data_ld.write_plt(os.path.join(output_dir_root,\
+               f&quot;n@node@_idvg_stage_ld_0.plt&quot;))
+
+VT_extr  = project_data_ld.Vt(ic=ivt)   # Threshold voltage extracted from IdVg 
+
+print(f&quot;DOE: VT_extr {VT_extr:.5}&quot;)
+
+project_data_hd.write_plt(os.path.join(output_dir_root,\
+               f&quot;n@node@_idvg_stage_hd_0.plt&quot;))
+</pre>
+<!-- grep end -->
+
+<p>It is worth noting that, in the case of a V<sub>T</sub> search simulation, the value of the 
+found threshold voltage is pushed as a metadata (<tt>TargetVoltage</tt>) together with an 
+auxiliary metadata (<tt>TargetFound</tt>) that will confirm whether the simulation has converged 
+to a threshold voltage value within the user-specified level of accuracy. The tool instance 
+to retrieve the database data will, therefore, be modified as:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandApp/Retrieve_DB_data_VT_eng.py" startExpr="data*" endExpr="print*"  foramt="trim_wrap" -->
+<pre>
+data = Data.from_db(project=&quot;@node|VT_simulation@&quot;, ivar=&quot;v@gate_con@&quot;,
+                    dvar=&quot;i@drain_con@&quot;)[0]
+
+if data.metadata[&quot;TargetFound&quot;] == &quot;True&quot;:
+    VT = data.metadata[&quot;TargetVoltage&quot;]
+else:
+    VT = np.nan
+
+print(f&quot;DOE: VT_sim {VT:.5}&quot;)
+</pre>
+<!-- grep end -->
+
+<p>In addition, in Sentaurus Workbench, you can export the database content associated 
+with a simulation node into a CSV file. This is achieved directly by using the Node Explorer, 
+through the graphical user interface of Sentaurus Workbench (choose <strong>Node</strong> 
+&gt; <strong>Node Explorer</strong>).</p>
+
+<p><a href="images/garand-dump-db-content.png"><img src="images/garand-dump-db-content.png" width="570"  
+alt="Exporting database content using Node Explorer" /></a></p>
+
+<p class="caption">Figure 6. Node Explorer provides the option to export the SWB Python database 
+content to a CSV file. (Click image for full-size view.)</p>
+
+<p>The CSV file can then be postprocessed by any other script or analyzed in a spreadsheet 
+application as shown in Figure&nbsp;7.</p>
+
+<p><a href="images/garand-db-to-spreadsheet.png"><img src="images/garand-db-to-spreadsheet.png" 
+width="570" alt="Viewing SWB Python database data in a spreadsheet application" /></a></p>
+
+<p class="caption">Figure 7. Example of SWB Python database data viewed in a spreadsheet application. 
+(Click image for full-size view.)</p>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>5.2 Variability Analysis</h1>
+
+<p>This section presents an overview of the different sources of statistical variability 
+and the commands used to enable them and to control how they are applied. The section also 
+covers the commands that should be used in the Garand&nbsp;VE input file.</p>
+
+<p>The example provided makes extensive use of the methodology previously discussed to run 
+Garand&nbsp;VE in Sentaurus Workbench. The example demonstrates how to run Garand&nbsp;VE simulations with 
+statistical variability, to switch on and off the different variability sources, and to 
+modify some of the model parameters.</p>
+
+<p>This section covers the following topics:</p>
+
+<ul>
+<li><a href="#2_commands">Section 5.2.1 Commands for Statistical Variability</a></li>
+<li><a href="#2_swb_proj">Section 5.2.2 Sentaurus Workbench Project</a></li>
+<li><a href="#2_basefile">Section 5.2.3 Base Garand&nbsp;VE Input File</a></li>
+<li><a href="#2_template">Section 5.2.4 Python Template File</a></li>
+<li><a href="#2_db_collect">Section 5.2.5 Retrieving and Visualizing Data From the Database</a></li>
+</ul>
+
+<!--===========================-->
+<a name="2_commands"></a>
+<h2>5.2.1 Commands for Statistical Variability</h2>
+
+<p>Garand&nbsp;VE can evaluate the impact of several statistical variability sources on device 
+characteristics. These sources can be enabled and defined by using the Base Garand&nbsp;VE Input File 
+or injected into the final Garand&nbsp;VE input file by the Python template file. The corresponding 
+parameters should be provided. These are set using the <tt>variability</tt> command:</p>
+
+<pre>
+variability &lt;variability_source&gt; &lt;parameter&gt;=&lt;value&gt;
+</pre>
+
+<!--=============-->
+<a name="2_commands_rdd"></a>
+<h3>5.2.1.1 Random Discrete Dopants</h3>
+
+<p>In the fabrication of semiconductor devices, dopants such as phosphorus (P), arsenic (As), 
+and boron (B) are introduced by ion implantation and are activated through a high-temperature 
+annealing process, resulting in inherently random discrete dopant (RDD) distributions. Random 
+dopants are introduced in Garand&nbsp;VE through a rejection technique based on the continuous doping 
+profile coming from a standard TCAD process simulation.</p>
+
+<p>To represent the &quot;average&quot; TCAD doping profile statistically, each Si lattice 
+site within the device is visited and the Si atom is replaced by a dopant, based on a 
+calculated probability that depends on the nominal continuous doping concentration at that point. 
+Consequently, the number of discrete dopants follows a Poisson distribution.</p>
+
+<p>As the placement of discrete dopants depends only on the nominal doping profile, no additional 
+parameters are required when enabling the simulation of RDD. You can specify whether all the 
+dopants are discrete, or solely acceptors or donors. The positions of randomly generated discrete 
+dopants will be written as particle data to the output TDR file.</p>
+
+<p>The <tt>status</tt> parameter controls whether RDD is included in a specific simulation 
+by using the <tt>variability</tt> command as:</p>
+
+<pre>
+variability RDD status=on
+</pre>
+
+<p>The <tt>dopants</tt> parameter controls whether all dopants should be discrete, or solely 
+acceptors or donors. The possible options are shown here:</p>
+
+<pre>
+variability RDD dopants=all
+variability RDD dopants=acceptors
+variability RDD dopants=donors
+</pre>
+
+<p>It is also possible to specify individual dopant species fields for RDD generation. To enable 
+this function, you define the parameter <tt>separate_species</tt> in the Garand&nbsp;VE input file:</p>
+
+<pre>
+variability RDD separate_species=on
+</pre>
+
+<p>Note that if it is enabled, each species will be considered independently. Therefore, the 
+generated discrete dopant distribution will change.</p>
+
+<p>By default, all dopant species are considered to be discrete dopants. To specify specific 
+dopant species fields to use for RDD, use the commands:</p>
+
+<pre>
+variability RDD acceptor_fields = &lt;acceptor fields&gt;
+variability RDD donor_fields = &lt;donor fields&gt;
+</pre>
+
+<p>where <tt>&lt;acceptor fields&gt;</tt> and <tt>&lt;donor fields&gt;</tt> are comma-separated 
+lists of acceptor and donor dopant fields, respectively. For example:</p>
+
+<pre>
+variability RDD acceptor_fields = BoronActiveConcentration
+variability RDD donor_fields = PhosphorusActiveConcentration
+</pre>
+
+<p>This example flags the BoronActiveConcentration and PhosphorusActiveConcentration species 
+fields as being discrete, where the continuous doping profile associated with each species 
+will be replaced by discrete dopants. Any doping fields that were imported and <em>not</em> 
+flagged as discrete (for example, ArsenicActiveConcentration) will be included as a continuous 
+doping profile as it was originally imported from the process simulation.</p>
+
+<p>By default, discrete doping will be generated everywhere in the simulation domain except 
+at contact regions. The RDD region can be restricted to a specific part of the device 
+structure by providing a bounding box given by the parameters <tt>xmin</tt>, <tt>xmax</tt>, 
+<tt>ymin</tt>, <tt>ymax</tt>, <tt>zmin</tt>, and <tt>zmax</tt>. It is not necessary to specify 
+all of these parameters because, by default, this bounding box will fill the entire simulation domain, 
+with the default values for the <tt>min</tt> and <tt>max</tt> parameters being the minimum or 
+maximum extent of the simulation domain in the respective directions.</p>
+
+<p>For large device structures, reducing the size of the RDD region is advisable as initializing 
+a random dopant distribution can take time if the simulation domain is large. This is done in 
+the later example to reduce the depth into the substrate to which discrete dopants are generated, 
+using the command:</p>
+
+<pre>
+variability RDD xmax=100.0
+</pre>
+
+<p>which restricts the RDD generation to the region of the device structure where 
+<em>x</em>&nbsp;&lt;&nbsp;100&nbsp;nm.</p>
+
+<!--=============-->
+<a name="2_commands_ler"></a>
+<h3>5.2.1.2 Line Edge Roughness</h3>
+
+<p>Line edge roughness (LER) is introduced in Garand&nbsp;VE through randomly generated lines, 
+which are used to modify the device structure.</p>
+
+<p>These random lines are generated using a Fourier synthesis technique and are characterized 
+by the following parameters:</p>
+
+<ul>
+<li>The root mean square (RMS) amplitude of the line (&Delta;) determines the magnitude 
+of the roughness. When LER is quantified, the value quoted is usually 3&Delta;; however, 
+Garand&nbsp;VE expects the RMS value, &Delta;, to be provided. This can be considered analogous 
+to the standard deviation, &sigma;, of a normal distribution.</li>
+
+<li>The longitudinal correlation length (&Lambda;) controls the rate at which the random 
+lines vary along their length, with a small value resulting in fast variations and a larger 
+value leading to more long-scale roughness.</li>
+</ul>
+
+<p>To add LER to an arbitrary structure, the variability type <tt>LER</tt> is used. All the 
+options for the particular specification of LER <em>must</em> be supplied on the same input 
+file line. This is because LER can be applied in multiple directions simultaneously. For 
+example:</p>
+
+<pre>
+variability LER &lt;option1&gt;=&lt;value1&gt; &lt;option2&gt;=&lt;value2&gt; ...
+</pre>
+
+<p>The <tt>status</tt> parameter controls whether LER is included in a specific simulation 
+by using the <tt>variability</tt> command as:</p>
+
+<pre>
+variability LER status=on
+</pre>
+
+<p>The LER is characterized by two random lines. In the example here, this is used to apply 
+gate edge roughness. The position of the midpoint of the LER region defines a plane, normal 
+to which the structure will be modulated to follow the roughness. This plane is defined by 
+a direction (<tt>x</tt>, <tt>y</tt>, or <tt>z</tt>) and a position.</p>
+
+<p>To apply gate edge roughness, these should be the channel direction, and the point in 
+the middle of the gate in that direction. If, for example, you wanted to apply roughness 
+to the side walls of a FinFET, you would specify the point in the center of the fin in 
+the width direction.</p>
+
+<p>The direction along this plane in which the random lines should propagate is specified 
+by using the <tt>dir</tt> parameter. In the example of gate edge roughness, this is the width 
+direction, which is the <em>y</em>-direction in the example. For the example of fin edge 
+roughness in a FinFET, this would be the channel direction. Finally, the RMS amplitude 
+(<tt>rms</tt>) and the correlation length (<tt>corr</tt>) are required.</p>
+
+<p>In the example Base Garand&nbsp;VE Input File, LER is specified with the command:</p>
+
+<pre>
+variability LER status=on z=0.0 dir=y rms=0.5 corr=25.0
+</pre>
+ 
+<p>For details about LER, refer to the <cite>Garand User Guide</cite>, along with other options 
+that are available.</p>
+
+<!--=============-->
+<a name="2_commands_mgg"></a>
+<h3>5.2.1.3 Metal Gate Granularity</h3>
+
+<p>The polycrystalline nature of the metal gate is another potential source of statistical 
+variability. Metal grains with different crystallographic orientations have different 
+workfunctions at the metal&ndash;oxide interface, resulting in statistical variation of the 
+local threshold voltage in the gate region.</p>
+
+<p>Metal gate granularity (MGG) is introduced in Garand&nbsp;VE through the generation of random 
+3D grain patterns based on a 3D Vorono&iuml; tessellation, where the specified average 
+grain size determines the average number of grains in the gate volume. Each grain is assigned 
+a workfunction randomly from the list given by users. In the list, the number of grains with 
+different workfunctions and the probability that the corresponding grain exists in the gate 
+region are provided.</p>
+
+<p>The <tt>status</tt> parameter controls whether MGG is included in a specific simulation 
+by using the <tt>variability</tt> command as:</p>
+
+<pre>
+variability MGG status=on
+</pre>
+
+<p>The number of grains having different crystallographic orientations in the gate metal 
+depends on how many grains you define using an <tt>add_grain</tt> statement.</p>
+
+<p>For each grain orientation, you must provide two numbers: the first is an offset from 
+the specified nominal workfunction, which will define the workfunction used within the grain, 
+and the second is the probability (between 0.0 and 1.0) for that crystallographic orientation 
+to occur. For example:</p>
+
+<pre>
+variability MGG add_grain wf_delta=-0.12 probability=0.4
+variability MGG add_grain wf_delta=+0.08 probability=0.6
+</pre>
+
+<p>You must ensure that the sum of the probabilities for the defined grains equals 1.0. 
+Otherwise, an error message is displayed, and the simulation stops.</p>
+
+<p>You can also specify the average diameter of the grains (in nm) using the <tt>diameter</tt> 
+parameter. For example:</p>
+
+<pre>
+variability MGG diameter=7.0
+</pre>
+
+<p>This diameter is one of the parameters that can be modified in the example Sentaurus 
+Workbench project.</p>
+
+<!--=============-->
+<a name="2_commands_pgg"></a>
+<h3>5.2.1.4 Polysilicon Gate Granularity</h3>
+
+<p>The granularity of polysilicon gates can be an important source of statistical variability 
+due to surface potential pinning along the grain boundaries. As with metal gate granularity, 
+polysilicon gate granularity (PGG) is introduced in Garand&nbsp;VE through the generation of random 
+3D grain patterns based on a 3D Vorono&iuml; tessellation, where the specified average grain 
+size determines the average number of grains in the gate volume. Arbitrary surface potential 
+pinning can be introduced at the grain boundaries.</p>
+
+<p>The <tt>status</tt> parameter controls whether PGG is included in a specific simulation 
+by using the <tt>variability</tt> command as:</p>
+
+<pre>
+variability PGG status=on
+</pre>
+
+<p>The other options you can specify are:</p>
+
+<ul>
+<li>The average diameter of the grains (in nm) using the <tt>diameter</tt> parameter. For example:<br />
+<pre>
+variability PGG diameter=30
+</pre>
+</li>
+<li>The trap level within the energy gap at which the Fermi level should be pinned along the 
+polysilicon grain boundaries. This is specified as eV below the conduction band edge using the 
+<tt>pinning</tt> parameter. For example:<br />
+<pre>
+variability PGG pinning=0.2
+</pre>
+</li>
+</ul>
+
+<p>Polysilicon granularity is not included in the example here, as the device used 
+has a metal gate.</p>
+
+<!--===========================-->
+<a name="2_swb_proj"></a>
+<h2>5.2.2 Sentaurus Workbench Project</h2>
+
+<p>Taking the basic I<sub>d</sub>&ndash;V<sub>g</sub> simulation from the Sentaurus Workbench 
+project of <a href="#1">Section&nbsp;5.1 Setting Up a Simulation Using Garand&nbsp;VE</a>, Sentaurus Workbench 
+parameters related to the statistical variability have been added.</p>
+
+<p>These parameters will be used in the Python template file to control the application
+ of the different variability sources in the simulation. The function of each Sentaurus 
+Workbench parameter is as follows:</p>
+
+<ul>
+<li><tt>RDD= True &#124; False</tt> specifies whether to enable RDD for the simulation.</li>
+<li><tt>LER= True &#124; False</tt> specifies whether to enable LER for the simulation.</li>
+<li><tt>MGG= True &#124; False</tt> specifies whether to enable MGG for the simulation.</li>
+<li><tt>LER_rms= &lt;<em>float</em>&gt;</tt> specifies the RMS amplitude of the LER in nm.</li>
+<li><tt>MGG_dia= &lt;<em>float</em>&gt;</tt> specifies the average diameter of the MGG grains in nm.</li>
+<li><tt>TDR= True &#124; False</tt> specifies whether to write TDR output files during the simulation.</li>
+<li><tt>VT_only= True &#124; False</tt> specifies whether to run only a threshold voltage search or a full I<sub>d</sub>&ndash;V<sub>g</sub>.</li>
+<li><tt>VT_current_criterion= &lt;<em>float</em>&gt;</tt> specifies the threshold voltage search current criterion in A.</li>
+<li><tt>ensemble_size= &lt;<em>integer</em>&gt;</tt> specifies the number of microscopically 
+different devices that form the statistical ensemble. Typically, at least 500 provide reliable statistics.</li>
+</ul>
+
+<p><a href="images/garand-swb-var-par.png"><img src="images/garand-swb-var-par.png" width="570" 
+alt="Additional Sentaurus Workbench variability parameters" /></a></p>
+
+<p class="caption">Figure 8. Additional Sentaurus Workbench parameters added to the project 
+to control the variability sources in the Garand&nbsp;VE command file. (Click image for full-size view.)</p>
+
+<!--===========================-->
+<a name="2_basefile"></a>
+<h2>5.2.3 Base Garand&nbsp;VE Input File</h2>
+
+<p>The device structure used as an example here is a stacked nanosheet MOSFET, which is 
+the same example structure used in <a href="#1">Section&nbsp;5.1 Setting Up a Simulation Using Garand&nbsp;VE</a>. 
+The structure is shown in Figure&nbsp;9.</p>
+
+<p><a href="images/gd_variability_basefile.png"><img src="images/gd_variability_basefile.png" width="500" 
+alt="Stacked nanosheet device structure" /></a></p>
+
+<p class="caption">Figure 9. Stacked nanosheet device structure used in this example: 
+(left) full 3D structure and (right) a slice taken halfway across the width of the 
+structure. (Click image for full-size view.)</p>
+
+<p>The Base Garand&nbsp;VE Input File is the same here except for the addition of commands for 
+the variability sources. The commands added to the Base Garand&nbsp;VE Input File are listed here:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandAppVar/base_garand_inputfile.garinp" startExpr="*VARIABILITY SOURCES*" endExpr="*wf_delta=+0.08*"  foramt="trim_wrap" -->
+<pre>
+# ----------------------------- VARIABILITY SOURCES ----------------------------
+
+# RDD: Random discrete dopants
+VARIABILITY RDD status=off            # Switch on / off RDD
+VARIABILITY RDD dopants=all           # Apply to all species
+VARIABILITY RDD separate_species=on   # Separate species fields
+VARIABILITY RDD xmax=100.0            # Range of the RDD region
+
+# LER: Line edge roughness
+VARIABILITY LER status=off z=0.0 dir=y rms=0.5 corr=20.0 # LER definition
+
+# MGG: Metal gate granularity
+VARIABILITY MGG status=off                 # Switch on / off MGG
+VARIABILITY MGG diameter=5.0               # Average grain diameter [nm]
+VARIABILITY MGG add_grain wf_delta=-0.12 probability=0.4 # delta[eV],probability
+VARIABILITY MGG add_grain wf_delta=+0.08 probability=0.6 # delta[eV],probability
+</pre>
+<!-- grep end -->
+
+<p>These commands are sufficient to enable the variability sources as they are. However, 
+several parameters act as placeholders that will be overridden by gpythonsh based on the template 
+file. As already mentioned, gpythonsh can adjust the Garand&nbsp;VE simulation environment before 
+executing a Garand&nbsp;VE simulation.</p>
+
+<!--=============-->
+<a name="2_basefile_rdd"></a>
+<h3>5.2.3.1 RDD Statements</h3>
+
+<p>The RDD statements set up the simulation to generate discrete dopants for both acceptors 
+and donors. The &quot;separate species&quot; mode is activated, although in the example here, 
+there is only one species of acceptor (boron) and one species of donor (phosphorus).</p>
+
+<p>The bounding box for the RDD region has been set with a maximum extent in the x-direction 
+(<tt>xmax</tt>=100&nbsp;nm). This is sufficiently deep in the device to cover the active part 
+of the device, but excludes most of the deep substrate, where the discreteness of the dopants 
+would have no effect on the device characteristics. This will help to reduce the setup time 
+required to generate RDD.</p>
+
+<p>The only RDD parameter that will be set by gpythonsh is the <tt>status</tt> parameter, which 
+activates RDD in the simulation.</p>
+
+<!--=============-->
+<a name="2_basefile_ler"></a>
+<h3>5.2.3.2 LER Statement</h3>
+
+<p>The LER statement in the Base Garand&nbsp;VE Input File, in this example, is set to model gate 
+edge roughness. LER is set up by defining a plane through the structure. Two random lines 
+are generated, then the structure on one side of the plane is modified by one of the lines,
+ and the other side is modified by the other line. You then specify the direction in which 
+the roughness should propagate. This is explained in more detail in the 
+<cite>Garand User Guide</cite>.</p>
+
+<p>In the example here, the plane is defined by specifying <tt>z=0.0</tt>, which defines a plane 
+through the middle of the gate. This is illustrated by the green plane in Figure&nbsp;10. 
+Specifying <tt>dir=y</tt> means the roughness will propagate across the width of the device.</p>
+
+<p>The statistical characteristics of the generated random lines are dictated by the RMS 
+amplitude (<tt>rms</tt> parameter) and the longitudinal correlation length (<tt>corr</tt> 
+parameter). The <tt>rms</tt> parameter here is a placeholder that will be replaced by gpythonsh 
+using the value of <tt>LER_rms</tt> specified in the Sentaurus Workbench project. If you wanted 
+to, you could also set up the <tt>corr</tt> parameter to be controlled from a Sentaurus Workbench 
+parameter.</p>
+
+<p><a href="images/garand-ler-plane.png"><img src="images/garand-ler-plane.png" width="500" 
+alt="Plane specified as part of LER definition" /></a></p>
+
+<p class="caption">Figure 10. Green plane illustrates the plane defined at z=0.0. 
+This is used as part of the LER specification to control where the LER is applied. 
+The direction of roughness is then set to be the y-direction which is across the 
+width of the structure. (Click image for full-size view.)</p>
+
+<!--=============-->
+<a name="2_basefile_ler"></a>
+<h3>5.2.3.3 MGG Statements</h3>
+
+<p>The metal gate granularity (MGG) is set up to include two different grain orientations. 
+One orientation is associated with a workfunction of 
+(<em>WF</em><sub>0</sub>&nbsp;&minus;&nbsp;0.12)&nbsp;eV with a probability of 0.4. 
+The other orientation is associated with a workfunction of 
+(<em>WF</em><sub>0</sub>&nbsp;+&nbsp;0.08)&nbsp;eV with a probability of 0.6.</p>
+
+<p>Here, <em>WF</em><sub>0</sub> is the nominal gate workfunction specified in the Garand&nbsp;VE 
+input file by the <tt>CONTACT work_function</tt> statement, where the value of the workfunction 
+used is provided as a Sentaurus Workbench parameter. Note that the average workfunction, 
+weighted by the probability of each grain orientation occurring, is equal to <em>WF</em><sub>0</sub>, 
+that is:</p>
+
+<p>0.4&nbsp;&times;&nbsp;(<em>WF</em><sub>0</sub>&nbsp;&minus;&nbsp;0.12)&nbsp;+&nbsp;0.6&nbsp;&times;&nbsp;(<em>WF</em><sub>0</sub>&nbsp;+&nbsp;0.08)&nbsp;=&nbsp;<em>WF</em><sub>0</sub></p>
+
+<p>The average diameter of the generated metal grains is specified by the <tt>diameter</tt> 
+parameter. A value of 5&nbsp;nm is given in the Base Garand&nbsp;VE Input File, but this is simply 
+a placeholder that will be replaced by gpythonsh using the value of <tt>MGG_dia</tt> specified 
+in the Sentaurus Workbench project.</p>
+
+<!--===============================-->
+<a name="2_template"></a>
+<h2>5.2.4 Python Template File</h2>
+
+<p>The way in which Garand&nbsp;VE simulation jobs and the Garand&nbsp;VE input file can be controlled 
+by gpythonsh is discussed in <a href="#1">Section&nbsp;5.1 Setting Up a Simulation Using Garand&nbsp;VE</a>. 
+Here, those techniques are reused to set up the variability simulations and to launch 
+a statistical ensemble of simulations from which you can obtain an ensemble of 
+I<sub>d</sub>&ndash;V<sub>g</sub> curves.</p>
+
+<p>The basic setup where the Garand&nbsp;VE input file is identified, the structure file to import 
+is set, and some bias information is specified, are as before. Commands to control the 
+application of statistical variability in the Garand&nbsp;VE input file, based on the Sentaurus 
+Workbench variables, have been added.</p>
+
+<p>Here is the Python template file used to control the variability simulations in Garand&nbsp;VE:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/tcadtospice/garand/GarandAppVar/Variability_IdVg_eng.py" startExpr="#*" endExpr="*garand.simulate*"  foramt="trim_wrap"-->
+<pre>
+#####################################################################
+### The garand object is injected into the environment by         ###
+### gpythonsh. A small amount of setup is required before usage.  ###
+#####################################################################
+# Set full path to Garand VE input file 
+garand.inputfile  = open(os.path.join(&quot;@pwd@&quot;, &quot;@nodedir@&quot;,
+                                      &quot;pp@node@_eng.garinp&quot;))
+garand.clear_data = True
+garand.wait       = True
+
+#####################################################################
+### Because of the simple structure of the Garand VE input file,  ###
+### you can directly alter the options of the Garand VE           ###
+### simulation. The attribute inputfile is set up like a Python   ###
+### dictionary with key-value pairs; therefore, access or         ###
+### substitution to all Garand VE inputs inside the file is       ###
+### very easy.                                                    ###
+#####################################################################
+garand.inputfile[&quot;STRUCTURE  IMPORT  filename&quot;] = &quot;@pwd@/@tdr@&quot;
+garand.inputfile[&quot;BIAS delta&quot;] = @&lt;Vdd_nom/7&gt;@
+garand.inputfile[&quot;BIAS ivpoints&quot;]=8
+if @TDR@:
+    garand.inputfile[&quot;OUTPUT tdr&quot;] = &quot;on&quot;
+
+#####################################################################
+### You can now execute Garand VE with the bias settings in the   ###
+### input file already attached to this tool instance             ###
+#####################################################################
+if @RDD@:
+    print(&quot;RDD is enabled.&quot;)
+    garand.inputfile[&quot;VARIABILITY RDD status&quot;] = &quot;on&quot;
+
+if @LER@:
+    print(&quot;LER is enabled.&quot;)
+    garand.inputfile[&quot;VARIABILITY LER status&quot;] = &quot;on&quot;
+    garand.inputfile[&quot;VARIABILITY LER rms&quot;] = @LER_rms@
+
+if @MGG@:
+    print(&quot;MGG is enabled.&quot;)
+    garand.inputfile[&quot;VARIABILITY MGG status&quot;] = &quot;on&quot;
+    garand.inputfile[&quot;VARIABILITY MGG diameter&quot;] = @MGG_dia@
+
+if @VT_only@:
+    print(&quot;VT only simulation enabled. Running VT search algorithm.&quot;)
+    garand.inputfile[&quot;SIMULATION sim_type &quot;] = &quot;target&quot;
+    garand.inputfile[&quot;SIMULATION target_current&quot;] = @VT_current_criterion@
+    garand.inputfile[&quot;SIMULATION target_acc&quot;] = 1e-4
+    garand.inputfile[&quot;SIMULATION target_iter_max&quot;] = 25
+    garand.inputfile[&quot;SIMULATION target_init_slope&quot;] = 70
+
+# Execute Garand VE full IdVg at low drain bias for an ensemble of devices
+garand.simulate({&quot;bias drain&quot;: @Vdd_lin@}, start=1, n=@ensemble_size@)
+</pre>
+<!-- grep end -->
+
+<p>The Sentaurus Workbench variables <tt>TDR</tt>, <tt>RDD</tt>, <tt>LER</tt>, and 
+<tt>MGG</tt> are substituted directly as Python Boolean variables, and therefore must 
+be valid Boolean values, that is, either <tt>True</tt> or <tt>False</tt>.</p>
+
+<p>If <tt>RDD</tt>, <tt>LER</tt>, or <tt>MGG</tt> are <tt>True</tt>, then the status of 
+each respective variability source is set to &quot;on&quot;, thereby enabling the 
+corresponding source of variability in the simulation. In addition, if <tt>LER</tt> is <tt>True</tt>, 
+then the LER <tt>rms</tt> parameter is overridden by the value of <tt>LER_rms</tt> set 
+in the Sentaurus Workbench project. If <tt>MGG</tt> is <tt>True</tt>, then the MGG <tt>diameter</tt> 
+parameter is overridden by the value of <tt>MGG_dia</tt> set in the Sentaurus Workbench 
+project.</p>
+
+<p>Other Sentaurus Workbench parameters could be added, and a statement included in the 
+corresponding section of the Python template file to override different variability model 
+parameters, such as the LER correlation length, <tt>corr</tt>.</p>
+
+<p>If <tt>TDR</tt> is <tt>True</tt>, then a command is injected into the Garand&nbsp;VE input file that 
+enables the output of a TDR file at the end of each bias point simulation. Within the Garand&nbsp;VE 
+<tt>results</tt> directory, a subdirectory is created for each bias point. The <tt>viz</tt> 
+folder in each bias-dependent subdirectory contains the output TDR files. One TDR file 
+is created for each device in the statistical ensemble, with the file name containing the 
+number of the device within the ensemble.</p>
+
+<p>When running statistical variability simulations, if the <tt>TDR</tt> parameter is switched 
+on, then the number of TDR files produced can be large, occupying a significant amount of disk 
+space. For this reason, TDR output is typically deactivated when running statistical 
+simulation jobs. Then, if you want to understand the behavior of a particular device within 
+the ensemble, you can switch on the <tt>TDR</tt> parameter and run only that device to obtain 
+a TDR file for analysis.</p>
+
+<p>Figure 11 shows examples of visualization of the sources of variability from a simulation 
+in which RDD, LER, and MGG were activated. The positions of the random discrete dopants are 
+shown by spheres in Figure 11 (<em>left</em>). In Figure 11 (<em>right</em>), the variation 
+between the two specified gate workfunctions for MGG are shown in the gate. The structural 
+variations due to LER can also be seen across the width of the device.</p>
+
+<p><a href="images/gd_variability_templatefile.png"><img src="images/gd_variability_templatefile.png" 
+height="500" alt="Visualizing sources of variability" /></a></p>
+
+<p class="caption">Figure 11. Examples of visualization of sources of variability in 
+Sentaurus Visual illustrating (left) random discrete dopants and (right) two different workfunctions 
+in the gate along with the structural variations due to LER. (Click image for full size view.)</p>
+
+<!-- ================================================ -->
+<a name="2_db_collect"></a>
+<h2>5.2.5 Retrieving and Visualizing Data From the Database</h2>
+
+<p>As described in <a href="t2s_02.html">Section&nbsp;2. TCAD to SPICE Database</a>, gpythonsh 
+manages the flow of information to and from different tools by using an underlying database. 
+Garand&nbsp;VE saves simulation results directly to the database, while gpythonsh can be used to extract 
+data from the database for further use, for example, by writing PLT files for visualization.</p>
+
+<p>The <tt>Retrieve_Plot_DB_data_variability_idvg</tt> tool instance of the Sentaurus Workbench 
+project collects all the simulated I<sub>d</sub>&ndash;V<sub>g</sub> data from the database and
+produces PLT files. One <tt>.plt</tt> file is written for each device in the statistical ensemble. 
+Therefore, in this example, where <tt>ensemble_size</tt> is set to 10 in the Sentaurus Workbench 
+project, ten <tt>.plt</tt> files are written.</p>
+
+<p><a href="images/gd_variability_visualize.png"><img src="images/gd_variability_visualize.png" 
+width="580" alt="Id-Vg on linear scale and log scale" /></a></p>
+
+<p class="caption">Figure 12. I<sub>d</sub>&ndash;V<sub>g</sub> curves from an ensemble of 
+10 simulations with RDD, LER, and MGG activated. Current is shown on (left) linear scale 
+and (right) logarithmic scale. (Click image for full-size view.)</p>
+
+<p>The <tt>Visualize_Plots_Variability_idvg</tt> tool instance executes a script in Sentaurus 
+Visual to load all the <tt>.plt</tt> files written at the previous tool instance and to plot 
+the I<sub>d</sub>&ndash;V<sub>g</sub> curves. Example results are shown in Figure&nbsp;12 from 
+simulations of an ensemble of 10 NMOS devices with RDD, LER, and MGG activated as sources of 
+variability.</p>
+
+<p>In the case of the <tt>VT_only</tt> simulation, this plotting tool instance will open 
+a <tt>.png</tt> (created by the previous tool instance) showing a quantile-quantile plot 
+of the threshold voltage distribution (see Figure&nbsp;13).</p>
+
+<p><a href="images/VT_distribution.png"><img src="images/VT_distribution.png" 
+width="570" alt="VT quantile-quantile plot" /></a></p>
+
+<p class="caption">Figure 13. Quantile-quantile plot for the threshold voltage from an ensemble 
+of 10 simulations with RDD, LER, and MGG activated. (Click image for full-size view.)</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="t2s_04.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<span class="gray">next section &gt;&gt;</span>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

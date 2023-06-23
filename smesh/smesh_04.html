@@ -1,0 +1,1080 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+ <link rel="icon" href="../images/favicon.ico" />
+ <link type="text/css" rel="stylesheet" href="../styles/module.css" />    
+ <title>TCAD Sentaurus Tutorial &ndash; Sentaurus Mesh 4. Doping Definition</title>
+</head>
+
+<body>
+<div id="all">
+
+<!--================================================-->
+<div id="menutop">
+<p><img src="images/banner.png" width="600" height="53" alt="Banner" />
+
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_03.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_05.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<h1 class="title">Sentaurus Mesh<br />4. Doping Definition</h1>
+
+<p>
+ <a href="#1">4.1 Defining Doping Profiles</a><br />
+ <a href="#2">4.2 Constant Profiles</a><br />
+ <a href="#3">4.3 Analytic Profiles</a><br />
+ <a href="#4">4.4 External Profiles</a><br />
+ <a href="#5">4.5 Three-Dimensional Doping Profile Construction</a><br />
+ <a href="#6">4.6 General Function Evaluator</a><br />
+ <a href="#7">4.7 Profile Overlap Controls</a><br /> 
+ <a href="#8">4.8 Doping Naming Conventions</a><br />
+ <a href="#9">4.9 Discrete-to-Continuous Dopant Profile Transition</a>
+</p>
+
+<!--================================================-->
+<h2 class="obj">Objectives</h2>
+
+<ul>
+ <li>To describe aspects of 2D and 3D profile generation.</li>
+</ul>
+
+<!--================================================-->
+<a name="1"></a>
+<h1>4.1 Defining Doping Profiles</h1>
+
+<p>Examples of the features discussed in this section are all contained in the 
+Sentaurus Workbench project <tt>Applications_Library/GettingStarted/snmesh/Profiles</tt>. 
+To work with the project, copy it to a local directory within your Sentaurus Workbench 
+working directory.</p>
+
+<p>Sentaurus Mesh integrates the following profile generation&ndash;related capabilities:</p>
+
+<ul>
+<li>Generating 1D, 2D, and 3D profiles (doping, lifetime, mole fraction, stress, and so on) 
+using constant or analytic profile descriptions, which substitute the necessity of having the 
+numerically simulated profiles. This gives you quick access to a device simulation where a 
+resulting profile is represented by the superposition of constant or analytic profiles.</li>
+<li>Having an interface between (2D or 3D) process and device simulators, allowing the transition of the 
+doping profile from a process mesh to a mesh suitable for a device simulation.</li>
+<li>Constructing a 3D doping profile from 2D numerically simulated profiles using 
+a profile sweep, slice, and rotation.</li>
+<li>Transferring a discrete doping profile, as a result of a kinetic Monte Carlo 
+diffusion simulation, into a continuous doping profile to be used in a device 
+electrical simulation.</li>
+</ul>
+
+<!--================================================-->
+<a name="2"></a>
+<h1>4.2 Constant Profiles</h1>
+
+<p>A constant profile can be confined within a material, a region, or an arbitrary geometric 
+element.</p>
+
+<p>The first example demonstrates the concept of the constant profile definition on a simple 
+2D device structure, where the constant boron profile is confined within a rectangular window 
+in the middle of the 2&nbsp;&mu;m x 2&nbsp;&mu;m silicon domain.</p>
+
+<p>Figure 1 shows the profile variations performed with different lateral
+profile decays. Click to view the command files for the following Sentaurus Mesh tool instances
+in the Sentaurus Workbench project <tt>Profiles</tt>:</p>
+
+<ul>
+<li>Left image, zero decay length (<tt>DecayLength=0</tt>): 
+<a href="../../Applications_Library/GettingStarted/snmesh/Profiles/Decay_Zero_msh.cmd">
+Decay_Zero_msh.cmd</a></li>
+<li>Middle image, error function with 0.1&nbsp;&mu;m decay length (<tt>DecayLength=0.1</tt>): 
+<a href="../../Applications_Library/GettingStarted/snmesh/Profiles/Decay_ErrFunc_msh.cmd">
+Decay_ErrFunc_msh.cmd</a></li>
+<li>Right image, Gaussian decay with 0.1&nbsp;&mu;m decay length (<tt>GaussDecayLength=0.1</tt>): 
+<a href="../../Applications_Library/GettingStarted/snmesh/Profiles/Decay_Gauss_msh.cmd">
+Decay_Gauss_msh.cmd</a></li>
+</ul>
+
+<p><a href="images/sm_aa_constant.png"><img src="images/sm_aa_constant.png" width="570" 
+alt="With (left) DecayLength=0, (middle) erfDecayLength=0.1, and (right) GaussDecayLength=0.1" /></a></p>
+
+<p class="caption">Figure 1. (Left) With DecayLength=0, (middle) DecayLength=0.1, 
+and (right) GaussDecayLength=0.1. (Click image for full-size view.)</p>
+
+<p class="note">By default, the parameter <tt>DecayLength</tt> uses an error function, 
+and <tt>GaussDecayLength</tt> uses a Gaussian function.</p>
+
+<p>Figure 2 compares the profile cross-sections across the middle of the structure. 
+Red-dashed lines indicate the locations of the constant profile primary domain.</p>
+
+<p><a href="images/sm_aa_compare.png"><img src="images/sm_aa_compare.png" width="570" 
+alt="1D decay cross-section comparison" /></a></p>
+
+<p class="caption">Figure 2. One-dimensional decay cross-section comparison. 
+(Click image for full-size view.)</p>
+
+<p>You can control the overlap behavior of the error function profiles from the left 
+and right sides by using the <tt>lateralDiffusion</tt> option in the <tt>Interpolate</tt> 
+section. For  details about the constant profile definition, refer to the 
+<cite>Sentaurus&trade; Mesh User Guide</cite>.</p>
+
+<!--================================================-->
+<a name="3"></a>
+<h1>4.3 Analytic Profiles</h1>
+
+<p>Analytic profiles are specified using a definition, a reference window, and a placement.</p> 
+
+<p>The reference window is a directional line in two dimensions, and a rectangle or a polygon 
+in three dimensions. The primary direction is the normal vector to the reference window, and 
+the lateral direction is parallel to the reference window.</p>
+
+<p>Figure 3 shows the schematics of the local coordinate system and the valid domain. The valid 
+domain for both the primary and lateral functions is defined by sweeping the primary direction 
+vector along the lateral direction. For a 3D analytic profile definition, instead of a baseline, 
+a primary plane (or polygon) is used to define the reference window.</p>
+
+<p><img src="images/sm_aa_concept.png" width="568" height="371" 
+alt="Concept of analytic profile definition" /></p>
+
+<p class="caption">Figure 3. Concept of analytic profile definition.</p>
+
+<p>The syntax for an analytic profile definition in the <tt>Definitions</tt> section is:</p>
+
+<pre>
+AnalyticalProfile &quot;<em>reference name</em>&quot; {
+  Species  = &quot;<em>Dataset Name</em>&quot;
+  Function = Gauss(<em>parameters</em>) | Erf(<em>parameters</em>) | subMesh1D(<em>parameters</em>) | 
+             Eval(<em>parameters</em>) | General(<em>parameters</em>)
+  LateralFunction = Gauss(<em>parameters</em>) | Erf(<em>parameters</em>) |
+                    Eval(<em>parameters</em>)
+}
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>Species</tt> indicates the species or variable name used for the analytic profile 
+definition. Possible species names can be obtained from the <tt>datexcodes.txt</tt> file 
+located in the <tt>$STROOT/tcad/$STRELEASE/lib</tt> directory.</li>
+<li><tt>Function</tt> indicates the type of the component and its parameters used along the 
+primary direction.</li>
+<li><tt>LateralFunction</tt> defines the lateral component of the analytic profile.</li>
+</ul>
+
+<p>For details about the analytic profile specification, refer to the 
+<cite>Sentaurus&trade; Mesh User Guide</cite>.</p>
+
+<p>Figure 4 demonstrates analytic profile definitions for a simple 2D device. 
+The 2D profile baseline is specified in the middle of the device, as indicated by 
+the white arrow. The Gaussian profile distribution has been chosen for the profile 
+primary direction. In these examples, the profile primary domain and the lateral function 
+distributions vary. By default, Sentaurus Mesh applies the profile on both sides of 
+the baseline. Therefore, there is no need for a direction specification in the 
+<tt>Placements</tt> section.</p>
+
+<p><a href="images/sm_aa_analytic.png"><img src="images/sm_aa_analytic.png" width="570" 
+alt="With (left) Direction=positive, (middle) Direction=both, and (right) Direction=both and Erf(Factor=0.8)" /></a></p>
+
+<p class="caption">Figure 4. (Left) With Direction=positive, (middle) Direction=both, and 
+(right) Direction=both and Erf(Factor=0.8). (Click image for full-size view.)</p>
+
+<p>For Figure 4 (<em>left</em>), the analytic profile definition with a one-sided 
+primary domain and disabled lateral profile distribution is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_A_msh.cmd" startExpr="*AnalyticalProfile*" endExpr="*}*" header="Definitions { ..." footer="}" -->
+<pre>
+Definitions { ...
+  AnalyticalProfile &quot;abc&quot; {
+    Species = &quot;BoronActiveConcentration&quot;
+    Function = Gauss(PeakPos=0, PeakVal=1e+18, ValueAtDepth=1e15, Depth=0.5)
+    LateralFunction = Erf(Factor=0)
+  }
+}
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_A_msh.cmd" startExpr="*AnalyticalProfile*" startoccurrence=2 endExpr="*}*" endOccurrence=2 header="Placements { ..." footer="}" -->
+<pre>
+Placements { ...
+  AnalyticalProfile &quot;abc&quot; {
+    Reference = &quot;abc&quot;
+    ReferenceElement {
+      Element = Line [(1 0.75) (1 1.25)]
+      Direction = positive
+    }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>For Figure 4 (<em>middle</em>), the analytic profile definition with a double-sided 
+primary domain and deactivated lateral profile distribution is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_B_msh.cmd" startExpr="*AnalyticalProfile*"  endExpr="*}*" header="Definitions { ..." footer="}" -->
+<pre>
+Definitions { ...
+  AnalyticalProfile &quot;abc&quot; {
+    Species = &quot;BoronActiveConcentration&quot;
+    Function = Gauss(PeakPos=0, PeakVal=1e+18, ValueAtDepth=1e15, Depth=0.5)
+    LateralFunction = Erf(Factor=0)
+  }
+}
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_B_msh.cmd" startExpr="*AnalyticalProfile*" startoccurrence=2  endExpr="*}*" endOccurrence=2 header="Placements { ..." footer="}" -->
+<pre>
+Placements { ...
+  AnalyticalProfile &quot;abc&quot; {
+    Reference = &quot;abc&quot;
+    ReferenceElement {
+      Element = Line [(1 0.75) (1 1.25)]
+    }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>For Figure 4 (<em>right</em>), the analytic profile definition with a double-sided 
+primary domain and activated lateral profile distribution is:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_C_msh.cmd" startExpr="*AnalyticalProfile*"  endExpr="*}*" header="Definitions { ..." footer="}" -->
+<pre>
+Definitions { ...
+  AnalyticalProfile &quot;abc&quot; {
+    Species = &quot;BoronActiveConcentration&quot;
+    Function = Gauss(PeakPos=0, PeakVal=1e+18, ValueAtDepth=1e15, Depth=0.5)
+    LateralFunction = Erf(Factor=0.8)
+  }
+}
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_C_msh.cmd" startExpr="*AnalyticalProfile*" startoccurrence=2  endExpr="*}*" endOccurrence=2 header="Placements { ..." footer="}" -->
+<pre>
+Placements { ...
+  AnalyticalProfile &quot;abc&quot; {
+    Reference = &quot;abc&quot;
+    ReferenceElement {
+      Element = Line [(1 0.75) (1 1.25)]
+    }
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Click to view the command files for the corresponding Sentaurus Mesh tool 
+instances for these examples:</p>
+
+<ul>
+ <li><tt>Direction_A</tt>: <a href="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_A_msh.cmd">
+     Direction_A_msh.cmd</a></li>
+ <li><tt>Direction_B</tt>: <a href="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_B_msh.cmd">
+     Direction_B_msh.cmd</a></li>
+ <li><tt>Direction_C</tt>: <a href="../../Applications_Library/GettingStarted/snmesh/Profiles/Direction_C_msh.cmd">
+     Direction_C_msh.cmd</a></li>
+</ul>
+
+<p>All of these command files are available in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/Profiles</tt>.</p>
+
+<p>The next example illustrates the analytic profile definition for a 3D device with the 
+polygonal region used as the primary plane.</p>
+
+<p><a href="images/sm_aa_polygonregion.png"><img src="images/sm_aa_polygonregion.png" width="570" 
+alt="(Left) Polygonal region definition and (right) resulting boron profile and 3D mesh" /></a></p>
+
+<p class="caption">Figure 5. (Left) Polygonal region definition as a primary domain defined 
+with Sentaurus Structure Editor and (right) resulting boron profile and 3D mesh as shown 
+by Sentaurus Visual; the Value Blanking option is used to show the profile inside the 
+device. (Click image for full-size view.)</p>
+
+<p>Click to view the command file for the Sentaurus Mesh tool instance <tt>Polygon</tt> 
+<a href="../../Applications_Library/GettingStarted/snmesh/Profiles/Polygon_msh.cmd">
+Polygon_msh.cmd</a>.</p>
+
+<p>Together with the above examples, this command file is contained in the Sentaurus 
+Workbench project <tt>Applications_Library/GettingStarted/snmesh/Profiles</tt>.</p>
+
+<!--================================================-->
+<a name="4"></a>
+<h1>4.4 External Profiles</h1>
+
+<p>External doping profiles from either process or device simulation results can be used 
+to refine a mesh to make it suitable for a subsequent device simulation.</p>
+
+<p>There are distinctive external profile definitions in Sentaurus Mesh:</p>
+
+<ul>
+<li><strong>External 1D profiles</strong> can be used to construct 2D or 3D profiles 
+using the analytic profile description (see <a href="#3">Section&nbsp;4.3 Analytic Profiles</a>). 
+Instead of a Gaussian analytic profile, a 1D external doping profile is placed along 
+the primary direction. For the lateral direction outside a primary domain, the same 
+analytic functions are used.</li>
+<li><strong>Submeshes</strong> have the same spatial dimension as a target device. 
+The datasets defined on the external mesh then are interpolated to the newly generated mesh.</li>
+</ul>
+
+<!--==========================-->
+<h2>4.4.1 External 1D Profiles</h2>
+
+<p>The following example demonstrates how to incorporate an external 1D profile into 
+a 2D device using the analytic profile description. The external 1D arsenic profile 
+shown in Figure&nbsp;6 (<em>left</em>) is incorporated into the 2D device structure 
+using the <tt>subMesh1D</tt> option:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/SubMeshes/SubMesh1d_msh.cmd" startExpr="*AnalyticalProfile*"  endExpr="*}*" header="Definitions { ..." footer="}" -->
+<pre>
+Definitions { ...
+  AnalyticalProfile &quot;AnalyticalProfileDefinition_1&quot; {
+    Function = subMesh1D(datafile = &quot;@pwd@/1d_As.plx&quot;, scale = 1)
+    LateralFunction = Gauss(Factor = 0.2)
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>This example is contained in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/SubMeshes</tt>.</p>
+
+<p>Click to view the command file of the Sentaurus Mesh tool instance <tt>SubMesh1d</tt> 
+<a href="../../Applications_Library/GettingStarted/snmesh/SubMeshes/SubMesh1d_msh.cmd">
+SubMesh1d_msh.cmd</a>.</p>
+
+<p>The red arrow in Figure 6 (<em>right</em>) indicates the position of the 1D profile baseline. 
+Outside the primary domain, the Gaussian profile distribution is used with a 0.2 factor with 
+respect to the profile standard deviation along the primary direction.</p>
+
+<p><a href="images/sm_aa_asprofile.png"><img src="images/sm_aa_asprofile.png" width="570" 
+alt="(Left) Referenced 1D arsenic profile and (right) resulting 2D doping profile" /></a></p>
+
+<p class="caption">Figure 6. (Left) Referenced 1D arsenic profile and (right) resulting 
+2D doping profile with red arrow indicating the location of the profile baseline. (Click image 
+for full-size view.)</p>
+
+<!--==========================-->
+<a name="submesh"></a>
+<h2>4.4.2 Submeshes</h2>
+
+<p>The next example demonstrates how to incorporate a 2D external profile as a 
+submesh to construct the mesh or doping profile suitable for device simulation. 
+The Sentaurus Workbench project <tt>SubMeshes</tt> from the <tt>Applications_Library</tt> 
+directory will be used here.</p>
+
+<p>The goal of this example is to generate a mesh suitable for a device electrical simulation and to 
+interpolate the doping and stress distributions from the original process grid onto the newly generated mesh. 
+Due to the device symmetry, only half of the structure was simulated by Sentaurus Process (see the 
+<a href="../sp/sp_menu.html">Sentaurus Process module</a>). The structure remeshing was performed using the 
+<tt>SubMesh</tt> option:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/SubMeshes/SubMesh2d_msh.cmd" startExpr="*SubMesh*SubMesh*{"  endExpr="*}*" header="Definitions { ..." footer="}" -->
+<pre>
+Definitions { ...
+  SubMesh &quot;SubMesh&quot; {
+    Geofile = &quot;@pwd@/submesh_input2.tdr&quot;
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p>Each individual dopant as well as stress components are interpolated from the original 
+to the newly generated mesh. The original arsenic doping inside the poly gate is replaced 
+by the constant doping using the <tt>Replace</tt> option:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/SubMeshes/SubMesh2d_msh.cmd" startExpr="*Constant*" startoccurrence=2 endExpr="*}*" endOccurrence=2 -->
+<pre>
+  Constant &quot;PlaceCD.Gate&quot; {
+    Reference = &quot;Const.Gate&quot;
+    Replace
+    EvaluateWindow {
+      Element = material [&quot;PolySi&quot;]
+      DecayLength = 0
+    }
+  }
+</pre>
+<!-- grep end -->
+
+<p>The original grid and the resulting doping distribution after Sentaurus Process are 
+shown in Figure&nbsp;7 (<em>left</em>). The resulting mesh and the doping distribution, 
+ready for Sentaurus Device, are shown in Figure&nbsp;7 (<em>right</em>).</p>
+
+<p><a href="images/sm_aa_dop.png"><img src="images/sm_aa_dop.png" width="570" 
+alt="(Left) Original 2D mesh and doping profile from Sentaurus Process and (right) final mesh and doping profile distribution after Sentaurus Mesh" /></a></p>
+
+<p class="caption">Figure 7. (Left) Original 2D mesh and doping profile from Sentaurus Process and 
+(right) final mesh and doping profile distribution after Sentaurus Mesh. (Click image for full-size view.)</p>
+
+<p>This example is contained in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/SubMeshes</tt>.</p>
+
+<p>Click to view the command file of the Sentaurus Mesh tool instance <tt>SubMesh2d</tt> 
+<a href="../../Applications_Library/GettingStarted/snmesh/SubMeshes/SubMesh2d_msh.cmd">
+SubMesh2d_msh.cmd</a>.</p>
+
+<a name="Reflected"></a>
+<p>To simulate the MOSFET device electrical behavior, the structure and 
+mesh are mirrored at the x=0 axis location by Sentaurus Data Explorer, 
+using the command:</p>
+
+<pre>
+tdx -mtt -x -ren drain=source test2d_half_subm_msh test2d_subm_msh
+</pre>
+
+<p>Alternatively, you can use the reflection capabilities of Sentaurus Mesh (see 
+<a href="smesh_08.html#6">Section&nbsp;8.6 Reflection</a>).</p>
+
+<p>This guarantees perfect mesh symmetry for the resulting device structure (see Figure&nbsp;8).</p>
+
+<p><a href="images/sm_aa_symmetry.png"><img src="images/sm_aa_symmetry.png" width="400" 
+alt="Mirrored device" /></a></p>
+
+<p class="caption">Figure 8. Mirrored device. (Click image for full-size view.)</p>
+
+<p>An important feature of the <tt>SubMesh</tt> option is how 
+the profile extrapolation is handled when the <tt>SubMesh</tt> 
+domain and the target device geometries do not match 
+(see Figure 9 (<em>left</em>)). In this case, Sentaurus Mesh 
+extrudes all profiles outside the <tt>SubMesh</tt> domain, having them 
+uniformly distributed, as shown in Figure 9 (<em>right</em>).</p>
+
+<p><a href="images/sm_aa_mismatch.png"><img src="images/sm_aa_mismatch.png" width="570" 
+alt="(Left) Mismatch of SubMesh and target device domains and (right) StressXX component of stress tensor after remeshing" /></a></p>
+
+<p class="caption">Figure 9. (Left) Mismatch of SubMesh and target device domains 
+and (right) StressXX component of the stress tensor after remeshing. (Click image 
+for full-size view.)</p>
+
+<!--==========================-->
+<h2>4.4.3 Material-Matching Options for Submeshes</h2>
+
+<p>The next example demonstrates the use of the <tt>Ignoremat</tt> option of <tt>SubMesh</tt>.</p>
+
+<p>The standard behavior of submesh interpolation is that the interpolation occurs only if the 
+mesh vertex in a target device belongs to the same material as in a submesh device. If materials 
+in a submesh device and a target device at the same vertex location are different, the profile interpolation 
+for this vertex is suppressed. To overcome this limitation, you can specify <tt>Ignoremat</tt> 
+in a submesh <tt>Placements</tt> section, which instructs Sentaurus Mesh to allow a profile 
+interpolation, regardless of whether the materials match or do not match:</p>
+
+<pre>
+Placements {...
+  SubMesh &quot;SubMesh&quot; {
+    Reference = &quot;SubMesh&quot;
+    Ignoremat
+  }
+}
+</pre>
+
+<p>Figure 10 demonstrates this behavior. The remeshing is performed for the target device, which 
+differs from the submesh device by having a polysilicon region in the middle of the structure 
+instead of silicon.</p>
+
+<p><a href="images/sm_aa_remesh.png"><img src="images/sm_aa_remesh.png" 
+width="570" alt="Test cases showing effect of Ignoremat" /></a></p>
+
+<p class="caption">Figure 10. Test cases showing effect of Ignoremat option. 
+(Click image for full-size view.)</p>
+
+<p>Figure 11 shows the results of interpolation. The submesh device is uniformly doped with 
+boron (left image). By default, Sentaurus Mesh suppresses the doping interpolation inside the 
+polysilicon material for the target device (middle image). Switching on the <tt>Ignoremat</tt> option 
+activates the interpolation inside nonmatching materials and produces exactly the same profile as in 
+the submesh (right image).</p>
+
+<p><a href="images/sm_aa_ignoremat.png"><img src="images/sm_aa_ignoremat.png" width="570" 
+alt="(Left) SubMesh device with uniform 1e16 B doping distribution, (middle) target device showing Sentaurus Mesh default interpolation behavior, and (right) demonstration of Ignoremat behavior" /></a></p>
+
+<p class="caption">Figure 11. (Left) Submesh device with uniform 1e16 boron doping distribution, 
+(middle) target device showing Sentaurus Mesh default interpolation behavior and boron concentration 
+inside polysilicon is suppressed, and (right) demonstration of Ignoremat behavior and boron doping is 
+also interpolated inside polysilicon material. (Click image for full-size view.)</p>
+
+<p>Besides the submesh interpolation schemes previously described, you can specify 
+the option <tt>MatchMaterialType</tt>:</p>
+
+<pre>
+Placements {...
+  SubMesh &quot;SubMesh&quot; {
+    Reference = &quot;SubMesh&quot;
+    MatchMaterialType
+  }
+}
+</pre>
+
+<p>When <tt>MatchMaterialType</tt> is specified, the submesh attempts to match equivalent material types 
+(for example, semiconductor-semiconductor, insulator-insulator, conductor-conductor) instead 
+of trying to match material names when looking up values from which to interpolate.</p>
+
+<p>The last example illustrates the Sentaurus Mesh capability to remesh the device, using the 
+previously obtained device simulation result taken as a submesh.</p>
+
+<p>It often happens that a device needs remeshing after device simulation, based on a solution 
+of a certain carrier transport task. In this example, the remeshing is based on the profile 
+of the carrier impact ionization rate, obtained on a coarse mesh (see Figure&nbsp;12 (<em>left</em>)). 
+The peak ionization rate appears to be in a region with the coarse mesh that needs to be remeshed. 
+This solution is taken as a submesh, then the mesh refinement based on the impact ionization 
+values within a given range is used as a refinement criterion together with the mesh 
+refinement on doping:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/SubMeshes/SubMesh2dII_msh.cmd" startExpr="Definitions*"  endExpr="*}*" footer="  ...\n}" -->
+<pre>
+Definitions {
+  Refinement &quot;Default Region&quot; {
+    MaxElementSize = (1 1 )
+    MinElementSize = (0.05 0.05 )
+    RefineFunction = MaxInterval(
+      Variable = &quot;ImpactIonization&quot;, 
+      cmin=1e20, cmax=1e30, targetLength=0.05, 
+      scaling=1, rolloff
+    )
+    RefineFunction = MaxTransDiff(Variable=&quot;DopingConcentration&quot;, Value=1)
+  }
+  ...
+}
+</pre>
+<!-- grep end -->
+
+<p>The option is activated with the <tt>MaxInterval</tt> keyword, where <tt>Variable</tt> 
+defines the dataset field name, on which the mesh refinement is produced. <tt>cmin</tt> 
+and <tt>cmax</tt> define the interval values to be considered by the refinement procedure. 
+The algorithm analyzes each edge in a refinement tree cell and refines the edge if the data 
+values at the endpoints overlap a given interval and the edge is longer than the maximum 
+edge length, defined by the <tt>targetLength</tt> value, which sets the constant mesh 
+resolution within the given range of field values. The coarser value between 
+<tt>MinElementSize</tt> and <tt>targetLength</tt> is used in this case.</p>
+
+<p>With <tt>rolloff</tt> switched on, the scaling parameter value determines how the mesh 
+step transition towards the outside of the refinement domain is applied, according to the 
+following formula:</p>
+
+<pre>
+targetLengthOutside = targetLength*(1 + log(Ca) - log(Cb))^2 * scaling
+</pre>
+
+<p>where <tt>Ca</tt> and <tt>Cb</tt> are the variable values at the endpoints of the edge.</p>
+
+<p>The resulting mesh, shown in Figure 12 (<em>right</em>), demonstrates the finer mesh 
+refinement within the area with large values of the impact ionization rate and large 
+doping profile gradients.</p>
+
+<p><a href="images/sm_aa_impact.png"><img src="images/sm_aa_impact.png" width="570" 
+alt="(Left) Carrier impact ionization rate distribution on a coarse mesh is taken as a submesh for mesh adaptive refinement and (right) mesh adapted to impact ionization rate profile after remeshing" /></a></p>
+
+<p class="caption">Figure 12. (Left) The previously calculated carrier impact ionization 
+rate distribution on a coarse mesh is taken as a submesh for mesh adaptive refinement 
+and (right) the mesh adapted to the impact ionization rate profile after remeshing. 
+(Click image for full-size view.)</p>
+
+<p>This example is contained in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/SubMeshes</tt>.</p>
+
+<p>Click to view the command file of the Sentaurus Mesh tool instance <tt>SubMesh2dII</tt> 
+<a href="../../Applications_Library/GettingStarted/snmesh/SubMeshes/SubMesh2dII_msh.cmd">
+SubMesh2dII_msh.cmd</a>.</p>
+
+<!--================================================-->
+<a name="5"></a>
+<h1>4.5 Three-Dimensional Doping Profile Construction</h1>
+
+<p>Sentaurus Mesh allows different 2D profile transformations such as rotation, extrusion, 
+and sweeping. It is also possible to sweep a 2D geometry and a 2D profile along the same 
+path simultaneously and to apply a similar sweep to the mesh refinement window for a more 
+accurate mesh spatial discretization of a device.</p>
+
+<p>The following example demonstrates the different techniques of 1D 
+or 2D profile incorporation into a 3D device structure by applying several 
+profile transformations, including 1D to 2D profile transfer, 2D profile 
+rotation, extrusion, and sweeping.</p>
+
+<p>The Sentaurus Mesh command files featured in this section are 
+in the Sentaurus Workbench project <tt>Applications_Library/GettingStarted/snmesh/ProfileConstruction3D</tt>. 
+To work with the project, start Sentaurus Workbench and copy the project 
+<tt>ProfileConstruction3D</tt> to a local directory within the Sentaurus 
+Workbench working directory.</p>
+
+<p>As the first step, the 2D profile is created from the <tt>SubMesh1d</tt> 
+profile using the analytic profile specification:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/ProfileConstruction3D/one2two_msh.cmd" startExpr="Definitions*" endExpr="*}*" footer="  ...\n}" -->
+<pre>
+Definitions {
+  AnalyticalProfile &quot;AnalyticalProfileDefinition_1&quot; {
+    Function = subMesh1D(datafile = &quot;@pwd@/1d_As.plx&quot;, scale = 1)
+    LateralFunction = Gauss(Factor = 0.0)
+  }
+  ...
+}
+</pre>
+<!-- grep end -->
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/ProfileConstruction3D/one2two_msh.cmd" startExpr="Placements*"  endExpr="*}*" endOccurrence=2 footer="  ...\n}" -->
+<pre>
+Placements {
+  AnalyticalProfile &quot;AnalyticalProfilePlacement_1&quot; {
+    Reference = &quot;AnalyticalProfileDefinition_1&quot;
+    ReferenceElement {Element = Line [(0 -0.5) (0 1.5)]}
+  }
+  ...
+}
+</pre>
+<!-- grep end -->
+
+<p>The same 1D doping profile as described in 
+<a href="#submesh">Section&nbsp;4.4.2 Submeshes</a> is used here.</p>
+
+<p><a href="images/sm_aa_3doping.png"><img src="images/sm_aa_3doping.png" width="570" 
+alt="(Left) 1D doping profile and (right) 2D doping profile" /></a></p>
+
+<p class="caption">Figure 13. (Left) One-dimensional doping profile and (right) 2D profile. 
+(Click image for full-size view.)</p>
+
+<p>In the second step, the 2D profile is incorporated into the 3D domain using 
+a combination of different submesh placements, involving a profile shift as well as 
+rotation, sweeping, and replacement techniques (see Figure 14).</p>
+
+<p><a href="images/sm_aa_incorporate.png"><img src="images/sm_aa_incorporate.png" 
+width="570" alt="3D profile construction technique" /></a></p>
+
+<p class="caption">Figure 14. Three-dimensional profile construction technique. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/ProfileConstruction3D/rotsweep3D_msh.cmd">
+rotsweep3D_msh.cmd</a>. This command file produces the final 3D doping profile, 
+shown in the lower-right image of Figure&nbsp;14.</p>
+
+<p>With the third step, the above 3D profile is cut using the <tt>Slice</tt> operation 
+in the <tt>Tools</tt> section of the command file 
+(see <a href="smesh_08.html">Section 8. Tools Section</a>):</p>
+
+<a name="slice"></a>
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/ProfileConstruction3D/slice3Dto2D_msh.cmd" startExpr="*Tools*"  endExpr="*}*" endOccurrence=2 -->
+<pre>
+Tools {
+  Slice {
+    normal = (0 0 1)
+    location = (0. 0. 0.)
+  }
+}
+</pre>
+<!-- grep end -->
+
+<p><a href="images/sm_aa_slice.png"><img src="images/sm_aa_slice.png" width="570" 
+alt="Result of a 2D cut using the Slice operation" /></a></p>
+
+<p class="caption">Figure 15. The result of a 2D cut using the Slice operation. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/ProfileConstruction3D/slice3Dto2D_msh.cmd">
+slice3Dto2D_msh.cmd</a>. This command file produces the 2D doping profile shown 
+in Figure&nbsp;15 (<em>bottom</em>).</p>
+
+<p>In the last step, the 2D profile is incorporated into the 3D device structure 
+applying the profile rotation around the z-axis. The corresponding 3D device boundary 
+is generated using Sentaurus Structure Editor.</p>
+
+<p><a href="images/sm_aa_rotation.png"><img src="images/sm_aa_rotation.png" width="570" 
+alt="3D structure used for profile rotation and resulting profile after rotation" /></a></p>
+
+<p class="caption">Figure 16. (Left) The 3D structure used for profile rotation and 
+(right) the resulting 3D profile after rotation. (Click image for full-size view.)</p>
+
+<p><a href="images/sm_aa_rotatemesh.png"><img src="images/sm_aa_rotatemesh.png" 
+width="520" alt="Resulting mesh after profile rotation" /></a></p>
+
+<p class="caption">Figure 17. Resulting mesh after profile rotation. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/ProfileConstruction3D/make_torus_msh.cmd">
+make_torus_msh.cmd</a>. This command file produces the 3D doping profile in 
+Figure&nbsp;17.</p>
+
+<!--================================================-->
+<a name="6"></a>
+<h1>4.6 General Function Evaluator</h1>
+
+<p>Apart from the predefined Gaussian and error functions, you can define an arbitrary 
+general analytic function that can be used to define primary and lateral profile distributions 
+for analytic profile definitions. The general function evaluator (GFE) uses the following
+syntax:</p>
+
+<pre>
+AnalyticalProfile &quot;reference name&quot; {
+  Function = General(init=&quot;variable assignments&quot;, 
+                     function=&quot;evaluated expression&quot;, 
+                     value=&lt;default_return_value&gt;)
+  LateralFunction = General(init = &quot;variable assignments&quot;, 
+                            function = &quot;evaluated expression&quot;)
+}
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>init</tt> is a semicolon-separated list of assignments for variables that are 
+used in the <tt>Function</tt> expression.</li>
+<li><tt>function</tt> is an expression that is evaluated for every query.</li>
+<li><tt>value</tt> is the default return value if the evaluation fails.</li>
+</ul>
+
+<p>The first example demonstrates the application of the GFE to construct a linearly 
+graded doping profile. For the structure in Figure 18, the linearly graded phosphorus doping
+profile is defined inside the SiGe region, which is sandwiched between two uniformly doped 
+silicon regions.</p>
+
+<p>This example is contained in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/EvaluateFunction</tt>.</p>
+
+<p>Click to view the command file of the Sentaurus Mesh tool instance called <tt>linear</tt> 
+<a href="../../Applications_Library/GettingStarted/snmesh/EvaluateFunction/linear_msh.cmd">
+linear_msh.cmd</a>.</p>
+
+<p><img src="images/sm_aa_gfe.png" width="426" height="140" alt="Test structure showing linear doping" /></p>
+
+<p class="caption">Figure 18. Test structure showing linear doping.</p>
+
+<p>The following syntax specifies a linearly graded profile inside 
+the SiGe region:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/EvaluateFunction/linear_msh.cmd" startExpr="Definitions*" endExpr="*}*" footer="  ...\n}" -->
+<pre>
+Definitions {
+  AnalyticalProfile &quot;linear&quot; {
+    Species = &quot;PhosphorusActiveConcentration&quot;
+    Function = General( init = &quot;fmax=10^18;fmin=10^16&quot;  
+        function = &quot;10.*(fmin-fmax)*x+2.*fmax-fmin&quot; value = 0)
+  }
+  ...
+}
+</pre>
+<!-- grep end -->
+
+<p>The <tt>function</tt> expression ensures that the profile values at the outer 
+boundaries of the SiGe layer meet the specified boundary conditions: 1e18&nbsp;cm<sup>-3</sup> 
+at x = 0.1&nbsp;&mu;m and 1e16&nbsp;cm<sup>-3</sup> at x = 0.2&nbsp;&mu;m.</p>
+
+<p><a href="images/sm_aa_distribute.png"><img src="images/sm_aa_distribute.png" width="570" 
+alt="Linear doping and profile distribution" /></a></p>
+
+<p class="caption">Figure 19. Linear doping and profile distribution. 
+(Click image for full-size view.)</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/EvaluateFunction/layers1_dvs.cmd">
+layers1_dvs.cmd</a>. Sentaurus Structure Editor uses this command file 
+to produce such boundary and meshing command files and build the mesh.</p>
+
+<p>The next example illustrates the use of the GFE to produce an automatic mesh refinement on 
+an arbitrary function. In this example, the test profile is specified using the GFE:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/EvaluateFunction/GFEmesh_msh.cmd" startExpr="*AnalyticProfile*" endExpr="*}*" -->
+<pre>
+  AnalyticProfile &quot;gfe_profile&quot; {
+    Species = &quot;P2&quot;
+    Function = General(init=&quot;c0=10^5;lx=0.1;ly=0.1;lz=0.1&quot;,
+               function=&quot;c0/exp((x/lx)^2)/exp((y/ly)^2)/exp((z/lz)^2)&quot;)
+  }
+</pre>
+<!-- grep end -->
+
+<p>The example uses the species called <tt>&quot;P2&quot;</tt>, which is declared in the 
+<tt>$STROOT/tcad/$STRELEASE/lib/datexcodes.txt</tt> file. The mesh refinement is based on 
+the <tt>&quot;P2&quot;</tt> test profile distribution. The test 3D profile distribution 
+and the final 3D mesh are shown in Figure&nbsp;20.</p>
+
+<p><a href="images/sm_aa_test.png"><img src="images/sm_aa_test.png" width="570" 
+alt="Test P2 species profile generated by GFE and mesh adapted to test profile distribution" /></a></p>
+
+<p class="caption">Figure 20. (Left) Test "P2" species profile generated by the GFE 
+and (right) mesh adapted to the test profile distribution. (Click image for full-size view.)</p>
+
+<p>This example is contained in the Sentaurus Workbench project 
+<tt>Applications_Library/GettingStarted/snmesh/EvaluateFunction</tt>.</p>
+
+<p>Click to view the command file for the Sentaurus Mesh tool instance <tt>GFEmesh</tt> 
+<a href="../../Applications_Library/GettingStarted/snmesh/EvaluateFunction/GFEmesh_msh.cmd">
+GFEmesh_msh.cmd</a>.</p>
+
+<!--================================================-->
+<a name="7"></a>
+<h1>4.7 Profile Overlap Controls</h1>
+     
+<p>By default, the specified profiles are superimposed when they overlap. Switching on the 
+<tt>Replace</tt> option allows you to change this behavior. In this case, the order in which 
+profiles are placed is important. The next example demonstrates the use of the profile overlap 
+controls. Three constant profiles are introduced that overlap (see Figure&nbsp;21).</p>
+
+<p><img src="images/sm_aa_overlap.png" width="403" height="403" 
+alt="Background constant boron doping profile" /></p>
+
+<p class="caption">Figure 21. &quot;prof1&quot; is the background constant boron doping profile 
+with 1e16&nbsp;cm<sup>-3</sup> concentration; &quot;prof2&quot; is the constant boron doping profile with 
+1e18&nbsp;cm<sup>-3</sup> concentration; and &quot;prof3&quot; is the constant arsenic doping profile with 
+1e18&nbsp;cm<sup>-3</sup> concentration.</p>
+
+<p>Figure 22 shows the resulting doping profile distributions 
+(Nr&nbsp;=&nbsp;Ndonor&nbsp;&ndash;&nbsp;Nacceptor), illustrating the 
+Sentaurus Mesh behavior when different overlap control scenarios are used:</p>
+
+<ul>
+<li>For Scenario A, the profile order, that is, how they appear in the <tt>Placements</tt> section 
+of the command file, corresponds to the profile numbering, together with the default rule for 
+profile overlay, which requires a profile sum at any spatial mesh vertex position. Therefore, 
+for the area where high-doped boron and arsenic doping profiles overlap, the resulting doping 
+profile concentration is equal to the background low-doped boron concentration (shown in light blue).</li>
+
+<li>For Scenario B, the same profile order is used as in Scenario A but the <tt>Replace</tt> 
+option is specified for the <tt>prof2</tt> profile. Therefore, the <tt>prof2</tt> profile replaces 
+the previously placed <tt>prof1</tt> profile and then is overlapped with the <tt>prof3</tt> profile, 
+which results in zero net doping concentration within the overlay region (shown in green).</li>
+
+<li>Scenario C differs from Scenario B by adding the <tt>Replace</tt> option to the <tt>prof3</tt> 
+profile specification. In this case, the <tt>prof3</tt> profile replaces both underlying boron 
+profiles, as can be seen from the image.</li>
+
+<li>For Scenario D, the order, that is, how the profiles <tt>prof2</tt> and <tt>prof3</tt> appear in 
+the command file, is changed compared to Scenario C, which results in the <tt>prof2</tt> profile
+winning over other profiles.</li>
+</ul>
+
+<p><a href="images/sm_aa_scenarios.png"><img src="images/sm_aa_scenarios.png" width="550" 
+alt="Scenarios A, B, C, and D" /></a></p>
+
+<p class="caption">Figure 22. (Upper left) Scenario A, (upper right) Scenario B, 
+(lower left) Scenario C, and (lower right) Scenario D. (Click image for full-size view.)</p>
+
+<p>The Sentaurus Mesh command files featured in this section are all contained in the 
+Sentaurus Workbench project <tt>Applications_Library/GettingStarted/snmesh/ProfileOverlap</tt>. 
+To work with the project, start Sentaurus Workbench and copy the project 
+<tt>ProfileOverlap</tt> to a local directory within the Sentaurus Workbench 
+working directory.</p>
+
+<p>Click to view the command files for the different scenarios for this example:</p>
+
+<ul>
+<li>Scenario A: <a href="../../Applications_Library/GettingStarted/snmesh/ProfileOverlap/OverlapA_msh.cmd">OverlapA_msh.cmd</a></li>
+<li>Scenario B: <a href="../../Applications_Library/GettingStarted/snmesh/ProfileOverlap/OverlapB_msh.cmd">OverlapB_msh.cmd</a></li>
+<li>Scenario C: <a href="../../Applications_Library/GettingStarted/snmesh/ProfileOverlap/OverlapC_msh.cmd">OverlapC_msh.cmd</a></li>
+<li>Scenario D: <a href="../../Applications_Library/GettingStarted/snmesh/ProfileOverlap/OverlapD_msh.cmd">OverlapD_msh.cmd</a></li>
+</ul>
+
+<!--================================================-->
+<a name="8"></a>
+<h1>4.8 Doping Naming Conventions</h1>
+
+<p>Transferring doping profiles from Sentaurus Process to Sentaurus Device using the 
+Sentaurus Mesh <tt>SubMesh</tt> option is relatively straightforward. However, the doping 
+profile compilation with constant or analytic profiles requires a certain naming convention 
+to guarantee that profiles are handled properly by the device simulator.</p>
+
+<p>Sentaurus Mesh uses <em>active</em> donor and acceptor dopants to calculate the resulting 
+(net) doping profile (<tt>Nr</tt>):</p>
+
+<pre>
+Nr = Sum(Nd) - Sum(Na)
+</pre>
+
+<p>where:</p>
+
+<ul>
+<li><tt>Sum()</tt> is the sum of all present dopants of either donor or acceptor type for 
+each mesh vertex spatial location inside the device structure.</li>
+<li><tt>Nd</tt> is an active donor dopant concentration.</li>
+<li><tt>Na</tt> is an active acceptor dopant concentration.</li>
+</ul>
+
+<p>For silicon material as well as for other semiconductors from group IV of 
+the periodic table of elements, special names are reserved for donor and acceptor dopants, 
+which are defined in the <tt>$STROOT/tcad/$STRELEASE/lib/datexcodes.txt</tt> file.</p>
+
+<p>For donor dopants, the most important names are:</p>
+
+<ul>
+<li><tt>AntimonyActiveConcentration</tt></li>
+<li><tt>ArsenicActiveConcentration</tt></li> 
+<li><tt>PhosphorusActiveConcentration</tt></li>
+</ul>
+
+<p>For acceptor dopants, the most important names are:</p>
+
+<ul>
+<li><tt>AluminumActiveConcentration</tt></li>
+<li><tt>BerylliumActiveConcentration</tt></li>
+<li><tt>BoronActiveConcentration</tt></li>
+<li><tt>IndiumActiveConcentration</tt></li>
+</ul>
+
+<p>While constructing doping profiles, Sentaurus Mesh calculates the resulting
+(net) doping profile applying the previous formula and saves individual dopants and
+the resulting doping profile in a TDR file. For each individual dopant, its
+profile is interpolated to a final mesh. However, for a resulting doping
+profile, the following rules apply:</p>
+
+<ol>
+<li>If a dopant is defined that has one of the mentioned names, it is used for a 
+resulting doping profile calculation.</li>
+<li>If there are no profiles with the mentioned <tt>*ActiveConcentration</tt>
+names, Sentaurus Mesh checks whether there are corresponding profiles with total
+concentrations <tt>*Concentration</tt>, for example 
+<tt>PhosphorusConcentration</tt>, and uses them to calculate a resulting doping
+profile.</li>
+<li>If a profile called <tt>DopingConcentration</tt> is specified in the command file, 
+it is summed with the resulting doping profile calculated with the previous formula.</li>
+<li>If there are dopants with the names <tt>NDopantActiveConcentration</tt> or 
+<tt>PDopantActiveConcentration</tt> defined, they are used as donor and acceptor dopants, 
+respectively, in the resulting doping calculation.</li>
+</ol>
+
+<p>The latter rule allows you to specify the doping distribution for III&ndash;V or II&ndash;VI 
+semiconductor materials, such as GaAs and HgTe, and their compounds.</p>
+
+<p>The following examples illustrate these naming conventions. The same structure 
+and profile definitions as in the example in 
+<a href="#7">Section&nbsp;4.7 Profile Overlap Controls</a> are used here.</p>
+
+<p>Four cases with different profile names were defined (see Figure 23):</p>
+
+<ul>
+<li>For Example 1, all profiles are defined as active. These values indicate the resulting 
+doping concentration at each profile location. The background net doping concentration within 
+the area indicated as <tt>prof1</tt> is negative, since only <tt>BoronActiveConcentration</tt> 
+doping (acceptor type) is specified there. For overlapping profiles, the doping superposition is 
+applied according to the above formula.</li>
+
+<li>For Example 2, the <tt>BoronConcentration</tt> species name has been chosen for the <tt>prof1</tt> 
+profile instead of <tt>BoronActiveConcentration</tt>, as in Example&nbsp;1. Since there are still 
+active dopant specifications defined for the <tt>prof2</tt> and <tt>prof3</tt> profiles, the 
+<tt>prof1</tt> profile definition is ignored when the resulting doping profile calculation is 
+performed (you can see that the doping profile value inside the <tt>prof1</tt> domain is zero).</li>
+
+<li>For Example 3, the species name for the <tt>prof1</tt> doping profile is 
+<tt>DopingConcentration</tt>. Therefore, the resulting net doping is calculated according to 
+Rule&nbsp;3 as a superposition of the individual active dopants and the <tt>prof1</tt> doping 
+profile.</li>
+
+<li>For Example 4, the <tt>NDopantActiveConcentration</tt> and <tt>PDopantActiveConcentration</tt> 
+names are used instead of <tt>BoronActiveConcentration</tt> and <tt>ArsenicActiveConcentration</tt> 
+to define the doping profile. As can be seen, such definitions produce exactly the same resulting 
+doping profile, as in Example&nbsp;1.</li>
+</ul>
+
+<p><a href="images/sm_aa_prof.png"><img src="images/sm_aa_prof.png" width="570" 
+alt="Four examples with different profile names" /></a></p>
+
+<p class="caption">Figure 23. (Upper left) Example 1, (upper right) Example 2, 
+(lower left) Example 3, and (lower right) Example 4. (Click image for full-size view.)</p>
+
+<p>The Sentaurus Mesh command files featured in this section are in the 
+Sentaurus Workbench project <tt>Applications_Library/GettingStarted/snmesh/DopingNameConventions</tt>. 
+To work with the project, start Sentaurus Workbench and copy the project 
+<tt>DopingNameConventions</tt> to a local directory within the Sentaurus 
+Workbench working directory.</p>
+
+<p>Click to view the command files for the different examples:</p>
+
+<ul>
+<li>Example 1: <a href="../../Applications_Library/GettingStarted/snmesh/DopingNameConventions/nameA_msh.cmd">nameA_msh.cmd</a></li>
+<li>Example 2: <a href="../../Applications_Library/GettingStarted/snmesh/DopingNameConventions/nameB_msh.cmd">nameB_msh.cmd</a></li>
+<li>Example 3: <a href="../../Applications_Library/GettingStarted/snmesh/DopingNameConventions/nameC_msh.cmd">nameC_msh.cmd</a></li>
+<li>Example 4: <a href="../../Applications_Library/GettingStarted/snmesh/DopingNameConventions/nameD_msh.cmd">nameD_msh.cmd</a></li>
+</ul>
+
+<!--================================================-->
+<a name="9"></a>
+<h1>4.9 Discrete-to-Continuous Dopant Profile Transition</h1>
+
+<p>Sentaurus Mesh can create continuous doping profiles from discrete dopant distributions 
+obtained using Sentaurus Process Kinetic Monte Carlo (Sentaurus Process KMC), which then 
+can be used in device simulations.</p>
+
+<p>Such a procedure is called <em>deatomization</em>, which is accomplished 
+by associating a doping function with each discrete dopant. The union of all such 
+doping functions defines the final doping profile.</p>
+
+<p>The next example demonstrates the doping deatomization procedure. A 3D MOS 
+transistor structure and atomized KMC species are shown in Figure&nbsp;24. Note the 
+Manhattan-type geometry of the originally rounded shapes, which is the result of 
+using a tensor grid in the Sentaurus Process KMC simulation.</p>
+
+<p><a href="images/sm_aa_kmc.png">
+<img src="images/sm_aa_kmc.png" width="400" alt="Result of 3D KMC simulation" /></a></p>
+
+<p class="caption">Figure 24. Result of 3D KMC simulation showing locations of the KMC species. 
+Blue points indicate the location of single atom defects, mostly dopants. Cyan points indicate 
+the location of impurity clusters. (Click image for full-size view.)</p>
+
+<p>The discrete KMC results are loaded into Sentaurus Mesh where they are deatomized 
+using a normalized charge density approach. The charge density functions for all 
+dopants are then summed to form the final doping distribution to be used in a subsequent 
+device simulation.</p>
+
+<p>To deatomize the KMC dopants, the <tt>Particle</tt> section must be declared 
+inside the <tt>Definitions</tt> section of the Sentaurus Mesh command file for each 
+individual dopant. The following syntax illustrates the parameters of the <tt>Particle</tt> 
+section to deatomize boron particles:</p>
+
+<!-- grep file="../../Applications_Library/GettingStarted/snmesh/Deatomization/KMC_msh.cmd" startExpr="*Particle*"  endExpr="*}*" -->
+<pre>
+  Particle &quot;BoronParticles&quot; {
+    ParticleFile = &quot;@pwd@/kmc_final.tdr&quot;
+    Species = &quot;BoronActiveConcentration&quot;
+    ScreeningFactor = 3.5e6
+    AutoScreeningFactor
+    Normalization
+  }
+</pre>
+<!-- grep end -->
+
+<p>where:</p>
+
+<ul>
+<li><tt>ParticleFile</tt> indicates the location of the source for the boron particles 
+profile, which is deatomized into <tt>BoronActiveConcentration</tt>.</li>
+<li><tt>ScreeningFactor</tt> is the inverse of the screening length used for a 
+profile deatomization.</li>
+<li><tt>AutoScreeningFactor</tt> switches on an automatic screening factor calculation 
+for each discrete dopant based on the local density of dopants.</li>
+<li><tt>Normalization</tt> switches on the doping normalization for discrete dopants, 
+whose doping function extends beyond the boundary.</li>
+</ul>
+
+<p>Refer to the <cite>Sentaurus&trade; Mesh User Guide</cite> for details.</p>
+
+<p>Figure 25 shows the results of the boron and arsenic profile deatomizations.</p>
+
+<p><a href="images/sm_aa_deatom.png"><img src="images/sm_aa_deatom.png" width="570" 
+alt="Deatomized (left) boron profile and (right) arsenic profile after Sentaurus Mesh" /></a></p>
+
+<p class="caption">Figure 25. (Left) Deatomized boron profile after Sentaurus Mesh and 
+(right) deatomized arsenic profile after Sentaurus Mesh. (Click image for full-size view.)</p>
+
+<p>The complete project can be investigated from within Sentaurus Workbench 
+in the directory <tt>Applications_Library/GettingStarted/snmesh/Deatomize</tt>.</p>
+
+<p>Click to view the command file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Deatomization/KMC_msh.cmd">
+KMC_msh.cmd</a>.</p>
+
+<p>Right-click to save the TDR submesh file 
+<a href="../../Applications_Library/GettingStarted/snmesh/Deatomization/kmc_final.tdr">
+kmc_final.tdr</a> from Sentaurus Process KMC (17&nbsp;MB) used in this example.</p>
+
+<!--================================================-->
+<div id="section">
+<p>
+<a href="../index.html">main menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_menu.html">module menu</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_03.html">&lt;&lt; previous section</a>
+&nbsp;&nbsp;&nbsp;&#124;&nbsp;&nbsp;&nbsp;<a href="smesh_05.html">next section &gt;&gt;</a>
+</p>
+</div>
+
+<!--================================================-->
+<div id="copyright">
+<p>Copyright &copy; 2022 Synopsys, Inc. All rights reserved.</p>
+</div>
+
+</div>
+</body>
+</html>

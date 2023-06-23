@@ -1,0 +1,64 @@
+! ------------------------------------------------------------------------------
+! ------------------------------------------------------------------------------
+! This macro loads a cell-phone camera lens, runs BSP, and exports complex
+! field data to a file via the OFEXPORT macro.
+! 
+! Feb 27, 2014
+! Bryan Stone
+! ------------------------------------------------------------------------------
+! ------------------------------------------------------------------------------
+in cellcam   ! load lens -- has a single, on-axis field point
+
+! ------------------------------------------------------------------------------
+! user input parameters
+! ------------------------------------------------------------------------------
+^gridWidth == 1e-3      ! Width of EMW grid in [mm]
+^npts      == 60        ! Number of exported grid points, look at snmesh log.
+^planeZ1   == -3.125e-3 ! z coordinate of 1st excitation mesh plane in [mm]
+^planeZ2   == -2.5e-3   ! z coordinate of 2nd excitation mesh plane in [mm]
+ 
+! ------------------------------------------------------------------------------
+! compute plane spacing
+! ------------------------------------------------------------------------------
+^planeSpacing == absf(^planeZ1-^planeZ2)   
+
+! ------------------------------------------------------------------------------
+! insert closely-spaced dummy surfaces at the image
+! ------------------------------------------------------------------------------
+ins sI..I+1 
+slb sI-2 'z1'; thi sI-2  ^planeSpacing  ! separation between dummy surfaces
+slb sI-1 'z2'; thi sI-1 -^planeSpacing  ! puts image surface back to original location
+
+! ------------------------------------------------------------------------------
+! run BSP
+! ------------------------------------------------------------------------------
+buf del b1..3
+bsp
+  nri 20
+  
+  int dbu              ! output on log scale
+  thr pha 0            ! turn off phase unwrapping
+  cht int s'z1'..'z2'  ! display intensity
+  cht yph s'z1'..'z2'  ! display y-phase
+  
+  ! output grid definitions
+  gwx s'z1'..'z2' ^gridWidth
+  gwy s'z1'..'z2' ^gridWidth
+  gpx s'z1'..'z2' ^npts
+  gpy s'z1'..'z2' ^npts                                    
+  gox s'z1'..'z2' 0
+  goy s'z1'..'z2' 0
+  
+  ! write complex field data to buffer
+  wbf s'z1'    b1 vfd
+  wbf s'z2'    b2 vfd
+go
+
+! format numbers to get lots of digits after the decimal
+buf fmt b1 i21..L ja '4e.8e'
+buf fmt b2 i21..L ja '4e.8e'
+
+! Convert buffer output from CODE V into the proper file format.
+! The path can be changed to put the files wherever you want
+in cv_macro:ofexport 1 "data_z1"
+in cv_macro:ofexport 1 "data_z2"
